@@ -177,13 +177,18 @@ router.get("/status/:transactionId", async (req, res) => {
   try {
     const { transactionId } = req.params;
 
+    console.log("=== STATUS CHECK ===");
+    console.log("TransactionId:", transactionId);
+
     const payments = await query<any[]>("SELECT * FROM pix_payments WHERE transaction_id = ?", [transactionId]);
 
     if (payments.length === 0) {
+      console.log("Pagamento não encontrado no banco");
       return res.status(404).json({ error: "Pagamento não encontrado" });
     }
 
     const payment = payments[0];
+    console.log("Payment from DB:", JSON.stringify(payment, null, 2));
 
     // Se for pagamento de revendedor, o endpoint correto é /reseller-status
     if (typeof payment.admin_name === "string" && payment.admin_name.startsWith("RESELLER:")) {
@@ -192,6 +197,7 @@ router.get("/status/:transactionId", async (req, res) => {
 
     // Já processado
     if (payment.status === "PAID") {
+      console.log("Pagamento já está PAID");
       return res.json(payment);
     }
 
@@ -199,28 +205,59 @@ router.get("/status/:transactionId", async (req, res) => {
     const publicKey = process.env.VIZZIONPAY_PUBLIC_KEY;
     const privateKey = process.env.VIZZIONPAY_PRIVATE_KEY;
 
+    console.log("=== DEBUG CREDENCIAIS ===");
+    console.log("Has publicKey:", !!publicKey);
+    console.log("Has privateKey:", !!privateKey);
+    console.log("PublicKey (primeiros 20 chars):", publicKey?.substring(0, 20) + "...");
+
     if (payment.status === "PENDING" && publicKey && privateKey) {
+      console.log("=== CONSULTANDO VIZZIONPAY ===");
       try {
-        const vizzionResponse = await fetch(`https://app.vizzionpay.com/api/v1/gateway/pix/${transactionId}`, {
+        const vizzionUrl = `https://app.vizzionpay.com/api/v1/gateway/pix/${transactionId}`;
+        console.log("URL:", vizzionUrl);
+
+        const vizzionResponse = await fetch(vizzionUrl, {
           headers: {
             "x-public-key": publicKey,
             "x-secret-key": privateKey,
           },
         });
 
+        console.log("VizzionPay HTTP status:", vizzionResponse.status);
+
         if (vizzionResponse.ok) {
           const vizzionData = await vizzionResponse.json();
+          console.log("=== VIZZIONPAY RESPONSE ===");
+          console.log(JSON.stringify(vizzionData, null, 2));
 
           const remoteStatus =
             vizzionData?.status ||
             vizzionData?.transaction?.status ||
             vizzionData?.data?.status ||
-            vizzionData?.data?.transaction?.status;
+            vizzionData?.data?.transaction?.status ||
+            vizzionData?.pix?.status;
 
-          const remoteEvent = vizzionData?.event || vizzionData?.data?.event;
-          const isPaid = remoteEvent === "TRANSACTION_PAID" || remoteStatus === "PAID" || remoteStatus === "COMPLETED";
+          const remoteEvent = 
+            vizzionData?.event || 
+            vizzionData?.data?.event ||
+            vizzionData?.pix?.event;
+
+          console.log("Detected remoteStatus:", remoteStatus);
+          console.log("Detected remoteEvent:", remoteEvent);
+
+          const isPaid = 
+            remoteEvent === "TRANSACTION_PAID" || 
+            remoteStatus === "PAID" || 
+            remoteStatus === "COMPLETED" ||
+            remoteStatus === "paid" ||
+            remoteStatus === "completed" ||
+            remoteStatus === "CONFIRMED" ||
+            vizzionData?.paid === true;
+
+          console.log("isPaid:", isPaid);
 
           if (isPaid) {
+            console.log("=== PAGAMENTO CONFIRMADO - PROCESSANDO ===");
             // Re-busca com lock lógico por status (idempotência)
             const pendingRows = await query<any[]>(
               "SELECT * FROM pix_payments WHERE transaction_id = ? AND status = ?",
@@ -235,6 +272,7 @@ router.get("/status/:transactionId", async (req, res) => {
                 "PAID",
                 transactionId,
               ]);
+              console.log("Status atualizado para PAID");
 
               // Credita admin e registra transação
               const tier = PRICE_TIERS.find((t) => t.credits === pendingPayment.credits);
@@ -243,27 +281,80 @@ router.get("/status/:transactionId", async (req, res) => {
                   pendingPayment.credits,
                   pendingPayment.admin_id,
                 ]);
+                console.log(`Créditos adicionados: ${pendingPayment.credits} para admin ${pendingPayment.admin_id}`);
 
                 await query(
                   "INSERT INTO credit_transactions (to_admin_id, amount, unit_price, total_price, transaction_type) VALUES (?, ?, ?, ?, ?)",
                   [pendingPayment.admin_id, pendingPayment.credits, tier.unitPrice, tier.total, "recharge"],
                 );
+                console.log("Transação de crédito registrada");
               }
+            } else {
+              console.log("Pagamento já foi processado anteriormente");
             }
 
             const updated = await query<any[]>("SELECT * FROM pix_payments WHERE transaction_id = ?", [transactionId]);
             return res.json(updated[0]);
           }
+        } else {
+          const errorText = await vizzionResponse.text();
+          console.error("VizzionPay error response:", errorText);
         }
       } catch (e) {
         console.error("Erro ao consultar VizzionPay (status):", e);
       }
+    } else {
+      console.log("Skipping VizzionPay check - reason:", 
+        !publicKey ? "missing publicKey" : 
+        !privateKey ? "missing privateKey" : 
+        "status is not PENDING"
+      );
     }
 
     return res.json(payment);
   } catch (error) {
     console.error("Erro ao verificar pagamento:", error);
     return res.status(500).json({ error: "Erro interno do servidor" });
+  }
+});
+
+// Endpoint de teste - consulta VizzionPay diretamente (para debug)
+router.get("/test-vizzion/:transactionId", async (req, res) => {
+  const { transactionId } = req.params;
+  const publicKey = process.env.VIZZIONPAY_PUBLIC_KEY;
+  const privateKey = process.env.VIZZIONPAY_PRIVATE_KEY;
+
+  console.log("=== TEST VIZZIONPAY ENDPOINT ===");
+  console.log("TransactionId:", transactionId);
+  console.log("PublicKey:", publicKey?.substring(0, 20) + "...");
+  console.log("PrivateKey:", privateKey ? "[CONFIGURED]" : "[NOT CONFIGURED]");
+
+  if (!publicKey || !privateKey) {
+    return res.status(500).json({
+      error: "Credenciais VizzionPay não configuradas",
+      hasPublicKey: !!publicKey,
+      hasPrivateKey: !!privateKey,
+    });
+  }
+
+  try {
+    const response = await fetch(`https://app.vizzionpay.com/api/v1/gateway/pix/${transactionId}`, {
+      headers: {
+        "x-public-key": publicKey,
+        "x-secret-key": privateKey,
+      },
+    });
+
+    const data = await response.json();
+    console.log("VizzionPay full response:", JSON.stringify(data, null, 2));
+
+    res.json({
+      httpStatus: response.status,
+      vizzionPayResponse: data,
+    });
+  } catch (error: any) {
+    console.error("Erro ao consultar VizzionPay:", error);
+    res.status(500).json({ error: error.message });
   }
 });
 
