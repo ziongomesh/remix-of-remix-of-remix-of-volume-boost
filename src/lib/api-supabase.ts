@@ -1,5 +1,67 @@
 // Cliente API para PostgreSQL (Supabase/Cloud)
+// IMPORTANTE: Pagamentos usam EXCLUSIVAMENTE Node.js/MySQL
 import { supabase } from '@/integrations/supabase/client';
+
+// URL da API Node.js para pagamentos
+function getPaymentApiUrl(): string {
+  const envUrl = import.meta.env.VITE_API_URL as string | undefined;
+  
+  if (envUrl) {
+    // Se o painel estiver em HTTPS e a URL estiver em HTTP no mesmo host, faz upgrade para HTTPS
+    if (
+      typeof window !== 'undefined' &&
+      window.location.protocol === 'https:' &&
+      envUrl.startsWith('http://')
+    ) {
+      try {
+        const parsed = new URL(envUrl);
+        if (parsed.hostname === window.location.hostname) {
+          parsed.protocol = 'https:';
+          return parsed.toString().replace(/\/+$/, '');
+        }
+      } catch {
+        // ignora e usa como veio
+      }
+    }
+    return envUrl.replace(/\/+$/, '');
+  }
+
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+    return `${window.location.origin}/api`;
+  }
+
+  return 'http://localhost:4000/api';
+}
+
+// Função para chamar a API Node.js
+async function fetchNodeAPI(endpoint: string, options: RequestInit = {}) {
+  const API_URL = getPaymentApiUrl();
+  const stored = localStorage.getItem('admin');
+  let headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(options.headers as Record<string, string>),
+  };
+
+  if (stored) {
+    try {
+      const admin = JSON.parse(stored);
+      headers['X-Admin-Id'] = String(admin.id);
+      headers['X-Session-Token'] = admin.session_token;
+    } catch {}
+  }
+
+  const response = await fetch(`${API_URL}${endpoint}`, {
+    ...options,
+    headers,
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Erro de conexão' }));
+    throw new Error(error.error || 'Erro na requisição');
+  }
+
+  return response.json();
+}
 
 // Helper para obter dados da sessão armazenada
 function getStoredSession(): { adminId: number; sessionToken: string } | null {
@@ -331,46 +393,42 @@ export const supabaseApi = {
     },
   },
 
+  // PAGAMENTOS: Usam EXCLUSIVAMENTE Node.js/MySQL
   payments: {
-    createPix: async (credits: number, adminId: number, adminName: string, sessionToken: string) => {
-      const { data, error } = await supabase.functions.invoke('create-pix-payment', {
-        body: { credits, adminId, adminName, sessionToken }
+    createPix: async (credits: number, adminId: number, adminName: string, _sessionToken: string) => {
+      console.log('📦 Criando PIX via Node.js API...');
+      return fetchNodeAPI('/payments/create-pix', {
+        method: 'POST',
+        body: JSON.stringify({ credits, adminId, adminName })
       });
-
-      if (error) throw new Error(error.message);
-      return data;
     },
 
     checkStatus: async (transactionId: string) => {
-      const { data, error } = await supabase.functions.invoke(`check-payment-status/${transactionId}`);
-
-      if (error) throw new Error(error.message);
-      return data;
+      console.log('🔍 Verificando status via Node.js API...');
+      return fetchNodeAPI(`/payments/status/${transactionId}`);
     },
 
     createResellerPix: async (params: { masterId: number; masterName: string; resellerData: { nome: string; email: string; key: string } }) => {
-      const { data, error } = await supabase.functions.invoke('create-reseller-pix', {
-        body: params
+      console.log('📦 Criando PIX revendedor via Node.js API...');
+      return fetchNodeAPI('/payments/create-reseller-pix', {
+        method: 'POST',
+        body: JSON.stringify(params)
       });
-
-      if (error) throw new Error(error.message);
-      return data;
     },
 
     getResellerStatus: async (transactionId: string) => {
-      const { data, error } = await supabase.functions.invoke(`check-reseller-status/${transactionId}`);
-
-      if (error) throw new Error(error.message);
-      return data;
+      console.log('🔍 Verificando status revendedor via Node.js API...');
+      return fetchNodeAPI(`/payments/reseller-status/${transactionId}`);
     },
 
-    getHistory: async (_adminId: number) => {
-      return [];
+    getHistory: async (adminId: number) => {
+      return fetchNodeAPI(`/payments/history/${adminId}`);
     },
 
     getPriceTiers: async () => {
-      const session = getStoredSession();
-      if (!session) {
+      try {
+        return await fetchNodeAPI('/payments/price-tiers');
+      } catch {
         return [
           { id: 1, min_qty: 50, max_qty: 50, price: 1.40, is_active: true },
           { id: 2, min_qty: 100, max_qty: 100, price: 1.30, is_active: true },
@@ -379,31 +437,21 @@ export const supabaseApi = {
           { id: 5, min_qty: 500, max_qty: 500, price: 1.00, is_active: true },
         ];
       }
+    },
 
-      const { data, error } = await supabase.rpc('get_price_tiers', {
-        p_admin_id: session.adminId,
-        p_session_token: session.sessionToken
+    getGoal: async (year: number, month: number) => {
+      try {
+        return await fetchNodeAPI(`/payments/goal/${year}/${month}`);
+      } catch {
+        return { target_revenue: 0, current_revenue: 0 };
+      }
+    },
+
+    setGoal: async (year: number, month: number, targetRevenue: number) => {
+      return fetchNodeAPI('/payments/goal', {
+        method: 'POST',
+        body: JSON.stringify({ year, month, targetRevenue })
       });
-
-      if (error || !data || data.length === 0) {
-        return [
-          { id: 1, min_qty: 50, max_qty: 50, price: 1.40, is_active: true },
-          { id: 2, min_qty: 100, max_qty: 100, price: 1.30, is_active: true },
-          { id: 3, min_qty: 200, max_qty: 200, price: 1.20, is_active: true },
-          { id: 4, min_qty: 300, max_qty: 300, price: 1.10, is_active: true },
-          { id: 5, min_qty: 500, max_qty: 500, price: 1.00, is_active: true },
-        ];
-      }
-
-      return data;
-    },
-
-    getGoal: async (_year: number, _month: number) => {
-      return { target_revenue: 0, current_revenue: 0 };
-    },
-
-    setGoal: async (_year: number, _month: number, _targetRevenue: number) => {
-      return { success: false };
     },
   },
 
