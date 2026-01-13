@@ -94,7 +94,13 @@ router.post("/create-pix", async (req, res) => {
       .substring(0, 50);
     const identifier = `ADMIN_${adminId}_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
 
-    const baseUrl = process.env.API_URL || `${req.protocol}://${req.get("host")}`;
+    // Usa DOMAIN_URL (igual ao outro projeto) ou API_URL ou detecta automaticamente
+    const domainUrl = process.env.DOMAIN_URL || process.env.API_URL || `${req.protocol}://${req.get("host")}`;
+    const webhookUrl = process.env.PIX_WEBHOOK_URL || `${domainUrl}/api/payments/webhook`;
+    
+    console.log("=== WEBHOOK CONFIG ===");
+    console.log("DOMAIN_URL:", process.env.DOMAIN_URL);
+    console.log("Webhook URL:", webhookUrl);
 
     const pixRequest: any = {
       identifier: identifier,
@@ -105,7 +111,7 @@ router.post("/create-pix", async (req, res) => {
         phone: "(83) 99999-9999",
         document: "05916691378",
       },
-      callbackUrl: process.env.PIX_WEBHOOK_URL || `${baseUrl}/api/payments/webhook`,
+      callbackUrl: webhookUrl,
     };
 
     // Split para valores > R$10
@@ -630,7 +636,13 @@ router.post("/create-reseller-pix", async (req, res) => {
       .substring(0, 50);
     const identifier = `RESELLER_${masterId}_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
 
-    const baseUrl = process.env.API_URL || `${req.protocol}://${req.get("host")}`;
+    // Usa DOMAIN_URL (igual ao outro projeto)
+    const domainUrl = process.env.DOMAIN_URL || process.env.API_URL || `${req.protocol}://${req.get("host")}`;
+    const webhookUrl = process.env.PIX_WEBHOOK_URL || `${domainUrl}/api/payments/webhook-reseller`;
+
+    console.log("=== RESELLER WEBHOOK CONFIG ===");
+    console.log("DOMAIN_URL:", process.env.DOMAIN_URL);
+    console.log("Webhook URL:", webhookUrl);
 
     const pixRequest: any = {
       identifier: identifier,
@@ -641,7 +653,7 @@ router.post("/create-reseller-pix", async (req, res) => {
         phone: "(83) 99999-9999",
         document: "05916691378",
       },
-      callbackUrl: process.env.PIX_WEBHOOK_URL || `${baseUrl}/api/payments/webhook-reseller`,
+      callbackUrl: webhookUrl,
     };
 
     // Split para valores > R$10
