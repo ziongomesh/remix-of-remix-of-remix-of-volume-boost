@@ -358,6 +358,83 @@ router.get("/test-vizzion/:transactionId", async (req, res) => {
   }
 });
 
+// Endpoint de CONFIRMAÇÃO MANUAL para testes locais (REMOVER EM PRODUÇÃO!)
+// Use: POST /api/payments/confirm-manual/:transactionId
+router.post("/confirm-manual/:transactionId", async (req, res) => {
+  try {
+    const { transactionId } = req.params;
+    console.log("=== CONFIRMAÇÃO MANUAL ===");
+    console.log("TransactionId:", transactionId);
+
+    // Buscar pagamento pendente
+    const payments = await query<any[]>(
+      "SELECT * FROM pix_payments WHERE transaction_id = ? AND status = 'PENDING'",
+      [transactionId]
+    );
+
+    if (payments.length === 0) {
+      return res.status(404).json({ error: "Pagamento não encontrado ou já processado" });
+    }
+
+    const payment = payments[0];
+
+    // Se for pagamento de revendedor, tratar diferente
+    if (payment.admin_name && payment.admin_name.startsWith("RESELLER:")) {
+      // Extrair dados do revendedor
+      const parts = payment.admin_name.split(":");
+      if (parts.length >= 4) {
+        const nome = parts[1];
+        const email = parts[2];
+        const key = parts[3];
+        const masterId = payment.admin_id;
+
+        // Verificar se já não foi criado
+        const existing = await query<any[]>("SELECT id FROM admins WHERE email = ?", [email]);
+        if (existing.length === 0) {
+          console.log(`Criando revendedor: ${nome} (${email}) para master ${masterId}`);
+
+          const result = await query<any>(
+            "INSERT INTO admins (nome, email, `key`, `rank`, criado_por, creditos) VALUES (?, ?, ?, ?, ?, ?)",
+            [nome, email, key, "revendedor", masterId, 5]
+          );
+
+          console.log(`Revendedor criado com ID: ${result.insertId}`);
+        }
+
+        await query(
+          "UPDATE pix_payments SET status = 'PAID', paid_at = NOW(), admin_name = ? WHERE transaction_id = ?",
+          [`Revendedor criado: ${nome}`, transactionId]
+        );
+
+        return res.json({ status: "PAID", message: "Revendedor criado com sucesso!" });
+      }
+    }
+
+    // Pagamento normal de recarga
+    await query("UPDATE pix_payments SET status = 'PAID', paid_at = NOW() WHERE transaction_id = ?", [transactionId]);
+    console.log("Status atualizado para PAID");
+
+    // Creditar admin
+    const tier = PRICE_TIERS.find((t) => t.credits === payment.credits);
+    if (tier) {
+      await query("UPDATE admins SET creditos = creditos + ? WHERE id = ?", [payment.credits, payment.admin_id]);
+      console.log(`Créditos adicionados: ${payment.credits} para admin ${payment.admin_id}`);
+
+      await query(
+        "INSERT INTO credit_transactions (to_admin_id, amount, unit_price, total_price, transaction_type) VALUES (?, ?, ?, ?, ?)",
+        [payment.admin_id, payment.credits, tier.unitPrice, tier.total, "recharge"]
+      );
+      console.log("Transação de crédito registrada");
+    }
+
+    const updated = await query<any[]>("SELECT * FROM pix_payments WHERE transaction_id = ?", [transactionId]);
+    res.json({ status: "PAID", message: "Pagamento confirmado manualmente!", payment: updated[0] });
+  } catch (error: any) {
+    console.error("Erro na confirmação manual:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Histórico de pagamentos
 router.get("/history/:adminId", async (req, res) => {
   try {
