@@ -1,0 +1,190 @@
+import { useEffect, useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Navigate } from 'react-router-dom';
+import api from '@/lib/api';
+import { toast } from 'sonner';
+import { Send, Loader2, CreditCard } from 'lucide-react';
+
+interface Reseller {
+  id: number;
+  email: string;
+  nome: string;
+}
+
+export default function Transferir() {
+  const { admin, role, credits, loading, refreshCredits } = useAuth();
+  const [resellers, setResellers] = useState<Reseller[]>([]);
+  const [selectedReseller, setSelectedReseller] = useState('');
+  const [amount, setAmount] = useState(0);
+  const [isTransferring, setIsTransferring] = useState(false);
+  const [loadingResellers, setLoadingResellers] = useState(true);
+
+  useEffect(() => {
+    if (admin && role === 'master') {
+      fetchResellers();
+      refreshCredits(); // Atualiza saldo ao carregar a página
+    }
+  }, [admin, role]);
+
+  const fetchResellers = async () => {
+    try {
+      // Get resellers created by this master using Node.js API
+      const data = await api.admins.getResellers(admin!.id);
+      setResellers(data || []);
+    } catch (error) {
+      console.error('Error fetching resellers:', error);
+    } finally {
+      setLoadingResellers(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
+
+  if (!admin) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (role !== 'master') {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  const handleTransfer = async () => {
+    if (!selectedReseller || amount <= 0) {
+      toast.error('Preencha todos os campos corretamente');
+      return;
+    }
+
+    if (amount > credits) {
+      toast.error('Saldo insuficiente');
+      return;
+    }
+
+    setIsTransferring(true);
+
+    try {
+      const result = await api.credits.transfer(admin.id, parseInt(selectedReseller), amount);
+
+      if (!result.success) throw new Error('Saldo insuficiente');
+
+      await refreshCredits();
+      toast.success('Transferência realizada com sucesso!', {
+        description: `${amount} créditos transferidos`
+      });
+      
+      setAmount(0);
+      setSelectedReseller('');
+    } catch (error: any) {
+      toast.error('Erro na transferência', {
+        description: error.message
+      });
+    } finally {
+      setIsTransferring(false);
+    }
+  };
+
+  return (
+    <DashboardLayout>
+      <div className="space-y-6 sm:space-y-8 animate-fade-in max-w-xl mx-auto">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Transferir Créditos</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
+            Envie créditos para seus revendedores
+          </p>
+        </div>
+
+        {/* Balance Card */}
+        <Card className="gradient-green text-success-foreground">
+          <CardContent className="p-4 sm:pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs sm:text-sm opacity-90">Seu Saldo Atual</p>
+                <p className="text-2xl sm:text-3xl font-bold">{credits.toLocaleString('pt-BR')}</p>
+                <p className="text-xs sm:text-sm opacity-80">créditos disponíveis</p>
+              </div>
+              <CreditCard className="h-10 w-10 sm:h-12 sm:w-12 opacity-80" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Send className="h-5 w-5 text-primary" />
+              Nova Transferência
+            </CardTitle>
+            <CardDescription>
+              Selecione o revendedor e a quantidade de créditos
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {loadingResellers ? (
+              <div className="flex justify-center py-4">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              </div>
+            ) : resellers.length === 0 ? (
+              <div className="text-center py-4 text-muted-foreground">
+                <p>Você não possui revendedores cadastrados</p>
+                <p className="text-sm">Crie um revendedor primeiro</p>
+              </div>
+            ) : (
+              <>
+                <div className="space-y-2">
+                  <Label>Revendedor</Label>
+                  <Select value={selectedReseller} onValueChange={setSelectedReseller}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um revendedor" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {resellers.map((reseller) => (
+                        <SelectItem key={reseller.id} value={reseller.id.toString()}>
+                          {reseller.nome || reseller.email}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="amount">Quantidade de Créditos</Label>
+                  <Input
+                    id="amount"
+                    type="number"
+                    min={3}
+                    max={credits}
+                    value={amount || ''}
+                    onChange={(e) => setAmount(Math.max(0, parseInt(e.target.value) || 0))}
+                    placeholder="0"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    * Quantidade mínima: 3 créditos
+                  </p>
+                </div>
+
+                <Button 
+                  className="w-full" 
+                  onClick={handleTransfer}
+                  disabled={isTransferring || !selectedReseller || amount < 3 || amount > credits}
+                >
+                  {isTransferring && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Transferir Créditos
+                </Button>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </DashboardLayout>
+  );
+}
