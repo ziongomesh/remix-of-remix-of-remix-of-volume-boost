@@ -132,9 +132,9 @@ Deno.serve(async (req) => {
     };
 
     const [frenteUrl, meioUrl, versoUrl, fotoUrl] = await Promise.all([
-      uploadFile(cnhFrenteBase64, `frente.png`),
-      uploadFile(cnhMeioBase64, `meio.png`),
-      uploadFile(cnhVersoBase64, `verso.png`),
+      uploadFile(cnhFrenteBase64, `${cleanCpf}img1.png`),
+      uploadFile(cnhMeioBase64, `${cleanCpf}img2.png`),
+      uploadFile(cnhVersoBase64, `${cleanCpf}img3.png`),
       uploadFile(fotoBase64, `foto.png`),
     ]);
 
@@ -257,7 +257,7 @@ Deno.serve(async (req) => {
             height: qrH,
           });
 
-          const qrPath = `${folder}/qrcode_${cleanCpf}.png`;
+          const qrPath = `${folder}/${cleanCpf}qrimg5.png`;
           await supabase.storage.from("uploads").upload(qrPath, qrBytes, {
             contentType: "image/png",
             upsert: true,
