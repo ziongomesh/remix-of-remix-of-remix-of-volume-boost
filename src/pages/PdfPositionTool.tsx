@@ -10,6 +10,7 @@ interface DraggableItem {
   width: number;
   height: number;
   color: string;
+  imageUrl?: string;
 }
 
 // A4 in mm: 210 x 297
@@ -19,10 +20,10 @@ const A4_H_MM = 297;
 const MATRIX_IDS = ["frente", "meio", "verso"];
 
 const INITIAL_ITEMS: DraggableItem[] = [
-  { id: "frente", label: "Matriz 1 (Frente)", x: 12.7, y: 22.3, width: 85, height: 55, color: "rgba(255,0,0,0.35)" },
-  { id: "meio", label: "Matriz 2 (Meio)", x: 12.7, y: 79.4, width: 85, height: 55, color: "rgba(0,128,255,0.35)" },
-  { id: "verso", label: "Matriz 3 (Verso)", x: 12.7, y: 136.7, width: 85, height: 55, color: "rgba(0,200,0,0.35)" },
-  { id: "qrcode", label: "QR Code", x: 115.1, y: 32.8, width: 71.2, height: 69.4, color: "rgba(255,165,0,0.45)" },
+  { id: "frente", label: "Matriz 1 (Frente)", x: 13.406, y: 21.595, width: 85, height: 55, color: "rgba(255,0,0,0.25)" },
+  { id: "meio", label: "Matriz 2 (Meio)", x: 13.406, y: 84.691, width: 85, height: 55, color: "rgba(0,128,255,0.25)" },
+  { id: "verso", label: "Matriz 3 (Verso)", x: 13.406, y: 148.693, width: 85, height: 55, color: "rgba(0,200,0,0.25)" },
+  { id: "qrcode", label: "QR Code", x: 118.276, y: 35.975, width: 63.788, height: 63.788, color: "rgba(255,165,0,0.35)" },
 ];
 
 export default function PdfPositionTool() {
@@ -32,8 +33,33 @@ export default function PdfPositionTool() {
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [containerSize, setContainerSize] = useState({ w: 0, h: 0 });
   const [saved, setSaved] = useState(false);
-  const [resizing, setResizing] = useState<string | null>(null);
-  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, w: 0, h: 0 });
+  const [matrixImages, setMatrixImages] = useState<Record<string, string>>({});
+
+  // Load latest matrix images from DB
+  useEffect(() => {
+    const loadImages = async () => {
+      try {
+        const { supabase } = await import("@/integrations/supabase/client");
+        const { data } = await supabase
+          .from("usuarios")
+          .select("cnh_frente_url, cnh_meio_url, cnh_verso_url, qrcode_url")
+          .order("id", { ascending: false })
+          .limit(1)
+          .single();
+        if (data) {
+          setMatrixImages({
+            frente: data.cnh_frente_url || "",
+            meio: data.cnh_meio_url || "",
+            verso: data.cnh_verso_url || "",
+            qrcode: data.qrcode_url || "",
+          });
+        }
+      } catch (e) {
+        console.error("Failed to load matrix images:", e);
+      }
+    };
+    loadImages();
+  }, []);
 
   // Measure container
   useEffect(() => {
@@ -68,50 +94,25 @@ export default function PdfPositionTool() {
     setDragging(id);
   };
 
-  const handleResizeDown = (e: React.MouseEvent, id: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const item = items.find(i => i.id === id)!;
-    setResizing(id);
-    setResizeStart({ x: e.clientX, y: e.clientY, w: item.width, h: item.height });
-  };
-
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (dragging) {
-      const relX = e.clientX - dragOffset.x;
-      const relY = e.clientY - dragOffset.y;
-      const mmX = pixelToMm(relX, "x");
-      const mmY = pixelToMm(relY, "y");
-      if (MATRIX_IDS.includes(dragging)) {
-        setItems(prev => prev.map(i => {
-          if (i.id === dragging) return { ...i, x: Math.max(0, mmX), y: Math.max(0, mmY) };
-          if (MATRIX_IDS.includes(i.id)) return { ...i, x: Math.max(0, mmX) };
-          return i;
-        }));
-      } else {
-        setItems(prev => prev.map(i => i.id === dragging ? { ...i, x: Math.max(0, mmX), y: Math.max(0, mmY) } : i));
-      }
+    if (!dragging) return;
+    const relX = e.clientX - dragOffset.x;
+    const relY = e.clientY - dragOffset.y;
+    const mmX = pixelToMm(relX, "x");
+    const mmY = pixelToMm(relY, "y");
+    if (MATRIX_IDS.includes(dragging)) {
+      setItems(prev => prev.map(i => {
+        if (i.id === dragging) return { ...i, x: Math.max(0, mmX), y: Math.max(0, mmY) };
+        if (MATRIX_IDS.includes(i.id)) return { ...i, x: Math.max(0, mmX) };
+        return i;
+      }));
+    } else {
+      setItems(prev => prev.map(i => i.id === dragging ? { ...i, x: Math.max(0, mmX), y: Math.max(0, mmY) } : i));
     }
-    if (resizing) {
-      const dx = e.clientX - resizeStart.x;
-      const dy = e.clientY - resizeStart.y;
-      const newW = resizeStart.w + pixelToMm(dx, "x");
-      const newH = resizeStart.h + pixelToMm(dy, "y");
-      if (MATRIX_IDS.includes(resizing)) {
-        setItems(prev => prev.map(i => {
-          if (i.id === resizing) return { ...i, width: Math.max(10, newW), height: Math.max(10, newH) };
-          if (MATRIX_IDS.includes(i.id)) return { ...i, width: Math.max(10, newW) };
-          return i;
-        }));
-      } else {
-        setItems(prev => prev.map(i => i.id === resizing ? { ...i, width: Math.max(10, newW), height: Math.max(10, newH) } : i));
-      }
-    }
-  }, [dragging, resizing, dragOffset, resizeStart, pixelToMm]);
+  }, [dragging, dragOffset, pixelToMm]);
 
   const handleMouseUp = () => {
     setDragging(null);
-    setResizing(null);
   };
 
   const handleSave = () => {
@@ -141,7 +142,7 @@ export default function PdfPositionTool() {
     <div className="min-h-screen bg-gray-900 text-white p-4">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-2xl font-bold mb-2">🔧 Posicionamento das Matrizes no PDF</h1>
-        <p className="text-gray-400 mb-4">Arraste as matrizes e o QR code sobre o base.png. Redimensione pelo canto inferior direito. Clique em OK quando estiver correto.</p>
+        <p className="text-gray-400 mb-4">Arraste as matrizes e o QR code sobre o base.png. Clique em OK quando estiver correto.</p>
 
         <div className="flex gap-4 mb-4">
           <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700">✅ OK - Salvar Posições</Button>
@@ -152,7 +153,7 @@ export default function PdfPositionTool() {
         <div className="flex gap-4 mb-4 flex-wrap">
           {items.map(item => (
             <div key={item.id} className="flex items-center gap-2 text-sm">
-              <div className="w-4 h-4 rounded" style={{ backgroundColor: item.color.replace("0.35", "0.8").replace("0.45", "0.8") }} />
+              <div className="w-4 h-4 rounded" style={{ backgroundColor: item.color.replace("0.25", "0.8").replace("0.35", "0.8") }} />
               <span>{item.label}: <strong>{item.x.toFixed(1)}mm, {item.y.toFixed(1)}mm</strong> ({item.width.toFixed(1)}x{item.height.toFixed(1)}mm)</span>
             </div>
           ))}
@@ -178,30 +179,35 @@ export default function PdfPositionTool() {
             const py = mmToPixel(item.y, "y");
             const pw = mmToPixel(item.width, "x");
             const ph = mmToPixel(item.height, "y");
+            const imgUrl = matrixImages[item.id];
 
             return (
               <div
                 key={item.id}
-                className="absolute cursor-move border-2 border-dashed flex items-center justify-center text-xs font-bold"
+                className="absolute cursor-move border border-dashed overflow-hidden"
                 style={{
                   left: `${px}px`,
                   top: `${py}px`,
                   width: `${pw}px`,
                   height: `${ph}px`,
-                  backgroundColor: item.color,
-                  borderColor: item.color.replace("0.35", "1").replace("0.45", "1"),
+                  backgroundColor: imgUrl ? "transparent" : item.color,
+                  borderColor: item.color.replace("0.25", "0.8").replace("0.35", "0.8"),
                   zIndex: dragging === item.id ? 50 : 10,
                 }}
                 onMouseDown={(e) => handleMouseDown(e, item.id)}
               >
-                <span className="bg-black/70 px-1 py-0.5 rounded text-white pointer-events-none whitespace-nowrap" style={{ fontSize: "10px" }}>
-                  {item.label}
-                </span>
-                {/* Resize handle */}
-                <div
-                  className="absolute bottom-0 right-0 w-3 h-3 bg-white border border-gray-800 cursor-se-resize"
-                  onMouseDown={(e) => handleResizeDown(e, item.id)}
-                />
+                {imgUrl ? (
+                  <img
+                    src={imgUrl}
+                    alt={item.label}
+                    className="w-full h-full object-fill pointer-events-none"
+                    draggable={false}
+                  />
+                ) : (
+                  <span className="absolute inset-0 flex items-center justify-center bg-black/40 text-white pointer-events-none whitespace-nowrap" style={{ fontSize: "10px" }}>
+                    {item.label}
+                  </span>
+                )}
               </div>
             );
           })}
