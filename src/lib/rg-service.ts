@@ -1,4 +1,5 @@
-// Serviço RG Digital - abstrai Supabase Edge Functions
+// Serviço RG Digital - abstrai Supabase Edge Functions e Node.js MySQL
+import { isUsingMySQL } from './db-config';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface RgSaveData {
@@ -35,8 +36,40 @@ export interface RgSaveResult {
   details?: any;
 }
 
+// Helper para obter a URL da API Node.js
+function getApiUrl(): string {
+  const envUrl = import.meta.env.VITE_API_URL as string | undefined;
+  if (envUrl) {
+    const base = envUrl.replace(/\/+$/, '');
+    return base.endsWith('/api') ? base : `${base}/api`;
+  }
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+    return `${window.location.origin}/api`;
+  }
+  return 'http://localhost:4000/api';
+}
+
+async function fetchNodeAPI(endpoint: string, body: any) {
+  const API_URL = getApiUrl();
+  const response = await fetch(`${API_URL}${endpoint}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    throw { status: response.status, ...data };
+  }
+  return data;
+}
+
 export const rgService = {
   save: async (data: RgSaveData): Promise<RgSaveResult> => {
+    if (isUsingMySQL()) {
+      console.log('📦 Salvando RG via Node.js API...');
+      return fetchNodeAPI('/rg/save', data);
+    }
+
     console.log('📦 Salvando RG via Edge Function...');
     const { data: result, error } = await supabase.functions.invoke('save-rg', {
       body: data,
@@ -54,6 +87,11 @@ export const rgService = {
   },
 
   list: async (admin_id: number, session_token: string) => {
+    if (isUsingMySQL()) {
+      console.log('📦 Listando RG via Node.js API...');
+      return fetchNodeAPI('/rg/list', { admin_id, session_token });
+    }
+
     const { data, error } = await supabase.functions.invoke('list-cnh', {
       body: { admin_id, session_token, tipo: 'rg' },
     });
