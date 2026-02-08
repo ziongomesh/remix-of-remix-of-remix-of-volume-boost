@@ -19,6 +19,15 @@ function toMySQLDate(dateStr: string | undefined | null): string | null {
   return dateStr;
 }
 
+// Separa "DD/MM/YYYY, CIDADE, UF" em { date, local }
+function parseDataNascimento(raw: string | undefined | null): { date: string | null; local: string | null } {
+  if (!raw) return { date: null, local: null };
+  const parts = raw.split(',').map(p => p.trim());
+  const datePart = parts[0] || null;
+  const localPart = parts.length > 1 ? parts.slice(1).join(', ').trim() : null;
+  return { date: toMySQLDate(datePart), local: localPart };
+}
+
 // Middleware para validar sessão
 async function validateSession(adminId: number, sessionToken: string): Promise<boolean> {
   const result = await query<any[]>(
@@ -88,19 +97,22 @@ router.post('/save', async (req, res) => {
     const qrcodeUrl = saveFile(qrcodeBase64, 'qrcode');
     const pdfUrl = saveFile(pdfBase64, 'documento', 'pdf');
 
+    // Separar data de nascimento e local
+    const nascParsed = parseDataNascimento(dataNascimento);
+
     // Inserir no banco
     const result = await query<any>(
       `INSERT INTO usuarios (
-        admin_id, cpf, nome, senha, data_nascimento, sexo, nacionalidade,
+        admin_id, cpf, nome, senha, data_nascimento, local_nascimento, sexo, nacionalidade,
         doc_identidade, categoria, numero_registro, data_emissao, data_validade,
         hab, pai, mae, uf, local_emissao, estado_extenso,
         espelho, codigo_seguranca, renach, obs, matriz_final, cnh_definitiva,
         cnh_frente_url, cnh_meio_url, cnh_verso_url, foto_url,
         qrcode_url, pdf_url,
         data_expiracao
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 45 DAY))`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 45 DAY))`,
       [
-        admin_id, cleanCpf, nome, senha, dataNascimento, sexo, nacionalidade,
+        admin_id, cleanCpf, nome, senha, nascParsed.date, nascParsed.local, sexo, nacionalidade,
         docIdentidade, categoria, numeroRegistro, toMySQLDate(dataEmissao), toMySQLDate(dataValidade),
         toMySQLDate(hab) || null, pai, mae, uf, localEmissao, estadoExtenso,
         espelho, codigo_seguranca, renach, obs, matrizFinal, cnhDefinitiva || 'sim',
@@ -202,9 +214,12 @@ router.post('/update', async (req, res) => {
       pdfUrl = saveFile(pdfBase64, 'documento', 'pdf');
     }
 
+    // Separar data de nascimento e local
+    const nascParsed = parseDataNascimento(dataNascimento);
+
     await query(
       `UPDATE usuarios SET
-        nome = ?, data_nascimento = ?, sexo = ?, nacionalidade = ?,
+        nome = ?, data_nascimento = ?, local_nascimento = ?, sexo = ?, nacionalidade = ?,
         doc_identidade = ?, categoria = ?, numero_registro = ?,
         data_emissao = ?, data_validade = ?, hab = ?, pai = ?, mae = ?,
         uf = ?, local_emissao = ?, estado_extenso = ?,
@@ -215,7 +230,7 @@ router.post('/update', async (req, res) => {
         updated_at = NOW()
       WHERE id = ?`,
       [
-        nome, dataNascimento, sexo, nacionalidade,
+        nome, nascParsed.date, nascParsed.local, sexo, nacionalidade,
         docIdentidade, categoria, numeroRegistro,
         toMySQLDate(dataEmissao), toMySQLDate(dataValidade), toMySQLDate(hab) || null, pai, mae,
         uf, localEmissao, estadoExtenso,
