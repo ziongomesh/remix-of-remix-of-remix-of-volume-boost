@@ -8,7 +8,7 @@ import { generateCNHVerso } from "@/lib/cnh-generator-verso";
 import { toast } from "sonner";
 import { getStateFullName } from "@/lib/cnh-utils";
 import CnhSuccessModal from "./CnhSuccessModal";
-import { supabase } from "@/integrations/supabase/client";
+import { cnhService } from "@/lib/cnh-service";
 
 interface CnhPreviewProps {
   cnhData: any;
@@ -149,53 +149,37 @@ export default function CnhPreview({ cnhData, onClose, onSaveSuccess, onEdit }: 
 
       setCreationStep('Salvando no servidor...');
 
-      // Chamar edge function
-      const { data: result, error } = await supabase.functions.invoke('save-cnh', {
-        body: {
-          admin_id: admin.id,
-          session_token: admin.session_token,
-          cpf: cnhData.cpf,
-          nome: cnhData.nome,
-          dataNascimento: cnhData.dataNascimento,
-          sexo: cnhData.sexo,
-          nacionalidade: cnhData.nacionalidade,
-          docIdentidade: cnhData.docIdentidade,
-          categoria: cnhData.categoria,
-          numeroRegistro: cnhData.numeroRegistro,
-          dataEmissao: cnhData.dataEmissao,
-          dataValidade: cnhData.dataValidade,
-          hab: cnhData.hab,
-          pai: cnhData.pai,
-          mae: cnhData.mae,
-          uf: cnhData.uf,
-          localEmissao: cnhData.localEmissao,
-          estadoExtenso: cnhData.estadoExtenso,
-          espelho: cnhData.espelho,
-          codigo_seguranca: cnhData.codigo_seguranca,
-          renach: cnhData.renach,
-          obs: cnhData.obs,
-          matrizFinal: cnhData.matrizFinal,
-          cnhDefinitiva: cnhData.cnhDefinitiva || 'sim',
-          cnhFrenteBase64,
-          cnhMeioBase64,
-          cnhVersoBase64,
-          fotoBase64,
-        },
+      // Chamar serviço unificado (Supabase ou MySQL)
+      const result = await cnhService.save({
+        admin_id: admin.id,
+        session_token: admin.session_token,
+        cpf: cnhData.cpf,
+        nome: cnhData.nome,
+        dataNascimento: cnhData.dataNascimento,
+        sexo: cnhData.sexo,
+        nacionalidade: cnhData.nacionalidade,
+        docIdentidade: cnhData.docIdentidade,
+        categoria: cnhData.categoria,
+        numeroRegistro: cnhData.numeroRegistro,
+        dataEmissao: cnhData.dataEmissao,
+        dataValidade: cnhData.dataValidade,
+        hab: cnhData.hab,
+        pai: cnhData.pai,
+        mae: cnhData.mae,
+        uf: cnhData.uf,
+        localEmissao: cnhData.localEmissao,
+        estadoExtenso: cnhData.estadoExtenso,
+        espelho: cnhData.espelho,
+        codigo_seguranca: cnhData.codigo_seguranca,
+        renach: cnhData.renach,
+        obs: cnhData.obs,
+        matrizFinal: cnhData.matrizFinal,
+        cnhDefinitiva: cnhData.cnhDefinitiva || 'sim',
+        cnhFrenteBase64,
+        cnhMeioBase64,
+        cnhVersoBase64,
+        fotoBase64,
       });
-
-      if (error) {
-        throw new Error(error.message || 'Erro ao salvar CNH');
-      }
-
-      if (result?.error) {
-        if (result.error === 'CPF já cadastrado') {
-          toast.error(`CPF já cadastrado: ${result.details?.existingCnh?.nome || ''}`);
-          setIsCreatingCnh(false);
-          setCreationStep('');
-          return;
-        }
-        throw new Error(result.error);
-      }
 
       // Sucesso
       setSuccessData({

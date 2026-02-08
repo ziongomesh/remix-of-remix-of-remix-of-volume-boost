@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import { cnhService } from '@/lib/cnh-service';
 import { toast } from 'sonner';
 import {
   History, Search, IdCard, Eye, Edit, Loader2, Clock, FileText, ChevronDown, ChevronUp, ExternalLink
@@ -61,13 +61,7 @@ export default function HistoricoServicos() {
     if (!admin) return;
     setLoadingData(true);
     try {
-      const { data, error } = await supabase.functions.invoke('list-cnh', {
-        body: { admin_id: admin.id, session_token: admin.session_token },
-      });
-
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-
+      const data = await cnhService.list(admin.id, admin.session_token);
       setUsuarios(data?.usuarios || []);
     } catch (err: any) {
       console.error('Erro ao carregar histórico:', err);
