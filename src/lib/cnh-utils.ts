@@ -61,10 +61,43 @@ export function generateRenach(uf: string): string {
   return `${uf || 'SP'}${randomDigits(9)}`;
 }
 
-export function generateMRZ(nome: string): string {
+export function generateMRZ(nome: string, maxLen: number = 28): string {
   if (!nome) return '';
-  const parts = nome.toUpperCase().split(/\s+/);
-  return parts.join('<<') + '<<<<<<';
+  const parts = nome.toUpperCase().trim().split(/\s+/).filter(p => p.length > 0);
+  if (parts.length === 0) return '';
+
+  // Tentar formato completo: SOBRENOME<<NOME1<<NOME2<<...
+  const full = parts.join('<<');
+  if (full.length <= maxLen) {
+    // Preencher com < até maxLen
+    return full + '<'.repeat(maxLen - full.length);
+  }
+
+  // Se não cabe, manter primeiro e último nome completos, abreviar os do meio
+  if (parts.length <= 2) {
+    const truncated = full.slice(0, maxLen);
+    // Garantir que termina limpo (sem < solto no meio de palavra)
+    return truncated.replace(/<*$/, '') + '<'.repeat(Math.max(0, maxLen - truncated.replace(/<*$/, '').length));
+  }
+
+  const first = parts[0];
+  const last = parts[parts.length - 1];
+  const middle = parts.slice(1, -1);
+
+  // Tentar com iniciais nos nomes do meio
+  const abbreviated = [first, ...middle.map(m => m[0]), last].join('<<');
+  if (abbreviated.length <= maxLen) {
+    return abbreviated + '<'.repeat(maxLen - abbreviated.length);
+  }
+
+  // Se ainda não cabe, só primeiro e último
+  const minimal = first + '<<' + last;
+  if (minimal.length <= maxLen) {
+    return minimal + '<'.repeat(maxLen - minimal.length);
+  }
+
+  // Último recurso: truncar
+  return minimal.slice(0, maxLen);
 }
 
 export function getStateFullName(uf: string): string {
