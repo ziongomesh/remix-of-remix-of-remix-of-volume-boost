@@ -4,11 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Download, Smartphone, Apple, Copy, Check, Save, Loader2 } from 'lucide-react';
+import { Download, Smartphone, Apple, Copy, Check, Save, Loader2, ChevronDown, CreditCard } from 'lucide-react';
 
 export default function Downloads() {
   const { admin, loading, role } = useAuth();
@@ -17,6 +18,7 @@ export default function Downloads() {
   const [loadingData, setLoadingData] = useState(true);
   const [saving, setSaving] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [cnhOpen, setCnhOpen] = useState(false);
 
   const isDono = role === 'dono';
 
@@ -27,7 +29,7 @@ export default function Downloads() {
   const fetchLinks = async () => {
     setLoadingData(true);
     try {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('downloads')
         .select('cnh_iphone, cnh_apk')
         .eq('id', 1)
@@ -93,7 +95,7 @@ export default function Downloads() {
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
             <Download className="h-6 w-6" /> Downloads
           </h1>
-          <p className="text-muted-foreground mt-1">Aplicativos CNH Digital</p>
+          <p className="text-muted-foreground mt-1">Aplicativos disponíveis para download</p>
         </div>
 
         {loadingData ? (
@@ -102,53 +104,69 @@ export default function Downloads() {
           </div>
         ) : (
           <div className="space-y-4">
-            {/* CNH iPhone */}
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                    <Apple className="h-6 w-6 text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-foreground">CNH Digital - iPhone</h3>
-                    <p className="text-sm text-muted-foreground truncate">{cnhIphone || 'Nenhum link configurado'}</p>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => copyToClipboard(cnhIphone, 'iphone')}
-                    disabled={!cnhIphone}
-                  >
-                    {copiedField === 'iphone' ? <Check className="h-4 w-4 mr-1" /> : <Copy className="h-4 w-4 mr-1" />}
-                    {copiedField === 'iphone' ? 'Copiado' : 'Copiar'}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Módulo CNH Digital 2026 */}
+            <Collapsible open={cnhOpen} onOpenChange={setCnhOpen}>
+              <Card>
+                <CollapsibleTrigger asChild>
+                  <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors rounded-t-lg">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <CreditCard className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-base">CNH Digital 2026</CardTitle>
+                          <p className="text-xs text-muted-foreground mt-0.5">Aplicativo para visualização</p>
+                        </div>
+                      </div>
+                      <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform duration-200 ${cnhOpen ? 'rotate-180' : ''}`} />
+                    </div>
+                  </CardHeader>
+                </CollapsibleTrigger>
 
-            {/* CNH APK */}
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-xl bg-green-500/10 flex items-center justify-center shrink-0">
-                    <Smartphone className="h-6 w-6 text-green-500" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-foreground">CNH Digital - Android (APK)</h3>
-                    <p className="text-sm text-muted-foreground truncate">{cnhApk || 'Nenhum link configurado'}</p>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => copyToClipboard(cnhApk, 'apk')}
-                    disabled={!cnhApk}
-                  >
-                    {copiedField === 'apk' ? <Check className="h-4 w-4 mr-1" /> : <Copy className="h-4 w-4 mr-1" />}
-                    {copiedField === 'apk' ? 'Copiado' : 'Copiar'}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+                <CollapsibleContent>
+                  <CardContent className="space-y-3 pt-0">
+                    {/* iPhone */}
+                    <div className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/30 transition-colors">
+                      <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                        <Apple className="h-5 w-5 text-foreground" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground">iPhone</p>
+                        <p className="text-xs text-muted-foreground truncate">{cnhIphone || 'Nenhum link'}</p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => copyToClipboard(cnhIphone, 'iphone')}
+                        disabled={!cnhIphone}
+                      >
+                        {copiedField === 'iphone' ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                      </Button>
+                    </div>
+
+                    {/* Android */}
+                    <div className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/30 transition-colors">
+                      <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                        <Smartphone className="h-5 w-5 text-green-500" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground">Android (APK)</p>
+                        <p className="text-xs text-muted-foreground truncate">{cnhApk || 'Nenhum link'}</p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => copyToClipboard(cnhApk, 'apk')}
+                        disabled={!cnhApk}
+                      >
+                        {copiedField === 'apk' ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </CollapsibleContent>
+              </Card>
+            </Collapsible>
 
             {/* Edição (apenas dono) */}
             {isDono && (
