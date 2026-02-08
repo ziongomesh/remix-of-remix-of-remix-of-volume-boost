@@ -132,15 +132,15 @@ export default function CnhPreview({ cnhData, onClose, onSaveSuccess, onEdit }: 
     try {
       setCreationStep('Gerando imagens...');
 
-      // Converter canvas para base64
-      const cnhFrenteBase64 = canvasRef.current?.toDataURL('image/png') || '';
-      const cnhMeioBase64 = canvasMeioRef.current?.toDataURL('image/png') || '';
-      const cnhVersoBase64 = canvasVersoRef.current?.toDataURL('image/png') || '';
+      // Usar os base64 já gerados nos previews (mais confiável que toDataURL no momento do save)
+      const cnhFrenteBase64 = previewUrl || canvasRef.current?.toDataURL('image/png') || '';
+      const cnhMeioBase64 = previewMeioUrl || canvasMeioRef.current?.toDataURL('image/png') || '';
+      const cnhVersoBase64 = previewVersoUrl || canvasVersoRef.current?.toDataURL('image/png') || '';
 
-      console.log('Canvas dimensions:', {
-        frente: { w: canvasRef.current?.width, h: canvasRef.current?.height, len: cnhFrenteBase64.length },
-        meio: { w: canvasMeioRef.current?.width, h: canvasMeioRef.current?.height, len: cnhMeioBase64.length },
-        verso: { w: canvasVersoRef.current?.width, h: canvasVersoRef.current?.height, len: cnhVersoBase64.length },
+      console.log('Base64 lengths:', {
+        frente: cnhFrenteBase64.length,
+        meio: cnhMeioBase64.length,
+        verso: cnhVersoBase64.length,
       });
 
       // Converter foto para base64 se for File
