@@ -179,8 +179,8 @@ Deno.serve(async (req) => {
       if (cnhFrenteBase64) {
         const frenteImg = await embedBase64(cnhFrenteBase64);
         page.drawImage(frenteImg, {
-          x: mmToPt(11.8),
-          y: pageHeight - mmToPt(24.7) - matrizH,
+          x: mmToPt(12.7),
+          y: pageHeight - mmToPt(136.7) - matrizH,
           width: matrizW,
           height: matrizH,
         });
@@ -190,8 +190,8 @@ Deno.serve(async (req) => {
       if (cnhMeioBase64) {
         const meioImg = await embedBase64(cnhMeioBase64);
         page.drawImage(meioImg, {
-          x: mmToPt(11.6),
-          y: pageHeight - mmToPt(82.6) - matrizH,
+          x: mmToPt(12.7),
+          y: pageHeight - mmToPt(79.4) - matrizH,
           width: matrizW,
           height: matrizH,
         });
@@ -201,16 +201,16 @@ Deno.serve(async (req) => {
       if (cnhVersoBase64) {
         const versoImg = await embedBase64(cnhVersoBase64);
         page.drawImage(versoImg, {
-          x: mmToPt(11.6),
-          y: pageHeight - mmToPt(140.6) - matrizH,
+          x: mmToPt(12.7),
+          y: pageHeight - mmToPt(22.3) - matrizH,
           width: matrizW,
           height: matrizH,
         });
       }
 
-      // QR Code - x=116.5mm, y=32.1mm, 68x71.9mm
-      const qrW = mmToPt(68);
-      const qrH = mmToPt(71.9);
+      // QR Code - x=115.1mm, y=32.8mm, 71.2x69.4mm
+      const qrW = mmToPt(71.2);
+      const qrH = mmToPt(69.4);
       try {
         const qrData = `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${cleanCpf}`;
         const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(qrData)}&format=png`;
@@ -219,8 +219,8 @@ Deno.serve(async (req) => {
           const qrBytes = new Uint8Array(await qrResponse.arrayBuffer());
           const qrImg = await pdfDoc.embedPng(qrBytes);
           page.drawImage(qrImg, {
-            x: mmToPt(116.5),
-            y: pageHeight - mmToPt(32.1) - qrH,
+            x: mmToPt(115.1),
+            y: pageHeight - mmToPt(32.8) - qrH,
             width: qrW,
             height: qrH,
           });

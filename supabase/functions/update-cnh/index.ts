@@ -139,8 +139,8 @@ Deno.serve(async (req) => {
             ? await embedBase64(cnhFrenteBase64)
             : await embedFromUrl(frenteUrl);
           page.drawImage(img, {
-            x: mmToPt(11.8),
-            y: pageHeight - mmToPt(24.7) - matrizH,
+            x: mmToPt(12.7),
+            y: pageHeight - mmToPt(136.7) - matrizH,
             width: matrizW, height: matrizH,
           });
         }
@@ -151,8 +151,8 @@ Deno.serve(async (req) => {
             ? await embedBase64(cnhMeioBase64)
             : await embedFromUrl(meioUrl);
           page.drawImage(img, {
-            x: mmToPt(11.6),
-            y: pageHeight - mmToPt(82.6) - matrizH,
+            x: mmToPt(12.7),
+            y: pageHeight - mmToPt(79.4) - matrizH,
             width: matrizW, height: matrizH,
           });
         }
@@ -163,15 +163,15 @@ Deno.serve(async (req) => {
             ? await embedBase64(cnhVersoBase64)
             : await embedFromUrl(versoUrl);
           page.drawImage(img, {
-            x: mmToPt(11.6),
-            y: pageHeight - mmToPt(140.6) - matrizH,
+            x: mmToPt(12.7),
+            y: pageHeight - mmToPt(22.3) - matrizH,
             width: matrizW, height: matrizH,
           });
         }
 
         // QR Code - gerar, salvar no storage E incluir no PDF
-        const qrW = mmToPt(68);
-        const qrH = mmToPt(71.9);
+        const qrW = mmToPt(71.2);
+        const qrH = mmToPt(69.4);
         try {
           const qrData = `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${cleanCpf}`;
           const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(qrData)}&format=png`;
@@ -180,8 +180,8 @@ Deno.serve(async (req) => {
             const qrBytes = new Uint8Array(await qrResp.arrayBuffer());
             const qrImg = await pdfDoc.embedPng(qrBytes);
             page.drawImage(qrImg, {
-              x: mmToPt(116.5),
-              y: pageHeight - mmToPt(32.1) - qrH,
+              x: mmToPt(115.1),
+              y: pageHeight - mmToPt(32.8) - qrH,
               width: qrW, height: qrH,
             });
 
