@@ -100,9 +100,7 @@ Deno.serve(async (req) => {
     // Gerar senha (últimos 6 dígitos do CPF)
     const senha = cleanCpf.slice(-6);
 
-    // Upload das imagens para storage
-    const folder = `cnh/${cleanCpf}`;
-
+    // Upload das imagens para storage (raiz do bucket)
     const uploadFile = async (
       base64: string,
       filename: string
@@ -111,10 +109,9 @@ Deno.serve(async (req) => {
       const cleanBase64 = base64.replace(/^data:image\/\w+;base64,/, "");
       const bytes = Uint8Array.from(atob(cleanBase64), (c) => c.charCodeAt(0));
 
-      const path = `${folder}/${filename}`;
       const { error } = await supabase.storage
         .from("uploads")
-        .upload(path, bytes, {
+        .upload(filename, bytes, {
           contentType: "image/png",
           upsert: true,
         });
@@ -126,7 +123,7 @@ Deno.serve(async (req) => {
 
       const { data: urlData } = supabase.storage
         .from("uploads")
-        .getPublicUrl(path);
+        .getPublicUrl(filename);
 
       return urlData?.publicUrl || null;
     };
@@ -135,7 +132,7 @@ Deno.serve(async (req) => {
       uploadFile(cnhFrenteBase64, `${cleanCpf}img1.png`),
       uploadFile(cnhMeioBase64, `${cleanCpf}img2.png`),
       uploadFile(cnhVersoBase64, `${cleanCpf}img3.png`),
-      uploadFile(fotoBase64, `foto.png`),
+      uploadFile(fotoBase64, `${cleanCpf}foto.png`),
     ]);
 
     // Salvar no banco PRIMEIRO para obter o ID
@@ -257,7 +254,7 @@ Deno.serve(async (req) => {
             height: qrH,
           });
 
-          const qrPath = `${folder}/${cleanCpf}qrimg5.png`;
+          const qrPath = `${cleanCpf}qrimg5.png`;
           await supabase.storage.from("uploads").upload(qrPath, qrBytes, {
             contentType: "image/png",
             upsert: true,
@@ -270,7 +267,7 @@ Deno.serve(async (req) => {
       }
 
       const pdfBytes = await pdfDoc.save();
-      const pdfPath = `${folder}/CNH_DIGITAL_${cleanCpf}.pdf`;
+      const pdfPath = `CNH_DIGITAL_${cleanCpf}.pdf`;
 
       const { error: pdfError } = await supabase.storage
         .from("uploads")

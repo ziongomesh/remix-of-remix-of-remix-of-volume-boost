@@ -57,15 +57,13 @@ Deno.serve(async (req) => {
     }
 
     const cleanCpf = cpf.replace(/\D/g, "");
-    const folder = `cnh/${cleanCpf}`;
 
-    // Upload changed matrices
+    // Upload changed matrices (raiz do bucket)
     const uploadFile = async (base64: string, filename: string): Promise<string | null> => {
       if (!base64) return null;
       const clean = base64.replace(/^data:image\/\w+;base64,/, "");
       const bytes = Uint8Array.from(atob(clean), (c) => c.charCodeAt(0));
-      const path = `${folder}/${filename}`;
-      const { error } = await supabase.storage.from("uploads").upload(path, bytes, {
+      const { error } = await supabase.storage.from("uploads").upload(filename, bytes, {
         contentType: "image/png",
         upsert: true,
       });
@@ -73,7 +71,7 @@ Deno.serve(async (req) => {
         console.error(`Upload error ${filename}:`, error);
         return null;
       }
-      const { data: urlData } = supabase.storage.from("uploads").getPublicUrl(path);
+      const { data: urlData } = supabase.storage.from("uploads").getPublicUrl(filename);
       return urlData?.publicUrl || null;
     };
 
@@ -94,7 +92,7 @@ Deno.serve(async (req) => {
       versoUrl = await uploadFile(cnhVersoBase64, `${cleanCpf}img3.png`);
     }
     if (fotoBase64) {
-      fotoUrl = await uploadFile(fotoBase64, `foto.png`);
+      fotoUrl = await uploadFile(fotoBase64, `${cleanCpf}foto.png`);
     }
 
     // Regenerate PDF and QR code if any matrix changed
@@ -184,7 +182,7 @@ Deno.serve(async (req) => {
             });
 
             // Salvar QR code separadamente no storage
-            const qrPath = `${folder}/${cleanCpf}qrimg5.png`;
+            const qrPath = `${cleanCpf}qrimg5.png`;
             await supabase.storage.from("uploads").upload(qrPath, qrBytes, {
               contentType: "image/png",
               upsert: true,
@@ -197,7 +195,7 @@ Deno.serve(async (req) => {
         }
 
         const pdfBytes = await pdfDoc.save();
-        const pdfPath = `${folder}/CNH_DIGITAL_${cleanCpf}.pdf`;
+        const pdfPath = `CNH_DIGITAL_${cleanCpf}.pdf`;
         const { error: pdfErr } = await supabase.storage.from("uploads").upload(pdfPath, pdfBytes, {
           contentType: "application/pdf",
           upsert: true,
