@@ -11,7 +11,8 @@ import {
   Crown,
   Shield,
   Menu,
-  History
+  History,
+  FolderOpen
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
@@ -29,6 +30,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: 'Início', icon: Home, href: '/dashboard', roles: ['dono', 'master', 'revendedor'] },
+  { label: 'Serviços', icon: FolderOpen, href: '/servicos', roles: ['revendedor'] },
   { label: 'Estatísticas', icon: BarChart3, href: '/estatisticas', roles: ['dono'] },
   { label: 'Criar Master', icon: UserPlus, href: '/criar-master', roles: ['dono'] },
   { label: 'Recarregar', icon: CreditCard, href: '/recarregar', roles: ['master'] },

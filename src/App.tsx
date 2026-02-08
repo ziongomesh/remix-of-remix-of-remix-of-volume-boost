@@ -14,6 +14,7 @@ import RevendedorDetalhes from "./pages/RevendedorDetalhes";
 import Transferir from "./pages/Transferir";
 import Estatisticas from "./pages/Estatisticas";
 import HistoricoTransferencias from "./pages/HistoricoTransferencias";
+import Servicos from "./pages/Servicos";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +38,7 @@ const App = () => (
               <Route path="/transferir" element={<Transferir />} />
               <Route path="/historico-transferencias" element={<HistoricoTransferencias />} />
               <Route path="/estatisticas" element={<Estatisticas />} />
+              <Route path="/servicos" element={<Servicos />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>
