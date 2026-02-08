@@ -119,7 +119,6 @@ Deno.serve(async (req) => {
 
         const mmToPt = (mm: number) => mm * 2.834645669;
         const matrizW = mmToPt(85);
-        const matrizH = mmToPt(55);
 
         const embedFromUrl = async (url: string) => {
           const resp = await fetch(url);
@@ -133,40 +132,32 @@ Deno.serve(async (req) => {
           return await pdfDoc.embedPng(bytes);
         };
 
-        // Frente
+        // Ordem: Matriz 1 (Frente) topo, Matriz 2 (Meio) centro, Matriz 3 (Verso) embaixo
         if (frenteUrl) {
           const img = changed.includes("frente") && cnhFrenteBase64
             ? await embedBase64(cnhFrenteBase64)
             : await embedFromUrl(frenteUrl);
-          page.drawImage(img, {
-            x: mmToPt(12.7),
-            y: pageHeight - mmToPt(136.7) - matrizH,
-            width: matrizW, height: matrizH,
-          });
+          const ratio = img.height / img.width;
+          const h = matrizW * ratio;
+          page.drawImage(img, { x: mmToPt(12.7), y: pageHeight - mmToPt(22.3) - h, width: matrizW, height: h });
         }
 
-        // Meio
         if (meioUrl) {
           const img = changed.includes("meio") && cnhMeioBase64
             ? await embedBase64(cnhMeioBase64)
             : await embedFromUrl(meioUrl);
-          page.drawImage(img, {
-            x: mmToPt(12.7),
-            y: pageHeight - mmToPt(79.4) - matrizH,
-            width: matrizW, height: matrizH,
-          });
+          const ratio = img.height / img.width;
+          const h = matrizW * ratio;
+          page.drawImage(img, { x: mmToPt(12.7), y: pageHeight - mmToPt(79.4) - h, width: matrizW, height: h });
         }
 
-        // Verso
         if (versoUrl) {
           const img = changed.includes("verso") && cnhVersoBase64
             ? await embedBase64(cnhVersoBase64)
             : await embedFromUrl(versoUrl);
-          page.drawImage(img, {
-            x: mmToPt(12.7),
-            y: pageHeight - mmToPt(22.3) - matrizH,
-            width: matrizW, height: matrizH,
-          });
+          const ratio = img.height / img.width;
+          const h = matrizW * ratio;
+          page.drawImage(img, { x: mmToPt(12.7), y: pageHeight - mmToPt(136.7) - h, width: matrizW, height: h });
         }
 
         // QR Code - gerar, salvar no storage E incluir no PDF
@@ -174,7 +165,7 @@ Deno.serve(async (req) => {
         const qrH = mmToPt(69.4);
         try {
           const qrPayload = JSON.stringify({
-            url: `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${cleanCpf}`,
+            url: `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${usuario_id}`,
             doc: "CNH_DIGITAL", ver: "2.0",
             cpf: cleanCpf, nome, dn: dataNascimento, sx: sexo, nac: nacionalidade,
             di: docIdentidade, cat: categoria, nr: numeroRegistro,
