@@ -28,8 +28,8 @@ serve(async (req) => {
     }
 
     const bgInstruction = outputMode === "white"
-      ? "Remove the background from this photo completely and replace it with a solid pure white background (#FFFFFF). Keep only the person/subject perfectly cut out with clean edges. The result must have a clean white background suitable for official documents."
-      : "Remove the background from this photo completely, making it fully transparent. Keep only the person/subject perfectly cut out with clean, smooth edges. Output as PNG with transparent background.";
+      ? "Remove the background from this portrait photo. Cut out ONLY the person with pixel-perfect precision around hair, ears, and clothing edges. Replace the background with a solid pure white (#FFFFFF). The cutout must be clean and sharp like professional ID photo software (removebg quality). No artifacts, no remnants of original background, no blur on edges. Output a high quality PNG."
+      : "Remove the background from this portrait photo. Cut out ONLY the person with pixel-perfect precision around hair, ears, and clothing edges. Make the background fully transparent (alpha=0). The cutout must be clean and sharp like professional ID photo software (removebg quality). No artifacts, no remnants of original background, no blur on edges. Output a high quality PNG with transparent background.";
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -38,7 +38,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash-image",
+        model: "google/gemini-3-pro-image-preview",
         messages: [
           {
             role: "user",
