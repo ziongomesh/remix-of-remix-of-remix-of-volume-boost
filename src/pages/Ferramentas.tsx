@@ -1,6 +1,6 @@
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ImageMinus, FileText } from 'lucide-react';
+import { ImageMinus, FileText, PenLine } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const tools = [
@@ -17,6 +17,13 @@ const tools = [
     icon: FileText,
     href: '/ferramentas/editor-pdf',
     color: 'text-orange-500',
+  },
+  {
+    title: 'Gerador de Assinatura',
+    description: 'Gere assinaturas manuscritas com diferentes fontes cursivas',
+    icon: PenLine,
+    href: '/ferramentas/gerador-assinatura',
+    color: 'text-purple-500',
   },
 ];
 
