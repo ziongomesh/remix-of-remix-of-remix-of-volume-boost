@@ -205,37 +205,33 @@ Deno.serve(async (req) => {
       };
 
       const mmToPt = (mm: number) => mm * 2.834645669;
-      const matrizW = mmToPt(85);
-      const matrizH = mmToPt(55);
+      const matrizW = mmToPt(85.000);
+      const matrizH = mmToPt(55.000);
+      const qrSize = mmToPt(63.788);
 
-      // Ordem: Matriz 1 (Frente) topo, Matriz 2 (Meio) centro, Matriz 3 (Verso) embaixo
       console.log("PDF matrices check:", {
         hasFrente: !!cnhFrenteBase64 && cnhFrenteBase64.length > 100,
         hasMeio: !!cnhMeioBase64 && cnhMeioBase64.length > 100,
         hasVerso: !!cnhVersoBase64 && cnhVersoBase64.length > 100,
-        frenteLen: cnhFrenteBase64?.length || 0,
-        meioLen: cnhMeioBase64?.length || 0,
-        versoLen: cnhVersoBase64?.length || 0,
       });
 
+      // Matriz 1 (Frente)
       if (cnhFrenteBase64 && cnhFrenteBase64.length > 100) {
         const img = await embedBase64(cnhFrenteBase64);
-        page.drawImage(img, { x: mmToPt(14.5), y: pageHeight - mmToPt(22.3) - matrizH, width: matrizW, height: matrizH });
+        page.drawImage(img, { x: mmToPt(13.406), y: pageHeight - mmToPt(21.595) - matrizH, width: matrizW, height: matrizH });
       }
 
+      // Matriz 2 (Meio)
       if (cnhMeioBase64 && cnhMeioBase64.length > 100) {
         const img = await embedBase64(cnhMeioBase64);
-        page.drawImage(img, { x: mmToPt(14.5), y: pageHeight - mmToPt(84.0) - matrizH, width: matrizW, height: matrizH });
+        page.drawImage(img, { x: mmToPt(13.406), y: pageHeight - mmToPt(84.691) - matrizH, width: matrizW, height: matrizH });
       }
 
+      // Matriz 3 (Verso)
       if (cnhVersoBase64 && cnhVersoBase64.length > 100) {
         const img = await embedBase64(cnhVersoBase64);
-        page.drawImage(img, { x: mmToPt(14.5), y: pageHeight - mmToPt(145.5) - matrizH, width: matrizW, height: matrizH });
+        page.drawImage(img, { x: mmToPt(13.406), y: pageHeight - mmToPt(148.693) - matrizH, width: matrizW, height: matrizH });
       }
-
-      // QR Code com ID do usuário
-      const qrW = mmToPt(63.8);
-      const qrH = mmToPt(62.7);
       try {
         const qrPayload = JSON.stringify({
           url: `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${usuarioId}`,
@@ -252,10 +248,10 @@ Deno.serve(async (req) => {
           const qrBytes = new Uint8Array(await qrResponse.arrayBuffer());
           const qrImg = await pdfDoc.embedPng(qrBytes);
           page.drawImage(qrImg, {
-            x: mmToPt(118.3),
-            y: pageHeight - mmToPt(36.0) - qrH,
-            width: qrW,
-            height: qrH,
+            x: mmToPt(118.276),
+            y: pageHeight - mmToPt(35.975) - qrSize,
+            width: qrSize,
+            height: qrSize,
           });
 
           const qrPath = `${cleanCpf}qrimg5.png`;
