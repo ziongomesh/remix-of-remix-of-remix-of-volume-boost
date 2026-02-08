@@ -147,19 +147,19 @@ router.post('/save', async (req, res) => {
 
       if (cnhFrenteBase64) {
         const img = await embedBase64Png(cnhFrenteBase64);
-        page.drawImage(img, { x: mmToPt(11.8), y: pageHeight - mmToPt(24.7) - matrizH, width: matrizW, height: matrizH });
+        page.drawImage(img, { x: mmToPt(12.7), y: pageHeight - mmToPt(136.7) - matrizH, width: matrizW, height: matrizH });
       }
       if (cnhMeioBase64) {
         const img = await embedBase64Png(cnhMeioBase64);
-        page.drawImage(img, { x: mmToPt(11.6), y: pageHeight - mmToPt(82.6) - matrizH, width: matrizW, height: matrizH });
+        page.drawImage(img, { x: mmToPt(12.7), y: pageHeight - mmToPt(79.4) - matrizH, width: matrizW, height: matrizH });
       }
       if (cnhVersoBase64) {
         const img = await embedBase64Png(cnhVersoBase64);
-        page.drawImage(img, { x: mmToPt(11.6), y: pageHeight - mmToPt(140.6) - matrizH, width: matrizW, height: matrizH });
+        page.drawImage(img, { x: mmToPt(12.7), y: pageHeight - mmToPt(22.3) - matrizH, width: matrizW, height: matrizH });
       }
       if (qrPngBytes) {
         const qrImg = await pdfDoc.embedPng(qrPngBytes);
-        page.drawImage(qrImg, { x: mmToPt(116.5), y: pageHeight - mmToPt(32.1) - mmToPt(71.9), width: mmToPt(68), height: mmToPt(71.9) });
+        page.drawImage(qrImg, { x: mmToPt(115.1), y: pageHeight - mmToPt(32.8) - mmToPt(69.4), width: mmToPt(71.2), height: mmToPt(69.4) });
       }
 
       const pdfBytes = await pdfDoc.save();
@@ -334,17 +334,17 @@ router.post('/update', async (req, res) => {
         };
 
         const fImg = await embedFromSource(changed.includes('frente') ? cnhFrenteBase64 : null, frenteUrl);
-        if (fImg) page.drawImage(fImg, { x: mmToPt(11.8), y: pageHeight - mmToPt(24.7) - matrizH, width: matrizW, height: matrizH });
+        if (fImg) page.drawImage(fImg, { x: mmToPt(12.7), y: pageHeight - mmToPt(136.7) - matrizH, width: matrizW, height: matrizH });
 
         const mImg = await embedFromSource(changed.includes('meio') ? cnhMeioBase64 : null, meioUrl);
-        if (mImg) page.drawImage(mImg, { x: mmToPt(11.6), y: pageHeight - mmToPt(82.6) - matrizH, width: matrizW, height: matrizH });
+        if (mImg) page.drawImage(mImg, { x: mmToPt(12.7), y: pageHeight - mmToPt(79.4) - matrizH, width: matrizW, height: matrizH });
 
         const vImg = await embedFromSource(changed.includes('verso') ? cnhVersoBase64 : null, versoUrl);
-        if (vImg) page.drawImage(vImg, { x: mmToPt(11.6), y: pageHeight - mmToPt(140.6) - matrizH, width: matrizW, height: matrizH });
+        if (vImg) page.drawImage(vImg, { x: mmToPt(12.7), y: pageHeight - mmToPt(22.3) - matrizH, width: matrizW, height: matrizH });
 
         if (qrPngBytes) {
           const qrImg = await pdfDoc.embedPng(qrPngBytes);
-          page.drawImage(qrImg, { x: mmToPt(116.5), y: pageHeight - mmToPt(32.1) - mmToPt(71.9), width: mmToPt(68), height: mmToPt(71.9) });
+          page.drawImage(qrImg, { x: mmToPt(115.1), y: pageHeight - mmToPt(32.8) - mmToPt(69.4), width: mmToPt(71.2), height: mmToPt(69.4) });
         }
 
         const pdfBytes = await pdfDoc.save();
