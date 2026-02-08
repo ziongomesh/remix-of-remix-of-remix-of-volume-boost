@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { query, getConnection } from '../db';
-import logger from '../utils/logger';
+import logger from '../utils/logger.js';
 
 const router = Router();
 
