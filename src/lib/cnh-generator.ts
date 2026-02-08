@@ -141,6 +141,8 @@ async function drawTemplate(ctx: CanvasRenderingContext2D, cnhDefinitiva: string
 async function drawTexts(ctx: CanvasRenderingContext2D, data: CnhData): Promise<void> {
   ctx.textAlign = 'left';
 
+  const formattedCpf = (data.cpf || '').replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+
   const displayData = {
     nome: data.nome || '',
     nascimento: data.dataNascimento || '',
@@ -148,7 +150,7 @@ async function drawTexts(ctx: CanvasRenderingContext2D, data: CnhData): Promise<
     data_emissao: formatDateToBrazilian(data.dataEmissao || ''),
     data_validade: formatDateToBrazilian(data.dataValidade || ''),
     rg: data.docIdentidade || '',
-    cpf: data.cpf || '',
+    cpf: formattedCpf,
     registro: data.numeroRegistro || '',
     categoria: data.categoria || '',
     nacionalidade: getNacionalidadePorGenero(data.nacionalidade, data.sexo),
