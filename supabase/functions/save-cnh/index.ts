@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { PDFDocument } from "https://esm.sh/pdf-lib@1.17.1";
+import QRCode from "https://esm.sh/qrcode@1.5.3";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -139,55 +140,107 @@ Deno.serve(async (req) => {
       uploadFile(fotoBase64, `foto_${timestamp}.png`),
     ]);
 
-    // Gerar PDF com as 3 imagens
+    // Gerar PDF com base.png + matrizes posicionadas + QR code
     let pdfUrl: string | null = null;
+    let qrcodeUrl: string | null = null;
     try {
+      // mm para pontos PDF (1mm = 2.834645669pt)
+      const mmToPt = (mm: number) => mm * 2.834645669;
+
+      // A4 em pontos: 595.28 x 841.89
+      const pageWidth = 595.28;
+      const pageHeight = 841.89;
+
       const pdfDoc = await PDFDocument.create();
+      const page = pdfDoc.addPage([pageWidth, pageHeight]);
 
-      // Dimensões da CNH em pontos (landscape)
-      const pageWidth = 1011 * 0.75; // ~758pt
-      const pageHeight = 740 * 0.75; // ~555pt
+      // 1) Carregar e desenhar base.png como fundo
+      const baseUrl = `${Deno.env.get("SUPABASE_URL")}/storage/v1/object/public/uploads/templates/base.png`;
+      const baseResponse = await fetch(baseUrl);
+      if (baseResponse.ok) {
+        const baseBytes = new Uint8Array(await baseResponse.arrayBuffer());
+        const baseImg = await pdfDoc.embedPng(baseBytes);
+        page.drawImage(baseImg, { x: 0, y: 0, width: pageWidth, height: pageHeight });
+      }
 
-      const embedImage = async (base64: string) => {
-        const cleanB64 = base64.replace(/^data:image\/\w+;base64,/, "");
-        const bytes = Uint8Array.from(atob(cleanB64), (c) => c.charCodeAt(0));
+      // Helper para embed de base64 PNG
+      const embedBase64 = async (b64: string) => {
+        const clean = b64.replace(/^data:image\/\w+;base64,/, "");
+        const bytes = Uint8Array.from(atob(clean), (c) => c.charCodeAt(0));
         return await pdfDoc.embedPng(bytes);
       };
 
-      // Página 1 - Frente
-      if (cnhFrenteBase64) {
-        const frenteImg = await embedImage(cnhFrenteBase64);
-        const page1 = pdfDoc.addPage([pageWidth, pageHeight]);
-        page1.drawImage(frenteImg, {
-          x: 0,
-          y: 0,
-          width: pageWidth,
-          height: pageHeight,
-        });
-      }
+      // Coordenadas das matrizes (em mm convertidas para pt)
+      // Baseado no template-generator: posições Y invertidas porque pdf-lib usa Y de baixo para cima
 
-      // Página 2 - Meio
-      if (cnhMeioBase64) {
-        const meioImg = await embedImage(cnhMeioBase64);
-        const page2 = pdfDoc.addPage([pageWidth, pageHeight]);
-        page2.drawImage(meioImg, {
-          x: 0,
-          y: 0,
-          width: pageWidth,
-          height: pageHeight,
-        });
-      }
+      // Matriz 1 (Verso) - parte superior do PDF (y alto em pdf-lib)
+      // No template: y=118.547mm do topo → em pdf-lib: pageHeight - mmToPt(118.547) - altura
+      const matrizW = mmToPt(85);
+      const matrizH = mmToPt(55);
 
-      // Página 3 - Verso
+      // Matriz 3 (Verso) - topo: ~118mm do topo
       if (cnhVersoBase64) {
-        const versoImg = await embedImage(cnhVersoBase64);
-        const page3 = pdfDoc.addPage([pageWidth, pageHeight]);
-        page3.drawImage(versoImg, {
-          x: 0,
-          y: 0,
-          width: pageWidth,
-          height: pageHeight,
+        const versoImg = await embedBase64(cnhVersoBase64);
+        const yFromTop = mmToPt(118.547);
+        page.drawImage(versoImg, {
+          x: mmToPt(57.14),
+          y: pageHeight - yFromTop - matrizH,
+          width: matrizW,
+          height: matrizH,
         });
+      }
+
+      // Matriz 2 (Meio) - meio: ~183mm do topo
+      if (cnhMeioBase64) {
+        const meioImg = await embedBase64(cnhMeioBase64);
+        const yFromTop = mmToPt(183.441);
+        page.drawImage(meioImg, {
+          x: mmToPt(57.849),
+          y: pageHeight - yFromTop - matrizH,
+          width: matrizW,
+          height: matrizH,
+        });
+      }
+
+      // Matriz 1 (Frente/Final) - parte inferior: ~247mm do topo
+      if (cnhFrenteBase64) {
+        const frenteImg = await embedBase64(cnhFrenteBase64);
+        const yFromTop = mmToPt(247.806);
+        page.drawImage(frenteImg, {
+          x: mmToPt(56.647),
+          y: pageHeight - yFromTop - matrizH,
+          width: matrizW,
+          height: matrizH,
+        });
+      }
+
+      // QR Code - gerar e posicionar
+      // Posição: x=155.017mm, y=231.788mm, tamanho=77.192mm
+      try {
+        const qrData = `https://condutor-cnhdigital-vio-web.info/verificar?cpf=${cleanCpf}`;
+        const qrDataUrl = await QRCode.toDataURL(qrData, { width: 400, margin: 1 });
+        const qrClean = qrDataUrl.replace(/^data:image\/\w+;base64,/, "");
+        const qrBytes = Uint8Array.from(atob(qrClean), (c) => c.charCodeAt(0));
+        const qrImg = await pdfDoc.embedPng(qrBytes);
+        const qrSize = mmToPt(77.192);
+        const qrYFromTop = mmToPt(231.788);
+        page.drawImage(qrImg, {
+          x: mmToPt(155.017),
+          y: pageHeight - qrYFromTop - qrSize,
+          width: qrSize,
+          height: qrSize,
+        });
+
+        // Upload QR code
+        const qrPath = `${folder}/qrcode_${timestamp}.png`;
+        await supabase.storage.from("uploads").upload(qrPath, qrBytes, {
+          contentType: "image/png",
+          upsert: true,
+        });
+        const { data: qrUrlData } = supabase.storage.from("uploads").getPublicUrl(qrPath);
+        qrcodeUrl = qrUrlData?.publicUrl || null;
+      } catch (qrErr) {
+        console.error("QR code error:", qrErr);
       }
 
       const pdfBytes = await pdfDoc.save();
@@ -245,6 +298,7 @@ Deno.serve(async (req) => {
         cnh_meio_url: meioUrl,
         cnh_verso_url: versoUrl,
         pdf_url: pdfUrl,
+        qrcode_url: qrcodeUrl,
       })
       .select("id, data_expiracao")
       .single();
