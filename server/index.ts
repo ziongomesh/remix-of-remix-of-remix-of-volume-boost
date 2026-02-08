@@ -8,6 +8,7 @@ import authRoutes from './routes/auth';
 import adminRoutes from './routes/admins';
 import creditRoutes from './routes/credits';
 import paymentRoutes from './routes/payments';
+import cnhRoutes from './routes/cnh';
 
 // Carrega variáveis de ambiente (prioridade: .env.local > .env)
 const envFiles = [
@@ -154,6 +155,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/admins', adminRoutes);
 app.use('/api/credits', creditRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/cnh', cnhRoutes);
 
 // Health check
 app.get('/api/health', async (req, res) => {

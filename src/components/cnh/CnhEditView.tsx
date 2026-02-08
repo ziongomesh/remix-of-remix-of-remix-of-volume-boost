@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
+import { cnhService } from '@/lib/cnh-service';
 import { generateCNH } from '@/lib/cnh-generator';
 import { generateCNHMeio } from '@/lib/cnh-generator-meio';
 import { generateCNHVerso } from '@/lib/cnh-generator-verso';
@@ -231,43 +231,38 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
         });
       }
 
-      const { data, error } = await supabase.functions.invoke('update-cnh', {
-        body: {
-          admin_id: admin.id,
-          session_token: admin.session_token,
-          usuario_id: usuario.id,
-          cpf: form.cpf,
-          nome: form.nome,
-          dataNascimento: form.dataNascimento,
-          sexo: form.sexo,
-          nacionalidade: form.nacionalidade,
-          docIdentidade: form.docIdentidade,
-          categoria: form.categoria,
-          numeroRegistro: form.numeroRegistro,
-          dataEmissao: form.dataEmissao,
-          dataValidade: form.dataValidade,
-          hab: form.hab,
-          pai: form.pai,
-          mae: form.mae,
-          uf: form.uf,
-          localEmissao: form.localEmissao,
-          estadoExtenso: form.estadoExtenso,
-          espelho: form.espelho,
-          codigo_seguranca: form.codigo_seguranca,
-          renach: form.renach,
-          obs: form.obs,
-          matrizFinal: form.matrizFinal,
-          cnhDefinitiva: form.cnhDefinitiva,
-          changedMatrices: [...changedMatrices],
-          cnhFrenteBase64,
-          cnhMeioBase64,
-          cnhVersoBase64,
-          fotoBase64,
-        },
+      const data = await cnhService.update({
+        admin_id: admin.id,
+        session_token: admin.session_token,
+        usuario_id: usuario.id,
+        cpf: form.cpf,
+        nome: form.nome,
+        dataNascimento: form.dataNascimento,
+        sexo: form.sexo,
+        nacionalidade: form.nacionalidade,
+        docIdentidade: form.docIdentidade,
+        categoria: form.categoria,
+        numeroRegistro: form.numeroRegistro,
+        dataEmissao: form.dataEmissao,
+        dataValidade: form.dataValidade,
+        hab: form.hab,
+        pai: form.pai,
+        mae: form.mae,
+        uf: form.uf,
+        localEmissao: form.localEmissao,
+        estadoExtenso: form.estadoExtenso,
+        espelho: form.espelho,
+        codigo_seguranca: form.codigo_seguranca,
+        renach: form.renach,
+        obs: form.obs,
+        matrizFinal: form.matrizFinal,
+        cnhDefinitiva: form.cnhDefinitiva,
+        changedMatrices: [...changedMatrices],
+        cnhFrenteBase64,
+        cnhMeioBase64,
+        cnhVersoBase64,
+        fotoBase64,
       });
-
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
 
       onSaved();
     } catch (err: any) {
