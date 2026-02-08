@@ -250,14 +250,21 @@ function CnhHistoryCard({
     <div className={`border rounded-lg p-4 ${highlight ? 'border-primary/30' : 'border-border'} hover:bg-muted/20 transition-colors`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          {usuario.cnh_frente_url && (
+          {usuario.foto_url ? (
+            <img
+              src={usuario.foto_url}
+              alt="Foto"
+              className="h-16 w-16 object-cover rounded-full border cursor-pointer hover:ring-2 hover:ring-primary/50"
+              onClick={() => setShowPreview(!showPreview)}
+            />
+          ) : usuario.cnh_frente_url ? (
             <img
               src={usuario.cnh_frente_url}
               alt="CNH Frente"
               className="h-16 w-24 object-cover rounded border cursor-pointer hover:ring-2 hover:ring-primary/50"
               onClick={() => setShowPreview(!showPreview)}
             />
-          )}
+          ) : null}
           <div>
             <h3 className="font-semibold text-foreground">{usuario.nome}</h3>
             <p className="text-sm text-muted-foreground">CPF: {formatCpf(usuario.cpf)}</p>
