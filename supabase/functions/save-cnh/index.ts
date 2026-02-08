@@ -167,46 +167,46 @@ Deno.serve(async (req) => {
         return await pdfDoc.embedPng(bytes);
       };
 
-      // Coordenadas do PDFKit (Y do topo) — converter para pdf-lib (Y do fundo)
-      // pdf-lib Y = pageHeight - pdfkitY - height
-      const matrizWidth = 200;
-      const matrizHeight = 120;
+      // Coordenadas baseadas na imagem de referência do PDF final
+      // pdf-lib Y = pageHeight - pdfkitY - height (Y invertido)
+      const matrizWidth = 285;
+      const matrizHeight = 190;
 
-      // Matriz 1 (FINAL/Frente) - topo: x=70, y=50
+      // Matriz 1 (FINAL/Frente) - topo esquerdo
       if (cnhFrenteBase64) {
         const frenteImg = await embedBase64(cnhFrenteBase64);
         page.drawImage(frenteImg, {
-          x: 70,
-          y: pageHeight - 50 - matrizHeight,
+          x: 52,
+          y: pageHeight - 65 - matrizHeight,
           width: matrizWidth,
           height: matrizHeight,
         });
       }
 
-      // Matriz 2 (MEIO) - meio: x=70, y=200
+      // Matriz 2 (MEIO) - meio esquerdo
       if (cnhMeioBase64) {
         const meioImg = await embedBase64(cnhMeioBase64);
         page.drawImage(meioImg, {
-          x: 70,
-          y: pageHeight - 200 - matrizHeight,
+          x: 52,
+          y: pageHeight - 280 - matrizHeight,
           width: matrizWidth,
           height: matrizHeight,
         });
       }
 
-      // Matriz 3 (VERSO) - inferior: x=70, y=550
+      // Matriz 3 (VERSO) - parte inferior esquerda
       if (cnhVersoBase64) {
         const versoImg = await embedBase64(cnhVersoBase64);
         page.drawImage(versoImg, {
-          x: 70,
-          y: pageHeight - 550 - matrizHeight,
+          x: 52,
+          y: pageHeight - 500 - 210,
           width: matrizWidth,
-          height: matrizHeight,
+          height: 210,
         });
       }
 
-      // QR Code - x=350, y=50, size=100
-      const qrSize = 100;
+      // QR Code - lado direito, alinhado com frente
+      const qrSize = 205;
       try {
         const qrData = `https://condutor-cnhdigital-vio-web.info/verificar?cpf=${cleanCpf}`;
         const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(qrData)}&format=png`;
@@ -216,7 +216,7 @@ Deno.serve(async (req) => {
           const qrImg = await pdfDoc.embedPng(qrBytes);
           page.drawImage(qrImg, {
             x: 350,
-            y: pageHeight - 50 - qrSize,
+            y: pageHeight - 95 - qrSize,
             width: qrSize,
             height: qrSize,
           });
