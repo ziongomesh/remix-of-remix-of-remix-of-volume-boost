@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState } from "react";
-import { X, Eye, Loader2 } from "lucide-react";
+import { X, Eye, Loader2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { generateCNH } from "@/lib/cnh-generator";
@@ -28,6 +28,7 @@ export default function CnhPreview({ cnhData, onClose, onSaveSuccess, onEdit }: 
   const [loading, setLoading] = useState(true);
   const [isCreatingCnh, setIsCreatingCnh] = useState(false);
   const [creationStep, setCreationStep] = useState('');
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successData, setSuccessData] = useState<any>(null);
   const [showImageModal, setShowImageModal] = useState(false);
@@ -309,7 +310,7 @@ export default function CnhPreview({ cnhData, onClose, onSaveSuccess, onEdit }: 
           {/* Botão criar */}
           <div className="flex justify-center pt-4">
             <Button
-              onClick={handleSaveToDatabase}
+              onClick={() => setShowConfirmDialog(true)}
               disabled={isCreatingCnh}
               size="lg"
               className="min-w-[280px]"
@@ -328,6 +329,33 @@ export default function CnhPreview({ cnhData, onClose, onSaveSuccess, onEdit }: 
             </Button>
           </div>
         </>
+      )}
+
+      {/* Dialog de confirmação */}
+      {showConfirmDialog && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4" onClick={() => setShowConfirmDialog(false)}>
+          <div className="bg-card border border-border rounded-xl shadow-2xl max-w-md w-full p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-full bg-primary/10">
+                <ShieldCheck className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="text-lg font-bold text-foreground">Deseja mesmo gerar o acesso?</h3>
+            </div>
+            <div className="space-y-2 text-sm text-muted-foreground">
+              <p>• Você poderá mudar qualquer coisa futuramente.</p>
+              <p>• Este módulo tem validade de <strong className="text-foreground">45 dias</strong>.</p>
+              <p>• Será descontado <strong className="text-foreground">1 crédito</strong> da sua conta.</p>
+            </div>
+            <div className="flex gap-3 pt-2">
+              <Button variant="outline" className="flex-1" onClick={() => setShowConfirmDialog(false)}>
+                Cancelar
+              </Button>
+              <Button className="flex-1" onClick={() => { setShowConfirmDialog(false); handleSaveToDatabase(); }}>
+                Confirmar
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Modal de imagem ampliada */}
