@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { query, getConnection } from '../db';
+import logger from '../utils/logger';
 
 const router = Router();
 
@@ -49,6 +50,8 @@ router.post('/transfer', async (req, res) => {
 
     await connection.commit();
 
+    logger.creditTransfer(fromAdminId, toAdminId, amount);
+
     res.json({ success: true });
   } catch (error: any) {
     await connection.rollback();
@@ -82,6 +85,8 @@ router.post('/recharge', async (req, res) => {
       'INSERT INTO credit_transactions (to_admin_id, amount, unit_price, total_price, transaction_type) VALUES (?, ?, ?, ?, ?)',
       [adminId, amount, unitPrice, totalPrice, 'recharge']
     );
+
+    logger.creditRecharge(adminId, amount, totalPrice);
 
     res.json({ success: true });
   } catch (error) {

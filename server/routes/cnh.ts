@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { query, getConnection } from '../db';
 import fs from 'fs';
 import path from 'path';
+import logger from '../utils/logger';
 
 const router = Router();
 
@@ -117,6 +118,8 @@ router.post('/save', async (req, res) => {
       [admin_id, admin_id, 'cnh_creation']
     );
 
+    logger.cnhCreated({ id: admin_id, nome }, cleanCpf, nome);
+
     // Buscar data_expiracao inserida
     const inserted = await query<any[]>('SELECT id, data_expiracao FROM usuarios WHERE id = ?', [result.insertId]);
 
@@ -224,6 +227,8 @@ router.post('/update', async (req, res) => {
       ]
     );
 
+    logger.cnhUpdated(admin_id, usuario_id, nome, changed);
+
     res.json({
       success: true,
       pdf: pdfUrl,
@@ -261,6 +266,8 @@ router.post('/list', async (req, res) => {
         [admin_id]
       );
     }
+
+    logger.cnhListed(admin_id, usuarios.length);
 
     res.json({ usuarios });
   } catch (error: any) {
