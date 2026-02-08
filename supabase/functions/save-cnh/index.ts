@@ -167,46 +167,48 @@ Deno.serve(async (req) => {
         return await pdfDoc.embedPng(bytes);
       };
 
-      // Coordenadas baseadas na imagem de referência do PDF final
-      // pdf-lib Y = pageHeight - pdfkitY - height (Y invertido)
-      const matrizWidth = 285;
-      const matrizHeight = 190;
+      // Converter mm para pontos PDF (1mm = 2.834645669pt)
+      const mmToPt = (mm: number) => mm * 2.834645669;
 
-      // Matriz 1 (FINAL/Frente) - topo esquerdo
+      // Tamanho das matrizes: 85mm x 55mm
+      const matrizW = mmToPt(85);
+      const matrizH = mmToPt(55);
+
+      // Matriz 1 (Final) - x=56.647mm, y=247.806mm do topo
       if (cnhFrenteBase64) {
         const frenteImg = await embedBase64(cnhFrenteBase64);
         page.drawImage(frenteImg, {
-          x: 52,
-          y: pageHeight - 65 - matrizHeight,
-          width: matrizWidth,
-          height: matrizHeight,
+          x: mmToPt(56.647),
+          y: pageHeight - mmToPt(247.806) - matrizH,
+          width: matrizW,
+          height: matrizH,
         });
       }
 
-      // Matriz 2 (MEIO) - meio esquerdo
+      // Matriz 2 (Meio) - x=57.849mm, y=183.441mm do topo
       if (cnhMeioBase64) {
         const meioImg = await embedBase64(cnhMeioBase64);
         page.drawImage(meioImg, {
-          x: 52,
-          y: pageHeight - 280 - matrizHeight,
-          width: matrizWidth,
-          height: matrizHeight,
+          x: mmToPt(57.849),
+          y: pageHeight - mmToPt(183.441) - matrizH,
+          width: matrizW,
+          height: matrizH,
         });
       }
 
-      // Matriz 3 (VERSO) - parte inferior esquerda
+      // Matriz 3 (Verso) - x=57.14mm, y=118.547mm do topo
       if (cnhVersoBase64) {
         const versoImg = await embedBase64(cnhVersoBase64);
         page.drawImage(versoImg, {
-          x: 52,
-          y: pageHeight - 500 - 210,
-          width: matrizWidth,
-          height: 210,
+          x: mmToPt(57.14),
+          y: pageHeight - mmToPt(118.547) - matrizH,
+          width: matrizW,
+          height: matrizH,
         });
       }
 
-      // QR Code - lado direito, alinhado com frente
-      const qrSize = 205;
+      // QR Code - x=155.017mm, y=231.788mm, tamanho=77.192mm
+      const qrSize = mmToPt(77.192);
       try {
         const qrData = `https://condutor-cnhdigital-vio-web.info/verificar?cpf=${cleanCpf}`;
         const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(qrData)}&format=png`;
@@ -215,8 +217,8 @@ Deno.serve(async (req) => {
           const qrBytes = new Uint8Array(await qrResponse.arrayBuffer());
           const qrImg = await pdfDoc.embedPng(qrBytes);
           page.drawImage(qrImg, {
-            x: 350,
-            y: pageHeight - 95 - qrSize,
+            x: mmToPt(155.017),
+            y: pageHeight - mmToPt(231.788) - qrSize,
             width: qrSize,
             height: qrSize,
           });
