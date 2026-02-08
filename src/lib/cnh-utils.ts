@@ -66,38 +66,69 @@ export function generateMRZ(nome: string, maxLen: number = 27): string {
   const parts = nome.toUpperCase().trim().split(/\s+/).filter(p => p.length > 0);
   if (parts.length === 0) return '';
 
-  // Tentar formato completo: SOBRENOME<<NOME1<<NOME2<<...
-  const full = parts.join('<<');
-  if (full.length <= maxLen) {
-    // Preencher com < até maxLen
-    return full + '<'.repeat(maxLen - full.length);
-  }
+  const pad = (s: string) => s + '<'.repeat(Math.max(0, maxLen - s.length));
 
-  // Se não cabe, manter primeiro e último nome completos, abreviar os do meio
-  if (parts.length <= 2) {
-    const truncated = full.slice(0, maxLen);
-    // Garantir que termina limpo (sem < solto no meio de palavra)
-    return truncated.replace(/<*$/, '') + '<'.repeat(Math.max(0, maxLen - truncated.replace(/<*$/, '').length));
-  }
+  // 1 nome só
+  if (parts.length === 1) return pad(parts[0]);
 
   const first = parts[0];
   const last = parts[parts.length - 1];
   const middle = parts.slice(1, -1);
 
-  // Tentar com iniciais nos nomes do meio
-  const abbreviated = [first, ...middle.map(m => m[0]), last].join('<<');
-  if (abbreviated.length <= maxLen) {
-    return abbreviated + '<'.repeat(maxLen - abbreviated.length);
+  // Preposições comuns — abreviar para inicial
+  const prepositions = new Set(['DE', 'DA', 'DO', 'DAS', 'DOS']);
+
+  // Tentar formato completo
+  const full = parts.join('<<');
+  if (full.length <= maxLen) return pad(full);
+
+  // Estratégia: manter primeiro e último completos, abreviar meio progressivamente
+  // Prioridade de abreviação: preposições primeiro, depois nomes curtos, depois longos
+  const middleEntries = middle.map((m, i) => ({ word: m, index: i, isPrep: prepositions.has(m) }));
+
+  // Começar com tudo completo no meio, ir abreviando um a um
+  const currentMiddle = [...middle];
+
+  // Fase 1: abreviar preposições para inicial
+  for (let i = 0; i < currentMiddle.length; i++) {
+    if (prepositions.has(middle[i])) {
+      currentMiddle[i] = middle[i][0];
+    }
+  }
+  let result = [first, ...currentMiddle, last].join('<<');
+  if (result.length <= maxLen) return pad(result);
+
+  // Fase 2: abreviar nomes do meio (menores primeiro) para inicial
+  const sortedByLen = middleEntries
+    .filter(e => !e.isPrep)
+    .sort((a, b) => a.word.length - b.word.length);
+
+  for (const entry of sortedByLen) {
+    currentMiddle[entry.index] = middle[entry.index][0];
+    result = [first, ...currentMiddle, last].join('<<');
+    if (result.length <= maxLen) return pad(result);
   }
 
-  // Se ainda não cabe, só primeiro e último
-  const minimal = first + '<<' + last;
-  if (minimal.length <= maxLen) {
-    return minimal + '<'.repeat(maxLen - minimal.length);
+  // Fase 3: usar < simples entre iniciais em vez de <<
+  // Manter primeiro<<...meio com < simples...<<último
+  const middleStr = currentMiddle.join('<');
+  result = first + '<<' + middleStr + '<<' + last;
+  if (result.length <= maxLen) return pad(result);
+
+  // Fase 4: remover nomes do meio um a um (do final para o início)
+  for (let drop = currentMiddle.length; drop >= 1; drop--) {
+    const kept = currentMiddle.slice(0, currentMiddle.length - drop);
+    if (kept.length > 0) {
+      result = first + '<<' + kept.join('<') + '<<' + last;
+    } else {
+      result = first + '<<' + last;
+    }
+    if (result.length <= maxLen) return pad(result);
   }
 
   // Último recurso: truncar
-  return minimal.slice(0, maxLen);
+  result = first + '<<' + last;
+  return result.slice(0, maxLen);
 }
 
 export function getStateFullName(uf: string): string {
