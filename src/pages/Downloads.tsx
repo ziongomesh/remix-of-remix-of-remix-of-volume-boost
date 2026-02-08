@@ -133,7 +133,6 @@ export default function Downloads() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-foreground">iPhone</p>
-                        <p className="text-xs text-muted-foreground truncate">{cnhIphone || 'Nenhum link'}</p>
                       </div>
                       <Button
                         variant="outline"
@@ -152,7 +151,6 @@ export default function Downloads() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-foreground">Android (APK)</p>
-                        <p className="text-xs text-muted-foreground truncate">{cnhApk || 'Nenhum link'}</p>
                       </div>
                       <Button
                         variant="outline"
