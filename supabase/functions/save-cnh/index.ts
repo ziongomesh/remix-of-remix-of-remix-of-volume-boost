@@ -114,7 +114,7 @@ Deno.serve(async (req) => {
 
       const path = `${folder}/${filename}`;
       const { error } = await supabase.storage
-        .from("cnh-files")
+        .from("uploads")
         .upload(path, bytes, {
           contentType: "image/png",
           upsert: true,
@@ -126,7 +126,7 @@ Deno.serve(async (req) => {
       }
 
       const { data: urlData } = supabase.storage
-        .from("cnh-files")
+        .from("uploads")
         .getPublicUrl(path);
 
       return urlData?.publicUrl || null;
@@ -194,7 +194,7 @@ Deno.serve(async (req) => {
       const pdfPath = `${folder}/CNH_DIGITAL_${cleanCpf}.pdf`;
 
       const { error: pdfError } = await supabase.storage
-        .from("cnh-files")
+        .from("uploads")
         .upload(pdfPath, pdfBytes, {
           contentType: "application/pdf",
           upsert: true,
@@ -202,7 +202,7 @@ Deno.serve(async (req) => {
 
       if (!pdfError) {
         const { data: pdfUrlData } = supabase.storage
-          .from("cnh-files")
+          .from("uploads")
           .getPublicUrl(pdfPath);
         pdfUrl = pdfUrlData?.publicUrl || null;
       } else {
