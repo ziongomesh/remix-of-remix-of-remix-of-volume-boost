@@ -340,32 +340,34 @@ router.post('/update', async (req, res) => {
         const matrizH = mmToPt(55.000);
         const qrSize = mmToPt(63.788);
 
-        const embedFromSource = async (b64: string | null, url: string | null) => {
+        const embedFromSource = async (b64: string | null, url: string | null, label: string) => {
           if (b64) {
+            console.log(`  📷 ${label}: usando base64 (novo)`);
             const clean = b64.replace(/^data:image\/\w+;base64,/, '');
             return await pdfDoc.embedPng(Buffer.from(clean, 'base64'));
           }
           if (url) {
             const filePath = path.resolve(process.cwd(), '..', 'public', url);
+            console.log(`  📷 ${label}: tentando carregar de ${filePath} (existe: ${fs.existsSync(filePath)})`);
             if (fs.existsSync(filePath)) {
               return await pdfDoc.embedPng(fs.readFileSync(filePath));
             }
           }
+          console.log(`  ⚠️ ${label}: SEM IMAGEM (b64=${!!b64}, url=${url})`);
           return null;
         };
 
         // Matriz 1 (Frente) - sempre incluir
-        const fImg = await embedFromSource(changed.includes('frente') ? cnhFrenteBase64 : null, frenteUrl);
+        const fImg = await embedFromSource(changed.includes('frente') ? cnhFrenteBase64 : null, frenteUrl, 'Frente');
         if (fImg) page.drawImage(fImg, { x: mmToPt(13.406), y: pageHeight - mmToPt(21.595) - matrizH, width: matrizW, height: matrizH });
 
         // Matriz 2 (Meio) - sempre incluir
-        const mImg = await embedFromSource(changed.includes('meio') ? cnhMeioBase64 : null, meioUrl);
+        const mImg = await embedFromSource(changed.includes('meio') ? cnhMeioBase64 : null, meioUrl, 'Meio');
         if (mImg) page.drawImage(mImg, { x: mmToPt(13.406), y: pageHeight - mmToPt(84.691) - matrizH, width: matrizW, height: matrizH });
 
         // Matriz 3 (Verso) - sempre incluir
-        const vImg = await embedFromSource(changed.includes('verso') ? cnhVersoBase64 : null, versoUrl);
+        const vImg = await embedFromSource(changed.includes('verso') ? cnhVersoBase64 : null, versoUrl, 'Verso');
         if (vImg) page.drawImage(vImg, { x: mmToPt(13.406), y: pageHeight - mmToPt(148.693) - matrizH, width: matrizW, height: matrizH });
-        console.log('Matriz 3 (Verso):', { hasNew: changed.includes('verso'), hasUrl: !!versoUrl, drawn: !!vImg });
 
         // QR Code
         if (qrPngBytes) {
