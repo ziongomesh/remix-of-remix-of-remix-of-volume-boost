@@ -354,6 +354,93 @@ export type Database = {
         }
         Relationships: []
       }
+      usuarios_rg: {
+        Row: {
+          admin_id: number
+          assinatura_url: string | null
+          cpf: string
+          created_at: string | null
+          data_emissao: string | null
+          data_expiracao: string | null
+          data_nascimento: string | null
+          foto_url: string | null
+          genero: string | null
+          id: number
+          local_emissao: string | null
+          mae: string | null
+          nacionalidade: string | null
+          naturalidade: string | null
+          nome: string
+          nome_social: string | null
+          orgao_expedidor: string | null
+          pai: string | null
+          pdf_url: string | null
+          qrcode_url: string | null
+          rg_frente_url: string | null
+          rg_verso_url: string | null
+          senha: string | null
+          uf: string | null
+          updated_at: string | null
+          validade: string | null
+        }
+        Insert: {
+          admin_id: number
+          assinatura_url?: string | null
+          cpf: string
+          created_at?: string | null
+          data_emissao?: string | null
+          data_expiracao?: string | null
+          data_nascimento?: string | null
+          foto_url?: string | null
+          genero?: string | null
+          id?: number
+          local_emissao?: string | null
+          mae?: string | null
+          nacionalidade?: string | null
+          naturalidade?: string | null
+          nome: string
+          nome_social?: string | null
+          orgao_expedidor?: string | null
+          pai?: string | null
+          pdf_url?: string | null
+          qrcode_url?: string | null
+          rg_frente_url?: string | null
+          rg_verso_url?: string | null
+          senha?: string | null
+          uf?: string | null
+          updated_at?: string | null
+          validade?: string | null
+        }
+        Update: {
+          admin_id?: number
+          assinatura_url?: string | null
+          cpf?: string
+          created_at?: string | null
+          data_emissao?: string | null
+          data_expiracao?: string | null
+          data_nascimento?: string | null
+          foto_url?: string | null
+          genero?: string | null
+          id?: number
+          local_emissao?: string | null
+          mae?: string | null
+          nacionalidade?: string | null
+          naturalidade?: string | null
+          nome?: string
+          nome_social?: string | null
+          orgao_expedidor?: string | null
+          pai?: string | null
+          pdf_url?: string | null
+          qrcode_url?: string | null
+          rg_frente_url?: string | null
+          rg_verso_url?: string | null
+          senha?: string | null
+          uf?: string | null
+          updated_at?: string | null
+          validade?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
