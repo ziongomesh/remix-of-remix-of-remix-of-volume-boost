@@ -153,6 +153,16 @@ export default function CnhPreview({ cnhData, onClose, onSaveSuccess, onEdit }: 
         });
       }
 
+      // Converter assinatura para base64 se for File
+      let assinaturaBase64 = '';
+      if (cnhData.assinatura instanceof File) {
+        assinaturaBase64 = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.readAsDataURL(cnhData.assinatura as File);
+        });
+      }
+
       setCreationStep('Salvando no servidor...');
 
       // Chamar serviço unificado (Supabase ou MySQL)
@@ -185,6 +195,7 @@ export default function CnhPreview({ cnhData, onClose, onSaveSuccess, onEdit }: 
         cnhMeioBase64,
         cnhVersoBase64,
         fotoBase64,
+        assinaturaBase64,
       });
 
       // Sucesso

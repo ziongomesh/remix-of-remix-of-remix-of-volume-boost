@@ -32,6 +32,7 @@ export interface CnhSaveData {
   cnhMeioBase64: string;
   cnhVersoBase64: string;
   fotoBase64: string;
+  assinaturaBase64?: string;
   qrcodeBase64?: string;
   pdfBase64?: string;
 }
@@ -39,6 +40,7 @@ export interface CnhSaveData {
 export interface CnhUpdateData extends CnhSaveData {
   usuario_id: number;
   changedMatrices: string[];
+  assinaturaBase64?: string;
 }
 
 export interface CnhSaveResult {
