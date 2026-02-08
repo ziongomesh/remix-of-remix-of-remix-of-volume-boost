@@ -1,6 +1,6 @@
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ImageMinus } from 'lucide-react';
+import { ImageMinus, FileText } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const tools = [
@@ -10,6 +10,13 @@ const tools = [
     icon: ImageMinus,
     href: '/ferramentas/remover-fundo',
     color: 'text-blue-500',
+  },
+  {
+    title: 'Editor de PDF',
+    description: 'Edite campos de texto, mova ou exclua elementos de qualquer PDF',
+    icon: FileText,
+    href: '/ferramentas/editor-pdf',
+    color: 'text-orange-500',
   },
 ];
 
