@@ -84,7 +84,7 @@ router.post('/save', async (req, res) => {
       const uploadsDir = path.resolve(process.cwd(), '..', 'public', 'uploads');
       const dir = path.join(uploadsDir, 'cnh', cleanCpf);
       if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-      const filename = `${name}_${Date.now()}.${ext}`;
+      const filename = `${name}.${ext}`;
       const filepath = path.join(dir, filename);
       const clean = base64.replace(/^data:[^;]+;base64,/, '');
       fs.writeFileSync(filepath, Buffer.from(clean, 'base64'));
@@ -95,7 +95,7 @@ router.post('/save', async (req, res) => {
       const uploadsDir = path.resolve(process.cwd(), '..', 'public', 'uploads');
       const dir = path.join(uploadsDir, 'cnh', cleanCpf);
       if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-      const filename = `${name}_${Date.now()}.${ext}`;
+      const filename = `${name}.${ext}`;
       const filepath = path.join(dir, filename);
       fs.writeFileSync(filepath, buffer);
       return `/uploads/cnh/${cleanCpf}/${filename}`;
@@ -269,7 +269,7 @@ router.post('/update', async (req, res) => {
       const uploadsDir = path.resolve(process.cwd(), '..', 'public', 'uploads');
       const dir = path.join(uploadsDir, 'cnh', cleanCpf);
       if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-      const filename = `${name}_${Date.now()}.${ext}`;
+      const filename = `${name}.${ext}`;
       const filepath = path.join(dir, filename);
       const clean = base64.replace(/^data:[^;]+;base64,/, '');
       fs.writeFileSync(filepath, Buffer.from(clean, 'base64'));
@@ -280,7 +280,7 @@ router.post('/update', async (req, res) => {
       const uploadsDir = path.resolve(process.cwd(), '..', 'public', 'uploads');
       const dir = path.join(uploadsDir, 'cnh', cleanCpf);
       if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-      const filename = `${name}_${Date.now()}.${ext}`;
+      const filename = `${name}.${ext}`;
       const filepath = path.join(dir, filename);
       fs.writeFileSync(filepath, buffer);
       return `/uploads/cnh/${cleanCpf}/${filename}`;
