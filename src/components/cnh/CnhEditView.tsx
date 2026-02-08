@@ -213,13 +213,12 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
       // Use new signature or fetch existing from server
       let assinaturaFile: File | string | undefined = newAssinatura || undefined;
       if (!assinaturaFile && changedMatrices.has('frente')) {
-        // Try to fetch existing signature saved as {cpf}assinatura.png
+        // Fetch existing signature from Supabase storage
         const cleanCpf = form.cpf.replace(/\D/g, '');
         try {
-          const assUrl = `/uploads/${cleanCpf}assinatura.png`;
-          const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:4000';
-          const baseUrl = apiBase.replace(/\/api\/?$/, '').replace(/\/+$/, '');
-          const resp = await fetch(`${baseUrl}${assUrl}`);
+          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+          const assUrl = `${supabaseUrl}/storage/v1/object/public/uploads/${cleanCpf}assinatura.png`;
+          const resp = await fetch(assUrl);
           if (resp.ok) {
             const blob = await resp.blob();
             assinaturaFile = new File([blob], 'assinatura.png', { type: 'image/png' });
