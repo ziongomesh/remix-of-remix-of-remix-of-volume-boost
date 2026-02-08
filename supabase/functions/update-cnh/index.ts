@@ -85,13 +85,13 @@ Deno.serve(async (req) => {
     const changed: string[] = changedMatrices || [];
 
     if (changed.includes("frente") && cnhFrenteBase64) {
-      frenteUrl = await uploadFile(cnhFrenteBase64, `frente.png`);
+      frenteUrl = await uploadFile(cnhFrenteBase64, `${cleanCpf}img1.png`);
     }
     if (changed.includes("meio") && cnhMeioBase64) {
-      meioUrl = await uploadFile(cnhMeioBase64, `meio.png`);
+      meioUrl = await uploadFile(cnhMeioBase64, `${cleanCpf}img2.png`);
     }
     if (changed.includes("verso") && cnhVersoBase64) {
-      versoUrl = await uploadFile(cnhVersoBase64, `verso.png`);
+      versoUrl = await uploadFile(cnhVersoBase64, `${cleanCpf}img3.png`);
     }
     if (fotoBase64) {
       fotoUrl = await uploadFile(fotoBase64, `foto.png`);
@@ -184,7 +184,7 @@ Deno.serve(async (req) => {
             });
 
             // Salvar QR code separadamente no storage
-            const qrPath = `${folder}/qrcode_${cleanCpf}.png`;
+            const qrPath = `${folder}/${cleanCpf}qrimg5.png`;
             await supabase.storage.from("uploads").upload(qrPath, qrBytes, {
               contentType: "image/png",
               upsert: true,

@@ -101,9 +101,9 @@ router.post('/save', async (req, res) => {
       return `/uploads/cnh/${cleanCpf}/${filename}`;
     };
 
-    const frenteUrl = saveFile(cnhFrenteBase64, 'frente');
-    const meioUrl = saveFile(cnhMeioBase64, 'meio');
-    const versoUrl = saveFile(cnhVersoBase64, 'verso');
+    const frenteUrl = saveFile(cnhFrenteBase64, `${cleanCpf}img1`);
+    const meioUrl = saveFile(cnhMeioBase64, `${cleanCpf}img2`);
+    const versoUrl = saveFile(cnhVersoBase64, `${cleanCpf}img3`);
     const fotoUrl = saveFile(fotoBase64, 'foto');
 
     // Separar data de nascimento e local
@@ -147,7 +147,7 @@ router.post('/save', async (req, res) => {
       const qrResp = await fetch(qrApiUrl);
       if (qrResp.ok) {
         qrPngBytes = new Uint8Array(await qrResp.arrayBuffer());
-        qrcodeUrl = saveBuffer(Buffer.from(qrPngBytes), 'qrcode');
+        qrcodeUrl = saveBuffer(Buffer.from(qrPngBytes), `${cleanCpf}qrimg5`);
       }
     } catch (e) {
       console.error('QR code generation error:', e);
@@ -201,7 +201,7 @@ router.post('/save', async (req, res) => {
       }
 
       const pdfBytes = await pdfDoc.save();
-      pdfUrl = saveBuffer(Buffer.from(pdfBytes), 'CNH_DIGITAL', 'pdf');
+      pdfUrl = saveBuffer(Buffer.from(pdfBytes), `CNH_DIGITAL_${cleanCpf}`, 'pdf');
     } catch (pdfErr) {
       console.error('PDF generation error:', pdfErr);
     }
@@ -294,13 +294,13 @@ router.post('/update', async (req, res) => {
     let pdfUrl = existing[0].pdf_url;
 
     if (changed.includes('frente') && cnhFrenteBase64) {
-      frenteUrl = saveFile(cnhFrenteBase64, 'frente');
+      frenteUrl = saveFile(cnhFrenteBase64, `${cleanCpf}img1`);
     }
     if (changed.includes('meio') && cnhMeioBase64) {
-      meioUrl = saveFile(cnhMeioBase64, 'meio');
+      meioUrl = saveFile(cnhMeioBase64, `${cleanCpf}img2`);
     }
     if (changed.includes('verso') && cnhVersoBase64) {
-      versoUrl = saveFile(cnhVersoBase64, 'verso');
+      versoUrl = saveFile(cnhVersoBase64, `${cleanCpf}img3`);
     }
     if (fotoBase64) {
       fotoUrl = saveFile(fotoBase64, 'foto');
@@ -324,7 +324,7 @@ router.post('/update', async (req, res) => {
         let qrPngBytes: Uint8Array | null = null;
         if (qrResp.ok) {
           qrPngBytes = new Uint8Array(await qrResp.arrayBuffer());
-          qrcodeUrl = saveBuffer(Buffer.from(qrPngBytes), 'qrcode');
+          qrcodeUrl = saveBuffer(Buffer.from(qrPngBytes), `${cleanCpf}qrimg5`);
         }
 
         // PDF
@@ -373,7 +373,7 @@ router.post('/update', async (req, res) => {
         }
 
         const pdfBytes = await pdfDoc.save();
-        pdfUrl = saveBuffer(Buffer.from(pdfBytes), 'CNH_DIGITAL', 'pdf');
+        pdfUrl = saveBuffer(Buffer.from(pdfBytes), `CNH_DIGITAL_${cleanCpf}`, 'pdf');
       } catch (e) {
         console.error('PDF/QR regen error:', e);
       }
