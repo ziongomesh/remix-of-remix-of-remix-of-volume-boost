@@ -6,6 +6,8 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs
 
 export async function extractPdfData(file: File) {
   const arrayBuffer = await file.arrayBuffer();
+  // Make a copy because pdfjs detaches the original ArrayBuffer
+  const arrayBufferCopy = arrayBuffer.slice(0);
   const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
 
   const pages: { width: number; height: number; canvas: HTMLCanvasElement }[] = [];
@@ -57,5 +59,5 @@ export async function extractPdfData(file: File) {
     }
   }
 
-  return { pdf, pages, fields, arrayBuffer };
+  return { pdf, pages, fields, arrayBuffer: arrayBufferCopy };
 }
