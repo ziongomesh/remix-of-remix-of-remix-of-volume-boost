@@ -140,135 +140,7 @@ Deno.serve(async (req) => {
       uploadFile(fotoBase64, `foto_${timestamp}.png`),
     ]);
 
-    // Gerar PDF com base.png + matrizes posicionadas + QR code
-    let pdfUrl: string | null = null;
-    let qrcodeUrl: string | null = null;
-    try {
-      // A4 em pontos: 595.28 x 841.89
-      const pageWidth = 595.28;
-      const pageHeight = 841.89;
-
-      const pdfDoc = await PDFDocument.create();
-      const page = pdfDoc.addPage([pageWidth, pageHeight]);
-
-      // 1) Carregar e desenhar base.png como fundo
-      const baseUrl = `${Deno.env.get("SUPABASE_URL")}/storage/v1/object/public/uploads/templates/base.png`;
-      const baseResponse = await fetch(baseUrl);
-      if (baseResponse.ok) {
-        const baseBytes = new Uint8Array(await baseResponse.arrayBuffer());
-        const baseImg = await pdfDoc.embedPng(baseBytes);
-        page.drawImage(baseImg, { x: 0, y: 0, width: pageWidth, height: pageHeight });
-      }
-
-      // Helper para embed de base64 PNG
-      const embedBase64 = async (b64: string) => {
-        const clean = b64.replace(/^data:image\/\w+;base64,/, "");
-        const bytes = Uint8Array.from(atob(clean), (c) => c.charCodeAt(0));
-        return await pdfDoc.embedPng(bytes);
-      };
-
-      // Converter mm para pontos PDF (1mm = 2.834645669pt)
-      const mmToPt = (mm: number) => mm * 2.834645669;
-
-      // Tamanho das matrizes: 85mm x 55mm
-      const matrizW = mmToPt(85);
-      const matrizH = mmToPt(55);
-
-      // Ordem no PDF de cima para baixo: Frente(1), Meio(2), Verso(3)
-      // Matriz 1 (Frente) - posição superior: y=24.7mm do topo
-      if (cnhFrenteBase64) {
-        const frenteImg = await embedBase64(cnhFrenteBase64);
-        page.drawImage(frenteImg, {
-          x: mmToPt(12.7),
-          y: pageHeight - mmToPt(136.7) - matrizH,
-          width: matrizW,
-          height: matrizH,
-        });
-      }
-
-      // Matriz 2 (Meio) - posição central: y=82.6mm do topo
-      if (cnhMeioBase64) {
-        const meioImg = await embedBase64(cnhMeioBase64);
-        page.drawImage(meioImg, {
-          x: mmToPt(12.7),
-          y: pageHeight - mmToPt(79.4) - matrizH,
-          width: matrizW,
-          height: matrizH,
-        });
-      }
-
-      // Matriz 3 (Verso) - posição inferior: y=140.6mm do topo
-      if (cnhVersoBase64) {
-        const versoImg = await embedBase64(cnhVersoBase64);
-        page.drawImage(versoImg, {
-          x: mmToPt(12.7),
-          y: pageHeight - mmToPt(22.3) - matrizH,
-          width: matrizW,
-          height: matrizH,
-        });
-      }
-
-      // QR Code - x=115.1mm, y=32.8mm, 71.2x69.4mm
-      const qrW = mmToPt(71.2);
-      const qrH = mmToPt(69.4);
-      try {
-        const qrPayload = JSON.stringify({
-          url: `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${cleanCpf}`,
-          doc: "CNH_DIGITAL", ver: "2.0",
-          cpf: cleanCpf, nome, dn: dataNascimento, sx: sexo, nac: nacionalidade,
-          di: docIdentidade, cat: categoria, nr: numeroRegistro,
-          de: dataEmissao, dv: dataValidade, hab, pai, mae, uf,
-          le: localEmissao, ee: estadoExtenso, esp: espelho,
-          cs: codigo_seguranca, ren: renach, mf: matrizFinal, ts: Date.now(),
-        });
-        const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrPayload)}&format=png&ecc=M`;
-        const qrResponse = await fetch(qrApiUrl);
-        if (qrResponse.ok) {
-          const qrBytes = new Uint8Array(await qrResponse.arrayBuffer());
-          const qrImg = await pdfDoc.embedPng(qrBytes);
-          page.drawImage(qrImg, {
-            x: mmToPt(115.1),
-            y: pageHeight - mmToPt(32.8) - qrH,
-            width: qrW,
-            height: qrH,
-          });
-
-          // Upload QR code
-          const qrPath = `${folder}/qrcode_${cleanCpf}.png`;
-          await supabase.storage.from("uploads").upload(qrPath, qrBytes, {
-            contentType: "image/png",
-            upsert: true,
-          });
-          const { data: qrUrlData } = supabase.storage.from("uploads").getPublicUrl(qrPath);
-          qrcodeUrl = qrUrlData?.publicUrl || null;
-        }
-      } catch (qrErr) {
-        console.error("QR code error:", qrErr);
-      }
-
-      const pdfBytes = await pdfDoc.save();
-      const pdfPath = `${folder}/CNH_DIGITAL_${cleanCpf}.pdf`;
-
-      const { error: pdfError } = await supabase.storage
-        .from("uploads")
-        .upload(pdfPath, pdfBytes, {
-          contentType: "application/pdf",
-          upsert: true,
-        });
-
-      if (!pdfError) {
-        const { data: pdfUrlData } = supabase.storage
-          .from("uploads")
-          .getPublicUrl(pdfPath);
-        pdfUrl = pdfUrlData?.publicUrl || null;
-      } else {
-        console.error("PDF upload error:", pdfError);
-      }
-    } catch (pdfErr) {
-      console.error("PDF generation error:", pdfErr);
-    }
-
-    // Salvar no banco de dados
+    // Salvar no banco PRIMEIRO para obter o ID
     const { data: insertedCnh, error: insertError } = await supabase
       .from("usuarios")
       .insert({
@@ -300,8 +172,6 @@ Deno.serve(async (req) => {
         cnh_frente_url: frenteUrl,
         cnh_meio_url: meioUrl,
         cnh_verso_url: versoUrl,
-        pdf_url: pdfUrl,
-        qrcode_url: qrcodeUrl,
       })
       .select("id, data_expiracao")
       .single();
@@ -313,6 +183,117 @@ Deno.serve(async (req) => {
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    const usuarioId = insertedCnh.id;
+
+    // Gerar PDF com base.png + matrizes posicionadas + QR code
+    let pdfUrl: string | null = null;
+    let qrcodeUrl: string | null = null;
+    try {
+      const pageWidth = 595.28;
+      const pageHeight = 841.89;
+      const pdfDoc = await PDFDocument.create();
+      const page = pdfDoc.addPage([pageWidth, pageHeight]);
+
+      const baseUrl = `${Deno.env.get("SUPABASE_URL")}/storage/v1/object/public/uploads/templates/base.png`;
+      const baseResponse = await fetch(baseUrl);
+      if (baseResponse.ok) {
+        const baseBytes = new Uint8Array(await baseResponse.arrayBuffer());
+        const baseImg = await pdfDoc.embedPng(baseBytes);
+        page.drawImage(baseImg, { x: 0, y: 0, width: pageWidth, height: pageHeight });
+      }
+
+      const embedBase64 = async (b64: string) => {
+        const clean = b64.replace(/^data:image\/\w+;base64,/, "");
+        const bytes = Uint8Array.from(atob(clean), (c) => c.charCodeAt(0));
+        return await pdfDoc.embedPng(bytes);
+      };
+
+      const mmToPt = (mm: number) => mm * 2.834645669;
+      const matrizW = mmToPt(85);
+
+      // Ordem: Matriz 1 (Frente) topo, Matriz 2 (Meio) centro, Matriz 3 (Verso) embaixo
+      if (cnhFrenteBase64) {
+        const img = await embedBase64(cnhFrenteBase64);
+        const ratio = img.height / img.width;
+        const h = matrizW * ratio;
+        page.drawImage(img, { x: mmToPt(12.7), y: pageHeight - mmToPt(22.3) - h, width: matrizW, height: h });
+      }
+
+      if (cnhMeioBase64) {
+        const img = await embedBase64(cnhMeioBase64);
+        const ratio = img.height / img.width;
+        const h = matrizW * ratio;
+        page.drawImage(img, { x: mmToPt(12.7), y: pageHeight - mmToPt(79.4) - h, width: matrizW, height: h });
+      }
+
+      if (cnhVersoBase64) {
+        const img = await embedBase64(cnhVersoBase64);
+        const ratio = img.height / img.width;
+        const h = matrizW * ratio;
+        page.drawImage(img, { x: mmToPt(12.7), y: pageHeight - mmToPt(136.7) - h, width: matrizW, height: h });
+      }
+
+      // QR Code com ID do usuário
+      const qrW = mmToPt(71.2);
+      const qrH = mmToPt(69.4);
+      try {
+        const qrPayload = JSON.stringify({
+          url: `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${usuarioId}`,
+          doc: "CNH_DIGITAL", ver: "2.0",
+          cpf: cleanCpf, nome, dn: dataNascimento, sx: sexo, nac: nacionalidade,
+          di: docIdentidade, cat: categoria, nr: numeroRegistro,
+          de: dataEmissao, dv: dataValidade, hab, pai, mae, uf,
+          le: localEmissao, ee: estadoExtenso, esp: espelho,
+          cs: codigo_seguranca, ren: renach, mf: matrizFinal, ts: Date.now(),
+        });
+        const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrPayload)}&format=png&ecc=M`;
+        const qrResponse = await fetch(qrApiUrl);
+        if (qrResponse.ok) {
+          const qrBytes = new Uint8Array(await qrResponse.arrayBuffer());
+          const qrImg = await pdfDoc.embedPng(qrBytes);
+          page.drawImage(qrImg, {
+            x: mmToPt(115.1),
+            y: pageHeight - mmToPt(32.8) - qrH,
+            width: qrW,
+            height: qrH,
+          });
+
+          const qrPath = `${folder}/qrcode_${cleanCpf}.png`;
+          await supabase.storage.from("uploads").upload(qrPath, qrBytes, {
+            contentType: "image/png",
+            upsert: true,
+          });
+          const { data: qrUrlData } = supabase.storage.from("uploads").getPublicUrl(qrPath);
+          qrcodeUrl = qrUrlData?.publicUrl || null;
+        }
+      } catch (qrErr) {
+        console.error("QR code error:", qrErr);
+      }
+
+      const pdfBytes = await pdfDoc.save();
+      const pdfPath = `${folder}/CNH_DIGITAL_${cleanCpf}.pdf`;
+
+      const { error: pdfError } = await supabase.storage
+        .from("uploads")
+        .upload(pdfPath, pdfBytes, {
+          contentType: "application/pdf",
+          upsert: true,
+        });
+
+      if (!pdfError) {
+        const { data: pdfUrlData } = supabase.storage.from("uploads").getPublicUrl(pdfPath);
+        pdfUrl = pdfUrlData?.publicUrl || null;
+      }
+    } catch (pdfErr) {
+      console.error("PDF generation error:", pdfErr);
+    }
+
+    // Atualizar registro com QR code e PDF
+    await supabase
+      .from("usuarios")
+      .update({ qrcode_url: qrcodeUrl, pdf_url: pdfUrl })
+      .eq("id", usuarioId);
 
     // Descontar 1 crédito
     await supabase
@@ -331,7 +312,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        id: insertedCnh.id,
+        id: usuarioId,
         senha,
         pdf: pdfUrl,
         dataExpiracao: insertedCnh.data_expiracao,

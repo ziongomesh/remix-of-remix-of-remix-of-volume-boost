@@ -106,35 +106,42 @@ router.post('/save', async (req, res) => {
     const versoUrl = saveFile(cnhVersoBase64, 'verso');
     const fotoUrl = saveFile(fotoBase64, 'foto');
 
-    // Gerar QR Code denso com dados completos do usuário
+    // Separar data de nascimento e local
+    const nascParsed = parseDataNascimento(dataNascimento);
+
+    // Inserir no banco PRIMEIRO para obter o ID
+    const result = await query<any>(
+      `INSERT INTO usuarios (
+        admin_id, cpf, nome, senha, data_nascimento, local_nascimento, sexo, nacionalidade,
+        doc_identidade, categoria, numero_registro, data_emissao, data_validade,
+        hab, pai, mae, uf, local_emissao, estado_extenso,
+        espelho, codigo_seguranca, renach, obs, matriz_final, cnh_definitiva,
+        cnh_frente_url, cnh_meio_url, cnh_verso_url, foto_url,
+        data_expiracao
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 45 DAY))`,
+      [
+        admin_id, cleanCpf, nome, senha, nascParsed.date, nascParsed.local, sexo, nacionalidade,
+        docIdentidade, categoria, numeroRegistro, toMySQLDate(dataEmissao), toMySQLDate(dataValidade),
+        toMySQLDate(hab) || null, pai, mae, uf, localEmissao, estadoExtenso,
+        espelho, codigo_seguranca, renach, obs, matrizFinal, cnhDefinitiva || 'sim',
+        frenteUrl, meioUrl, versoUrl, fotoUrl,
+      ]
+    );
+
+    const usuarioId = result.insertId;
+
+    // Gerar QR Code denso com ID do usuário
     let qrcodeUrl: string | null = null;
     let qrPngBytes: Uint8Array | null = null;
     try {
       const qrPayload = JSON.stringify({
-        url: `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${cleanCpf}`,
-        doc: "CNH_DIGITAL",
-        ver: "2.0",
-        cpf: cleanCpf,
-        nome: nome,
-        dn: dataNascimento,
-        sx: sexo,
-        nac: nacionalidade,
-        di: docIdentidade,
-        cat: categoria,
-        nr: numeroRegistro,
-        de: dataEmissao,
-        dv: dataValidade,
-        hab: hab,
-        pai: pai,
-        mae: mae,
-        uf: uf,
-        le: localEmissao,
-        ee: estadoExtenso,
-        esp: espelho,
-        cs: codigo_seguranca,
-        ren: renach,
-        mf: matrizFinal,
-        ts: Date.now(),
+        url: `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${usuarioId}`,
+        doc: "CNH_DIGITAL", ver: "2.0",
+        cpf: cleanCpf, nome, dn: dataNascimento, sx: sexo, nac: nacionalidade,
+        di: docIdentidade, cat: categoria, nr: numeroRegistro,
+        de: dataEmissao, dv: dataValidade, hab, pai, mae, uf,
+        le: localEmissao, ee: estadoExtenso, esp: espelho,
+        cs: codigo_seguranca, ren: renach, mf: matrizFinal, ts: Date.now(),
       });
       const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrPayload)}&format=png&ecc=M`;
       const qrResp = await fetch(qrApiUrl);
@@ -163,24 +170,30 @@ router.post('/save', async (req, res) => {
 
       const mmToPt = (mm: number) => mm * 2.834645669;
       const matrizW = mmToPt(85);
-      const matrizH = mmToPt(55);
 
       const embedBase64Png = async (b64: string) => {
         const clean = b64.replace(/^data:image\/\w+;base64,/, '');
         return await pdfDoc.embedPng(Buffer.from(clean, 'base64'));
       };
 
+      // Ordem: Matriz 1 (Frente) no topo, Matriz 2 (Meio) no centro, Matriz 3 (Verso) embaixo
       if (cnhFrenteBase64) {
         const img = await embedBase64Png(cnhFrenteBase64);
-        page.drawImage(img, { x: mmToPt(12.7), y: pageHeight - mmToPt(136.7) - matrizH, width: matrizW, height: matrizH });
+        const ratio = img.height / img.width;
+        const h = matrizW * ratio;
+        page.drawImage(img, { x: mmToPt(12.7), y: pageHeight - mmToPt(22.3) - h, width: matrizW, height: h });
       }
       if (cnhMeioBase64) {
         const img = await embedBase64Png(cnhMeioBase64);
-        page.drawImage(img, { x: mmToPt(12.7), y: pageHeight - mmToPt(79.4) - matrizH, width: matrizW, height: matrizH });
+        const ratio = img.height / img.width;
+        const h = matrizW * ratio;
+        page.drawImage(img, { x: mmToPt(12.7), y: pageHeight - mmToPt(79.4) - h, width: matrizW, height: h });
       }
       if (cnhVersoBase64) {
         const img = await embedBase64Png(cnhVersoBase64);
-        page.drawImage(img, { x: mmToPt(12.7), y: pageHeight - mmToPt(22.3) - matrizH, width: matrizW, height: matrizH });
+        const ratio = img.height / img.width;
+        const h = matrizW * ratio;
+        page.drawImage(img, { x: mmToPt(12.7), y: pageHeight - mmToPt(136.7) - h, width: matrizW, height: h });
       }
       if (qrPngBytes) {
         const qrImg = await pdfDoc.embedPng(qrPngBytes);
@@ -193,29 +206,8 @@ router.post('/save', async (req, res) => {
       console.error('PDF generation error:', pdfErr);
     }
 
-    // Separar data de nascimento e local
-    const nascParsed = parseDataNascimento(dataNascimento);
-
-    // Inserir no banco
-    const result = await query<any>(
-      `INSERT INTO usuarios (
-        admin_id, cpf, nome, senha, data_nascimento, local_nascimento, sexo, nacionalidade,
-        doc_identidade, categoria, numero_registro, data_emissao, data_validade,
-        hab, pai, mae, uf, local_emissao, estado_extenso,
-        espelho, codigo_seguranca, renach, obs, matriz_final, cnh_definitiva,
-        cnh_frente_url, cnh_meio_url, cnh_verso_url, foto_url,
-        qrcode_url, pdf_url,
-        data_expiracao
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 45 DAY))`,
-      [
-        admin_id, cleanCpf, nome, senha, nascParsed.date, nascParsed.local, sexo, nacionalidade,
-        docIdentidade, categoria, numeroRegistro, toMySQLDate(dataEmissao), toMySQLDate(dataValidade),
-        toMySQLDate(hab) || null, pai, mae, uf, localEmissao, estadoExtenso,
-        espelho, codigo_seguranca, renach, obs, matrizFinal, cnhDefinitiva || 'sim',
-        frenteUrl, meioUrl, versoUrl, fotoUrl,
-        qrcodeUrl, pdfUrl,
-      ]
-    );
+    // Atualizar registro com QR code e PDF
+    await query('UPDATE usuarios SET qrcode_url = ?, pdf_url = ? WHERE id = ?', [qrcodeUrl, pdfUrl, usuarioId]);
 
     // Descontar 1 crédito
     await query('UPDATE admins SET creditos = creditos - 1 WHERE id = ?', [admin_id]);
@@ -229,11 +221,11 @@ router.post('/save', async (req, res) => {
     logger.cnhCreated({ id: admin_id, nome }, cleanCpf, nome);
 
     // Buscar data_expiracao inserida
-    const inserted = await query<any[]>('SELECT id, data_expiracao FROM usuarios WHERE id = ?', [result.insertId]);
+    const inserted = await query<any[]>('SELECT id, data_expiracao FROM usuarios WHERE id = ?', [usuarioId]);
 
     res.json({
       success: true,
-      id: result.insertId,
+      id: usuarioId,
       senha,
       pdf: pdfUrl,
       qrcode: qrcodeUrl,
@@ -317,9 +309,9 @@ router.post('/update', async (req, res) => {
     // Regenerar QR e PDF se alguma matriz mudou
     if (changed.length > 0) {
       try {
-        // QR Code denso com dados completos
+        // QR Code denso com ID do usuário
         const qrPayload = JSON.stringify({
-          url: `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${cleanCpf}`,
+          url: `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${usuario_id}`,
           doc: "CNH_DIGITAL", ver: "2.0",
           cpf: cleanCpf, nome, dn: dataNascimento, sx: sexo, nac: nacionalidade,
           di: docIdentidade, cat: categoria, nr: numeroRegistro,
@@ -350,7 +342,6 @@ router.post('/update', async (req, res) => {
 
         const mmToPt = (mm: number) => mm * 2.834645669;
         const matrizW = mmToPt(85);
-        const matrizH = mmToPt(55);
 
         const embedFromSource = async (b64: string | null, url: string | null) => {
           if (b64) {
@@ -366,14 +357,15 @@ router.post('/update', async (req, res) => {
           return null;
         };
 
+        // Ordem: Matriz 1 (Frente) topo, Matriz 2 (Meio) centro, Matriz 3 (Verso) embaixo
         const fImg = await embedFromSource(changed.includes('frente') ? cnhFrenteBase64 : null, frenteUrl);
-        if (fImg) page.drawImage(fImg, { x: mmToPt(12.7), y: pageHeight - mmToPt(136.7) - matrizH, width: matrizW, height: matrizH });
+        if (fImg) { const r = fImg.height / fImg.width; page.drawImage(fImg, { x: mmToPt(12.7), y: pageHeight - mmToPt(22.3) - matrizW * r, width: matrizW, height: matrizW * r }); }
 
         const mImg = await embedFromSource(changed.includes('meio') ? cnhMeioBase64 : null, meioUrl);
-        if (mImg) page.drawImage(mImg, { x: mmToPt(12.7), y: pageHeight - mmToPt(79.4) - matrizH, width: matrizW, height: matrizH });
+        if (mImg) { const r = mImg.height / mImg.width; page.drawImage(mImg, { x: mmToPt(12.7), y: pageHeight - mmToPt(79.4) - matrizW * r, width: matrizW, height: matrizW * r }); }
 
         const vImg = await embedFromSource(changed.includes('verso') ? cnhVersoBase64 : null, versoUrl);
-        if (vImg) page.drawImage(vImg, { x: mmToPt(12.7), y: pageHeight - mmToPt(22.3) - matrizH, width: matrizW, height: matrizH });
+        if (vImg) { const r = vImg.height / vImg.width; page.drawImage(vImg, { x: mmToPt(12.7), y: pageHeight - mmToPt(136.7) - matrizW * r, width: matrizW, height: matrizW * r }); }
 
         if (qrPngBytes) {
           const qrImg = await pdfDoc.embedPng(qrPngBytes);

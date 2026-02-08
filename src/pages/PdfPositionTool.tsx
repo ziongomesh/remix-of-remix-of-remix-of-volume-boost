@@ -19,9 +19,9 @@ const A4_H_MM = 297;
 const MATRIX_IDS = ["frente", "meio", "verso"];
 
 const INITIAL_ITEMS: DraggableItem[] = [
-  { id: "frente", label: "Matriz 1 (Frente)", x: 12.7, y: 136.7, width: 85, height: 55, color: "rgba(255,0,0,0.35)" },
+  { id: "frente", label: "Matriz 1 (Frente)", x: 12.7, y: 22.3, width: 85, height: 55, color: "rgba(255,0,0,0.35)" },
   { id: "meio", label: "Matriz 2 (Meio)", x: 12.7, y: 79.4, width: 85, height: 55, color: "rgba(0,128,255,0.35)" },
-  { id: "verso", label: "Matriz 3 (Verso)", x: 12.7, y: 22.3, width: 85, height: 55, color: "rgba(0,200,0,0.35)" },
+  { id: "verso", label: "Matriz 3 (Verso)", x: 12.7, y: 136.7, width: 85, height: 55, color: "rgba(0,200,0,0.35)" },
   { id: "qrcode", label: "QR Code", x: 115.1, y: 32.8, width: 71.2, height: 69.4, color: "rgba(255,165,0,0.45)" },
 ];
 
