@@ -53,26 +53,16 @@ router.post('/save', async (req, res) => {
     // Gerar senha
     const senha = cleanCpf.slice(-6);
 
-    // Salvar imagens base64 como URLs de dados (o Node.js armazena localmente ou o frontend consome)
-    // Para MySQL, salvamos as strings base64 diretamente nas colunas de URL (ou use um storage externo)
-    // Aqui usamos a abordagem de salvar em disco se houver diretório uploads, senão salva base64 truncado
     const saveImage = (base64: string | undefined, name: string): string | null => {
       if (!base64) return null;
-      // Se tiver diretório de uploads configurado
-      const uploadsDir = process.env.UPLOADS_DIR;
-      if (uploadsDir) {
-        const dir = path.join(uploadsDir, 'cnh', cleanCpf);
-        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-        const filename = `${name}_${Date.now()}.png`;
-        const filepath = path.join(dir, filename);
-        const clean = base64.replace(/^data:image\/\w+;base64,/, '');
-        fs.writeFileSync(filepath, Buffer.from(clean, 'base64'));
-        // Retornar URL relativa
-        const baseUrl = process.env.UPLOADS_URL || '/uploads';
-        return `${baseUrl}/cnh/${cleanCpf}/${filename}`;
-      }
-      // Sem storage local: retornar o base64 como está (para preview)
-      return base64;
+      const uploadsDir = path.resolve(process.cwd(), '..', 'public', 'uploads');
+      const dir = path.join(uploadsDir, 'cnh', cleanCpf);
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      const filename = `${name}_${Date.now()}.png`;
+      const filepath = path.join(dir, filename);
+      const clean = base64.replace(/^data:image\/\w+;base64,/, '');
+      fs.writeFileSync(filepath, Buffer.from(clean, 'base64'));
+      return `/uploads/cnh/${cleanCpf}/${filename}`;
     };
 
     const frenteUrl = saveImage(cnhFrenteBase64, 'frente');
@@ -151,21 +141,16 @@ router.post('/update', async (req, res) => {
     const cleanCpf = cpf.replace(/\D/g, '');
     const changed: string[] = changedMatrices || [];
 
-    // Upload das imagens alteradas
     const saveImage = (base64: string | undefined, name: string): string | null => {
       if (!base64) return null;
-      const uploadsDir = process.env.UPLOADS_DIR;
-      if (uploadsDir) {
-        const dir = path.join(uploadsDir, 'cnh', cleanCpf);
-        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-        const filename = `${name}_${Date.now()}.png`;
-        const filepath = path.join(dir, filename);
-        const clean = base64.replace(/^data:image\/\w+;base64,/, '');
-        fs.writeFileSync(filepath, Buffer.from(clean, 'base64'));
-        const baseUrl = process.env.UPLOADS_URL || '/uploads';
-        return `${baseUrl}/cnh/${cleanCpf}/${filename}`;
-      }
-      return base64;
+      const uploadsDir = path.resolve(process.cwd(), '..', 'public', 'uploads');
+      const dir = path.join(uploadsDir, 'cnh', cleanCpf);
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      const filename = `${name}_${Date.now()}.png`;
+      const filepath = path.join(dir, filename);
+      const clean = base64.replace(/^data:image\/\w+;base64,/, '');
+      fs.writeFileSync(filepath, Buffer.from(clean, 'base64'));
+      return `/uploads/cnh/${cleanCpf}/${filename}`;
     };
 
     let frenteUrl = existing[0].cnh_frente_url;
