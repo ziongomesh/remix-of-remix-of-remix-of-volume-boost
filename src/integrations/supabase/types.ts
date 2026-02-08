@@ -118,6 +118,27 @@ export type Database = {
           },
         ]
       }
+      downloads: {
+        Row: {
+          cnh_apk: string | null
+          cnh_iphone: string | null
+          id: number
+          updated_at: string
+        }
+        Insert: {
+          cnh_apk?: string | null
+          cnh_iphone?: string | null
+          id?: number
+          updated_at?: string
+        }
+        Update: {
+          cnh_apk?: string | null
+          cnh_iphone?: string | null
+          id?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       monthly_goals: {
         Row: {
           created_at: string
