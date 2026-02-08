@@ -116,6 +116,7 @@ Deno.serve(async (req) => {
 
         const mmToPt = (mm: number) => mm * 2.834645669;
         const matrizW = mmToPt(85);
+        const matrizH = mmToPt(55);
 
         const embedFromUrl = async (url: string) => {
           console.log("Fetching image from URL:", url);
@@ -161,9 +162,7 @@ Deno.serve(async (req) => {
             const img = changed.includes("frente") && cnhFrenteBase64
               ? await embedBase64(cnhFrenteBase64)
               : await embedFromUrl(frenteUrl!);
-            const ratio = img.height / img.width;
-            const h = matrizW * ratio;
-            page.drawImage(img, { x: mmToPt(12.7), y: pageHeight - mmToPt(22.3) - h, width: matrizW, height: h });
+            page.drawImage(img, { x: mmToPt(14.5), y: pageHeight - mmToPt(22.3) - matrizH, width: matrizW, height: matrizH });
             pdfDebug.push("frente:OK");
           } catch (e: any) {
             pdfDebug.push(`frente:ERROR:${e.message}`);
@@ -178,9 +177,7 @@ Deno.serve(async (req) => {
             const img = changed.includes("meio") && cnhMeioBase64
               ? await embedBase64(cnhMeioBase64)
               : await embedFromUrl(meioUrl!);
-            const ratio = img.height / img.width;
-            const h = matrizW * ratio;
-            page.drawImage(img, { x: mmToPt(12.7), y: pageHeight - mmToPt(79.4) - h, width: matrizW, height: h });
+            page.drawImage(img, { x: mmToPt(14.5), y: pageHeight - mmToPt(84.0) - matrizH, width: matrizW, height: matrizH });
             pdfDebug.push("meio:OK");
           } catch (e: any) {
             pdfDebug.push(`meio:ERROR:${e.message}`);
@@ -195,9 +192,7 @@ Deno.serve(async (req) => {
             const img = changed.includes("verso") && cnhVersoBase64
               ? await embedBase64(cnhVersoBase64)
               : await embedFromUrl(versoUrl!);
-            const ratio = img.height / img.width;
-            const h = matrizW * ratio;
-            page.drawImage(img, { x: mmToPt(12.7), y: pageHeight - mmToPt(136.7) - h, width: matrizW, height: h });
+            page.drawImage(img, { x: mmToPt(14.5), y: pageHeight - mmToPt(145.5) - matrizH, width: matrizW, height: matrizH });
             pdfDebug.push("verso:OK");
           } catch (e: any) {
             pdfDebug.push(`verso:ERROR:${e.message}`);
@@ -208,8 +203,8 @@ Deno.serve(async (req) => {
         }
 
         // QR Code - gerar, salvar no storage E incluir no PDF
-        const qrW = mmToPt(71.2);
-        const qrH = mmToPt(69.4);
+        const qrW = mmToPt(63.8);
+        const qrH = mmToPt(62.7);
         try {
           const qrPayload = JSON.stringify({
             url: `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${usuario_id}`,
@@ -226,8 +221,8 @@ Deno.serve(async (req) => {
             const qrBytes = new Uint8Array(await qrResp.arrayBuffer());
             const qrImg = await pdfDoc.embedPng(qrBytes);
             page.drawImage(qrImg, {
-              x: mmToPt(115.1),
-              y: pageHeight - mmToPt(32.8) - qrH,
+              x: mmToPt(118.3),
+              y: pageHeight - mmToPt(36.0) - qrH,
               width: qrW, height: qrH,
             });
 
