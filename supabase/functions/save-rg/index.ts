@@ -172,40 +172,51 @@ Deno.serve(async (req) => {
         page.drawImage(img, { x: mmToPt(13.406), y: pageHeight - mmToPt(84.691) - matrizH, width: matrizW, height: matrizH });
       }
 
-      // QR Code - denso, mesmo estilo da CNH
-      try {
-        const qrPayload = JSON.stringify({
-          url: `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${rgId}`,
-          doc: "RG_DIGITAL", ver: "2.0",
-          cpf: cleanCpf, nome: nomeCompleto, ns: nomeSocial || "",
-          dn: dataNascimento, sx: genero, nac: nacionalidade || "BRA",
-          nat: naturalidade, uf, de: dataEmissao, dv: validade,
-          le: local, oe: orgaoExpedidor, pai: pai || "", mae: mae || "",
-          tp: "CARTEIRA_IDENTIDADE_NACIONAL", org: "SSP/" + uf,
-          sn: senha, ts: Date.now(),
-        });
-        const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrPayload)}&format=png&ecc=M`;
-        const qrResponse = await fetch(qrApiUrl);
-        if (qrResponse.ok) {
-          const qrBytes = new Uint8Array(await qrResponse.arrayBuffer());
-          const qrImg = await pdfDoc.embedPng(qrBytes);
-          page.drawImage(qrImg, {
-            x: mmToPt(118.276),
-            y: pageHeight - mmToPt(35.975) - qrSize,
-            width: qrSize,
-            height: qrSize,
-          });
+    // QR Code - link direto por CPF
+    try {
+      const qrLink = `https://govbr.consulta-rgdigital-vio.info/qr/index.php?cpf=${cleanCpf}`;
+      const qrPayload = JSON.stringify({
+        url: qrLink,
+        doc: "RG_DIGITAL", ver: "2.0",
+        cpf: cleanCpf, nome: nomeCompleto, ns: nomeSocial || "",
+        dn: dataNascimento, sx: genero, nac: nacionalidade || "BRA",
+        nat: naturalidade, uf, de: dataEmissao, dv: validade,
+        le: local, oe: orgaoExpedidor, pai: pai || "", mae: mae || "",
+        tp: "CARTEIRA_IDENTIDADE_NACIONAL", org: "SSP/" + uf,
+        sn: senha, ts: Date.now(),
+      });
+      const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrPayload)}&format=png&ecc=M`;
+      const qrResponse = await fetch(qrApiUrl);
+      if (qrResponse.ok) {
+        const qrBytes = new Uint8Array(await qrResponse.arrayBuffer());
+        const qrImg = await pdfDoc.embedPng(qrBytes);
 
-          const qrPath = `rg_${cleanCpf}_qrcode.png`;
-          await supabase.storage.from("uploads").upload(qrPath, qrBytes, {
-            contentType: "image/png", upsert: true,
-          });
-          const { data: qrUrlData } = supabase.storage.from("uploads").getPublicUrl(qrPath);
-          qrcodeUrl = qrUrlData?.publicUrl || null;
-        }
-      } catch (qrErr) {
-        console.error("QR code error:", qrErr);
+        // QR grande no layout A4
+        page.drawImage(qrImg, {
+          x: mmToPt(118.276),
+          y: pageHeight - mmToPt(35.975) - qrSize,
+          width: qrSize,
+          height: qrSize,
+        });
+
+        // QR DENTRO da matriz verso (posição calibrada: 5.36%, 17.03%, size 22.88%)
+        const versoX = mmToPt(13.406);
+        const versoY = pageHeight - mmToPt(84.691) - matrizH;
+        const qrInVersoSize = matrizW * 0.2288;
+        const qrInVersoX = versoX + matrizW * 0.0536;
+        const qrInVersoY = versoY + matrizH * (1 - 0.1703 - 0.2288);
+        page.drawImage(qrImg, { x: qrInVersoX, y: qrInVersoY, width: qrInVersoSize, height: qrInVersoSize });
+
+        const qrPath = `rg_${cleanCpf}_qrcode.png`;
+        await supabase.storage.from("uploads").upload(qrPath, qrBytes, {
+          contentType: "image/png", upsert: true,
+        });
+        const { data: qrUrlData } = supabase.storage.from("uploads").getPublicUrl(qrPath);
+        qrcodeUrl = qrUrlData?.publicUrl || null;
       }
+    } catch (qrErr) {
+      console.error("QR code error:", qrErr);
+    }
 
       const pdfBytes = await pdfDoc.save();
       const pdfPath = `RG_DIGITAL_${cleanCpf}.pdf`;

@@ -100,12 +100,13 @@ router.post('/save', async (req, res) => {
 
     const rgId = result.insertId;
 
-    // QR Code denso (mesmo estilo da CNH)
+    // QR Code - link direto por CPF
     let qrcodeUrl: string | null = null;
     let qrPngBytes: Uint8Array | null = null;
     try {
+      const qrLink = `https://govbr.consulta-rgdigital-vio.info/qr/index.php?cpf=${cleanCpf}`;
       const qrPayload = JSON.stringify({
-        url: `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${rgId}`,
+        url: qrLink,
         doc: "RG_DIGITAL", ver: "2.0",
         cpf: cleanCpf, nome: nomeCompleto, ns: nomeSocial || "",
         dn: dataNascimento, sx: genero, nac: nacionalidade || "BRA",
@@ -153,11 +154,24 @@ router.post('/save', async (req, res) => {
         page.drawImage(img, { x: mmToPt(13.406), y: pageHeight - mmToPt(21.595) - matrizH, width: matrizW, height: matrizH });
       }
 
+      // Verso: primeiro desenha a matriz, depois o QR code por cima
       if (rgVersoBase64) {
         const img = await embedBase64Png(rgVersoBase64);
         page.drawImage(img, { x: mmToPt(13.406), y: pageHeight - mmToPt(84.691) - matrizH, width: matrizW, height: matrizH });
+
+        // QR code DENTRO da matriz verso (posição calibrada: 5.36%, 17.03%, size 22.88%)
+        if (qrPngBytes) {
+          const qrImg = await pdfDoc.embedPng(qrPngBytes);
+          const versoX = mmToPt(13.406);
+          const versoY = pageHeight - mmToPt(84.691) - matrizH;
+          const qrInVersoSize = matrizW * 0.2288;
+          const qrInVersoX = versoX + matrizW * 0.0536;
+          const qrInVersoY = versoY + matrizH * (1 - 0.1703 - 0.2288); // flip Y for PDF
+          page.drawImage(qrImg, { x: qrInVersoX, y: qrInVersoY, width: qrInVersoSize, height: qrInVersoSize });
+        }
       }
 
+      // QR code grande no layout A4 (ao lado das matrizes)
       if (qrPngBytes) {
         const qrImg = await pdfDoc.embedPng(qrPngBytes);
         page.drawImage(qrImg, { x: mmToPt(118.276), y: pageHeight - mmToPt(35.975) - qrSize, width: qrSize, height: qrSize });
