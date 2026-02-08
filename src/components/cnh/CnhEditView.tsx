@@ -306,6 +306,10 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
         fotoBase64,
       });
 
+      console.log('Update result:', JSON.stringify(data));
+      if ((data as any).pdfDebug) {
+        console.log('PDF Debug:', (data as any).pdfDebug);
+      }
       onSaved();
     } catch (err: any) {
       console.error('Erro ao salvar:', err);
