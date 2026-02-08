@@ -245,73 +245,122 @@ function CnhHistoryCard({
   highlight?: boolean;
 }) {
   const [showPreview, setShowPreview] = useState(false);
+  const [expandedImage, setExpandedImage] = useState<string | null>(null);
+
+  const preventDrag = (e: React.DragEvent) => e.preventDefault();
+  const preventContext = (e: React.MouseEvent) => e.preventDefault();
+  const imgProps = {
+    draggable: false,
+    onDragStart: preventDrag,
+    onContextMenu: preventContext,
+    style: { userSelect: 'none', WebkitUserSelect: 'none' } as React.CSSProperties,
+  };
 
   return (
-    <div className={`border rounded-lg p-4 ${highlight ? 'border-primary/30' : 'border-border'} hover:bg-muted/20 transition-colors`}>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          {usuario.foto_url ? (
-            <img
-              src={usuario.foto_url}
-              alt="Foto"
-              className="h-16 w-16 object-cover rounded-full border cursor-pointer hover:ring-2 hover:ring-primary/50"
-              onClick={() => setShowPreview(!showPreview)}
-            />
-          ) : usuario.cnh_frente_url ? (
-            <img
-              src={usuario.cnh_frente_url}
-              alt="CNH Frente"
-              className="h-16 w-24 object-cover rounded border cursor-pointer hover:ring-2 hover:ring-primary/50"
-              onClick={() => setShowPreview(!showPreview)}
-            />
-          ) : null}
-          <div>
-            <h3 className="font-semibold text-foreground">{usuario.nome}</h3>
-            <p className="text-sm text-muted-foreground">CPF: {formatCpf(usuario.cpf)}</p>
-            <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-              <span>Cat: {usuario.categoria || '—'}</span>
-              <span>UF: {usuario.uf || '—'}</span>
-              <span>Criado: {formatDate(usuario.created_at)}</span>
+    <>
+      <div className={`border rounded-lg p-4 ${highlight ? 'border-primary/30' : 'border-border'} hover:bg-muted/20 transition-colors`}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            {usuario.foto_url ? (
+              <img
+                src={usuario.foto_url}
+                alt="Foto"
+                className="h-16 w-16 object-cover rounded-full border cursor-pointer hover:ring-2 hover:ring-primary/50"
+                onClick={() => setShowPreview(!showPreview)}
+                {...imgProps}
+              />
+            ) : usuario.cnh_frente_url ? (
+              <img
+                src={usuario.cnh_frente_url}
+                alt="CNH Frente"
+                className="h-16 w-24 object-cover rounded border cursor-pointer hover:ring-2 hover:ring-primary/50"
+                onClick={() => setShowPreview(!showPreview)}
+                {...imgProps}
+              />
+            ) : null}
+            <div>
+              <h3 className="font-semibold text-foreground">{usuario.nome}</h3>
+              <p className="text-sm text-muted-foreground">CPF: {formatCpf(usuario.cpf)}</p>
+              <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                <span>Cat: {usuario.categoria || '—'}</span>
+                <span>UF: {usuario.uf || '—'}</span>
+                <span>Criado: {formatDate(usuario.created_at)}</span>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {usuario.pdf_url && (
-            <Button variant="outline" size="sm" asChild>
-              <a href={usuario.pdf_url} target="_blank" rel="noopener noreferrer">
-                <FileText className="h-4 w-4 mr-1" /> PDF
-              </a>
+          <div className="flex items-center gap-2">
+            {usuario.pdf_url && (
+              <Button variant="outline" size="sm" asChild>
+                <a href={usuario.pdf_url} target="_blank" rel="noopener noreferrer">
+                  <FileText className="h-4 w-4 mr-1" /> PDF
+                </a>
+              </Button>
+            )}
+            <Button variant="default" size="sm" onClick={onEdit}>
+              <Edit className="h-4 w-4 mr-1" /> Editar
             </Button>
-          )}
-          <Button variant="default" size="sm" onClick={onEdit}>
-            <Edit className="h-4 w-4 mr-1" /> Editar
-          </Button>
+          </div>
         </div>
+
+        {/* Preview expandido das 3 matrizes */}
+        {showPreview && (
+          <div className="grid grid-cols-3 gap-3 mt-4 pt-4 border-t border-border">
+            {usuario.cnh_frente_url && (
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground mb-1">Frente</p>
+                <img
+                  src={usuario.cnh_frente_url}
+                  alt="Frente"
+                  className="w-full rounded border cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => setExpandedImage(usuario.cnh_frente_url)}
+                  {...imgProps}
+                />
+              </div>
+            )}
+            {usuario.cnh_meio_url && (
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground mb-1">Meio</p>
+                <img
+                  src={usuario.cnh_meio_url}
+                  alt="Meio"
+                  className="w-full rounded border cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => setExpandedImage(usuario.cnh_meio_url)}
+                  {...imgProps}
+                />
+              </div>
+            )}
+            {usuario.cnh_verso_url && (
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground mb-1">Verso</p>
+                <img
+                  src={usuario.cnh_verso_url}
+                  alt="Verso"
+                  className="w-full rounded border cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => setExpandedImage(usuario.cnh_verso_url)}
+                  {...imgProps}
+                />
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Preview expandido das 3 matrizes */}
-      {showPreview && (
-        <div className="grid grid-cols-3 gap-3 mt-4 pt-4 border-t border-border">
-          {usuario.cnh_frente_url && (
-            <div className="text-center">
-              <p className="text-xs text-muted-foreground mb-1">Frente</p>
-              <img src={usuario.cnh_frente_url} alt="Frente" className="w-full rounded border" />
-            </div>
-          )}
-          {usuario.cnh_meio_url && (
-            <div className="text-center">
-              <p className="text-xs text-muted-foreground mb-1">Meio</p>
-              <img src={usuario.cnh_meio_url} alt="Meio" className="w-full rounded border" />
-            </div>
-          )}
-          {usuario.cnh_verso_url && (
-            <div className="text-center">
-              <p className="text-xs text-muted-foreground mb-1">Verso</p>
-              <img src={usuario.cnh_verso_url} alt="Verso" className="w-full rounded border" />
-            </div>
-          )}
+      {/* Modal de imagem expandida */}
+      {expandedImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm cursor-pointer"
+          onClick={() => setExpandedImage(null)}
+          onContextMenu={preventContext}
+        >
+          <img
+            src={expandedImage}
+            alt="Preview"
+            className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+            {...imgProps}
+          />
         </div>
       )}
-    </div>
+    </>
   );
 }
