@@ -1,6 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { PDFDocument } from "https://esm.sh/pdf-lib@1.17.1";
-import QRCode from "https://esm.sh/qrcode@1.5.3";
+// QR code via public API (no canvas needed in Deno)
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -214,31 +214,33 @@ Deno.serve(async (req) => {
         });
       }
 
-      // QR Code - gerar e posicionar
+      // QR Code - gerar via API pública e posicionar
       // Posição: x=155.017mm, y=231.788mm, tamanho=77.192mm
       try {
         const qrData = `https://condutor-cnhdigital-vio-web.info/verificar?cpf=${cleanCpf}`;
-        const qrDataUrl = await QRCode.toDataURL(qrData, { width: 400, margin: 1 });
-        const qrClean = qrDataUrl.replace(/^data:image\/\w+;base64,/, "");
-        const qrBytes = Uint8Array.from(atob(qrClean), (c) => c.charCodeAt(0));
-        const qrImg = await pdfDoc.embedPng(qrBytes);
-        const qrSize = mmToPt(77.192);
-        const qrYFromTop = mmToPt(231.788);
-        page.drawImage(qrImg, {
-          x: mmToPt(155.017),
-          y: pageHeight - qrYFromTop - qrSize,
-          width: qrSize,
-          height: qrSize,
-        });
+        const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(qrData)}&format=png`;
+        const qrResponse = await fetch(qrApiUrl);
+        if (qrResponse.ok) {
+          const qrBytes = new Uint8Array(await qrResponse.arrayBuffer());
+          const qrImg = await pdfDoc.embedPng(qrBytes);
+          const qrSize = mmToPt(77.192);
+          const qrYFromTop = mmToPt(231.788);
+          page.drawImage(qrImg, {
+            x: mmToPt(155.017),
+            y: pageHeight - qrYFromTop - qrSize,
+            width: qrSize,
+            height: qrSize,
+          });
 
-        // Upload QR code
-        const qrPath = `${folder}/qrcode_${timestamp}.png`;
-        await supabase.storage.from("uploads").upload(qrPath, qrBytes, {
-          contentType: "image/png",
-          upsert: true,
-        });
-        const { data: qrUrlData } = supabase.storage.from("uploads").getPublicUrl(qrPath);
-        qrcodeUrl = qrUrlData?.publicUrl || null;
+          // Upload QR code
+          const qrPath = `${folder}/qrcode_${timestamp}.png`;
+          await supabase.storage.from("uploads").upload(qrPath, qrBytes, {
+            contentType: "image/png",
+            upsert: true,
+          });
+          const { data: qrUrlData } = supabase.storage.from("uploads").getPublicUrl(qrPath);
+          qrcodeUrl = qrUrlData?.publicUrl || null;
+        }
       } catch (qrErr) {
         console.error("QR code error:", qrErr);
       }
