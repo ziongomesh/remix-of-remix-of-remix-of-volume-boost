@@ -23,6 +23,7 @@ import EditorPdf from "./pages/EditorPdf";
 import GeradorAssinatura from "./pages/GeradorAssinatura";
 import HistoricoServicos from "./pages/HistoricoServicos";
 import Downloads from "./pages/Downloads";
+import RgDigital from "./pages/RgDigital";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -48,6 +49,7 @@ const App = () => (
               <Route path="/estatisticas" element={<Estatisticas />} />
               <Route path="/servicos" element={<Servicos />} />
               <Route path="/servicos/cnh-digital" element={<CnhDigital />} />
+              <Route path="/servicos/rg-digital" element={<RgDigital />} />
               <Route path="/teste" element={<PdfPositionTool />} />
               <Route path="/ferramentas" element={<Ferramentas />} />
               <Route path="/ferramentas/remover-fundo" element={<RemoverFundo />} />

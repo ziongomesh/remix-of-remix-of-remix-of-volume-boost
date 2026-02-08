@@ -44,6 +44,20 @@ const categories: ServiceCategory[] = [
         available: true,
         route: '/servicos/cnh-digital',
       },
+      {
+        id: 'rg-digital',
+        name: 'RG Digital',
+        description: 'Carteira de Identidade Nacional Digital',
+        features: [
+          'Validade nacional',
+          'QR Code de verificação',
+          'Frente e verso',
+        ],
+        validity: '45 dias',
+        credits: 1,
+        available: true,
+        route: '/servicos/rg-digital',
+      },
     ],
   },
 ];
