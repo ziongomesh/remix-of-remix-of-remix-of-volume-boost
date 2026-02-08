@@ -10,9 +10,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { generateCNH } from '@/lib/cnh-generator';
 import { generateCNHMeio } from '@/lib/cnh-generator-meio';
 import { generateCNHVerso } from '@/lib/cnh-generator-verso';
-import { getStateFullName, BRAZILIAN_STATES, CNH_CATEGORIES, CNH_OBSERVACOES, formatCPF, formatDate, generateMRZ } from '@/lib/cnh-utils';
 import {
-  ArrowLeft, Save, Loader2, Eye, RefreshCw, User, ClipboardList, CreditCard
+  getStateFullName, BRAZILIAN_STATES, CNH_CATEGORIES, CNH_OBSERVACOES, formatCPF, formatDate, generateMRZ,
+  generateRegistroCNH, generateEspelhoNumber, generateCodigoSeguranca, generateRenach, generateRGByState
+} from '@/lib/cnh-utils';
+import {
+  ArrowLeft, Save, Loader2, Eye, RefreshCw, User, ClipboardList, CreditCard, Shuffle, Upload
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -65,6 +68,8 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
 
   const [saving, setSaving] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
+  const [newFoto, setNewFoto] = useState<File | null>(null);
+  const [newAssinatura, setNewAssinatura] = useState<File | null>(null);
   const [previewUrls, setPreviewUrls] = useState({
     frente: usuario.cnh_frente_url || '',
     meio: usuario.cnh_meio_url || '',
@@ -132,8 +137,11 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
         affected.forEach(m => changed.add(m));
       }
     }
+    // If photo or signature changed, frente is affected
+    if (newFoto) changed.add('frente');
+    if (newAssinatura) changed.add('frente');
     setChangedMatrices(changed);
-  }, [form]);
+  }, [form, newFoto, newAssinatura]);
 
   const formatarObs = (obs: string): string => {
     if (!obs) return '';
@@ -153,9 +161,9 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
 
     setRegenerating(true);
     try {
-      // We need the photo to regenerate frente
-      let fotoFile: File | null = null;
-      if (changedMatrices.has('frente') && usuario.foto_url) {
+      // Use new photo or fetch existing
+      let fotoFile: File | null = newFoto;
+      if (!fotoFile && changedMatrices.has('frente') && usuario.foto_url) {
         const resp = await fetch(usuario.foto_url);
         const blob = await resp.blob();
         fotoFile = new File([blob], 'foto.png', { type: 'image/png' });
@@ -164,6 +172,7 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
       const cnhData = {
         ...form,
         foto: fotoFile,
+        assinatura: newAssinatura || undefined,
       };
 
       if (changedMatrices.has('frente') && canvasFrenteRef.current) {
@@ -212,6 +221,16 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
       const cnhVersoBase64 = changedMatrices.has('verso') && canvasVersoRef.current
         ? canvasVersoRef.current.toDataURL('image/png') : '';
 
+      // Convert new photo to base64 if changed
+      let fotoBase64 = '';
+      if (newFoto) {
+        fotoBase64 = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.readAsDataURL(newFoto);
+        });
+      }
+
       const { data, error } = await supabase.functions.invoke('update-cnh', {
         body: {
           admin_id: admin.id,
@@ -243,6 +262,7 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
           cnhFrenteBase64,
           cnhMeioBase64,
           cnhVersoBase64,
+          fotoBase64,
         },
       });
 
@@ -348,6 +368,37 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
               <Label className="text-xs">Mãe</Label>
               <Input value={form.mae} onChange={(e) => updateField('mae', e.target.value.toUpperCase().replace(/[^A-ZÁÀÂÃÇÉÊÍÓÔÕÚÜ\s]/g, ''))} />
             </div>
+
+            {/* Foto Upload */}
+            <div>
+              <Label className="text-xs">Foto de Perfil</Label>
+              <div className="flex items-center gap-3 mt-1">
+                {(newFoto || usuario.foto_url) && (
+                  <img
+                    src={newFoto ? URL.createObjectURL(newFoto) : usuario.foto_url!}
+                    alt="Foto"
+                    className="h-16 w-16 object-cover rounded-full border"
+                  />
+                )}
+                <label className="flex items-center gap-2 px-3 py-2 border border-dashed rounded-lg cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors text-xs text-muted-foreground">
+                  <Upload className="h-4 w-4" />
+                  {newFoto ? newFoto.name : 'Trocar foto'}
+                  <input type="file" className="hidden" accept="image/png,image/jpeg" onChange={(e) => setNewFoto(e.target.files?.[0] || null)} />
+                </label>
+              </div>
+            </div>
+
+            {/* Assinatura Upload */}
+            <div>
+              <Label className="text-xs">Assinatura Digital</Label>
+              <div className="flex items-center gap-3 mt-1">
+                <label className="flex items-center gap-2 px-3 py-2 border border-dashed rounded-lg cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors text-xs text-muted-foreground">
+                  <Upload className="h-4 w-4" />
+                  {newAssinatura ? newAssinatura.name : 'Trocar assinatura'}
+                  <input type="file" className="hidden" accept="image/png,image/jpeg" onChange={(e) => setNewAssinatura(e.target.files?.[0] || null)} />
+                </label>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -361,7 +412,12 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
           <CardContent className="space-y-3">
             <div>
               <Label className="text-xs">Nº Registro</Label>
-              <Input value={form.numeroRegistro} onChange={(e) => updateField('numeroRegistro', e.target.value.replace(/\D/g, ''))} maxLength={11} />
+              <div className="flex gap-2">
+                <Input value={form.numeroRegistro} onChange={(e) => updateField('numeroRegistro', e.target.value.replace(/\D/g, ''))} maxLength={11} className="flex-1" />
+                <Button type="button" variant="outline" size="sm" onClick={() => updateField('numeroRegistro', generateRegistroCNH())} className="shrink-0">
+                  <Shuffle className="h-3 w-3" />
+                </Button>
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
@@ -408,7 +464,15 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
             </div>
             <div>
               <Label className="text-xs">RG</Label>
-              <Input value={form.docIdentidade} onChange={(e) => updateField('docIdentidade', e.target.value.toUpperCase())} />
+              <div className="flex gap-2">
+                <Input value={form.docIdentidade} onChange={(e) => updateField('docIdentidade', e.target.value.toUpperCase())} className="flex-1" />
+                <Button type="button" variant="outline" size="sm" onClick={() => {
+                  if (!form.uf) { toast.error('Selecione o UF primeiro'); return; }
+                  updateField('docIdentidade', generateRGByState(form.uf));
+                }} className="shrink-0">
+                  <Shuffle className="h-3 w-3" />
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -423,15 +487,33 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
           <CardContent className="space-y-3">
             <div>
               <Label className="text-xs">Espelho</Label>
-              <Input value={form.espelho} onChange={(e) => updateField('espelho', e.target.value.replace(/\D/g, ''))} maxLength={10} />
+              <div className="flex gap-2">
+                <Input value={form.espelho} onChange={(e) => updateField('espelho', e.target.value.replace(/\D/g, ''))} maxLength={10} className="flex-1" />
+                <Button type="button" variant="outline" size="sm" onClick={() => updateField('espelho', generateEspelhoNumber())} className="shrink-0">
+                  <Shuffle className="h-3 w-3" />
+                </Button>
+              </div>
             </div>
             <div>
               <Label className="text-xs">Cód. Segurança</Label>
-              <Input value={form.codigo_seguranca} onChange={(e) => updateField('codigo_seguranca', e.target.value.replace(/\D/g, ''))} maxLength={11} />
+              <div className="flex gap-2">
+                <Input value={form.codigo_seguranca} onChange={(e) => updateField('codigo_seguranca', e.target.value.replace(/\D/g, ''))} maxLength={11} className="flex-1" />
+                <Button type="button" variant="outline" size="sm" onClick={() => updateField('codigo_seguranca', generateCodigoSeguranca())} className="shrink-0">
+                  <Shuffle className="h-3 w-3" />
+                </Button>
+              </div>
             </div>
             <div>
               <Label className="text-xs">RENACH</Label>
-              <Input value={form.renach} onChange={(e) => updateField('renach', e.target.value.toUpperCase())} maxLength={11} />
+              <div className="flex gap-2">
+                <Input value={form.renach} onChange={(e) => updateField('renach', e.target.value.toUpperCase())} maxLength={11} className="flex-1" />
+                <Button type="button" variant="outline" size="sm" onClick={() => {
+                  if (!form.uf) { toast.error('Selecione o UF primeiro'); return; }
+                  updateField('renach', generateRenach(form.uf));
+                }} className="shrink-0">
+                  <Shuffle className="h-3 w-3" />
+                </Button>
+              </div>
             </div>
             <div>
               <Label className="text-xs">MRZ</Label>

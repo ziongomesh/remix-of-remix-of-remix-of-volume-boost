@@ -26,6 +26,7 @@ Deno.serve(async (req) => {
       espelho, codigo_seguranca, renach, obs, matrizFinal,
       cnhDefinitiva, changedMatrices,
       cnhFrenteBase64, cnhMeioBase64, cnhVersoBase64,
+      fotoBase64,
     } = body;
 
     // Validate session
@@ -80,6 +81,7 @@ Deno.serve(async (req) => {
     let frenteUrl = existing.cnh_frente_url;
     let meioUrl = existing.cnh_meio_url;
     let versoUrl = existing.cnh_verso_url;
+    let fotoUrl = existing.foto_url;
 
     const changed: string[] = changedMatrices || [];
 
@@ -91,6 +93,9 @@ Deno.serve(async (req) => {
     }
     if (changed.includes("verso") && cnhVersoBase64) {
       versoUrl = await uploadFile(cnhVersoBase64, `verso_${timestamp}.png`);
+    }
+    if (fotoBase64) {
+      fotoUrl = await uploadFile(fotoBase64, `foto_${timestamp}.png`);
     }
 
     // Regenerate PDF if any matrix changed
@@ -226,6 +231,7 @@ Deno.serve(async (req) => {
         cnh_frente_url: frenteUrl,
         cnh_meio_url: meioUrl,
         cnh_verso_url: versoUrl,
+        foto_url: fotoUrl,
         pdf_url: pdfUrl,
         updated_at: new Date().toISOString(),
       })
