@@ -5,9 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Upload, Download, Loader2, ImageMinus, ArrowLeft, Crop, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import Cropper, { Area } from 'react-easy-crop';
 import { Slider } from '@/components/ui/slider';
-import { Progress } from '@/components/ui/progress';
 
 async function getCroppedImg(imageSrc: string, crop: Area): Promise<string> {
   const image = new Image();
@@ -17,7 +17,6 @@ async function getCroppedImg(imageSrc: string, crop: Area): Promise<string> {
     image.onerror = reject;
     image.src = imageSrc;
   });
-
   const canvas = document.createElement('canvas');
   canvas.width = crop.width;
   canvas.height = crop.height;
@@ -26,32 +25,11 @@ async function getCroppedImg(imageSrc: string, crop: Area): Promise<string> {
   return canvas.toDataURL('image/png');
 }
 
-async function addWhiteBackground(imageBlob: Blob): Promise<string> {
-  const url = URL.createObjectURL(imageBlob);
-  const img = new Image();
-  await new Promise<void>((resolve, reject) => {
-    img.onload = () => resolve();
-    img.onerror = reject;
-    img.src = url;
-  });
-  URL.revokeObjectURL(url);
-
-  const canvas = document.createElement('canvas');
-  canvas.width = img.width;
-  canvas.height = img.height;
-  const ctx = canvas.getContext('2d')!;
-  ctx.fillStyle = '#FFFFFF';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.drawImage(img, 0, 0);
-  return canvas.toDataURL('image/png');
-}
-
 export default function RemoverFundo() {
   const [originalImage, setOriginalImage] = useState<string | null>(null);
   const [croppedImage, setCroppedImage] = useState<string | null>(null);
   const [resultImage, setResultImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [progress, setProgress] = useState(0);
   const [isCropping, setIsCropping] = useState(false);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
@@ -100,41 +78,26 @@ export default function RemoverFundo() {
 
     setLoading(true);
     setResultImage(null);
-    setProgress(10);
 
     try {
-      // Dynamic import to avoid loading the heavy library upfront
-      const { removeBackground } = await import('@imgly/background-removal');
-      setProgress(20);
-
-      // Convert base64 to blob for the library
-      const res = await fetch(imageToProcess);
-      const blob = await res.blob();
-      setProgress(30);
-
-      // Remove background (runs ML model in browser)
-      const resultBlob = await removeBackground(blob, {
-        progress: (key: string, current: number, total: number) => {
-          if (total > 0) {
-            const pct = 30 + Math.round((current / total) * 60);
-            setProgress(Math.min(pct, 90));
-          }
-        },
+      const { data, error } = await supabase.functions.invoke('remove-background', {
+        body: { imageBase64: imageToProcess, outputMode: 'white' },
       });
-      setProgress(92);
 
-      // Add white background
-      const finalImage = await addWhiteBackground(resultBlob);
-      setProgress(100);
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
 
-      setResultImage(finalImage);
-      toast.success('Fundo removido com sucesso!');
+      if (data?.image) {
+        setResultImage(data.image);
+        toast.success('Fundo removido com sucesso!');
+      } else {
+        throw new Error('Resultado inesperado');
+      }
     } catch (err: any) {
       console.error(err);
-      toast.error('Erro ao remover fundo. Tente com outra imagem.');
+      toast.error(err.message || 'Erro ao remover fundo');
     } finally {
       setLoading(false);
-      setProgress(0);
     }
   };
 
@@ -154,7 +117,6 @@ export default function RemoverFundo() {
     setCroppedImage(null);
     setResultImage(null);
     setIsCropping(false);
-    setProgress(0);
     setCrop({ x: 0, y: 0 });
     setZoom(1);
     if (fileInputRef.current) fileInputRef.current.value = '';
@@ -249,11 +211,9 @@ export default function RemoverFundo() {
                 </CardHeader>
                 <CardContent className="flex items-center justify-center p-4 min-h-[280px]">
                   {loading ? (
-                    <div className="flex flex-col items-center gap-3 text-muted-foreground w-full">
+                    <div className="flex flex-col items-center gap-3 text-muted-foreground">
                       <Loader2 className="h-10 w-10 animate-spin text-primary" />
-                      <p className="text-sm">Removendo fundo... {progress > 0 && `${progress}%`}</p>
-                      {progress > 0 && <Progress value={progress} className="w-full max-w-xs" />}
-                      <p className="text-xs text-muted-foreground">Primeira vez pode demorar (carregando modelo IA)</p>
+                      <p className="text-sm">Removendo fundo...</p>
                     </div>
                   ) : resultImage ? (
                     <img src={resultImage} alt="Fundo branco" className="max-h-80 rounded-lg object-contain" />

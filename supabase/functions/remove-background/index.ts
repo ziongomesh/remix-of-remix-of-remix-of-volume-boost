@@ -12,8 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { imageBase64, outputMode } = await req.json();
-    // outputMode: "transparent" | "white"
+    const { imageBase64 } = await req.json();
 
     if (!imageBase64) {
       return new Response(
@@ -27,9 +26,7 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const bgInstruction = outputMode === "white"
-      ? "Remove the background from this portrait photo. Cut out ONLY the person with pixel-perfect precision around hair, ears, and clothing edges. Replace the background with a solid pure white (#FFFFFF). The cutout must be clean and sharp like professional ID photo software (removebg quality). No artifacts, no remnants of original background, no blur on edges. Output a high quality PNG."
-      : "Remove the background from this portrait photo. Cut out ONLY the person with pixel-perfect precision around hair, ears, and clothing edges. Make the background fully transparent (alpha=0). The cutout must be clean and sharp like professional ID photo software (removebg quality). No artifacts, no remnants of original background, no blur on edges. Output a high quality PNG with transparent background.";
+    const bgInstruction = "Remove the background from this portrait photo. Cut out ONLY the person with pixel-perfect precision around hair, ears, and clothing edges. Replace the background with a solid pure white (#FFFFFF). The cutout must be clean and sharp like professional ID photo software (removebg quality). No artifacts, no remnants of original background, no blur on edges. Output a high quality PNG.";
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
