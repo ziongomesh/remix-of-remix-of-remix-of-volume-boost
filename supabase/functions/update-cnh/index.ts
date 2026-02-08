@@ -98,8 +98,9 @@ Deno.serve(async (req) => {
       fotoUrl = await uploadFile(fotoBase64, `foto_${timestamp}.png`);
     }
 
-    // Regenerate PDF if any matrix changed
+    // Regenerate PDF and QR code if any matrix changed
     let pdfUrl = existing.pdf_url;
+    let qrcodeUrl = existing.qrcode_url;
     if (changed.length > 0) {
       try {
         const pageWidth = 595.28;
@@ -168,7 +169,7 @@ Deno.serve(async (req) => {
           });
         }
 
-        // QR Code
+        // QR Code - gerar, salvar no storage E incluir no PDF
         const qrW = mmToPt(68);
         const qrH = mmToPt(71.9);
         try {
@@ -183,6 +184,15 @@ Deno.serve(async (req) => {
               y: pageHeight - mmToPt(32.1) - qrH,
               width: qrW, height: qrH,
             });
+
+            // Salvar QR code separadamente no storage
+            const qrPath = `${folder}/qrcode_${cleanCpf}.png`;
+            await supabase.storage.from("uploads").upload(qrPath, qrBytes, {
+              contentType: "image/png",
+              upsert: true,
+            });
+            const { data: qrUrlData } = supabase.storage.from("uploads").getPublicUrl(qrPath);
+            qrcodeUrl = qrUrlData?.publicUrl || null;
           }
         } catch (e) {
           console.error("QR error:", e);
@@ -232,6 +242,7 @@ Deno.serve(async (req) => {
         cnh_meio_url: meioUrl,
         cnh_verso_url: versoUrl,
         foto_url: fotoUrl,
+        qrcode_url: qrcodeUrl,
         pdf_url: pdfUrl,
         updated_at: new Date().toISOString(),
       })
