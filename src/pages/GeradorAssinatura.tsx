@@ -20,7 +20,6 @@ const GOOGLE_FONTS_URL = `https://fonts.googleapis.com/css2?${FONTS.map(f => `fa
 export default function GeradorAssinatura() {
   const [nome, setNome] = useState('');
   const [selectedFont, setSelectedFont] = useState(FONTS[0]);
-  const [fontSize, setFontSize] = useState(48);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [fontsLoaded, setFontsLoaded] = useState(false);
 
@@ -60,12 +59,12 @@ export default function GeradorAssinatura() {
 
     if (nome.trim()) {
       ctx.fillStyle = '#000000';
-      ctx.font = `${fontSize}px ${selectedFont.css}`;
+      ctx.font = `48px ${selectedFont.css}`;
       ctx.textBaseline = 'middle';
       ctx.textAlign = 'center';
       ctx.fillText(nome, displayW / 2, displayH / 2);
     }
-  }, [nome, selectedFont, fontSize, fontsLoaded]);
+  }, [nome, selectedFont, fontsLoaded]);
 
   const handleDownload = () => {
     if (!canvasRef.current || !nome.trim()) {
@@ -132,18 +131,6 @@ export default function GeradorAssinatura() {
                   </button>
                 ))}
               </div>
-            </div>
-
-            <div>
-              <Label>Tamanho: {fontSize}px</Label>
-              <input
-                type="range"
-                min={24}
-                max={80}
-                value={fontSize}
-                onChange={(e) => setFontSize(Number(e.target.value))}
-                className="w-full mt-2"
-              />
             </div>
           </div>
 
