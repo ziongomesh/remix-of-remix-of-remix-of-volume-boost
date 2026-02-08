@@ -210,11 +210,30 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
         fotoFile = new File([blob], 'foto.png', { type: 'image/png' });
       }
 
+      // Use new signature or fetch existing from server
+      let assinaturaFile: File | string | undefined = newAssinatura || undefined;
+      if (!assinaturaFile && changedMatrices.has('frente')) {
+        // Try to fetch existing signature saved as {cpf}assinatura.png
+        const cleanCpf = form.cpf.replace(/\D/g, '');
+        try {
+          const assUrl = `/uploads/${cleanCpf}assinatura.png`;
+          const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+          const baseUrl = apiBase.replace(/\/api\/?$/, '').replace(/\/+$/, '');
+          const resp = await fetch(`${baseUrl}${assUrl}`);
+          if (resp.ok) {
+            const blob = await resp.blob();
+            assinaturaFile = new File([blob], 'assinatura.png', { type: 'image/png' });
+          }
+        } catch (e) {
+          console.warn('Could not fetch existing signature:', e);
+        }
+      }
+
       const cnhData = {
         ...form,
         dataNascimento: computedDataNascimento,
         foto: fotoFile,
-        assinatura: newAssinatura || undefined,
+        assinatura: assinaturaFile,
       };
 
       if (changedMatrices.has('frente') && canvasFrenteRef.current) {
@@ -273,6 +292,16 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
         });
       }
 
+      // Convert new signature to base64 if changed
+      let assinaturaBase64 = '';
+      if (newAssinatura) {
+        assinaturaBase64 = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.readAsDataURL(newAssinatura);
+        });
+      }
+
       const data = await cnhService.update({
         admin_id: admin.id,
         session_token: admin.session_token,
@@ -304,6 +333,7 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
         cnhMeioBase64,
         cnhVersoBase64,
         fotoBase64,
+        assinaturaBase64,
       });
 
       console.log('Update result:', JSON.stringify(data));

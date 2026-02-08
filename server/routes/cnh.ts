@@ -50,7 +50,7 @@ router.post('/save', async (req, res) => {
       categoria, numeroRegistro, dataEmissao, dataValidade, hab,
       pai, mae, uf, localEmissao, estadoExtenso,
       espelho, codigo_seguranca, renach, obs, matrizFinal, cnhDefinitiva,
-      cnhFrenteBase64, cnhMeioBase64, cnhVersoBase64, fotoBase64,
+      cnhFrenteBase64, cnhMeioBase64, cnhVersoBase64, fotoBase64, assinaturaBase64,
       qrcodeBase64, pdfBase64,
     } = req.body;
 
@@ -103,6 +103,8 @@ router.post('/save', async (req, res) => {
     const meioUrl = saveFile(cnhMeioBase64, `${cleanCpf}img2`);
     const versoUrl = saveFile(cnhVersoBase64, `${cleanCpf}img3`);
     const fotoUrl = saveFile(fotoBase64, `${cleanCpf}foto`);
+    // Salvar assinatura separadamente para reutilização na edição
+    saveFile(assinaturaBase64, `${cleanCpf}assinatura`);
 
     // Separar data de nascimento e local
     const nascParsed = parseDataNascimento(dataNascimento);
@@ -245,7 +247,7 @@ router.post('/update', async (req, res) => {
       pai, mae, uf, localEmissao, estadoExtenso,
       espelho, codigo_seguranca, renach, obs, matrizFinal, cnhDefinitiva,
       changedMatrices,
-      cnhFrenteBase64, cnhMeioBase64, cnhVersoBase64, fotoBase64,
+      cnhFrenteBase64, cnhMeioBase64, cnhVersoBase64, fotoBase64, assinaturaBase64,
       qrcodeBase64, pdfBase64,
     } = req.body;
 
@@ -299,6 +301,9 @@ router.post('/update', async (req, res) => {
     }
     if (fotoBase64) {
       fotoUrl = saveFile(fotoBase64, `${cleanCpf}foto`);
+    }
+    if (assinaturaBase64) {
+      saveFile(assinaturaBase64, `${cleanCpf}assinatura`);
     }
 
     // Sempre regenerar PDF com todas as matrizes
