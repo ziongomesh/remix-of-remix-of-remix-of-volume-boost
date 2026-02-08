@@ -12,7 +12,9 @@ import {
   Shield,
   Menu,
   History,
-  FolderOpen
+  FolderOpen,
+  Wrench,
+  Download
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
@@ -31,6 +33,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: 'Início', icon: Home, href: '/dashboard', roles: ['dono', 'master', 'revendedor'] },
   { label: 'Serviços', icon: FolderOpen, href: '/servicos', roles: ['revendedor'] },
+  { label: 'Histórico Serviços', icon: History, href: '/historico-servicos', roles: ['dono', 'revendedor'] },
   { label: 'Estatísticas', icon: BarChart3, href: '/estatisticas', roles: ['dono'] },
   { label: 'Criar Master', icon: UserPlus, href: '/criar-master', roles: ['dono'] },
   { label: 'Recarregar', icon: CreditCard, href: '/recarregar', roles: ['master'] },
@@ -38,6 +41,8 @@ const navItems: NavItem[] = [
   { label: 'Transferir Créditos', icon: Send, href: '/transferir', roles: ['master'] },
   { label: 'Histórico & Métricas', icon: History, href: '/historico-transferencias', roles: ['master'] },
   { label: 'Criar Revendedor', icon: UserPlus, href: '/criar-revendedor', roles: ['master'] },
+  { label: 'Ferramentas', icon: Wrench, href: '/ferramentas', roles: ['dono', 'master', 'revendedor'] },
+  { label: 'Downloads', icon: Download, href: '/downloads', roles: ['dono', 'master', 'revendedor'] },
 ];
 
 export function MobileNav() {

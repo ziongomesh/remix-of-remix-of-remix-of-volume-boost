@@ -154,12 +154,12 @@ export default function HistoricoServicos() {
     <DashboardLayout>
       <div className="space-y-6 max-w-6xl">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div>
-            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-              <History className="h-6 w-6" /> Histórico de Serviços
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
+              <History className="h-5 w-5 sm:h-6 sm:w-6" /> Histórico de Serviços
             </h1>
-            <p className="text-muted-foreground mt-1">Gerencie seus serviços criados</p>
+            <p className="text-sm text-muted-foreground mt-1">Gerencie seus serviços criados</p>
           </div>
           <Badge variant="outline" className="text-sm">
             {usuarios.length} registro{usuarios.length !== 1 ? 's' : ''}
@@ -283,13 +283,13 @@ function CnhHistoryCard({
   return (
     <>
       <div className={`border rounded-lg p-4 ${highlight ? 'border-primary/30' : 'border-border'} hover:bg-muted/20 transition-colors`}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex items-center gap-3 sm:gap-4 min-w-0">
             {usuario.foto_url ? (
               <img
                 src={usuario.foto_url}
                 alt="Foto"
-                className="h-16 w-16 object-cover rounded-full border cursor-pointer hover:ring-2 hover:ring-primary/50"
+                className="h-12 w-12 sm:h-16 sm:w-16 object-cover rounded-full border cursor-pointer hover:ring-2 hover:ring-primary/50 shrink-0"
                 onClick={() => setShowPreview(!showPreview)}
                 {...imgProps}
               />
@@ -297,36 +297,36 @@ function CnhHistoryCard({
               <img
                 src={usuario.cnh_frente_url}
                 alt="CNH Frente"
-                className="h-16 w-24 object-cover rounded border cursor-pointer hover:ring-2 hover:ring-primary/50"
+                className="h-12 w-16 sm:h-16 sm:w-24 object-cover rounded border cursor-pointer hover:ring-2 hover:ring-primary/50 shrink-0"
                 onClick={() => setShowPreview(!showPreview)}
                 {...imgProps}
               />
             ) : null}
-            <div>
-              <h3 className="font-semibold text-foreground">{usuario.nome}</h3>
-              <p className="text-sm text-muted-foreground">CPF: {formatCpf(usuario.cpf)}</p>
-              <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+            <div className="min-w-0">
+              <h3 className="font-semibold text-foreground text-sm sm:text-base truncate">{usuario.nome}</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground">CPF: {formatCpf(usuario.cpf)}</p>
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-1 text-xs text-muted-foreground">
                 <span>Cat: {usuario.categoria || '—'}</span>
                 <span>UF: {usuario.uf || '—'}</span>
                 <span>Criado: {formatDate(usuario.created_at)}</span>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
             {usuario.pdf_url && (
               <Button variant="outline" size="sm" asChild>
                 <a href={usuario.pdf_url} target="_blank" rel="noopener noreferrer">
-                  <FileText className="h-4 w-4 mr-1" /> PDF
+                  <FileText className="h-4 w-4 sm:mr-1" /> <span className="hidden sm:inline">PDF</span>
                 </a>
               </Button>
             )}
             <Button variant="default" size="sm" onClick={onEdit}>
-              <Edit className="h-4 w-4 mr-1" /> Editar
+              <Edit className="h-4 w-4 sm:mr-1" /> <span className="hidden sm:inline">Editar</span>
             </Button>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="sm">
-                  <Trash2 className="h-4 w-4 mr-1" /> Excluir
+              <Button variant="destructive" size="sm">
+                  <Trash2 className="h-4 w-4 sm:mr-1" /> <span className="hidden sm:inline">Excluir</span>
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
@@ -361,7 +361,7 @@ function CnhHistoryCard({
 
         {/* Preview expandido das 3 matrizes */}
         {showPreview && (
-          <div className="grid grid-cols-3 gap-3 mt-4 pt-4 border-t border-border">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4 pt-4 border-t border-border">
             {usuario.cnh_frente_url && (
               <div className="text-center">
                 <p className="text-xs text-muted-foreground mb-1">Frente</p>
