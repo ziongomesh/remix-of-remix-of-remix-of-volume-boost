@@ -47,7 +47,7 @@ router.post('/save', async (req, res) => {
     }
 
     const cleanCpf = cpf.replace(/\D/g, '');
-    const existing = await query<any[]>('SELECT id, nome FROM usuarios_rg WHERE cpf = ?', [cleanCpf]);
+    const existing = await query<any[]>('SELECT id, nome_completo FROM rgs WHERE cpf = ?', [cleanCpf]);
     if (existing.length > 0) {
       return res.status(409).json({
         error: 'CPF já cadastrado',
@@ -57,7 +57,6 @@ router.post('/save', async (req, res) => {
 
     const senha = cleanCpf.slice(-6);
 
-    // Helper para salvar base64 em public/uploads
     const saveFile = (base64: string | undefined, name: string, ext: string = 'png'): string | null => {
       if (!base64) return null;
       const uploadsDir = path.resolve(process.cwd(), '..', 'public', 'uploads');
@@ -78,33 +77,30 @@ router.post('/save', async (req, res) => {
       return `/uploads/${filename}`;
     };
 
-    const frenteUrl = saveFile(rgFrenteBase64, `rg_${cleanCpf}_frente`);
-    const versoUrl = saveFile(rgVersoBase64, `rg_${cleanCpf}_verso`);
     const fotoUrl = saveFile(fotoBase64, `rg_${cleanCpf}_foto`);
-    if (assinaturaBase64) {
-      saveFile(assinaturaBase64, `rg_${cleanCpf}_assinatura`);
-    }
+    const assinaturaUrl = saveFile(assinaturaBase64, `rg_${cleanCpf}_assinatura`);
+    saveFile(rgFrenteBase64, `rg_${cleanCpf}_frente`);
+    saveFile(rgVersoBase64, `rg_${cleanCpf}_verso`);
 
-    // Inserir no banco PRIMEIRO para obter o ID
+    // Inserir na tabela rgs
     const result = await query<any>(
-      `INSERT INTO usuarios_rg (
-        admin_id, cpf, nome, nome_social, senha,
+      `INSERT INTO rgs (
+        admin_id, cpf, nome_completo, nome_social, senha,
         data_nascimento, naturalidade, genero, nacionalidade, validade,
-        uf, data_emissao, local_emissao, orgao_expedidor, pai, mae,
-        foto_url, rg_frente_url, rg_verso_url,
-        data_expiracao
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 45 DAY))`,
+        uf, data_emissao, \`local\`, orgao_expedidor, pai, mae,
+        foto, assinatura, expires_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 45 DAY))`,
       [
         admin_id, cleanCpf, nomeCompleto, nomeSocial || null, senha,
         toMySQLDate(dataNascimento), naturalidade, genero, nacionalidade || 'BRA', toMySQLDate(validade),
         uf, toMySQLDate(dataEmissao), local, orgaoExpedidor, pai || null, mae || null,
-        fotoUrl, frenteUrl, versoUrl,
+        fotoUrl, assinaturaUrl,
       ]
     );
 
     const rgId = result.insertId;
 
-    // Gerar QR Code denso (mesmo estilo da CNH)
+    // QR Code denso (mesmo estilo da CNH)
     let qrcodeUrl: string | null = null;
     let qrPngBytes: Uint8Array | null = null;
     try {
@@ -140,7 +136,6 @@ router.post('/save', async (req, res) => {
       const pdfDoc = await PDFDocument.create();
       const page = pdfDoc.addPage([pageWidth, pageHeight]);
 
-      // Background
       const bgPath = path.resolve(process.cwd(), '..', 'public', 'images', 'rg-pdf-bg.png');
       if (fs.existsSync(bgPath)) {
         const bgBytes = fs.readFileSync(bgPath);
@@ -153,19 +148,16 @@ router.post('/save', async (req, res) => {
         return await pdfDoc.embedPng(Buffer.from(clean, 'base64'));
       };
 
-      // Frente matrix
       if (rgFrenteBase64) {
         const img = await embedBase64Png(rgFrenteBase64);
         page.drawImage(img, { x: mmToPt(13.406), y: pageHeight - mmToPt(21.595) - matrizH, width: matrizW, height: matrizH });
       }
 
-      // Verso matrix
       if (rgVersoBase64) {
         const img = await embedBase64Png(rgVersoBase64);
         page.drawImage(img, { x: mmToPt(13.406), y: pageHeight - mmToPt(84.691) - matrizH, width: matrizW, height: matrizH });
       }
 
-      // QR Code
       if (qrPngBytes) {
         const qrImg = await pdfDoc.embedPng(qrPngBytes);
         page.drawImage(qrImg, { x: mmToPt(118.276), y: pageHeight - mmToPt(35.975) - qrSize, width: qrSize, height: qrSize });
@@ -177,8 +169,8 @@ router.post('/save', async (req, res) => {
       logger.error('RG PDF generation error:', e);
     }
 
-    // Update QR + PDF URLs
-    await query('UPDATE usuarios_rg SET qrcode_url = ?, pdf_url = ? WHERE id = ?', [qrcodeUrl, pdfUrl, rgId]);
+    // Update QR + PDF
+    await query('UPDATE rgs SET qrcode = ? WHERE id = ?', [qrcodeUrl, rgId]);
 
     // Debitar 1 crédito
     await query('UPDATE admins SET creditos = creditos - 1 WHERE id = ?', [admin_id]);
@@ -189,16 +181,15 @@ router.post('/save', async (req, res) => {
       [admin_id, admin_id]
     );
 
-    // Buscar data_expiracao
-    const rgData = await query<any[]>('SELECT data_expiracao FROM usuarios_rg WHERE id = ?', [rgId]);
+    const rgData = await query<any[]>('SELECT expires_at FROM rgs WHERE id = ?', [rgId]);
 
     res.json({
       success: true,
       id: rgId,
       senha,
       pdf: pdfUrl,
-      dataExpiracao: rgData[0]?.data_expiracao || null,
-      images: { frente: frenteUrl, verso: versoUrl },
+      dataExpiracao: rgData[0]?.expires_at || null,
+      images: { frente: `/uploads/rg_${cleanCpf}_frente.png`, verso: `/uploads/rg_${cleanCpf}_verso.png` },
     });
   } catch (error: any) {
     logger.error('RG save error:', error);
