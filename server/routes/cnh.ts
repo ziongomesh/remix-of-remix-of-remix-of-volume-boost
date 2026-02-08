@@ -5,6 +5,19 @@ import path from 'path';
 
 const router = Router();
 
+// Converte data BR (DD/MM/YYYY) para MySQL (YYYY-MM-DD)
+function toMySQLDate(dateStr: string | undefined | null): string | null {
+  if (!dateStr) return null;
+  // Se já está no formato YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+  // Formato DD/MM/YYYY
+  const parts = dateStr.split('/');
+  if (parts.length === 3) {
+    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+  }
+  return dateStr;
+}
+
 // Middleware para validar sessão
 async function validateSession(adminId: number, sessionToken: string): Promise<boolean> {
   const result = await query<any[]>(
@@ -86,9 +99,9 @@ router.post('/save', async (req, res) => {
         data_expiracao
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 45 DAY))`,
       [
-        admin_id, cleanCpf, nome, senha, dataNascimento, sexo, nacionalidade,
-        docIdentidade, categoria, numeroRegistro, dataEmissao, dataValidade,
-        hab, pai, mae, uf, localEmissao, estadoExtenso,
+        admin_id, cleanCpf, nome, senha, toMySQLDate(dataNascimento), sexo, nacionalidade,
+        docIdentidade, categoria, numeroRegistro, toMySQLDate(dataEmissao), toMySQLDate(dataValidade),
+        hab || null, pai, mae, uf, localEmissao, estadoExtenso,
         espelho, codigo_seguranca, renach, obs, matrizFinal, cnhDefinitiva || 'sim',
         frenteUrl, meioUrl, versoUrl, fotoUrl,
         qrcodeUrl, pdfUrl,
@@ -199,9 +212,9 @@ router.post('/update', async (req, res) => {
         updated_at = NOW()
       WHERE id = ?`,
       [
-        nome, dataNascimento, sexo, nacionalidade,
+        nome, toMySQLDate(dataNascimento), sexo, nacionalidade,
         docIdentidade, categoria, numeroRegistro,
-        dataEmissao, dataValidade, hab, pai, mae,
+        toMySQLDate(dataEmissao), toMySQLDate(dataValidade), hab || null, pai, mae,
         uf, localEmissao, estadoExtenso,
         espelho, codigo_seguranca, renach, obs,
         matrizFinal, cnhDefinitiva || 'sim',
