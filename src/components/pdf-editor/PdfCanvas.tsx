@@ -82,8 +82,8 @@ export function PdfCanvas({ pageCanvas, fields, selectedId, onSelect, onUpdateFi
           <div
             key={field.id}
             className={cn(
-              'absolute cursor-move select-none',
-              isSelected && 'ring-2 ring-primary ring-offset-1',
+              'absolute select-none',
+              isSelected ? 'cursor-move ring-2 ring-primary ring-offset-1' : 'cursor-pointer',
               dragging === field.id && 'opacity-80'
             )}
             style={{
@@ -93,7 +93,10 @@ export function PdfCanvas({ pageCanvas, fields, selectedId, onSelect, onUpdateFi
               minHeight: field.height,
               fontSize: field.fontSize,
               color: field.color,
+              backgroundColor: 'white',
               zIndex: isSelected ? 50 : 10,
+              lineHeight: 1,
+              padding: '1px 0',
             }}
             onMouseDown={(e) => handleMouseDown(e, field.id)}
             onDoubleClick={() => handleDoubleClick(field.id)}
@@ -109,12 +112,7 @@ export function PdfCanvas({ pageCanvas, fields, selectedId, onSelect, onUpdateFi
                 onClick={(e) => e.stopPropagation()}
               />
             ) : (
-              <span
-                className={cn(
-                  'whitespace-nowrap px-0.5',
-                  isSelected && 'bg-primary/10'
-                )}
-              >
+              <span className="whitespace-nowrap leading-none">
                 {field.text}
               </span>
             )}
