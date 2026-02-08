@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { getStateFullName } from "@/lib/cnh-utils";
 import CnhSuccessModal from "./CnhSuccessModal";
 import { cnhService } from "@/lib/cnh-service";
+import { playSuccessSound } from "@/lib/success-sound";
 
 interface CnhPreviewProps {
   cnhData: any;
@@ -213,6 +214,7 @@ export default function CnhPreview({ cnhData, onClose, onSaveSuccess, onEdit }: 
       localStorage.setItem('admin', JSON.stringify(updatedAdmin));
 
       setShowSuccessModal(true);
+      playSuccessSound();
       toast.success('CNH criada com sucesso! 1 crédito descontado.');
       onSaveSuccess?.();
     } catch (error: any) {
