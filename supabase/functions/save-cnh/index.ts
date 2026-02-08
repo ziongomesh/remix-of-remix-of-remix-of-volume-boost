@@ -174,18 +174,19 @@ Deno.serve(async (req) => {
       const matrizW = mmToPt(85);
       const matrizH = mmToPt(55);
 
-      // Matriz 1 (Frente) - x=11.8mm, y=140.6mm do topo
+      // Ordem no PDF de cima para baixo: Frente(1), Meio(2), Verso(3)
+      // Matriz 1 (Frente) - posição superior: y=24.7mm do topo
       if (cnhFrenteBase64) {
         const frenteImg = await embedBase64(cnhFrenteBase64);
         page.drawImage(frenteImg, {
           x: mmToPt(11.8),
-          y: pageHeight - mmToPt(140.6) - matrizH,
+          y: pageHeight - mmToPt(24.7) - matrizH,
           width: matrizW,
           height: matrizH,
         });
       }
 
-      // Matriz 2 (Meio) - x=11.6mm, y=82.6mm do topo
+      // Matriz 2 (Meio) - posição central: y=82.6mm do topo
       if (cnhMeioBase64) {
         const meioImg = await embedBase64(cnhMeioBase64);
         page.drawImage(meioImg, {
@@ -196,12 +197,12 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Matriz 3 (Verso) - x=11.6mm, y=24.7mm do topo
+      // Matriz 3 (Verso) - posição inferior: y=140.6mm do topo
       if (cnhVersoBase64) {
         const versoImg = await embedBase64(cnhVersoBase64);
         page.drawImage(versoImg, {
           x: mmToPt(11.6),
-          y: pageHeight - mmToPt(24.7) - matrizH,
+          y: pageHeight - mmToPt(140.6) - matrizH,
           width: matrizW,
           height: matrizH,
         });
