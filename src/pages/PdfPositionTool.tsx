@@ -10,7 +10,7 @@ interface DraggableItem {
   width: number;
   height: number;
   color: string;
-  imageUrl?: string;
+  image: string;
 }
 
 // A4 in mm: 210 x 297
@@ -20,10 +20,10 @@ const A4_H_MM = 297;
 const MATRIX_IDS = ["frente", "meio", "verso"];
 
 const INITIAL_ITEMS: DraggableItem[] = [
-  { id: "frente", label: "Matriz 1 (Frente)", x: 13.406, y: 21.595, width: 85, height: 55, color: "rgba(255,0,0,0.25)" },
-  { id: "meio", label: "Matriz 2 (Meio)", x: 13.406, y: 84.691, width: 85, height: 55, color: "rgba(0,128,255,0.25)" },
-  { id: "verso", label: "Matriz 3 (Verso)", x: 13.406, y: 148.693, width: 85, height: 55, color: "rgba(0,200,0,0.25)" },
-  { id: "qrcode", label: "QR Code", x: 118.276, y: 35.975, width: 63.788, height: 63.788, color: "rgba(255,165,0,0.35)" },
+  { id: "frente", label: "Matriz 1 (Frente)", x: 13.406, y: 21.595, width: 85, height: 55, color: "rgba(255,0,0,0.6)", image: "/images/limpa1-2.png" },
+  { id: "meio", label: "Matriz 2 (Meio)", x: 13.406, y: 84.691, width: 85, height: 55, color: "rgba(0,128,255,0.6)", image: "/images/limpa2-2.png" },
+  { id: "verso", label: "Matriz 3 (Verso)", x: 13.406, y: 148.693, width: 85, height: 55, color: "rgba(0,200,0,0.6)", image: "/images/limpa3-2.png" },
+  { id: "qrcode", label: "QR Code", x: 118.276, y: 35.975, width: 63.788, height: 63.788, color: "rgba(255,165,0,0.6)", image: "/images/qrcode-sample.png" },
 ];
 
 export default function PdfPositionTool() {
@@ -33,35 +33,7 @@ export default function PdfPositionTool() {
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [containerSize, setContainerSize] = useState({ w: 0, h: 0 });
   const [saved, setSaved] = useState(false);
-  const [matrixImages, setMatrixImages] = useState<Record<string, string>>({});
 
-  // Load latest matrix images from DB
-  useEffect(() => {
-    const loadImages = async () => {
-      try {
-        const { supabase } = await import("@/integrations/supabase/client");
-        const { data } = await supabase
-          .from("usuarios")
-          .select("cnh_frente_url, cnh_meio_url, cnh_verso_url, qrcode_url")
-          .order("id", { ascending: false })
-          .limit(1)
-          .single();
-        if (data) {
-          setMatrixImages({
-            frente: data.cnh_frente_url || "",
-            meio: data.cnh_meio_url || "",
-            verso: data.cnh_verso_url || "",
-            qrcode: data.qrcode_url || "",
-          });
-        }
-      } catch (e) {
-        console.error("Failed to load matrix images:", e);
-      }
-    };
-    loadImages();
-  }, []);
-
-  // Measure container
   useEffect(() => {
     const measure = () => {
       if (containerRef.current) {
@@ -153,7 +125,7 @@ export default function PdfPositionTool() {
         <div className="flex gap-4 mb-4 flex-wrap">
           {items.map(item => (
             <div key={item.id} className="flex items-center gap-2 text-sm">
-              <div className="w-4 h-4 rounded" style={{ backgroundColor: item.color.replace("0.25", "0.8").replace("0.35", "0.8") }} />
+              <div className="w-4 h-4 rounded border" style={{ borderColor: item.color }} />
               <span>{item.label}: <strong>{item.x.toFixed(1)}mm, {item.y.toFixed(1)}mm</strong> ({item.width.toFixed(1)}x{item.height.toFixed(1)}mm)</span>
             </div>
           ))}
@@ -179,35 +151,27 @@ export default function PdfPositionTool() {
             const py = mmToPixel(item.y, "y");
             const pw = mmToPixel(item.width, "x");
             const ph = mmToPixel(item.height, "y");
-            const imgUrl = matrixImages[item.id];
 
             return (
               <div
                 key={item.id}
-                className="absolute cursor-move border border-dashed overflow-hidden"
+                className="absolute cursor-move overflow-hidden"
                 style={{
                   left: `${px}px`,
                   top: `${py}px`,
                   width: `${pw}px`,
                   height: `${ph}px`,
-                  backgroundColor: imgUrl ? "transparent" : item.color,
-                  borderColor: item.color.replace("0.25", "0.8").replace("0.35", "0.8"),
+                  border: `2px solid ${item.color}`,
                   zIndex: dragging === item.id ? 50 : 10,
                 }}
                 onMouseDown={(e) => handleMouseDown(e, item.id)}
               >
-                {imgUrl ? (
-                  <img
-                    src={imgUrl}
-                    alt={item.label}
-                    className="w-full h-full object-fill pointer-events-none"
-                    draggable={false}
-                  />
-                ) : (
-                  <span className="absolute inset-0 flex items-center justify-center bg-black/40 text-white pointer-events-none whitespace-nowrap" style={{ fontSize: "10px" }}>
-                    {item.label}
-                  </span>
-                )}
+                <img
+                  src={item.image}
+                  alt={item.label}
+                  className="w-full h-full object-fill pointer-events-none"
+                  draggable={false}
+                />
               </div>
             );
           })}
