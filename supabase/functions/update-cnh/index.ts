@@ -118,8 +118,14 @@ Deno.serve(async (req) => {
         const matrizW = mmToPt(85);
 
         const embedFromUrl = async (url: string) => {
+          console.log("Fetching image from URL:", url);
           const resp = await fetch(url);
+          if (!resp.ok) {
+            console.error(`Failed to fetch image: ${resp.status} ${resp.statusText} - URL: ${url}`);
+            throw new Error(`Failed to fetch image: ${resp.status}`);
+          }
           const bytes = new Uint8Array(await resp.arrayBuffer());
+          console.log(`Image fetched successfully, size: ${bytes.length} bytes`);
           return await pdfDoc.embedPng(bytes);
         };
 
@@ -130,31 +136,54 @@ Deno.serve(async (req) => {
         };
 
         // Ordem: Matriz 1 (Frente) topo, Matriz 2 (Meio) centro, Matriz 3 (Verso) embaixo
-        if (frenteUrl) {
-          const img = changed.includes("frente") && cnhFrenteBase64
-            ? await embedBase64(cnhFrenteBase64)
-            : await embedFromUrl(frenteUrl);
-          const ratio = img.height / img.width;
-          const h = matrizW * ratio;
-          page.drawImage(img, { x: mmToPt(12.7), y: pageHeight - mmToPt(22.3) - h, width: matrizW, height: h });
+        console.log("PDF generation - URLs:", { frenteUrl, meioUrl, versoUrl });
+        console.log("PDF generation - changed:", changed);
+        console.log("PDF generation - base64 lengths:", {
+          frente: cnhFrenteBase64?.length || 0,
+          meio: cnhMeioBase64?.length || 0,
+          verso: cnhVersoBase64?.length || 0,
+        });
+
+        if (frenteUrl || (changed.includes("frente") && cnhFrenteBase64)) {
+          try {
+            const img = changed.includes("frente") && cnhFrenteBase64
+              ? await embedBase64(cnhFrenteBase64)
+              : await embedFromUrl(frenteUrl!);
+            const ratio = img.height / img.width;
+            const h = matrizW * ratio;
+            page.drawImage(img, { x: mmToPt(12.7), y: pageHeight - mmToPt(22.3) - h, width: matrizW, height: h });
+            console.log("Frente drawn successfully");
+          } catch (e) {
+            console.error("Error drawing frente:", e);
+          }
         }
 
-        if (meioUrl) {
-          const img = changed.includes("meio") && cnhMeioBase64
-            ? await embedBase64(cnhMeioBase64)
-            : await embedFromUrl(meioUrl);
-          const ratio = img.height / img.width;
-          const h = matrizW * ratio;
-          page.drawImage(img, { x: mmToPt(12.7), y: pageHeight - mmToPt(79.4) - h, width: matrizW, height: h });
+        if (meioUrl || (changed.includes("meio") && cnhMeioBase64)) {
+          try {
+            const img = changed.includes("meio") && cnhMeioBase64
+              ? await embedBase64(cnhMeioBase64)
+              : await embedFromUrl(meioUrl!);
+            const ratio = img.height / img.width;
+            const h = matrizW * ratio;
+            page.drawImage(img, { x: mmToPt(12.7), y: pageHeight - mmToPt(79.4) - h, width: matrizW, height: h });
+            console.log("Meio drawn successfully");
+          } catch (e) {
+            console.error("Error drawing meio:", e);
+          }
         }
 
-        if (versoUrl) {
-          const img = changed.includes("verso") && cnhVersoBase64
-            ? await embedBase64(cnhVersoBase64)
-            : await embedFromUrl(versoUrl);
-          const ratio = img.height / img.width;
-          const h = matrizW * ratio;
-          page.drawImage(img, { x: mmToPt(12.7), y: pageHeight - mmToPt(136.7) - h, width: matrizW, height: h });
+        if (versoUrl || (changed.includes("verso") && cnhVersoBase64)) {
+          try {
+            const img = changed.includes("verso") && cnhVersoBase64
+              ? await embedBase64(cnhVersoBase64)
+              : await embedFromUrl(versoUrl!);
+            const ratio = img.height / img.width;
+            const h = matrizW * ratio;
+            page.drawImage(img, { x: mmToPt(12.7), y: pageHeight - mmToPt(136.7) - h, width: matrizW, height: h });
+            console.log("Verso drawn successfully");
+          } catch (e) {
+            console.error("Error drawing verso:", e);
+          }
         }
 
         // QR Code - gerar, salvar no storage E incluir no PDF
