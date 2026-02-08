@@ -151,6 +151,23 @@ export const cnhService = {
 
     return { usuarios: data?.usuarios || [] };
   },
+
+  delete: async (admin_id: number, session_token: string, usuario_id: number): Promise<{ success: boolean }> => {
+    if (isUsingMySQL()) {
+      console.log('📦 Excluindo CNH via Node.js API...');
+      return fetchNodeAPI('/cnh/delete', { admin_id, session_token, usuario_id });
+    }
+
+    console.log('📦 Excluindo CNH via Edge Function...');
+    const { data, error } = await supabase.functions.invoke('delete-cnh', {
+      body: { admin_id, session_token, usuario_id },
+    });
+
+    if (error) throw error;
+    if (data?.error) throw new Error(data.error);
+
+    return data;
+  },
 };
 
 export default cnhService;
