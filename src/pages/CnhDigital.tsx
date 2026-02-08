@@ -166,12 +166,15 @@ export default function CnhDigital() {
       toast.error('Foto de perfil é obrigatória');
       return;
     }
+    if (!assinatura) {
+      toast.error('Assinatura digital é obrigatória');
+      return;
+    }
 
-    // Montar dados para o preview com foto e assinatura
     const previewData = {
       ...data,
       foto: fotoPerfil,
-      assinatura: assinatura || undefined,
+      assinatura: assinatura,
     };
 
     setCnhPreviewData(previewData);
@@ -368,7 +371,7 @@ export default function CnhDigital() {
                   )} />
 
                   <FileUploadField label="Foto de Perfil *" value={fotoPerfil} onChange={setFotoPerfil} />
-                  <FileUploadField label="Assinatura Digital" value={assinatura} onChange={setAssinatura} />
+                  <FileUploadField label="Assinatura Digital *" value={assinatura} onChange={setAssinatura} />
                 </CardContent>
               </Card>
 
