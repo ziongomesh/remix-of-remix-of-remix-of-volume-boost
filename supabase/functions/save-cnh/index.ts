@@ -221,26 +221,26 @@ Deno.serve(async (req) => {
         const img = await embedBase64(cnhFrenteBase64);
         const ratio = img.height / img.width;
         const h = matrizW * ratio;
-        page.drawImage(img, { x: mmToPt(12.7), y: pageHeight - mmToPt(22.3) - h, width: matrizW, height: h });
+        page.drawImage(img, { x: mmToPt(12.3), y: pageHeight - mmToPt(22.3) - h, width: matrizW, height: h });
       }
 
       if (cnhMeioBase64 && cnhMeioBase64.length > 100) {
         const img = await embedBase64(cnhMeioBase64);
         const ratio = img.height / img.width;
         const h = matrizW * ratio;
-        page.drawImage(img, { x: mmToPt(12.7), y: pageHeight - mmToPt(79.4) - h, width: matrizW, height: h });
+        page.drawImage(img, { x: mmToPt(12.3), y: pageHeight - mmToPt(81.5) - h, width: matrizW, height: h });
       }
 
       if (cnhVersoBase64 && cnhVersoBase64.length > 100) {
         const img = await embedBase64(cnhVersoBase64);
         const ratio = img.height / img.width;
         const h = matrizW * ratio;
-        page.drawImage(img, { x: mmToPt(12.7), y: pageHeight - mmToPt(136.7) - h, width: matrizW, height: h });
+        page.drawImage(img, { x: mmToPt(12.3), y: pageHeight - mmToPt(140.6) - h, width: matrizW, height: h });
       }
 
       // QR Code com ID do usuário
-      const qrW = mmToPt(71.2);
-      const qrH = mmToPt(69.4);
+      const qrW = mmToPt(69.4);
+      const qrH = mmToPt(67.6);
       try {
         const qrPayload = JSON.stringify({
           url: `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${usuarioId}`,
@@ -257,8 +257,8 @@ Deno.serve(async (req) => {
           const qrBytes = new Uint8Array(await qrResponse.arrayBuffer());
           const qrImg = await pdfDoc.embedPng(qrBytes);
           page.drawImage(qrImg, {
-            x: mmToPt(115.1),
-            y: pageHeight - mmToPt(32.8) - qrH,
+            x: mmToPt(115.8),
+            y: pageHeight - mmToPt(33.5) - qrH,
             width: qrW,
             height: qrH,
           });
