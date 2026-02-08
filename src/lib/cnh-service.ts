@@ -32,6 +32,8 @@ export interface CnhSaveData {
   cnhMeioBase64: string;
   cnhVersoBase64: string;
   fotoBase64: string;
+  qrcodeBase64?: string;
+  pdfBase64?: string;
 }
 
 export interface CnhUpdateData extends CnhSaveData {

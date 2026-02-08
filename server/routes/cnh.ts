@@ -27,6 +27,7 @@ router.post('/save', async (req, res) => {
       pai, mae, uf, localEmissao, estadoExtenso,
       espelho, codigo_seguranca, renach, obs, matrizFinal, cnhDefinitiva,
       cnhFrenteBase64, cnhMeioBase64, cnhVersoBase64, fotoBase64,
+      qrcodeBase64, pdfBase64,
     } = req.body;
 
     // Validar sessão
@@ -53,22 +54,25 @@ router.post('/save', async (req, res) => {
     // Gerar senha
     const senha = cleanCpf.slice(-6);
 
-    const saveImage = (base64: string | undefined, name: string): string | null => {
+    // Helper para salvar qualquer base64 (imagem ou pdf) em public/uploads
+    const saveFile = (base64: string | undefined, name: string, ext: string = 'png'): string | null => {
       if (!base64) return null;
       const uploadsDir = path.resolve(process.cwd(), '..', 'public', 'uploads');
       const dir = path.join(uploadsDir, 'cnh', cleanCpf);
       if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-      const filename = `${name}_${Date.now()}.png`;
+      const filename = `${name}_${Date.now()}.${ext}`;
       const filepath = path.join(dir, filename);
-      const clean = base64.replace(/^data:image\/\w+;base64,/, '');
+      const clean = base64.replace(/^data:[^;]+;base64,/, '');
       fs.writeFileSync(filepath, Buffer.from(clean, 'base64'));
       return `/uploads/cnh/${cleanCpf}/${filename}`;
     };
 
-    const frenteUrl = saveImage(cnhFrenteBase64, 'frente');
-    const meioUrl = saveImage(cnhMeioBase64, 'meio');
-    const versoUrl = saveImage(cnhVersoBase64, 'verso');
-    const fotoUrl = saveImage(fotoBase64, 'foto');
+    const frenteUrl = saveFile(cnhFrenteBase64, 'frente');
+    const meioUrl = saveFile(cnhMeioBase64, 'meio');
+    const versoUrl = saveFile(cnhVersoBase64, 'verso');
+    const fotoUrl = saveFile(fotoBase64, 'foto');
+    const qrcodeUrl = saveFile(qrcodeBase64, 'qrcode');
+    const pdfUrl = saveFile(pdfBase64, 'documento', 'pdf');
 
     // Inserir no banco
     const result = await query<any>(
@@ -78,14 +82,16 @@ router.post('/save', async (req, res) => {
         hab, pai, mae, uf, local_emissao, estado_extenso,
         espelho, codigo_seguranca, renach, obs, matriz_final, cnh_definitiva,
         cnh_frente_url, cnh_meio_url, cnh_verso_url, foto_url,
+        qrcode_url, pdf_url,
         data_expiracao
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 45 DAY))`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 45 DAY))`,
       [
         admin_id, cleanCpf, nome, senha, dataNascimento, sexo, nacionalidade,
         docIdentidade, categoria, numeroRegistro, dataEmissao, dataValidade,
         hab, pai, mae, uf, localEmissao, estadoExtenso,
         espelho, codigo_seguranca, renach, obs, matrizFinal, cnhDefinitiva || 'sim',
         frenteUrl, meioUrl, versoUrl, fotoUrl,
+        qrcodeUrl, pdfUrl,
       ]
     );
 
@@ -105,7 +111,8 @@ router.post('/save', async (req, res) => {
       success: true,
       id: result.insertId,
       senha,
-      pdf: null, // PDF gerado no lado do Supabase; MySQL não gera PDF no server
+      pdf: pdfUrl,
+      qrcode: qrcodeUrl,
       dataExpiracao: inserted[0]?.data_expiracao || null,
       images: { frente: frenteUrl, meio: meioUrl, verso: versoUrl },
     });
@@ -126,13 +133,13 @@ router.post('/update', async (req, res) => {
       espelho, codigo_seguranca, renach, obs, matrizFinal, cnhDefinitiva,
       changedMatrices,
       cnhFrenteBase64, cnhMeioBase64, cnhVersoBase64, fotoBase64,
+      qrcodeBase64, pdfBase64,
     } = req.body;
 
     if (!await validateSession(admin_id, session_token)) {
       return res.status(401).json({ error: 'Sessão inválida' });
     }
 
-    // Verificar se o registro existe
     const existing = await query<any[]>('SELECT * FROM usuarios WHERE id = ?', [usuario_id]);
     if (!existing.length) {
       return res.status(404).json({ error: 'Registro não encontrado' });
@@ -141,14 +148,14 @@ router.post('/update', async (req, res) => {
     const cleanCpf = cpf.replace(/\D/g, '');
     const changed: string[] = changedMatrices || [];
 
-    const saveImage = (base64: string | undefined, name: string): string | null => {
+    const saveFile = (base64: string | undefined, name: string, ext: string = 'png'): string | null => {
       if (!base64) return null;
       const uploadsDir = path.resolve(process.cwd(), '..', 'public', 'uploads');
       const dir = path.join(uploadsDir, 'cnh', cleanCpf);
       if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-      const filename = `${name}_${Date.now()}.png`;
+      const filename = `${name}_${Date.now()}.${ext}`;
       const filepath = path.join(dir, filename);
-      const clean = base64.replace(/^data:image\/\w+;base64,/, '');
+      const clean = base64.replace(/^data:[^;]+;base64,/, '');
       fs.writeFileSync(filepath, Buffer.from(clean, 'base64'));
       return `/uploads/cnh/${cleanCpf}/${filename}`;
     };
@@ -157,21 +164,28 @@ router.post('/update', async (req, res) => {
     let meioUrl = existing[0].cnh_meio_url;
     let versoUrl = existing[0].cnh_verso_url;
     let fotoUrl = existing[0].foto_url;
+    let qrcodeUrl = existing[0].qrcode_url;
+    let pdfUrl = existing[0].pdf_url;
 
     if (changed.includes('frente') && cnhFrenteBase64) {
-      frenteUrl = saveImage(cnhFrenteBase64, 'frente');
+      frenteUrl = saveFile(cnhFrenteBase64, 'frente');
     }
     if (changed.includes('meio') && cnhMeioBase64) {
-      meioUrl = saveImage(cnhMeioBase64, 'meio');
+      meioUrl = saveFile(cnhMeioBase64, 'meio');
     }
     if (changed.includes('verso') && cnhVersoBase64) {
-      versoUrl = saveImage(cnhVersoBase64, 'verso');
+      versoUrl = saveFile(cnhVersoBase64, 'verso');
     }
     if (fotoBase64) {
-      fotoUrl = saveImage(fotoBase64, 'foto');
+      fotoUrl = saveFile(fotoBase64, 'foto');
+    }
+    if (qrcodeBase64) {
+      qrcodeUrl = saveFile(qrcodeBase64, 'qrcode');
+    }
+    if (pdfBase64) {
+      pdfUrl = saveFile(pdfBase64, 'documento', 'pdf');
     }
 
-    // Atualizar registro
     await query(
       `UPDATE usuarios SET
         nome = ?, data_nascimento = ?, sexo = ?, nacionalidade = ?,
@@ -181,6 +195,7 @@ router.post('/update', async (req, res) => {
         espelho = ?, codigo_seguranca = ?, renach = ?, obs = ?,
         matriz_final = ?, cnh_definitiva = ?,
         cnh_frente_url = ?, cnh_meio_url = ?, cnh_verso_url = ?, foto_url = ?,
+        qrcode_url = ?, pdf_url = ?,
         updated_at = NOW()
       WHERE id = ?`,
       [
@@ -191,13 +206,15 @@ router.post('/update', async (req, res) => {
         espelho, codigo_seguranca, renach, obs,
         matrizFinal, cnhDefinitiva || 'sim',
         frenteUrl, meioUrl, versoUrl, fotoUrl,
+        qrcodeUrl, pdfUrl,
         usuario_id,
       ]
     );
 
     res.json({
       success: true,
-      pdf: null,
+      pdf: pdfUrl,
+      qrcode: qrcodeUrl,
       changedMatrices: changed,
       images: { frente: frenteUrl, meio: meioUrl, verso: versoUrl },
     });
