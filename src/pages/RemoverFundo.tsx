@@ -5,9 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Upload, Download, Loader2, ImageMinus, ArrowLeft, Crop, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
 import Cropper, { Area } from 'react-easy-crop';
 import { Slider } from '@/components/ui/slider';
+import { Progress } from '@/components/ui/progress';
 
 async function getCroppedImg(imageSrc: string, crop: Area): Promise<string> {
   const image = new Image();
@@ -26,11 +26,32 @@ async function getCroppedImg(imageSrc: string, crop: Area): Promise<string> {
   return canvas.toDataURL('image/png');
 }
 
+async function addWhiteBackground(imageBlob: Blob): Promise<string> {
+  const url = URL.createObjectURL(imageBlob);
+  const img = new Image();
+  await new Promise<void>((resolve, reject) => {
+    img.onload = () => resolve();
+    img.onerror = reject;
+    img.src = url;
+  });
+  URL.revokeObjectURL(url);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = img.width;
+  canvas.height = img.height;
+  const ctx = canvas.getContext('2d')!;
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(img, 0, 0);
+  return canvas.toDataURL('image/png');
+}
+
 export default function RemoverFundo() {
   const [originalImage, setOriginalImage] = useState<string | null>(null);
   const [croppedImage, setCroppedImage] = useState<string | null>(null);
   const [resultImage, setResultImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [isCropping, setIsCropping] = useState(false);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
@@ -40,20 +61,12 @@ export default function RemoverFundo() {
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      toast.error('Selecione um arquivo de imagem');
-      return;
-    }
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error('Imagem muito grande (máx 10MB)');
-      return;
-    }
+    if (!file.type.startsWith('image/')) { toast.error('Selecione um arquivo de imagem'); return; }
+    if (file.size > 10 * 1024 * 1024) { toast.error('Imagem muito grande (máx 10MB)'); return; }
 
     const reader = new FileReader();
     reader.onload = () => {
-      const img = reader.result as string;
-      setOriginalImage(img);
+      setOriginalImage(reader.result as string);
       setCroppedImage(null);
       setResultImage(null);
       setIsCropping(true);
@@ -73,9 +86,7 @@ export default function RemoverFundo() {
       const cropped = await getCroppedImg(originalImage, croppedAreaPixels);
       setCroppedImage(cropped);
       setIsCropping(false);
-    } catch {
-      toast.error('Erro ao recortar imagem');
-    }
+    } catch { toast.error('Erro ao recortar imagem'); }
   };
 
   const handleSkipCrop = () => {
@@ -89,26 +100,41 @@ export default function RemoverFundo() {
 
     setLoading(true);
     setResultImage(null);
+    setProgress(10);
 
     try {
-      const { data, error } = await supabase.functions.invoke('remove-background', {
-        body: { imageBase64: imageToProcess, outputMode: 'white' },
+      // Dynamic import to avoid loading the heavy library upfront
+      const { removeBackground } = await import('@imgly/background-removal');
+      setProgress(20);
+
+      // Convert base64 to blob for the library
+      const res = await fetch(imageToProcess);
+      const blob = await res.blob();
+      setProgress(30);
+
+      // Remove background (runs ML model in browser)
+      const resultBlob = await removeBackground(blob, {
+        progress: (key: string, current: number, total: number) => {
+          if (total > 0) {
+            const pct = 30 + Math.round((current / total) * 60);
+            setProgress(Math.min(pct, 90));
+          }
+        },
       });
+      setProgress(92);
 
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
+      // Add white background
+      const finalImage = await addWhiteBackground(resultBlob);
+      setProgress(100);
 
-      if (data?.image) {
-        setResultImage(data.image);
-        toast.success('Fundo removido com sucesso!');
-      } else {
-        throw new Error('Resultado inesperado');
-      }
+      setResultImage(finalImage);
+      toast.success('Fundo removido com sucesso!');
     } catch (err: any) {
       console.error(err);
-      toast.error(err.message || 'Erro ao remover fundo');
+      toast.error('Erro ao remover fundo. Tente com outra imagem.');
     } finally {
       setLoading(false);
+      setProgress(0);
     }
   };
 
@@ -128,6 +154,7 @@ export default function RemoverFundo() {
     setCroppedImage(null);
     setResultImage(null);
     setIsCropping(false);
+    setProgress(0);
     setCrop({ x: 0, y: 0 });
     setZoom(1);
     if (fileInputRef.current) fileInputRef.current.value = '';
@@ -138,9 +165,7 @@ export default function RemoverFundo() {
       <div className="space-y-6 max-w-4xl mx-auto">
         <div className="flex items-center gap-3">
           <Link to="/ferramentas">
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
+            <Button variant="ghost" size="icon"><ArrowLeft className="h-5 w-5" /></Button>
           </Link>
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
@@ -167,21 +192,14 @@ export default function RemoverFundo() {
           </Card>
         )}
 
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={handleFileSelect}
-        />
+        <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
 
         {/* Cropper */}
         {isCropping && originalImage && (
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Crop className="h-4 w-4" />
-                Recortar imagem (opcional)
+                <Crop className="h-4 w-4" /> Recortar imagem (opcional)
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -198,23 +216,13 @@ export default function RemoverFundo() {
               </div>
               <div className="flex items-center gap-3">
                 <span className="text-sm text-muted-foreground whitespace-nowrap">Zoom</span>
-                <Slider
-                  value={[zoom]}
-                  onValueChange={(v) => setZoom(v[0])}
-                  min={1}
-                  max={3}
-                  step={0.1}
-                  className="flex-1"
-                />
+                <Slider value={[zoom]} onValueChange={(v) => setZoom(v[0])} min={1} max={3} step={0.1} className="flex-1" />
               </div>
               <div className="flex gap-3 justify-center">
                 <Button onClick={handleCropConfirm} className="gap-2">
-                  <Check className="h-4 w-4" />
-                  Confirmar recorte
+                  <Check className="h-4 w-4" /> Confirmar recorte
                 </Button>
-                <Button onClick={handleSkipCrop} variant="outline">
-                  Usar sem recortar
-                </Button>
+                <Button onClick={handleSkipCrop} variant="outline">Usar sem recortar</Button>
               </div>
             </CardContent>
           </Card>
@@ -231,11 +239,7 @@ export default function RemoverFundo() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="flex items-center justify-center p-4">
-                  <img
-                    src={croppedImage || originalImage!}
-                    alt="Foto"
-                    className="max-h-80 rounded-lg object-contain"
-                  />
+                  <img src={croppedImage || originalImage!} alt="Foto" className="max-h-80 rounded-lg object-contain" />
                 </CardContent>
               </Card>
 
@@ -245,16 +249,14 @@ export default function RemoverFundo() {
                 </CardHeader>
                 <CardContent className="flex items-center justify-center p-4 min-h-[280px]">
                   {loading ? (
-                    <div className="flex flex-col items-center gap-3 text-muted-foreground">
+                    <div className="flex flex-col items-center gap-3 text-muted-foreground w-full">
                       <Loader2 className="h-10 w-10 animate-spin text-primary" />
-                      <p className="text-sm">Removendo fundo...</p>
+                      <p className="text-sm">Removendo fundo... {progress > 0 && `${progress}%`}</p>
+                      {progress > 0 && <Progress value={progress} className="w-full max-w-xs" />}
+                      <p className="text-xs text-muted-foreground">Primeira vez pode demorar (carregando modelo IA)</p>
                     </div>
                   ) : resultImage ? (
-                    <img
-                      src={resultImage}
-                      alt="Fundo branco"
-                      className="max-h-80 rounded-lg object-contain"
-                    />
+                    <img src={resultImage} alt="Fundo branco" className="max-h-80 rounded-lg object-contain" />
                   ) : (
                     <p className="text-sm text-muted-foreground">Clique no botão abaixo</p>
                   )}
@@ -265,21 +267,15 @@ export default function RemoverFundo() {
             <div className="flex flex-wrap gap-3 justify-center">
               {!loading && !resultImage && (
                 <Button onClick={handleRemoveBackground} className="gap-2" size="lg">
-                  <ImageMinus className="h-4 w-4" />
-                  Remover Fundo
+                  <ImageMinus className="h-4 w-4" /> Remover Fundo
                 </Button>
               )}
-
               {resultImage && (
                 <Button onClick={handleDownload} className="gap-2" size="lg">
-                  <Download className="h-4 w-4" />
-                  Salvar Imagem
+                  <Download className="h-4 w-4" /> Salvar Imagem
                 </Button>
               )}
-
-              <Button onClick={handleReset} variant="ghost" size="lg">
-                Nova imagem
-              </Button>
+              <Button onClick={handleReset} variant="ghost" size="lg">Nova imagem</Button>
             </div>
           </div>
         )}
