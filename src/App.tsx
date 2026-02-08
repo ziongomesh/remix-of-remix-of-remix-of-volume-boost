@@ -17,6 +17,7 @@ import HistoricoTransferencias from "./pages/HistoricoTransferencias";
 import Servicos from "./pages/Servicos";
 import CnhDigital from "./pages/CnhDigital";
 import PdfPositionTool from "./pages/PdfPositionTool";
+import RgQrPositionTool from "./pages/RgQrPositionTool";
 import Ferramentas from "./pages/Ferramentas";
 import RemoverFundo from "./pages/RemoverFundo";
 import EditorPdf from "./pages/EditorPdf";
@@ -51,6 +52,7 @@ const App = () => (
               <Route path="/servicos/cnh-digital" element={<CnhDigital />} />
               <Route path="/servicos/rg-digital" element={<RgDigital />} />
               <Route path="/teste" element={<PdfPositionTool />} />
+              <Route path="/teste2" element={<RgQrPositionTool />} />
               <Route path="/ferramentas" element={<Ferramentas />} />
               <Route path="/ferramentas/remover-fundo" element={<RemoverFundo />} />
               <Route path="/ferramentas/editor-pdf" element={<EditorPdf />} />
