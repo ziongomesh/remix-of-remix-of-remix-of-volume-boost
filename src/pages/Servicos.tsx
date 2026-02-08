@@ -1,5 +1,5 @@
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { Shield, FileText, CheckCircle, Clock, CreditCard } from 'lucide-react';
+import { Shield, FileText, CheckCircle, Clock, CreditCard, AlertTriangle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
@@ -48,11 +48,12 @@ const categories: ServiceCategory[] = [
   },
 ];
 
-function ServiceCard({ service }: { service: Service }) {
+function ServiceCard({ service, hasCredits }: { service: Service; hasCredits: boolean }) {
   const navigate = useNavigate();
+  const canAccess = service.available && hasCredits;
 
   return (
-    <div className="bg-card border border-border rounded-xl p-5 flex flex-col gap-4 hover:shadow-lg transition-shadow">
+    <div className={`bg-card border border-border rounded-xl p-5 flex flex-col gap-4 transition-shadow ${canAccess ? 'hover:shadow-lg' : 'opacity-60'}`}>
       <div className="flex items-start justify-between">
         <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
           <FileText className="h-6 w-6 text-primary" />
@@ -92,16 +93,16 @@ function ServiceCard({ service }: { service: Service }) {
 
       <Button
         className="w-full"
-        disabled={!service.available}
+        disabled={!canAccess}
         onClick={() => navigate(service.route)}
       >
-        Acessar Serviço
+        {hasCredits ? 'Acessar Serviço' : 'Sem Créditos'}
       </Button>
     </div>
   );
 }
 
-function CategorySection({ category }: { category: ServiceCategory }) {
+function CategorySection({ category, hasCredits }: { category: ServiceCategory; hasCredits: boolean }) {
   const Icon = category.icon;
 
   return (
@@ -118,7 +119,7 @@ function CategorySection({ category }: { category: ServiceCategory }) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {category.services.map((service) => (
-          <ServiceCard key={service.id} service={service} />
+          <ServiceCard key={service.id} service={service} hasCredits={hasCredits} />
         ))}
       </div>
     </div>
@@ -126,6 +127,10 @@ function CategorySection({ category }: { category: ServiceCategory }) {
 }
 
 export default function Servicos() {
+  const adminStr = localStorage.getItem('admin');
+  const admin = adminStr ? JSON.parse(adminStr) : null;
+  const hasCredits = (admin?.creditos ?? 0) > 0;
+
   return (
     <DashboardLayout>
       <div className="space-y-8">
@@ -134,8 +139,18 @@ export default function Servicos() {
           <p className="text-muted-foreground mt-1">Escolha um serviço para começar</p>
         </div>
 
+        {!hasCredits && (
+          <div className="flex items-center gap-3 bg-destructive/10 border border-destructive/30 rounded-xl p-4">
+            <AlertTriangle className="h-5 w-5 text-destructive shrink-0" />
+            <div>
+              <p className="font-semibold text-foreground">Você está sem créditos</p>
+              <p className="text-sm text-muted-foreground">Recarregue com seu master para continuar utilizando os serviços.</p>
+            </div>
+          </div>
+        )}
+
         {categories.map((category) => (
-          <CategorySection key={category.id} category={category} />
+          <CategorySection key={category.id} category={category} hasCredits={hasCredits} />
         ))}
       </div>
     </DashboardLayout>
