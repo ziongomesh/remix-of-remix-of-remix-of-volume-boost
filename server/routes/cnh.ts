@@ -501,7 +501,7 @@ router.post('/delete', async (req, res) => {
     // Apagar registro do banco
     await query('DELETE FROM usuarios WHERE id = ?', [usuario_id]);
 
-    logger.info(`CNH excluída: usuario_id=${usuario_id}, cpf=${cpf}, por admin_id=${admin_id}`);
+    logger.action('CNH EXCLUÍDA', `usuario_id=${usuario_id}, cpf=${cpf}, por admin_id=${admin_id}`);
 
     res.json({ success: true });
   } catch (error: any) {
