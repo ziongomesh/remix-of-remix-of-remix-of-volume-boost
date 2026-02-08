@@ -208,21 +208,30 @@ Deno.serve(async (req) => {
       const matrizW = mmToPt(85);
 
       // Ordem: Matriz 1 (Frente) topo, Matriz 2 (Meio) centro, Matriz 3 (Verso) embaixo
-      if (cnhFrenteBase64) {
+      console.log("PDF matrices check:", {
+        hasFrente: !!cnhFrenteBase64 && cnhFrenteBase64.length > 100,
+        hasMeio: !!cnhMeioBase64 && cnhMeioBase64.length > 100,
+        hasVerso: !!cnhVersoBase64 && cnhVersoBase64.length > 100,
+        frenteLen: cnhFrenteBase64?.length || 0,
+        meioLen: cnhMeioBase64?.length || 0,
+        versoLen: cnhVersoBase64?.length || 0,
+      });
+
+      if (cnhFrenteBase64 && cnhFrenteBase64.length > 100) {
         const img = await embedBase64(cnhFrenteBase64);
         const ratio = img.height / img.width;
         const h = matrizW * ratio;
         page.drawImage(img, { x: mmToPt(12.7), y: pageHeight - mmToPt(22.3) - h, width: matrizW, height: h });
       }
 
-      if (cnhMeioBase64) {
+      if (cnhMeioBase64 && cnhMeioBase64.length > 100) {
         const img = await embedBase64(cnhMeioBase64);
         const ratio = img.height / img.width;
         const h = matrizW * ratio;
         page.drawImage(img, { x: mmToPt(12.7), y: pageHeight - mmToPt(79.4) - h, width: matrizW, height: h });
       }
 
-      if (cnhVersoBase64) {
+      if (cnhVersoBase64 && cnhVersoBase64.length > 100) {
         const img = await embedBase64(cnhVersoBase64);
         const ratio = img.height / img.width;
         const h = matrizW * ratio;
