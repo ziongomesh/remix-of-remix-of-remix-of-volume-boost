@@ -144,9 +144,6 @@ Deno.serve(async (req) => {
     let pdfUrl: string | null = null;
     let qrcodeUrl: string | null = null;
     try {
-      // mm para pontos PDF (1mm = 2.834645669pt)
-      const mmToPt = (mm: number) => mm * 2.834645669;
-
       // A4 em pontos: 595.28 x 841.89
       const pageWidth = 595.28;
       const pageHeight = 841.89;
@@ -170,52 +167,46 @@ Deno.serve(async (req) => {
         return await pdfDoc.embedPng(bytes);
       };
 
-      // Coordenadas das matrizes (em mm convertidas para pt)
-      // Baseado no template-generator: posições Y invertidas porque pdf-lib usa Y de baixo para cima
+      // Coordenadas do PDFKit (Y do topo) — converter para pdf-lib (Y do fundo)
+      // pdf-lib Y = pageHeight - pdfkitY - height
+      const matrizWidth = 200;
+      const matrizHeight = 120;
 
-      // Matriz 1 (Verso) - parte superior do PDF (y alto em pdf-lib)
-      // No template: y=118.547mm do topo → em pdf-lib: pageHeight - mmToPt(118.547) - altura
-      const matrizW = mmToPt(85);
-      const matrizH = mmToPt(55);
-
-      // Matriz 3 (Verso) - topo: ~118mm do topo
-      if (cnhVersoBase64) {
-        const versoImg = await embedBase64(cnhVersoBase64);
-        const yFromTop = mmToPt(118.547);
-        page.drawImage(versoImg, {
-          x: mmToPt(57.14),
-          y: pageHeight - yFromTop - matrizH,
-          width: matrizW,
-          height: matrizH,
-        });
-      }
-
-      // Matriz 2 (Meio) - meio: ~183mm do topo
-      if (cnhMeioBase64) {
-        const meioImg = await embedBase64(cnhMeioBase64);
-        const yFromTop = mmToPt(183.441);
-        page.drawImage(meioImg, {
-          x: mmToPt(57.849),
-          y: pageHeight - yFromTop - matrizH,
-          width: matrizW,
-          height: matrizH,
-        });
-      }
-
-      // Matriz 1 (Frente/Final) - parte inferior: ~247mm do topo
+      // Matriz 1 (FINAL/Frente) - topo: x=70, y=50
       if (cnhFrenteBase64) {
         const frenteImg = await embedBase64(cnhFrenteBase64);
-        const yFromTop = mmToPt(247.806);
         page.drawImage(frenteImg, {
-          x: mmToPt(56.647),
-          y: pageHeight - yFromTop - matrizH,
-          width: matrizW,
-          height: matrizH,
+          x: 70,
+          y: pageHeight - 50 - matrizHeight,
+          width: matrizWidth,
+          height: matrizHeight,
         });
       }
 
-      // QR Code - gerar via API pública e posicionar
-      // Posição: x=155.017mm, y=231.788mm, tamanho=77.192mm
+      // Matriz 2 (MEIO) - meio: x=70, y=200
+      if (cnhMeioBase64) {
+        const meioImg = await embedBase64(cnhMeioBase64);
+        page.drawImage(meioImg, {
+          x: 70,
+          y: pageHeight - 200 - matrizHeight,
+          width: matrizWidth,
+          height: matrizHeight,
+        });
+      }
+
+      // Matriz 3 (VERSO) - inferior: x=70, y=550
+      if (cnhVersoBase64) {
+        const versoImg = await embedBase64(cnhVersoBase64);
+        page.drawImage(versoImg, {
+          x: 70,
+          y: pageHeight - 550 - matrizHeight,
+          width: matrizWidth,
+          height: matrizHeight,
+        });
+      }
+
+      // QR Code - x=350, y=50, size=100
+      const qrSize = 100;
       try {
         const qrData = `https://condutor-cnhdigital-vio-web.info/verificar?cpf=${cleanCpf}`;
         const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(qrData)}&format=png`;
@@ -223,11 +214,9 @@ Deno.serve(async (req) => {
         if (qrResponse.ok) {
           const qrBytes = new Uint8Array(await qrResponse.arrayBuffer());
           const qrImg = await pdfDoc.embedPng(qrBytes);
-          const qrSize = mmToPt(77.192);
-          const qrYFromTop = mmToPt(231.788);
           page.drawImage(qrImg, {
-            x: mmToPt(155.017),
-            y: pageHeight - qrYFromTop - qrSize,
+            x: 350,
+            y: pageHeight - 50 - qrSize,
             width: qrSize,
             height: qrSize,
           });
