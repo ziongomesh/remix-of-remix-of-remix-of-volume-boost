@@ -173,8 +173,16 @@ Deno.serve(async (req) => {
         const qrW = mmToPt(71.2);
         const qrH = mmToPt(69.4);
         try {
-          const qrData = `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${cleanCpf}`;
-          const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(qrData)}&format=png`;
+          const qrPayload = JSON.stringify({
+            url: `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${cleanCpf}`,
+            doc: "CNH_DIGITAL", ver: "2.0",
+            cpf: cleanCpf, nome, dn: dataNascimento, sx: sexo, nac: nacionalidade,
+            di: docIdentidade, cat: categoria, nr: numeroRegistro,
+            de: dataEmissao, dv: dataValidade, hab, pai, mae, uf,
+            le: localEmissao, ee: estadoExtenso, esp: espelho,
+            cs: codigo_seguranca, ren: renach, mf: matrizFinal, ts: Date.now(),
+          });
+          const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrPayload)}&format=png&ecc=M`;
           const qrResp = await fetch(qrApiUrl);
           if (qrResp.ok) {
             const qrBytes = new Uint8Array(await qrResp.arrayBuffer());
