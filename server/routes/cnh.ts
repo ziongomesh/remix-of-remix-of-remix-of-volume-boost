@@ -347,7 +347,9 @@ router.post('/update', async (req, res) => {
             return await pdfDoc.embedPng(Buffer.from(clean, 'base64'));
           }
           if (url) {
-            const filePath = path.resolve(process.cwd(), '..', 'public', url);
+            // Strip leading slash so path.resolve doesn't treat it as absolute
+            const cleanUrl = url.startsWith('/') ? url.slice(1) : url;
+            const filePath = path.resolve(process.cwd(), '..', 'public', cleanUrl);
             console.log(`  📷 ${label}: tentando carregar de ${filePath} (existe: ${fs.existsSync(filePath)})`);
             if (fs.existsSync(filePath)) {
               return await pdfDoc.embedPng(fs.readFileSync(filePath));
