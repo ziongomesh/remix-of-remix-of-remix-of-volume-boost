@@ -106,11 +106,25 @@ function drawTexts(ctx: CanvasRenderingContext2D, data: CnhMeioData): void {
   ctx.fillText(data.espelho || '', 0, 0);
   ctx.restore();
 
-  // Código de segurança e RENACH
-  ctx.font = `bold 17px ${font}`;
+  // Código de segurança e RENACH — auto-fit para não ultrapassar a área
+  const maxWidth = 200; // largura máxima disponível no template
   ctx.fillStyle = '#373435';
-  ctx.fillText(data.codigo_seguranca || '', 760, 555);
-  ctx.fillText(data.renach || '', 760, 578);
+
+  // Função auxiliar: encontra o maior tamanho de fonte que cabe no maxWidth
+  const drawFittedText = (text: string, x: number, y: number, startSize: number, minSize: number) => {
+    if (!text) return;
+    let fontSize = startSize;
+    while (fontSize >= minSize) {
+      ctx.font = `bold ${fontSize}px ${font}`;
+      if (ctx.measureText(text).width <= maxWidth) break;
+      fontSize -= 0.5;
+    }
+    ctx.font = `bold ${Math.max(fontSize, minSize)}px ${font}`;
+    ctx.fillText(text, x, y);
+  };
+
+  drawFittedText(data.codigo_seguranca || '', 760, 555, 17, 10);
+  drawFittedText(data.renach || '', 760, 578, 17, 10);
 
   // Estado por extenso
   ctx.font = `bold 40px ${font}`;
