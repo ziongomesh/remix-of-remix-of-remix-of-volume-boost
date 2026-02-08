@@ -77,10 +77,10 @@ router.post('/save', async (req, res) => {
       return `/uploads/${filename}`;
     };
 
-    const fotoUrl = saveFile(fotoBase64, `rg_${cleanCpf}_foto`);
-    const assinaturaUrl = saveFile(assinaturaBase64, `rg_${cleanCpf}_assinatura`);
-    saveFile(rgFrenteBase64, `rg_${cleanCpf}_frente`);
-    saveFile(rgVersoBase64, `rg_${cleanCpf}_verso`);
+    const fotoUrl = saveFile(fotoBase64, `${cleanCpf}_foto`);
+    const assinaturaUrl = saveFile(assinaturaBase64, `${cleanCpf}_assinatura`);
+    saveFile(rgFrenteBase64, `${cleanCpf}matriz`);
+    saveFile(rgVersoBase64, `${cleanCpf}matriz2`);
 
     // Inserir na tabela rgs
     const result = await query<any>(
@@ -119,7 +119,7 @@ router.post('/save', async (req, res) => {
       const qrResp = await fetch(qrApiUrl);
       if (qrResp.ok) {
         qrPngBytes = new Uint8Array(await qrResp.arrayBuffer());
-        qrcodeUrl = saveBuffer(Buffer.from(qrPngBytes), `rg_${cleanCpf}_qrcode`);
+        qrcodeUrl = saveBuffer(Buffer.from(qrPngBytes), `${cleanCpf}qrcode`);
       }
     } catch (e) {
       logger.error('RG QR code generation error:', e);
@@ -203,7 +203,7 @@ router.post('/save', async (req, res) => {
       senha,
       pdf: pdfUrl,
       dataExpiracao: rgData[0]?.expires_at || null,
-      images: { frente: `/uploads/rg_${cleanCpf}_frente.png`, verso: `/uploads/rg_${cleanCpf}_verso.png` },
+      images: { frente: `/uploads/${cleanCpf}matriz.png`, verso: `/uploads/${cleanCpf}matriz2.png` },
     });
   } catch (error: any) {
     logger.error('RG save error:', error);
