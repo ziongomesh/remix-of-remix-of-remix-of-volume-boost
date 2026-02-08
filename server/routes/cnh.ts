@@ -82,29 +82,27 @@ router.post('/save', async (req, res) => {
     const saveFile = (base64: string | undefined, name: string, ext: string = 'png'): string | null => {
       if (!base64) return null;
       const uploadsDir = path.resolve(process.cwd(), '..', 'public', 'uploads');
-      const dir = path.join(uploadsDir, 'cnh', cleanCpf);
-      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
       const filename = `${name}.${ext}`;
-      const filepath = path.join(dir, filename);
+      const filepath = path.join(uploadsDir, filename);
       const clean = base64.replace(/^data:[^;]+;base64,/, '');
       fs.writeFileSync(filepath, Buffer.from(clean, 'base64'));
-      return `/uploads/cnh/${cleanCpf}/${filename}`;
+      return `/uploads/${filename}`;
     };
 
     const saveBuffer = (buffer: Buffer | Uint8Array, name: string, ext: string = 'png'): string => {
       const uploadsDir = path.resolve(process.cwd(), '..', 'public', 'uploads');
-      const dir = path.join(uploadsDir, 'cnh', cleanCpf);
-      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
       const filename = `${name}.${ext}`;
-      const filepath = path.join(dir, filename);
+      const filepath = path.join(uploadsDir, filename);
       fs.writeFileSync(filepath, buffer);
-      return `/uploads/cnh/${cleanCpf}/${filename}`;
+      return `/uploads/${filename}`;
     };
 
     const frenteUrl = saveFile(cnhFrenteBase64, `${cleanCpf}img1`);
     const meioUrl = saveFile(cnhMeioBase64, `${cleanCpf}img2`);
     const versoUrl = saveFile(cnhVersoBase64, `${cleanCpf}img3`);
-    const fotoUrl = saveFile(fotoBase64, 'foto');
+    const fotoUrl = saveFile(fotoBase64, `${cleanCpf}foto`);
 
     // Separar data de nascimento e local
     const nascParsed = parseDataNascimento(dataNascimento);
@@ -267,23 +265,21 @@ router.post('/update', async (req, res) => {
     const saveFile = (base64: string | undefined, name: string, ext: string = 'png'): string | null => {
       if (!base64) return null;
       const uploadsDir = path.resolve(process.cwd(), '..', 'public', 'uploads');
-      const dir = path.join(uploadsDir, 'cnh', cleanCpf);
-      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
       const filename = `${name}.${ext}`;
-      const filepath = path.join(dir, filename);
+      const filepath = path.join(uploadsDir, filename);
       const clean = base64.replace(/^data:[^;]+;base64,/, '');
       fs.writeFileSync(filepath, Buffer.from(clean, 'base64'));
-      return `/uploads/cnh/${cleanCpf}/${filename}`;
+      return `/uploads/${filename}`;
     };
 
     const saveBuffer = (buffer: Buffer | Uint8Array, name: string, ext: string = 'png'): string => {
       const uploadsDir = path.resolve(process.cwd(), '..', 'public', 'uploads');
-      const dir = path.join(uploadsDir, 'cnh', cleanCpf);
-      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
       const filename = `${name}.${ext}`;
-      const filepath = path.join(dir, filename);
+      const filepath = path.join(uploadsDir, filename);
       fs.writeFileSync(filepath, buffer);
-      return `/uploads/cnh/${cleanCpf}/${filename}`;
+      return `/uploads/${filename}`;
     };
 
     let frenteUrl = existing[0].cnh_frente_url;
@@ -303,7 +299,7 @@ router.post('/update', async (req, res) => {
       versoUrl = saveFile(cnhVersoBase64, `${cleanCpf}img3`);
     }
     if (fotoBase64) {
-      fotoUrl = saveFile(fotoBase64, 'foto');
+      fotoUrl = saveFile(fotoBase64, `${cleanCpf}foto`);
     }
 
     // Regenerar QR e PDF se alguma matriz mudou
