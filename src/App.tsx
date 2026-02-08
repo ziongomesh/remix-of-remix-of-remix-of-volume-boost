@@ -17,6 +17,8 @@ import HistoricoTransferencias from "./pages/HistoricoTransferencias";
 import Servicos from "./pages/Servicos";
 import CnhDigital from "./pages/CnhDigital";
 import PdfPositionTool from "./pages/PdfPositionTool";
+import Ferramentas from "./pages/Ferramentas";
+import RemoverFundo from "./pages/RemoverFundo";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -43,6 +45,8 @@ const App = () => (
               <Route path="/servicos" element={<Servicos />} />
               <Route path="/servicos/cnh-digital" element={<CnhDigital />} />
               <Route path="/teste" element={<PdfPositionTool />} />
+              <Route path="/ferramentas" element={<Ferramentas />} />
+              <Route path="/ferramentas/remover-fundo" element={<RemoverFundo />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>

@@ -11,7 +11,8 @@ import {
   Crown,
   Shield,
   History,
-  FolderOpen
+  FolderOpen,
+  Wrench
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link, useLocation } from 'react-router-dom';
@@ -35,6 +36,7 @@ const navItems: NavItem[] = [
   { label: 'Transferir Créditos', icon: Send, href: '/transferir', roles: ['master'] },
   { label: 'Histórico & Métricas', icon: History, href: '/historico-transferencias', roles: ['master'] },
   { label: 'Criar Revendedor', icon: UserPlus, href: '/criar-revendedor', roles: ['master'] },
+  { label: 'Ferramentas', icon: Wrench, href: '/ferramentas', roles: ['dono', 'master', 'revendedor'] },
 ];
 
 export function Sidebar() {
