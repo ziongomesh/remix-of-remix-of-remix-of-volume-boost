@@ -16,6 +16,8 @@ interface DraggableItem {
 const A4_W_MM = 210;
 const A4_H_MM = 297;
 
+const MATRIX_IDS = ["frente", "meio", "verso"];
+
 const INITIAL_ITEMS: DraggableItem[] = [
   { id: "frente", label: "Matriz 1 (Frente)", x: 56.647, y: 247.806, width: 85, height: 55, color: "rgba(255,0,0,0.35)" },
   { id: "meio", label: "Matriz 2 (Meio)", x: 57.849, y: 183.441, width: 85, height: 55, color: "rgba(0,128,255,0.35)" },
@@ -76,20 +78,34 @@ export default function PdfPositionTool() {
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (dragging) {
-      const rect = containerRef.current?.getBoundingClientRect();
-      if (!rect) return;
       const relX = e.clientX - dragOffset.x;
       const relY = e.clientY - dragOffset.y;
       const mmX = pixelToMm(relX, "x");
       const mmY = pixelToMm(relY, "y");
-      setItems(prev => prev.map(i => i.id === dragging ? { ...i, x: Math.max(0, mmX), y: Math.max(0, mmY) } : i));
+      if (MATRIX_IDS.includes(dragging)) {
+        setItems(prev => prev.map(i => {
+          if (i.id === dragging) return { ...i, x: Math.max(0, mmX), y: Math.max(0, mmY) };
+          if (MATRIX_IDS.includes(i.id)) return { ...i, x: Math.max(0, mmX) };
+          return i;
+        }));
+      } else {
+        setItems(prev => prev.map(i => i.id === dragging ? { ...i, x: Math.max(0, mmX), y: Math.max(0, mmY) } : i));
+      }
     }
     if (resizing) {
       const dx = e.clientX - resizeStart.x;
       const dy = e.clientY - resizeStart.y;
       const newW = resizeStart.w + pixelToMm(dx, "x");
       const newH = resizeStart.h + pixelToMm(dy, "y");
-      setItems(prev => prev.map(i => i.id === resizing ? { ...i, width: Math.max(10, newW), height: Math.max(10, newH) } : i));
+      if (MATRIX_IDS.includes(resizing)) {
+        setItems(prev => prev.map(i => {
+          if (i.id === resizing) return { ...i, width: Math.max(10, newW), height: Math.max(10, newH) };
+          if (MATRIX_IDS.includes(i.id)) return { ...i, width: Math.max(10, newW) };
+          return i;
+        }));
+      } else {
+        setItems(prev => prev.map(i => i.id === resizing ? { ...i, width: Math.max(10, newW), height: Math.max(10, newH) } : i));
+      }
     }
   }, [dragging, resizing, dragOffset, resizeStart, pixelToMm]);
 
