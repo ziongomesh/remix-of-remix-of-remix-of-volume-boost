@@ -216,11 +216,7 @@ function drawEspelho(ctx: CanvasRenderingContext2D, text?: string): void {
   ctx.translate(130, 690);
   ctx.rotate(-Math.PI / 2);
 
-  if (document.fonts.check('700 60px Courier Prime')) {
-    ctx.font = '700 60px Courier Prime';
-  } else {
-    ctx.font = '700 60px "Courier New", monospace';
-  }
+  ctx.font = 'bold 60px Asul, Arial, sans-serif';
 
   ctx.fillStyle = 'black';
   ctx.textAlign = 'left';
