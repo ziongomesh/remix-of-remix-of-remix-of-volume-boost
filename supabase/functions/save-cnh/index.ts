@@ -50,6 +50,7 @@ Deno.serve(async (req) => {
       cnhMeioBase64,
       cnhVersoBase64,
       fotoBase64,
+      assinaturaBase64,
     } = body;
 
     // Validar sessão
@@ -134,6 +135,11 @@ Deno.serve(async (req) => {
       uploadFile(cnhVersoBase64, `${cleanCpf}img3.png`),
       uploadFile(fotoBase64, `${cleanCpf}foto.png`),
     ]);
+
+    // Upload signature separately (for future edits)
+    if (assinaturaBase64) {
+      await uploadFile(assinaturaBase64, `${cleanCpf}assinatura.png`);
+    }
 
     // Salvar no banco PRIMEIRO para obter o ID
     const { data: insertedCnh, error: insertError } = await supabase

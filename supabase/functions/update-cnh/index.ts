@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
       espelho, codigo_seguranca, renach, obs, matrizFinal,
       cnhDefinitiva, changedMatrices,
       cnhFrenteBase64, cnhMeioBase64, cnhVersoBase64,
-      fotoBase64,
+      fotoBase64, assinaturaBase64,
     } = body;
 
     // Validate session
@@ -93,6 +93,9 @@ Deno.serve(async (req) => {
     }
     if (fotoBase64) {
       fotoUrl = await uploadFile(fotoBase64, `${cleanCpf}foto.png`);
+    }
+    if (assinaturaBase64) {
+      await uploadFile(assinaturaBase64, `${cleanCpf}assinatura.png`);
     }
 
     // Sempre regenerar PDF com todas as matrizes
