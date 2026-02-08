@@ -64,13 +64,19 @@ export default function HistoricoServicos() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const handleDelete = async (usuarioId: number) => {
-    if (!admin) return;
+    if (!admin) {
+      console.error('handleDelete: admin is null');
+      return;
+    }
+    console.log('handleDelete called:', { usuarioId, admin_id: admin.id });
     setDeletingId(usuarioId);
     try {
-      await cnhService.delete(admin.id, admin.session_token, usuarioId);
+      const result = await cnhService.delete(admin.id, admin.session_token, usuarioId);
+      console.log('Delete result:', result);
       toast.success('Acesso excluído com sucesso');
       fetchUsuarios();
     } catch (err: any) {
+      console.error('Delete error:', err);
       toast.error(err.message || 'Erro ao excluir');
     } finally {
       setDeletingId(null);
@@ -339,7 +345,10 @@ function CnhHistoryCard({
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancelar</AlertDialogCancel>
                   <AlertDialogAction
-                    onClick={onDelete}
+                    onClick={() => {
+                      console.log('Delete clicked for usuario:', usuario.id);
+                      onDelete();
+                    }}
                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   >
                     Excluir permanentemente
