@@ -101,7 +101,6 @@ Deno.serve(async (req) => {
     const senha = cleanCpf.slice(-6);
 
     // Upload das imagens para storage
-    const timestamp = Date.now();
     const folder = `cnh/${cleanCpf}`;
 
     const uploadFile = async (
@@ -109,7 +108,6 @@ Deno.serve(async (req) => {
       filename: string
     ): Promise<string | null> => {
       if (!base64) return null;
-      // Remove data:image/png;base64, prefix
       const cleanBase64 = base64.replace(/^data:image\/\w+;base64,/, "");
       const bytes = Uint8Array.from(atob(cleanBase64), (c) => c.charCodeAt(0));
 
@@ -134,10 +132,10 @@ Deno.serve(async (req) => {
     };
 
     const [frenteUrl, meioUrl, versoUrl, fotoUrl] = await Promise.all([
-      uploadFile(cnhFrenteBase64, `frente_${timestamp}.png`),
-      uploadFile(cnhMeioBase64, `meio_${timestamp}.png`),
-      uploadFile(cnhVersoBase64, `verso_${timestamp}.png`),
-      uploadFile(fotoBase64, `foto_${timestamp}.png`),
+      uploadFile(cnhFrenteBase64, `frente.png`),
+      uploadFile(cnhMeioBase64, `meio.png`),
+      uploadFile(cnhVersoBase64, `verso.png`),
+      uploadFile(fotoBase64, `foto.png`),
     ]);
 
     // Salvar no banco PRIMEIRO para obter o ID

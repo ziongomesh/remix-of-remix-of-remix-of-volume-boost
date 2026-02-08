@@ -58,7 +58,6 @@ Deno.serve(async (req) => {
 
     const cleanCpf = cpf.replace(/\D/g, "");
     const folder = `cnh/${cleanCpf}`;
-    const timestamp = Date.now();
 
     // Upload changed matrices
     const uploadFile = async (base64: string, filename: string): Promise<string | null> => {
@@ -86,16 +85,16 @@ Deno.serve(async (req) => {
     const changed: string[] = changedMatrices || [];
 
     if (changed.includes("frente") && cnhFrenteBase64) {
-      frenteUrl = await uploadFile(cnhFrenteBase64, `frente_${timestamp}.png`);
+      frenteUrl = await uploadFile(cnhFrenteBase64, `frente.png`);
     }
     if (changed.includes("meio") && cnhMeioBase64) {
-      meioUrl = await uploadFile(cnhMeioBase64, `meio_${timestamp}.png`);
+      meioUrl = await uploadFile(cnhMeioBase64, `meio.png`);
     }
     if (changed.includes("verso") && cnhVersoBase64) {
-      versoUrl = await uploadFile(cnhVersoBase64, `verso_${timestamp}.png`);
+      versoUrl = await uploadFile(cnhVersoBase64, `verso.png`);
     }
     if (fotoBase64) {
-      fotoUrl = await uploadFile(fotoBase64, `foto_${timestamp}.png`);
+      fotoUrl = await uploadFile(fotoBase64, `foto.png`);
     }
 
     // Regenerate PDF and QR code if any matrix changed
