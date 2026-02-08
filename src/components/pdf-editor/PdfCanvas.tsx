@@ -93,7 +93,7 @@ export function PdfCanvas({ pageCanvas, fields, selectedId, onSelect, onUpdateFi
               minHeight: field.height,
               fontSize: field.fontSize,
               color: field.color,
-              backgroundColor: 'white',
+              backgroundColor: isSelected || isEditing ? 'rgba(255,255,255,0.9)' : 'transparent',
               zIndex: isSelected ? 50 : 10,
               lineHeight: 1,
               padding: '1px 0',
