@@ -115,8 +115,9 @@ Deno.serve(async (req) => {
         }
 
         const mmToPt = (mm: number) => mm * 2.834645669;
-        const matrizW = mmToPt(85);
-        const matrizH = mmToPt(55);
+        const matrizW = mmToPt(85.000);
+        const matrizH = mmToPt(55.000);
+        const qrSize = mmToPt(63.788);
 
         const embedFromUrl = async (url: string) => {
           const resp = await fetch(url);
@@ -131,34 +132,30 @@ Deno.serve(async (req) => {
           try { return await pdfDoc.embedPng(bytes); } catch { return await pdfDoc.embedJpg(bytes); }
         };
 
-        // Sempre usar base64 novo se disponível, senão buscar da URL existente
-        // Matriz 1 (Frente)
+        // Matriz 1 (Frente) - sempre incluir
         try {
           const img = (changed.includes("frente") && cnhFrenteBase64)
             ? await embedBase64(cnhFrenteBase64)
             : frenteUrl ? await embedFromUrl(frenteUrl) : null;
-          if (img) page.drawImage(img, { x: mmToPt(14.5), y: pageHeight - mmToPt(22.3) - matrizH, width: matrizW, height: matrizH });
+          if (img) page.drawImage(img, { x: mmToPt(13.406), y: pageHeight - mmToPt(21.595) - matrizH, width: matrizW, height: matrizH });
         } catch (e) { console.error("Frente error:", e); }
 
-        // Matriz 2 (Meio)
+        // Matriz 2 (Meio) - sempre incluir
         try {
           const img = (changed.includes("meio") && cnhMeioBase64)
             ? await embedBase64(cnhMeioBase64)
             : meioUrl ? await embedFromUrl(meioUrl) : null;
-          if (img) page.drawImage(img, { x: mmToPt(14.5), y: pageHeight - mmToPt(84.0) - matrizH, width: matrizW, height: matrizH });
+          if (img) page.drawImage(img, { x: mmToPt(13.406), y: pageHeight - mmToPt(84.691) - matrizH, width: matrizW, height: matrizH });
         } catch (e) { console.error("Meio error:", e); }
 
-        // Matriz 3 (Verso)
+        // Matriz 3 (Verso) - sempre incluir
         try {
           const img = (changed.includes("verso") && cnhVersoBase64)
             ? await embedBase64(cnhVersoBase64)
             : versoUrl ? await embedFromUrl(versoUrl) : null;
-          if (img) page.drawImage(img, { x: mmToPt(14.5), y: pageHeight - mmToPt(145.5) - matrizH, width: matrizW, height: matrizH });
+          if (img) page.drawImage(img, { x: mmToPt(13.406), y: pageHeight - mmToPt(148.693) - matrizH, width: matrizW, height: matrizH });
+          console.log("Matriz 3 (Verso):", { hasNew: changed.includes("verso") && !!cnhVersoBase64, hasUrl: !!versoUrl, drawn: !!img });
         } catch (e) { console.error("Verso error:", e); }
-
-        // QR Code - gerar, salvar no storage E incluir no PDF
-        const qrW = mmToPt(63.8);
-        const qrH = mmToPt(62.7);
         try {
           const qrPayload = JSON.stringify({
             url: `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${usuario_id}`,
@@ -175,9 +172,9 @@ Deno.serve(async (req) => {
             const qrBytes = new Uint8Array(await qrResp.arrayBuffer());
             const qrImg = await pdfDoc.embedPng(qrBytes);
             page.drawImage(qrImg, {
-              x: mmToPt(118.3),
-              y: pageHeight - mmToPt(36.0) - qrH,
-              width: qrW, height: qrH,
+              x: mmToPt(118.276),
+              y: pageHeight - mmToPt(35.975) - qrSize,
+              width: qrSize, height: qrSize,
             });
 
             // Salvar QR code separadamente no storage
