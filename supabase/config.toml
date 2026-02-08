@@ -1,1 +1,4 @@
 project_id = "hlnfvospumcncswknqny"
+
+[functions.save-cnh]
+verify_jwt = false

@@ -10,9 +10,10 @@ interface CnhSuccessModalProps {
   cpf: string;
   senha?: string;
   nome?: string;
+  pdfUrl?: string;
 }
 
-export default function CnhSuccessModal({ isOpen, onClose, cpf, senha, nome }: CnhSuccessModalProps) {
+export default function CnhSuccessModal({ isOpen, onClose, cpf, senha, nome, pdfUrl }: CnhSuccessModalProps) {
   const [isDownloading, setIsDownloading] = useState(false);
 
   const formatCpf = (cpf: string) => {
@@ -53,13 +54,17 @@ export default function CnhSuccessModal({ isOpen, onClose, cpf, senha, nome }: C
     try {
       setIsDownloading(true);
       const cleanCpf = cpf.replace(/\D/g, '');
-      const apiUrl = typeof window !== 'undefined' && window.location.hostname !== 'localhost'
-        ? window.location.origin
-        : 'http://localhost:4000';
+
+      const downloadUrl = pdfUrl || '';
+      if (!downloadUrl) {
+        toast.error('PDF não disponível');
+        return;
+      }
 
       const a = document.createElement('a');
-      a.href = `${apiUrl}/uploads/CNH_DIGITAL_${cleanCpf}.pdf`;
+      a.href = downloadUrl;
       a.download = `CNH_DIGITAL_${cleanCpf}.pdf`;
+      a.target = '_blank';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

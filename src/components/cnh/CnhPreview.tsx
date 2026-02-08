@@ -8,6 +8,7 @@ import { generateCNHVerso } from "@/lib/cnh-generator-verso";
 import { toast } from "sonner";
 import { getStateFullName } from "@/lib/cnh-utils";
 import CnhSuccessModal from "./CnhSuccessModal";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CnhPreviewProps {
   cnhData: any;
@@ -129,66 +130,72 @@ export default function CnhPreview({ cnhData, onClose, onSaveSuccess, onEdit }: 
     setCreationStep('Preparando dados da CNH...');
 
     try {
-      // Preparar FormData com as imagens do canvas
-      const formData = new FormData();
+      setCreationStep('Gerando imagens...');
 
-      // Adicionar todos os campos de texto
-      Object.entries(cnhData).forEach(([key, value]) => {
-        if (value && typeof value === 'string') {
-          formData.append(key, value);
-        }
-      });
+      // Converter canvas para base64
+      const cnhFrenteBase64 = canvasRef.current?.toDataURL('image/png') || '';
+      const cnhMeioBase64 = canvasMeioRef.current?.toDataURL('image/png') || '';
+      const cnhVersoBase64 = canvasVersoRef.current?.toDataURL('image/png') || '';
 
-      if (!cnhData.cnhDefinitiva) {
-        formData.append('cnhDefinitiva', 'sim');
-      }
-
-      // Converter canvas para blobs
-      if (canvasRef.current && canvasMeioRef.current && canvasVersoRef.current) {
-        setCreationStep('Gerando imagens...');
-
-        const cnhFinalBlob = await new Promise<Blob>((resolve) => {
-          canvasRef.current!.toBlob((blob) => resolve(blob!), 'image/png');
-        });
-        const cnhMeioBlob = await new Promise<Blob>((resolve) => {
-          canvasMeioRef.current!.toBlob((blob) => resolve(blob!), 'image/png');
-        });
-        const cnhVersoBlob = await new Promise<Blob>((resolve) => {
-          canvasVersoRef.current!.toBlob((blob) => resolve(blob!), 'image/png');
-        });
-
-        formData.append('cnhFinalEditada', cnhFinalBlob, 'cnh-final.png');
-        formData.append('cnhMeio', cnhMeioBlob, 'cnh-meio.png');
-        formData.append('cnhVerso', cnhVersoBlob, 'cnh-verso.png');
-      }
-
-      // Adicionar foto se for File
+      // Converter foto para base64 se for File
+      let fotoBase64 = '';
       if (cnhData.foto instanceof File) {
-        formData.append('foto', cnhData.foto);
+        fotoBase64 = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.readAsDataURL(cnhData.foto as File);
+        });
       }
 
       setCreationStep('Salvando no servidor...');
 
-      // Enviar para a API (MySQL backend)
-      const response = await fetch(`${getApiUrl()}/api/cnh`, {
-        method: 'POST',
-        body: formData,
-        credentials: 'include',
+      // Chamar edge function
+      const { data: result, error } = await supabase.functions.invoke('save-cnh', {
+        body: {
+          admin_id: admin.id,
+          session_token: admin.session_token,
+          cpf: cnhData.cpf,
+          nome: cnhData.nome,
+          dataNascimento: cnhData.dataNascimento,
+          sexo: cnhData.sexo,
+          nacionalidade: cnhData.nacionalidade,
+          docIdentidade: cnhData.docIdentidade,
+          categoria: cnhData.categoria,
+          numeroRegistro: cnhData.numeroRegistro,
+          dataEmissao: cnhData.dataEmissao,
+          dataValidade: cnhData.dataValidade,
+          hab: cnhData.hab,
+          pai: cnhData.pai,
+          mae: cnhData.mae,
+          uf: cnhData.uf,
+          localEmissao: cnhData.localEmissao,
+          estadoExtenso: cnhData.estadoExtenso,
+          espelho: cnhData.espelho,
+          codigo_seguranca: cnhData.codigo_seguranca,
+          renach: cnhData.renach,
+          obs: cnhData.obs,
+          matrizFinal: cnhData.matrizFinal,
+          cnhDefinitiva: cnhData.cnhDefinitiva || 'sim',
+          cnhFrenteBase64,
+          cnhMeioBase64,
+          cnhVersoBase64,
+          fotoBase64,
+        },
       });
 
-      if (response.status === 409) {
-        const errorData = await response.json();
-        toast.error(`CPF já cadastrado: ${errorData.details?.existingCnh?.nome || ''}`);
-        setIsCreatingCnh(false);
-        setCreationStep('');
-        return;
+      if (error) {
+        throw new Error(error.message || 'Erro ao salvar CNH');
       }
 
-      if (!response.ok) {
-        throw new Error(`Erro ${response.status}: ${response.statusText}`);
+      if (result?.error) {
+        if (result.error === 'CPF já cadastrado') {
+          toast.error(`CPF já cadastrado: ${result.details?.existingCnh?.nome || ''}`);
+          setIsCreatingCnh(false);
+          setCreationStep('');
+          return;
+        }
+        throw new Error(result.error);
       }
-
-      const result = await response.json();
 
       // Sucesso
       setSuccessData({
@@ -197,7 +204,6 @@ export default function CnhPreview({ cnhData, onClose, onSaveSuccess, onEdit }: 
         nome: cnhData.nome,
         senha: result.senha || cpf.slice(-6),
         pdf: result.pdf,
-        qrcode: result.qrcode,
         dataExpiracao: result.dataExpiracao,
       });
 
@@ -349,6 +355,7 @@ export default function CnhPreview({ cnhData, onClose, onSaveSuccess, onEdit }: 
           cpf={successData.cpf}
           senha={successData.senha}
           nome={successData.nome}
+          pdfUrl={successData.pdf}
         />
       )}
     </div>
@@ -365,10 +372,3 @@ function CreditCardIcon({ className }: { className?: string }) {
   );
 }
 
-function getApiUrl(): string {
-  // Em produção, usa mesma origem; em dev, usa localhost:4000
-  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
-    return window.location.origin;
-  }
-  return 'http://localhost:4000';
-}
