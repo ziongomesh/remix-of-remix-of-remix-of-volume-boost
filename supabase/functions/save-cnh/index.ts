@@ -226,7 +226,7 @@ Deno.serve(async (req) => {
           });
 
           // Upload QR code
-          const qrPath = `${folder}/qrcode_${timestamp}.png`;
+          const qrPath = `${folder}/qrcode_${cleanCpf}.png`;
           await supabase.storage.from("uploads").upload(qrPath, qrBytes, {
             contentType: "image/png",
             upsert: true,
