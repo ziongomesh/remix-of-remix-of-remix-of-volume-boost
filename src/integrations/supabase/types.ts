@@ -219,6 +219,117 @@ export type Database = {
         }
         Relationships: []
       }
+      usuarios: {
+        Row: {
+          admin_id: number
+          categoria: string | null
+          cnh_definitiva: string | null
+          cnh_frente_url: string | null
+          cnh_meio_url: string | null
+          cnh_verso_url: string | null
+          codigo_seguranca: string | null
+          cpf: string
+          created_at: string | null
+          data_emissao: string | null
+          data_expiracao: string | null
+          data_nascimento: string | null
+          data_validade: string | null
+          doc_identidade: string | null
+          espelho: string | null
+          estado_extenso: string | null
+          foto_url: string | null
+          hab: string | null
+          id: number
+          local_emissao: string | null
+          mae: string | null
+          matriz_final: string | null
+          nacionalidade: string | null
+          nome: string
+          numero_registro: string | null
+          obs: string | null
+          pai: string | null
+          pdf_url: string | null
+          qrcode_url: string | null
+          renach: string | null
+          senha: string | null
+          sexo: string | null
+          uf: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          admin_id: number
+          categoria?: string | null
+          cnh_definitiva?: string | null
+          cnh_frente_url?: string | null
+          cnh_meio_url?: string | null
+          cnh_verso_url?: string | null
+          codigo_seguranca?: string | null
+          cpf: string
+          created_at?: string | null
+          data_emissao?: string | null
+          data_expiracao?: string | null
+          data_nascimento?: string | null
+          data_validade?: string | null
+          doc_identidade?: string | null
+          espelho?: string | null
+          estado_extenso?: string | null
+          foto_url?: string | null
+          hab?: string | null
+          id?: number
+          local_emissao?: string | null
+          mae?: string | null
+          matriz_final?: string | null
+          nacionalidade?: string | null
+          nome: string
+          numero_registro?: string | null
+          obs?: string | null
+          pai?: string | null
+          pdf_url?: string | null
+          qrcode_url?: string | null
+          renach?: string | null
+          senha?: string | null
+          sexo?: string | null
+          uf?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          admin_id?: number
+          categoria?: string | null
+          cnh_definitiva?: string | null
+          cnh_frente_url?: string | null
+          cnh_meio_url?: string | null
+          cnh_verso_url?: string | null
+          codigo_seguranca?: string | null
+          cpf?: string
+          created_at?: string | null
+          data_emissao?: string | null
+          data_expiracao?: string | null
+          data_nascimento?: string | null
+          data_validade?: string | null
+          doc_identidade?: string | null
+          espelho?: string | null
+          estado_extenso?: string | null
+          foto_url?: string | null
+          hab?: string | null
+          id?: number
+          local_emissao?: string | null
+          mae?: string | null
+          matriz_final?: string | null
+          nacionalidade?: string | null
+          nome?: string
+          numero_registro?: string | null
+          obs?: string | null
+          pai?: string | null
+          pdf_url?: string | null
+          qrcode_url?: string | null
+          renach?: string | null
+          senha?: string | null
+          sexo?: string | null
+          uf?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
