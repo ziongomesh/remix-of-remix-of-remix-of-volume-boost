@@ -66,7 +66,9 @@ export function generateMRZ(nome: string, maxLen: number = 27): string {
   const parts = nome.toUpperCase().trim().split(/\s+/).filter(p => p.length > 0);
   if (parts.length === 0) return '';
 
-  const pad = (s: string) => s + '<'.repeat(Math.max(0, maxLen - s.length));
+  // Conteúdo útil max = maxLen - 1 para sempre ter pelo menos 1 < no final
+  const contentMax = maxLen - 1;
+  const pad = (s: string) => s + '<'.repeat(Math.max(1, maxLen - s.length));
 
   // 1 nome só
   if (parts.length === 1) return pad(parts[0]);
@@ -80,7 +82,7 @@ export function generateMRZ(nome: string, maxLen: number = 27): string {
 
   // Tentar formato completo
   const full = parts.join('<<');
-  if (full.length <= maxLen) return pad(full);
+  if (full.length <= contentMax) return pad(full);
 
   // Estratégia: manter primeiro e último completos, abreviar meio progressivamente
   // Prioridade de abreviação: preposições primeiro, depois nomes curtos, depois longos
@@ -96,7 +98,7 @@ export function generateMRZ(nome: string, maxLen: number = 27): string {
     }
   }
   let result = [first, ...currentMiddle, last].join('<<');
-  if (result.length <= maxLen) return pad(result);
+  if (result.length <= contentMax) return pad(result);
 
   // Fase 2: abreviar nomes do meio (menores primeiro) para inicial
   const sortedByLen = middleEntries
@@ -106,14 +108,14 @@ export function generateMRZ(nome: string, maxLen: number = 27): string {
   for (const entry of sortedByLen) {
     currentMiddle[entry.index] = middle[entry.index][0];
     result = [first, ...currentMiddle, last].join('<<');
-    if (result.length <= maxLen) return pad(result);
+    if (result.length <= contentMax) return pad(result);
   }
 
   // Fase 3: usar < simples entre iniciais em vez de <<
   // Manter primeiro<<...meio com < simples...<<último
   const middleStr = currentMiddle.join('<');
   result = first + '<<' + middleStr + '<<' + last;
-  if (result.length <= maxLen) return pad(result);
+  if (result.length <= contentMax) return pad(result);
 
   // Fase 4: remover nomes do meio um a um (do final para o início)
   for (let drop = currentMiddle.length; drop >= 1; drop--) {
@@ -123,12 +125,12 @@ export function generateMRZ(nome: string, maxLen: number = 27): string {
     } else {
       result = first + '<<' + last;
     }
-    if (result.length <= maxLen) return pad(result);
+    if (result.length <= contentMax) return pad(result);
   }
 
   // Último recurso: truncar
   result = first + '<<' + last;
-  return result.slice(0, maxLen);
+  return result.slice(0, contentMax) + '<';
 }
 
 export function getStateFullName(uf: string): string {
