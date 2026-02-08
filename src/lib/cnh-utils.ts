@@ -50,7 +50,7 @@ export function generateRegistroCNH(): string {
 }
 
 export function generateEspelhoNumber(): string {
-  return randomDigits(8);
+  return randomDigits(11);
 }
 
 export function generateCodigoSeguranca(): string {
