@@ -181,22 +181,22 @@ router.post('/save', async (req, res) => {
       // Matriz 1 (Frente)
       if (cnhFrenteBase64) {
         const img = await embedBase64Png(cnhFrenteBase64);
-        page.drawImage(img, { x: mmToPt(13.406), y: pageHeight - mmToPt(21.595) - matrizH, width: matrizW, height: matrizH });
+        page.drawImage(img, { x: mmToPt(13.4), y: pageHeight - mmToPt(21.6) - matrizH, width: matrizW, height: matrizH });
       }
       // Matriz 2 (Meio)
       if (cnhMeioBase64) {
         const img = await embedBase64Png(cnhMeioBase64);
-        page.drawImage(img, { x: mmToPt(13.406), y: pageHeight - mmToPt(84.691) - matrizH, width: matrizW, height: matrizH });
+        page.drawImage(img, { x: mmToPt(13.4), y: pageHeight - mmToPt(75.9) - matrizH, width: matrizW, height: matrizH });
       }
       // Matriz 3 (Verso)
       if (cnhVersoBase64) {
         const img = await embedBase64Png(cnhVersoBase64);
-        page.drawImage(img, { x: mmToPt(13.406), y: pageHeight - mmToPt(148.693) - matrizH, width: matrizW, height: matrizH });
+        page.drawImage(img, { x: mmToPt(13.4), y: pageHeight - mmToPt(129.3) - matrizH, width: matrizW, height: matrizH });
       }
       // QR Code
       if (qrPngBytes) {
         const qrImg = await pdfDoc.embedPng(qrPngBytes);
-        page.drawImage(qrImg, { x: mmToPt(118.276), y: pageHeight - mmToPt(35.975) - qrSize, width: qrSize, height: qrSize });
+        page.drawImage(qrImg, { x: mmToPt(119.7), y: pageHeight - mmToPt(35.3) - qrSize, width: qrSize, height: qrSize });
       }
 
       const pdfBytes = await pdfDoc.save();
@@ -366,20 +366,20 @@ router.post('/update', async (req, res) => {
 
         // Matriz 1 (Frente) - sempre incluir
         const fImg = await embedFromSource(changed.includes('frente') ? cnhFrenteBase64 : null, frenteUrl, 'Frente');
-        if (fImg) page.drawImage(fImg, { x: mmToPt(13.406), y: pageHeight - mmToPt(21.595) - matrizH, width: matrizW, height: matrizH });
+        if (fImg) page.drawImage(fImg, { x: mmToPt(13.4), y: pageHeight - mmToPt(21.6) - matrizH, width: matrizW, height: matrizH });
 
         // Matriz 2 (Meio) - sempre incluir
         const mImg = await embedFromSource(changed.includes('meio') ? cnhMeioBase64 : null, meioUrl, 'Meio');
-        if (mImg) page.drawImage(mImg, { x: mmToPt(13.406), y: pageHeight - mmToPt(84.691) - matrizH, width: matrizW, height: matrizH });
+        if (mImg) page.drawImage(mImg, { x: mmToPt(13.4), y: pageHeight - mmToPt(75.9) - matrizH, width: matrizW, height: matrizH });
 
         // Matriz 3 (Verso) - sempre incluir
         const vImg = await embedFromSource(changed.includes('verso') ? cnhVersoBase64 : null, versoUrl, 'Verso');
-        if (vImg) page.drawImage(vImg, { x: mmToPt(13.406), y: pageHeight - mmToPt(148.693) - matrizH, width: matrizW, height: matrizH });
+        if (vImg) page.drawImage(vImg, { x: mmToPt(13.4), y: pageHeight - mmToPt(129.3) - matrizH, width: matrizW, height: matrizH });
 
         // QR Code
         if (qrPngBytes) {
           const qrImg = await pdfDoc.embedPng(qrPngBytes);
-          page.drawImage(qrImg, { x: mmToPt(118.276), y: pageHeight - mmToPt(35.975) - qrSize, width: qrSize, height: qrSize });
+          page.drawImage(qrImg, { x: mmToPt(119.7), y: pageHeight - mmToPt(35.3) - qrSize, width: qrSize, height: qrSize });
         }
 
         const pdfBytes = await pdfDoc.save();
