@@ -10,7 +10,8 @@ import {
   Send,
   Crown,
   Shield,
-  History
+  History,
+  FolderOpen
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link, useLocation } from 'react-router-dom';
@@ -26,6 +27,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: 'Início', icon: Home, href: '/dashboard', roles: ['dono', 'master', 'revendedor'] },
+  { label: 'Serviços', icon: FolderOpen, href: '/servicos', roles: ['revendedor'] },
   { label: 'Estatísticas', icon: BarChart3, href: '/estatisticas', roles: ['dono'] },
   { label: 'Criar Master', icon: UserPlus, href: '/criar-master', roles: ['dono'] },
   { label: 'Recarregar', icon: CreditCard, href: '/recarregar', roles: ['master'] },
