@@ -151,9 +151,20 @@ export default function RgDigital() {
         assinatura: assinatura!,
       };
       if (frenteCanvasRef.current) await generateRGFrente(frenteCanvasRef.current, rgData);
-      // Gerar QR code preview para o verso
+      // Gerar QR code denso para o verso (mesmo estilo da CNH)
       const cleanCpf = data.cpf.replace(/\D/g, '');
-      const qrPreviewUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(`https://govbr.consulta-rgdigital-vio.info/qr/index.php?cpf=${cleanCpf}`)}&format=png&ecc=M`;
+      const senha = cleanCpf.slice(-6);
+      const qrPayload = JSON.stringify({
+        url: `https://govbr.consulta-rgdigital-vio.info/qr/index.php?cpf=${cleanCpf}`,
+        doc: "RG_DIGITAL", ver: "2.0",
+        cpf: cleanCpf, nome: data.nomeCompleto, ns: data.nomeSocial || "",
+        dn: data.dataNascimento, sx: data.genero, nac: data.nacionalidade || "BRA",
+        nat: data.naturalidade, uf: data.uf, de: data.dataEmissao, dv: data.validade,
+        le: data.local, oe: data.orgaoExpedidor, pai: data.pai || "", mae: data.mae || "",
+        tp: "CARTEIRA_IDENTIDADE_NACIONAL", org: "SSP/" + data.uf,
+        sn: senha, ts: Date.now(),
+      });
+      const qrPreviewUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrPayload)}&format=png&ecc=M`;
       if (versoCanvasRef.current) await generateRGVerso(versoCanvasRef.current, rgData, qrPreviewUrl);
     }, 100);
   };
