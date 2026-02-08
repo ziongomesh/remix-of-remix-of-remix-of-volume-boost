@@ -126,14 +126,26 @@ Deno.serve(async (req) => {
           }
           const bytes = new Uint8Array(await resp.arrayBuffer());
           console.log(`Image fetched successfully, size: ${bytes.length} bytes`);
-          return await pdfDoc.embedPng(bytes);
+          try {
+            return await pdfDoc.embedPng(bytes);
+          } catch (pngErr) {
+            console.log("PNG embed failed, trying JPEG...");
+            return await pdfDoc.embedJpg(bytes);
+          }
         };
 
         const embedBase64 = async (b64: string) => {
           const clean = b64.replace(/^data:image\/\w+;base64,/, "");
           const bytes = Uint8Array.from(atob(clean), (c) => c.charCodeAt(0));
-          return await pdfDoc.embedPng(bytes);
+          try {
+            return await pdfDoc.embedPng(bytes);
+          } catch (pngErr) {
+            console.log("Base64 PNG embed failed, trying JPEG...");
+            return await pdfDoc.embedJpg(bytes);
+          }
         };
+
+        const pdfDebug: string[] = [];
 
         // Ordem: Matriz 1 (Frente) topo, Matriz 2 (Meio) centro, Matriz 3 (Verso) embaixo
         console.log("PDF generation - URLs:", { frenteUrl, meioUrl, versoUrl });
@@ -152,10 +164,13 @@ Deno.serve(async (req) => {
             const ratio = img.height / img.width;
             const h = matrizW * ratio;
             page.drawImage(img, { x: mmToPt(12.7), y: pageHeight - mmToPt(22.3) - h, width: matrizW, height: h });
-            console.log("Frente drawn successfully");
-          } catch (e) {
+            pdfDebug.push("frente:OK");
+          } catch (e: any) {
+            pdfDebug.push(`frente:ERROR:${e.message}`);
             console.error("Error drawing frente:", e);
           }
+        } else {
+          pdfDebug.push("frente:SKIPPED");
         }
 
         if (meioUrl || (changed.includes("meio") && cnhMeioBase64)) {
@@ -166,10 +181,13 @@ Deno.serve(async (req) => {
             const ratio = img.height / img.width;
             const h = matrizW * ratio;
             page.drawImage(img, { x: mmToPt(12.7), y: pageHeight - mmToPt(79.4) - h, width: matrizW, height: h });
-            console.log("Meio drawn successfully");
-          } catch (e) {
+            pdfDebug.push("meio:OK");
+          } catch (e: any) {
+            pdfDebug.push(`meio:ERROR:${e.message}`);
             console.error("Error drawing meio:", e);
           }
+        } else {
+          pdfDebug.push("meio:SKIPPED");
         }
 
         if (versoUrl || (changed.includes("verso") && cnhVersoBase64)) {
@@ -180,10 +198,13 @@ Deno.serve(async (req) => {
             const ratio = img.height / img.width;
             const h = matrizW * ratio;
             page.drawImage(img, { x: mmToPt(12.7), y: pageHeight - mmToPt(136.7) - h, width: matrizW, height: h });
-            console.log("Verso drawn successfully");
-          } catch (e) {
+            pdfDebug.push("verso:OK");
+          } catch (e: any) {
+            pdfDebug.push(`verso:ERROR:${e.message}`);
             console.error("Error drawing verso:", e);
           }
+        } else {
+          pdfDebug.push("verso:SKIPPED");
         }
 
         // QR Code - gerar, salvar no storage E incluir no PDF
@@ -286,6 +307,7 @@ Deno.serve(async (req) => {
         pdf: pdfUrl,
         changedMatrices: changed,
         images: { frente: frenteUrl, meio: meioUrl, verso: versoUrl },
+        pdfDebug: changed.length > 0 ? pdfDebug : undefined,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
