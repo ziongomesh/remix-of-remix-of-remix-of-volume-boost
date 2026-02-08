@@ -151,7 +151,7 @@ export default function CnhSuccessModal({ isOpen, onClose, cpf, senha, nome, pdf
             </Button>
 
             <Button
-              onClick={() => copyToClipboard('https://condutor-cnhdigital-vio-web.info/')}
+              onClick={() => copyToClipboard('https://qrcode-certificadodigital-vio.info/')}
               variant="outline"
               className="w-full"
             >
