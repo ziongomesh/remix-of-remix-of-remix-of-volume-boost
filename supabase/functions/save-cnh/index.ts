@@ -174,41 +174,42 @@ Deno.serve(async (req) => {
       const matrizW = mmToPt(85);
       const matrizH = mmToPt(55);
 
-      // Matriz 1 (Final) - x=56.647mm, y=247.806mm do topo
+      // Matriz 1 (Frente) - x=11.8mm, y=140.6mm do topo
       if (cnhFrenteBase64) {
         const frenteImg = await embedBase64(cnhFrenteBase64);
         page.drawImage(frenteImg, {
-          x: mmToPt(56.647),
-          y: pageHeight - mmToPt(247.806) - matrizH,
+          x: mmToPt(11.8),
+          y: pageHeight - mmToPt(140.6) - matrizH,
           width: matrizW,
           height: matrizH,
         });
       }
 
-      // Matriz 2 (Meio) - x=57.849mm, y=183.441mm do topo
+      // Matriz 2 (Meio) - x=11.6mm, y=82.6mm do topo
       if (cnhMeioBase64) {
         const meioImg = await embedBase64(cnhMeioBase64);
         page.drawImage(meioImg, {
-          x: mmToPt(57.849),
-          y: pageHeight - mmToPt(183.441) - matrizH,
+          x: mmToPt(11.6),
+          y: pageHeight - mmToPt(82.6) - matrizH,
           width: matrizW,
           height: matrizH,
         });
       }
 
-      // Matriz 3 (Verso) - x=57.14mm, y=118.547mm do topo
+      // Matriz 3 (Verso) - x=11.6mm, y=24.7mm do topo
       if (cnhVersoBase64) {
         const versoImg = await embedBase64(cnhVersoBase64);
         page.drawImage(versoImg, {
-          x: mmToPt(57.14),
-          y: pageHeight - mmToPt(118.547) - matrizH,
+          x: mmToPt(11.6),
+          y: pageHeight - mmToPt(24.7) - matrizH,
           width: matrizW,
           height: matrizH,
         });
       }
 
-      // QR Code - x=155.017mm, y=231.788mm, tamanho=77.192mm
-      const qrSize = mmToPt(77.192);
+      // QR Code - x=116.5mm, y=32.1mm, 68x71.9mm
+      const qrW = mmToPt(68);
+      const qrH = mmToPt(71.9);
       try {
         const qrData = `https://condutor-cnhdigital-vio-web.info/verificar?cpf=${cleanCpf}`;
         const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(qrData)}&format=png`;
@@ -217,10 +218,10 @@ Deno.serve(async (req) => {
           const qrBytes = new Uint8Array(await qrResponse.arrayBuffer());
           const qrImg = await pdfDoc.embedPng(qrBytes);
           page.drawImage(qrImg, {
-            x: mmToPt(155.017),
-            y: pageHeight - mmToPt(231.788) - qrSize,
-            width: qrSize,
-            height: qrSize,
+            x: mmToPt(116.5),
+            y: pageHeight - mmToPt(32.1) - qrH,
+            width: qrW,
+            height: qrH,
           });
 
           // Upload QR code
