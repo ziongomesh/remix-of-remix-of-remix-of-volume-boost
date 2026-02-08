@@ -60,6 +60,25 @@ interface CnhEditViewProps {
   onSaved: () => void;
 }
 
+// Converte datas ISO (2001-04-12T03:00:00.000Z ou 2001-04-12) para DD/MM/YYYY
+function isoToBR(dateStr: string | null | undefined): string {
+  if (!dateStr) return '';
+  // Já no formato DD/MM/YYYY (possivelmente com texto após)
+  if (/^\d{2}\/\d{2}\/\d{4}/.test(dateStr)) return dateStr;
+  // ISO format
+  const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (match) return `${match[3]}/${match[2]}/${match[1]}`;
+  return dateStr;
+}
+
+// Extrai apenas a parte de data de uma string composta "DD/MM/YYYY, CIDADE, UF"
+function extractDatePart(dateStr: string | null | undefined): string {
+  if (!dateStr) return '';
+  const formatted = isoToBR(dateStr);
+  const match = formatted.match(/^(\d{2}\/\d{2}\/\d{4})/);
+  return match ? match[1] : formatted;
+}
+
 export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewProps) {
   const { admin } = useAuth();
   const canvasFrenteRef = useRef<HTMLCanvasElement>(null);
@@ -79,6 +98,18 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
   // Track which matrices changed
   const [changedMatrices, setChangedMatrices] = useState<Set<'frente' | 'meio' | 'verso'>>(new Set());
 
+  // Parse dataNascimento: pode ser "DD/MM/YYYY, CIDADE, UF" ou ISO date
+  const parsedDataNasc = (() => {
+    const raw = usuario.data_nascimento || '';
+    const formatted = isoToBR(raw);
+    // Try to split "DD/MM/YYYY, CIDADE, UF" or "DD/MM/YYYY, CIDADE"
+    const parts = formatted.split(',').map(p => p.trim());
+    return {
+      date: parts[0] || '',
+      local: parts.length > 1 ? parts.slice(1).join(', ') : '',
+    };
+  })();
+
   // Editable fields
   const [form, setForm] = useState({
     nome: usuario.nome || '',
@@ -86,13 +117,14 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
     uf: usuario.uf || '',
     sexo: usuario.sexo || '',
     nacionalidade: usuario.nacionalidade || '',
-    dataNascimento: usuario.data_nascimento || '',
+    dataNascimentoDate: parsedDataNasc.date,
+    dataNascimentoLocal: (usuario as any).local_nascimento || parsedDataNasc.local || '',
     numeroRegistro: usuario.numero_registro || '',
     categoria: usuario.categoria || '',
     cnhDefinitiva: usuario.cnh_definitiva || 'sim',
-    hab: usuario.hab || '',
-    dataEmissao: usuario.data_emissao || '',
-    dataValidade: usuario.data_validade || '',
+    hab: isoToBR(usuario.hab),
+    dataEmissao: isoToBR(usuario.data_emissao),
+    dataValidade: isoToBR(usuario.data_validade),
     localEmissao: usuario.local_emissao || '',
     estadoExtenso: usuario.estado_extenso || '',
     matrizFinal: usuario.matriz_final || '',
@@ -105,6 +137,15 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
     mae: usuario.mae || '',
   });
 
+  // Computed dataNascimento for canvas: "DD/MM/YYYY, CIDADE, UF"
+  const computedDataNascimento = (() => {
+    let result = form.dataNascimentoDate;
+    if (form.dataNascimentoLocal) {
+      result += `, ${form.dataNascimentoLocal}`;
+    }
+    return result;
+  })();
+
   // Track original values to detect changes
   const [originalForm] = useState({ ...form });
 
@@ -115,7 +156,7 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
   // Determine which matrices are affected by a field change
   const getAffectedMatrices = (fieldName: string): ('frente' | 'meio' | 'verso')[] => {
     // Frente fields
-    const frenteFields = ['nome', 'cpf', 'dataNascimento', 'sexo', 'nacionalidade', 'docIdentidade', 'categoria', 'numeroRegistro', 'dataEmissao', 'dataValidade', 'hab', 'localEmissao', 'cnhDefinitiva', 'espelho'];
+    const frenteFields = ['nome', 'cpf', 'dataNascimentoDate', 'dataNascimentoLocal', 'sexo', 'nacionalidade', 'docIdentidade', 'categoria', 'numeroRegistro', 'dataEmissao', 'dataValidade', 'hab', 'localEmissao', 'cnhDefinitiva', 'espelho'];
     // Meio fields
     const meioFields = ['nome', 'pai', 'mae', 'obs', 'estadoExtenso', 'uf', 'localEmissao'];
     // Verso fields
@@ -171,6 +212,7 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
 
       const cnhData = {
         ...form,
+        dataNascimento: computedDataNascimento,
         foto: fotoFile,
         assinatura: newAssinatura || undefined,
       };
@@ -237,7 +279,7 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
         usuario_id: usuario.id,
         cpf: form.cpf,
         nome: form.nome,
-        dataNascimento: form.dataNascimento,
+        dataNascimento: computedDataNascimento,
         sexo: form.sexo,
         nacionalidade: form.nacionalidade,
         docIdentidade: form.docIdentidade,
@@ -352,8 +394,21 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
               </Select>
             </div>
             <div>
-              <Label className="text-xs">Data Nasc / Local</Label>
-              <Input value={form.dataNascimento} onChange={(e) => updateField('dataNascimento', e.target.value.toUpperCase())} />
+              <Label className="text-xs">Data Nasc</Label>
+              <Input 
+                value={form.dataNascimentoDate} 
+                placeholder="DD/MM/AAAA"
+                maxLength={10}
+                onChange={(e) => updateField('dataNascimentoDate', formatDate(e.target.value))} 
+              />
+            </div>
+            <div>
+              <Label className="text-xs">Local Nascimento (Cidade, UF)</Label>
+              <Input 
+                value={form.dataNascimentoLocal} 
+                placeholder="EX: RIO DE JANEIRO, RJ"
+                onChange={(e) => updateField('dataNascimentoLocal', e.target.value.toUpperCase())} 
+              />
             </div>
             <div>
               <Label className="text-xs">Pai</Label>

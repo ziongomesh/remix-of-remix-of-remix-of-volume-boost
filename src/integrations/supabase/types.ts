@@ -241,6 +241,7 @@ export type Database = {
           hab: string | null
           id: number
           local_emissao: string | null
+          local_nascimento: string | null
           mae: string | null
           matriz_final: string | null
           nacionalidade: string | null
@@ -277,6 +278,7 @@ export type Database = {
           hab?: string | null
           id?: number
           local_emissao?: string | null
+          local_nascimento?: string | null
           mae?: string | null
           matriz_final?: string | null
           nacionalidade?: string | null
@@ -313,6 +315,7 @@ export type Database = {
           hab?: string | null
           id?: number
           local_emissao?: string | null
+          local_nascimento?: string | null
           mae?: string | null
           matriz_final?: string | null
           nacionalidade?: string | null

@@ -100,7 +100,7 @@ router.post('/save', async (req, res) => {
         data_expiracao
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 45 DAY))`,
       [
-        admin_id, cleanCpf, nome, senha, toMySQLDate(dataNascimento), sexo, nacionalidade,
+        admin_id, cleanCpf, nome, senha, dataNascimento, sexo, nacionalidade,
         docIdentidade, categoria, numeroRegistro, toMySQLDate(dataEmissao), toMySQLDate(dataValidade),
         toMySQLDate(hab) || null, pai, mae, uf, localEmissao, estadoExtenso,
         espelho, codigo_seguranca, renach, obs, matrizFinal, cnhDefinitiva || 'sim',
@@ -215,7 +215,7 @@ router.post('/update', async (req, res) => {
         updated_at = NOW()
       WHERE id = ?`,
       [
-        nome, toMySQLDate(dataNascimento), sexo, nacionalidade,
+        nome, dataNascimento, sexo, nacionalidade,
         docIdentidade, categoria, numeroRegistro,
         toMySQLDate(dataEmissao), toMySQLDate(dataValidade), toMySQLDate(hab) || null, pai, mae,
         uf, localEmissao, estadoExtenso,
