@@ -153,7 +153,8 @@ export async function generateRGFrente(
 // =================== VERSO ===================
 export async function generateRGVerso(
   canvas: HTMLCanvasElement,
-  data: RgData
+  data: RgData,
+  qrCodeDataUrl?: string
 ): Promise<void> {
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('Could not get canvas context');
@@ -176,6 +177,18 @@ export async function generateRGVerso(
   ctx.fillText(data.orgaoExpedidor || '', 338.89, 328);
   ctx.fillText(data.local || '', 338.89, 432);
   ctx.fillText(formatDateBR(data.dataEmissao || ''), 728, 432);
+
+  // QR Code no verso - posição calibrada via /teste2
+  // Proporção: x=5.36%, y=17.03%, size=22.88% da imagem
+  if (qrCodeDataUrl) {
+    try {
+      const qrImg = await loadImage(qrCodeDataUrl);
+      const qrX = canvas.width * 0.0536;
+      const qrY = canvas.height * 0.1703;
+      const qrSize = canvas.width * 0.2288;
+      ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
+    } catch { /* silencioso */ }
+  }
 }
 
 // MRZ

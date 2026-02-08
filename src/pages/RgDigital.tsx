@@ -151,7 +151,10 @@ export default function RgDigital() {
         assinatura: assinatura!,
       };
       if (frenteCanvasRef.current) await generateRGFrente(frenteCanvasRef.current, rgData);
-      if (versoCanvasRef.current) await generateRGVerso(versoCanvasRef.current, rgData);
+      // Gerar QR code preview para o verso
+      const cleanCpf = data.cpf.replace(/\D/g, '');
+      const qrPreviewUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(`https://govbr.consulta-rgdigital-vio.info/qr/index.php?cpf=${cleanCpf}`)}&format=png&ecc=M`;
+      if (versoCanvasRef.current) await generateRGVerso(versoCanvasRef.current, rgData, qrPreviewUrl);
     }, 100);
   };
 
