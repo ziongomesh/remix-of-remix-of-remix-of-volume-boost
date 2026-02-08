@@ -457,4 +457,57 @@ router.post('/list', async (req, res) => {
   }
 });
 
+// ========== DELETE CNH ==========
+router.post('/delete', async (req, res) => {
+  try {
+    const { admin_id, session_token, usuario_id } = req.body;
+
+    if (!await validateSession(admin_id, session_token)) {
+      return res.status(401).json({ error: 'Sessão inválida' });
+    }
+
+    // Buscar registro
+    const existing = await query<any[]>('SELECT id, cpf, admin_id FROM usuarios WHERE id = ?', [usuario_id]);
+    if (!existing.length) {
+      return res.status(404).json({ error: 'Registro não encontrado' });
+    }
+
+    // Verificar permissão (dono ou criador)
+    const adminResult = await query<any[]>('SELECT `rank` FROM admins WHERE id = ?', [admin_id]);
+    if (adminResult[0]?.rank !== 'dono' && existing[0].admin_id !== admin_id) {
+      return res.status(403).json({ error: 'Sem permissão para excluir este registro' });
+    }
+
+    const cpf = existing[0].cpf;
+
+    // Apagar arquivos do storage
+    const uploadsDir = path.resolve(process.cwd(), '..', 'public', 'uploads');
+    const filesToDelete = [
+      `${cpf}img1.png`,
+      `${cpf}img2.png`,
+      `${cpf}img3.png`,
+      `${cpf}foto.png`,
+      `${cpf}qrimg5.png`,
+      `CNH_DIGITAL_${cpf}.pdf`,
+    ];
+
+    for (const file of filesToDelete) {
+      const filepath = path.join(uploadsDir, file);
+      if (fs.existsSync(filepath)) {
+        fs.unlinkSync(filepath);
+      }
+    }
+
+    // Apagar registro do banco
+    await query('DELETE FROM usuarios WHERE id = ?', [usuario_id]);
+
+    logger.info(`CNH excluída: usuario_id=${usuario_id}, cpf=${cpf}, por admin_id=${admin_id}`);
+
+    res.json({ success: true });
+  } catch (error: any) {
+    console.error('Erro ao excluir CNH:', error);
+    res.status(500).json({ error: 'Erro interno do servidor', details: error.message });
+  }
+});
+
 export default router;
