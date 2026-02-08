@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState } from "react";
-import { Download, X, Eye, Loader2 } from "lucide-react";
+import { X, Eye, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { generateCNH } from "@/lib/cnh-generator";
@@ -248,10 +248,6 @@ export default function CnhPreview({ cnhData, onClose, onSaveSuccess, onEdit }: 
               Editar Dados
             </Button>
           )}
-          <Button variant="outline" onClick={handleDownload} disabled={loading}>
-            <Download className="h-4 w-4 mr-2" />
-            Baixar PNGs
-          </Button>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-5 w-5" />
           </Button>
@@ -276,7 +272,7 @@ export default function CnhPreview({ cnhData, onClose, onSaveSuccess, onEdit }: 
               </CardHeader>
               <CardContent>
                 {previewUrl && (
-                  <img src={previewUrl} alt="CNH Frente" className="w-full rounded-lg border" />
+                  <img src={previewUrl} alt="CNH Frente" className="w-full rounded-lg border pointer-events-none select-none" draggable={false} onContextMenu={(e) => e.preventDefault()} />
                 )}
               </CardContent>
             </Card>
@@ -290,7 +286,7 @@ export default function CnhPreview({ cnhData, onClose, onSaveSuccess, onEdit }: 
               </CardHeader>
               <CardContent>
                 {previewMeioUrl && (
-                  <img src={previewMeioUrl} alt="CNH Meio" className="w-full rounded-lg border" />
+                  <img src={previewMeioUrl} alt="CNH Meio" className="w-full rounded-lg border pointer-events-none select-none" draggable={false} onContextMenu={(e) => e.preventDefault()} />
                 )}
               </CardContent>
             </Card>
@@ -304,7 +300,7 @@ export default function CnhPreview({ cnhData, onClose, onSaveSuccess, onEdit }: 
               </CardHeader>
               <CardContent>
                 {previewVersoUrl && (
-                  <img src={previewVersoUrl} alt="CNH Verso" className="w-full rounded-lg border" />
+                  <img src={previewVersoUrl} alt="CNH Verso" className="w-full rounded-lg border pointer-events-none select-none" draggable={false} onContextMenu={(e) => e.preventDefault()} />
                 )}
               </CardContent>
             </Card>
@@ -342,7 +338,7 @@ export default function CnhPreview({ cnhData, onClose, onSaveSuccess, onEdit }: 
               <X className="h-6 w-6" />
             </Button>
             <h3 className="text-white text-center mb-2 font-semibold">{modalImageTitle}</h3>
-            <img src={modalImageUrl} alt={modalImageTitle} className="w-full rounded-lg" />
+            <img src={modalImageUrl} alt={modalImageTitle} className="w-full rounded-lg pointer-events-none select-none" draggable={false} onContextMenu={(e) => e.preventDefault()} />
           </div>
         </div>
       )}
