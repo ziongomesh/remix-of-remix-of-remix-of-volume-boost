@@ -54,20 +54,25 @@ export default function CnhSuccessModal({ isOpen, onClose, cpf, senha, nome, pdf
     try {
       setIsDownloading(true);
       const cleanCpf = cpf.replace(/\D/g, '');
-
       const downloadUrl = pdfUrl || '';
       if (!downloadUrl) {
         toast.error('PDF não disponível');
         return;
       }
 
+      // Baixar via fetch + blob para evitar bloqueio do navegador
+      const response = await fetch(downloadUrl);
+      if (!response.ok) throw new Error('Erro ao baixar');
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+
       const a = document.createElement('a');
-      a.href = downloadUrl;
+      a.href = blobUrl;
       a.download = `CNH_DIGITAL_${cleanCpf}.pdf`;
-      a.target = '_blank';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
 
       toast.success('Download do PDF iniciado!');
     } catch {
