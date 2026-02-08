@@ -3,7 +3,7 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Upload, Download, Loader2, FileText, ArrowLeft } from 'lucide-react';
+import { Upload, Download, Loader2, FileText, ArrowLeft, Layers, PanelRightClose } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { PdfTextField } from '@/components/pdf-editor/types';
 import { extractPdfData } from '@/components/pdf-editor/pdf-utils';
@@ -20,6 +20,7 @@ export default function EditorPdf() {
   const [pdfBytes, setPdfBytes] = useState<ArrayBuffer | null>(null);
   const [fileName, setFileName] = useState('');
   const [currentPage, setCurrentPage] = useState(0);
+  const [showLayers, setShowLayers] = useState(false);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -112,6 +113,10 @@ export default function EditorPdf() {
           </div>
           {pages.length > 0 && (
             <div className="flex gap-2">
+              <Button onClick={() => setShowLayers(v => !v)} variant={showLayers ? 'default' : 'outline'} className="gap-2">
+                {showLayers ? <PanelRightClose className="h-4 w-4" /> : <Layers className="h-4 w-4" />}
+                Camadas
+              </Button>
               <Button onClick={handleSave} className="gap-2">
                 <Download className="h-4 w-4" /> Salvar PDF
               </Button>
@@ -179,13 +184,15 @@ export default function EditorPdf() {
             </div>
 
             {/* Layers Panel */}
-            <LayersPanel
-              fields={currentPageFields}
-              selectedId={selectedId}
-              onSelect={setSelectedId}
-              onToggleVisibility={handleToggleVisibility}
-              onDelete={handleDelete}
-            />
+            {showLayers && (
+              <LayersPanel
+                fields={currentPageFields}
+                selectedId={selectedId}
+                onSelect={setSelectedId}
+                onToggleVisibility={handleToggleVisibility}
+                onDelete={handleDelete}
+              />
+            )}
           </div>
         )}
 
