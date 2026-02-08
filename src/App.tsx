@@ -22,6 +22,7 @@ import RemoverFundo from "./pages/RemoverFundo";
 import EditorPdf from "./pages/EditorPdf";
 import GeradorAssinatura from "./pages/GeradorAssinatura";
 import HistoricoServicos from "./pages/HistoricoServicos";
+import Downloads from "./pages/Downloads";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -53,6 +54,7 @@ const App = () => (
               <Route path="/ferramentas/editor-pdf" element={<EditorPdf />} />
               <Route path="/ferramentas/gerador-assinatura" element={<GeradorAssinatura />} />
               <Route path="/historico-servicos" element={<HistoricoServicos />} />
+              <Route path="/downloads" element={<Downloads />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>
