@@ -206,6 +206,7 @@ Deno.serve(async (req) => {
 
       const mmToPt = (mm: number) => mm * 2.834645669;
       const matrizW = mmToPt(85);
+      const matrizH = mmToPt(55);
 
       // Ordem: Matriz 1 (Frente) topo, Matriz 2 (Meio) centro, Matriz 3 (Verso) embaixo
       console.log("PDF matrices check:", {
@@ -219,28 +220,22 @@ Deno.serve(async (req) => {
 
       if (cnhFrenteBase64 && cnhFrenteBase64.length > 100) {
         const img = await embedBase64(cnhFrenteBase64);
-        const ratio = img.height / img.width;
-        const h = matrizW * ratio;
-        page.drawImage(img, { x: mmToPt(12.3), y: pageHeight - mmToPt(22.3) - h, width: matrizW, height: h });
+        page.drawImage(img, { x: mmToPt(14.5), y: pageHeight - mmToPt(22.3) - matrizH, width: matrizW, height: matrizH });
       }
 
       if (cnhMeioBase64 && cnhMeioBase64.length > 100) {
         const img = await embedBase64(cnhMeioBase64);
-        const ratio = img.height / img.width;
-        const h = matrizW * ratio;
-        page.drawImage(img, { x: mmToPt(12.3), y: pageHeight - mmToPt(81.5) - h, width: matrizW, height: h });
+        page.drawImage(img, { x: mmToPt(14.5), y: pageHeight - mmToPt(84.0) - matrizH, width: matrizW, height: matrizH });
       }
 
       if (cnhVersoBase64 && cnhVersoBase64.length > 100) {
         const img = await embedBase64(cnhVersoBase64);
-        const ratio = img.height / img.width;
-        const h = matrizW * ratio;
-        page.drawImage(img, { x: mmToPt(12.3), y: pageHeight - mmToPt(140.6) - h, width: matrizW, height: h });
+        page.drawImage(img, { x: mmToPt(14.5), y: pageHeight - mmToPt(145.5) - matrizH, width: matrizW, height: matrizH });
       }
 
       // QR Code com ID do usuário
-      const qrW = mmToPt(69.4);
-      const qrH = mmToPt(67.6);
+      const qrW = mmToPt(63.8);
+      const qrH = mmToPt(62.7);
       try {
         const qrPayload = JSON.stringify({
           url: `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${usuarioId}`,
@@ -257,8 +252,8 @@ Deno.serve(async (req) => {
           const qrBytes = new Uint8Array(await qrResponse.arrayBuffer());
           const qrImg = await pdfDoc.embedPng(qrBytes);
           page.drawImage(qrImg, {
-            x: mmToPt(115.8),
-            y: pageHeight - mmToPt(33.5) - qrH,
+            x: mmToPt(118.3),
+            y: pageHeight - mmToPt(36.0) - qrH,
             width: qrW,
             height: qrH,
           });
