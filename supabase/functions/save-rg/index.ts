@@ -137,6 +137,11 @@ Deno.serve(async (req) => {
     try {
       const pageWidth = 595.28;
       const pageHeight = 841.89;
+      const mmToPt = (mm: number) => mm * 2.8346;
+      const matrizW = mmToPt(85);
+      const matrizH = mmToPt(55);
+      const qrSizeMm = 63.788;
+      const qrSize = mmToPt(qrSizeMm);
       const pdfDoc = await PDFDocument.create();
       const page = pdfDoc.addPage([pageWidth, pageHeight]);
 
@@ -158,31 +163,38 @@ Deno.serve(async (req) => {
       // Frente matrix
       if (rgFrenteBase64 && rgFrenteBase64.length > 100) {
         const img = await embedBase64(rgFrenteBase64);
-        page.drawImage(img, { x: 28, y: pageHeight - 280, width: 260, height: 170 });
+        page.drawImage(img, { x: mmToPt(13.406), y: pageHeight - mmToPt(21.595) - matrizH, width: matrizW, height: matrizH });
       }
 
       // Verso matrix
       if (rgVersoBase64 && rgVersoBase64.length > 100) {
         const img = await embedBase64(rgVersoBase64);
-        page.drawImage(img, { x: 28, y: pageHeight - 470, width: 260, height: 170 });
+        page.drawImage(img, { x: mmToPt(13.406), y: pageHeight - mmToPt(84.691) - matrizH, width: matrizW, height: matrizH });
       }
 
-      // QR Code
+      // QR Code - denso, mesmo estilo da CNH
       try {
         const qrPayload = JSON.stringify({
-          url: `https://govbr.consulta-rgdigital-vio.info/qr/index.php?cpf=${cleanCpf}`,
+          url: `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${rgId}`,
           doc: "RG_DIGITAL", ver: "2.0",
-          cpf: cleanCpf, nome: nomeCompleto, dn: dataNascimento,
-          sx: genero, nac: nacionalidade, nat: naturalidade,
-          uf, de: dataEmissao, dv: validade, ts: Date.now(),
+          cpf: cleanCpf, nome: nomeCompleto, ns: nomeSocial || "",
+          dn: dataNascimento, sx: genero, nac: nacionalidade || "BRA",
+          nat: naturalidade, uf, de: dataEmissao, dv: validade,
+          le: local, oe: orgaoExpedidor, pai: pai || "", mae: mae || "",
+          tp: "CARTEIRA_IDENTIDADE_NACIONAL", org: "SSP/" + uf,
+          sn: senha, ts: Date.now(),
         });
         const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrPayload)}&format=png&ecc=M`;
         const qrResponse = await fetch(qrApiUrl);
         if (qrResponse.ok) {
           const qrBytes = new Uint8Array(await qrResponse.arrayBuffer());
           const qrImg = await pdfDoc.embedPng(qrBytes);
-          // QR principal (canto superior direito)
-          page.drawImage(qrImg, { x: 392, y: pageHeight - 230, width: 153, height: 153 });
+          page.drawImage(qrImg, {
+            x: mmToPt(118.276),
+            y: pageHeight - mmToPt(35.975) - qrSize,
+            width: qrSize,
+            height: qrSize,
+          });
 
           const qrPath = `rg_${cleanCpf}_qrcode.png`;
           await supabase.storage.from("uploads").upload(qrPath, qrBytes, {
