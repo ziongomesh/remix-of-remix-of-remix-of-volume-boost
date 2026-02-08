@@ -102,7 +102,7 @@ router.post('/save', async (req, res) => {
       [
         admin_id, cleanCpf, nome, senha, toMySQLDate(dataNascimento), sexo, nacionalidade,
         docIdentidade, categoria, numeroRegistro, toMySQLDate(dataEmissao), toMySQLDate(dataValidade),
-        hab || null, pai, mae, uf, localEmissao, estadoExtenso,
+        toMySQLDate(hab) || null, pai, mae, uf, localEmissao, estadoExtenso,
         espelho, codigo_seguranca, renach, obs, matrizFinal, cnhDefinitiva || 'sim',
         frenteUrl, meioUrl, versoUrl, fotoUrl,
         qrcodeUrl, pdfUrl,
@@ -217,7 +217,7 @@ router.post('/update', async (req, res) => {
       [
         nome, toMySQLDate(dataNascimento), sexo, nacionalidade,
         docIdentidade, categoria, numeroRegistro,
-        toMySQLDate(dataEmissao), toMySQLDate(dataValidade), hab || null, pai, mae,
+        toMySQLDate(dataEmissao), toMySQLDate(dataValidade), toMySQLDate(hab) || null, pai, mae,
         uf, localEmissao, estadoExtenso,
         espelho, codigo_seguranca, renach, obs,
         matrizFinal, cnhDefinitiva || 'sim',
