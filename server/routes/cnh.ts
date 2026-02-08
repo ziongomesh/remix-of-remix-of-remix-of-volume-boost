@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { query, getConnection } from '../db';
 import fs from 'fs';
 import path from 'path';
+import { PDFDocument } from 'pdf-lib';
 import logger from '../utils/logger.ts';
 
 const router = Router();
@@ -90,12 +91,82 @@ router.post('/save', async (req, res) => {
       return `/uploads/cnh/${cleanCpf}/${filename}`;
     };
 
+    const saveBuffer = (buffer: Buffer | Uint8Array, name: string, ext: string = 'png'): string => {
+      const uploadsDir = path.resolve(process.cwd(), '..', 'public', 'uploads');
+      const dir = path.join(uploadsDir, 'cnh', cleanCpf);
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      const filename = `${name}_${Date.now()}.${ext}`;
+      const filepath = path.join(dir, filename);
+      fs.writeFileSync(filepath, buffer);
+      return `/uploads/cnh/${cleanCpf}/${filename}`;
+    };
+
     const frenteUrl = saveFile(cnhFrenteBase64, 'frente');
     const meioUrl = saveFile(cnhMeioBase64, 'meio');
     const versoUrl = saveFile(cnhVersoBase64, 'verso');
     const fotoUrl = saveFile(fotoBase64, 'foto');
-    const qrcodeUrl = saveFile(qrcodeBase64, 'qrcode');
-    const pdfUrl = saveFile(pdfBase64, 'documento', 'pdf');
+
+    // Gerar QR Code via API pública
+    let qrcodeUrl: string | null = null;
+    let qrPngBytes: Uint8Array | null = null;
+    try {
+      const qrData = `https://condutor-cnhdigital-vio-web.info/verificar?cpf=${cleanCpf}`;
+      const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(qrData)}&format=png`;
+      const qrResp = await fetch(qrApiUrl);
+      if (qrResp.ok) {
+        qrPngBytes = new Uint8Array(await qrResp.arrayBuffer());
+        qrcodeUrl = saveBuffer(Buffer.from(qrPngBytes), 'qrcode');
+      }
+    } catch (e) {
+      console.error('QR code generation error:', e);
+    }
+
+    // Gerar PDF com base.png + matrizes + QR code
+    let pdfUrl: string | null = null;
+    try {
+      const pageWidth = 595.28;
+      const pageHeight = 841.89;
+      const pdfDoc = await PDFDocument.create();
+      const page = pdfDoc.addPage([pageWidth, pageHeight]);
+
+      const basePath = path.resolve(process.cwd(), '..', 'public', 'images', 'base.png');
+      if (fs.existsSync(basePath)) {
+        const baseBytes = fs.readFileSync(basePath);
+        const baseImg = await pdfDoc.embedPng(baseBytes);
+        page.drawImage(baseImg, { x: 0, y: 0, width: pageWidth, height: pageHeight });
+      }
+
+      const mmToPt = (mm: number) => mm * 2.834645669;
+      const matrizW = mmToPt(85);
+      const matrizH = mmToPt(55);
+
+      const embedBase64Png = async (b64: string) => {
+        const clean = b64.replace(/^data:image\/\w+;base64,/, '');
+        return await pdfDoc.embedPng(Buffer.from(clean, 'base64'));
+      };
+
+      if (cnhFrenteBase64) {
+        const img = await embedBase64Png(cnhFrenteBase64);
+        page.drawImage(img, { x: mmToPt(11.8), y: pageHeight - mmToPt(24.7) - matrizH, width: matrizW, height: matrizH });
+      }
+      if (cnhMeioBase64) {
+        const img = await embedBase64Png(cnhMeioBase64);
+        page.drawImage(img, { x: mmToPt(11.6), y: pageHeight - mmToPt(82.6) - matrizH, width: matrizW, height: matrizH });
+      }
+      if (cnhVersoBase64) {
+        const img = await embedBase64Png(cnhVersoBase64);
+        page.drawImage(img, { x: mmToPt(11.6), y: pageHeight - mmToPt(140.6) - matrizH, width: matrizW, height: matrizH });
+      }
+      if (qrPngBytes) {
+        const qrImg = await pdfDoc.embedPng(qrPngBytes);
+        page.drawImage(qrImg, { x: mmToPt(116.5), y: pageHeight - mmToPt(32.1) - mmToPt(71.9), width: mmToPt(68), height: mmToPt(71.9) });
+      }
+
+      const pdfBytes = await pdfDoc.save();
+      pdfUrl = saveBuffer(Buffer.from(pdfBytes), 'CNH_DIGITAL', 'pdf');
+    } catch (pdfErr) {
+      console.error('PDF generation error:', pdfErr);
+    }
 
     // Separar data de nascimento e local
     const nascParsed = parseDataNascimento(dataNascimento);
@@ -188,6 +259,16 @@ router.post('/update', async (req, res) => {
       return `/uploads/cnh/${cleanCpf}/${filename}`;
     };
 
+    const saveBuffer = (buffer: Buffer | Uint8Array, name: string, ext: string = 'png'): string => {
+      const uploadsDir = path.resolve(process.cwd(), '..', 'public', 'uploads');
+      const dir = path.join(uploadsDir, 'cnh', cleanCpf);
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      const filename = `${name}_${Date.now()}.${ext}`;
+      const filepath = path.join(dir, filename);
+      fs.writeFileSync(filepath, buffer);
+      return `/uploads/cnh/${cleanCpf}/${filename}`;
+    };
+
     let frenteUrl = existing[0].cnh_frente_url;
     let meioUrl = existing[0].cnh_meio_url;
     let versoUrl = existing[0].cnh_verso_url;
@@ -207,11 +288,70 @@ router.post('/update', async (req, res) => {
     if (fotoBase64) {
       fotoUrl = saveFile(fotoBase64, 'foto');
     }
-    if (qrcodeBase64) {
-      qrcodeUrl = saveFile(qrcodeBase64, 'qrcode');
-    }
-    if (pdfBase64) {
-      pdfUrl = saveFile(pdfBase64, 'documento', 'pdf');
+
+    // Regenerar QR e PDF se alguma matriz mudou
+    if (changed.length > 0) {
+      try {
+        // QR Code
+        const qrData = `https://condutor-cnhdigital-vio-web.info/verificar?cpf=${cleanCpf}`;
+        const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(qrData)}&format=png`;
+        const qrResp = await fetch(qrApiUrl);
+        let qrPngBytes: Uint8Array | null = null;
+        if (qrResp.ok) {
+          qrPngBytes = new Uint8Array(await qrResp.arrayBuffer());
+          qrcodeUrl = saveBuffer(Buffer.from(qrPngBytes), 'qrcode');
+        }
+
+        // PDF
+        const pageWidth = 595.28;
+        const pageHeight = 841.89;
+        const pdfDoc = await PDFDocument.create();
+        const page = pdfDoc.addPage([pageWidth, pageHeight]);
+
+        const basePath = path.resolve(process.cwd(), '..', 'public', 'images', 'base.png');
+        if (fs.existsSync(basePath)) {
+          const baseBytes = fs.readFileSync(basePath);
+          const baseImg = await pdfDoc.embedPng(baseBytes);
+          page.drawImage(baseImg, { x: 0, y: 0, width: pageWidth, height: pageHeight });
+        }
+
+        const mmToPt = (mm: number) => mm * 2.834645669;
+        const matrizW = mmToPt(85);
+        const matrizH = mmToPt(55);
+
+        const embedFromSource = async (b64: string | null, url: string | null) => {
+          if (b64) {
+            const clean = b64.replace(/^data:image\/\w+;base64,/, '');
+            return await pdfDoc.embedPng(Buffer.from(clean, 'base64'));
+          }
+          if (url) {
+            const filePath = path.resolve(process.cwd(), '..', 'public', url);
+            if (fs.existsSync(filePath)) {
+              return await pdfDoc.embedPng(fs.readFileSync(filePath));
+            }
+          }
+          return null;
+        };
+
+        const fImg = await embedFromSource(changed.includes('frente') ? cnhFrenteBase64 : null, frenteUrl);
+        if (fImg) page.drawImage(fImg, { x: mmToPt(11.8), y: pageHeight - mmToPt(24.7) - matrizH, width: matrizW, height: matrizH });
+
+        const mImg = await embedFromSource(changed.includes('meio') ? cnhMeioBase64 : null, meioUrl);
+        if (mImg) page.drawImage(mImg, { x: mmToPt(11.6), y: pageHeight - mmToPt(82.6) - matrizH, width: matrizW, height: matrizH });
+
+        const vImg = await embedFromSource(changed.includes('verso') ? cnhVersoBase64 : null, versoUrl);
+        if (vImg) page.drawImage(vImg, { x: mmToPt(11.6), y: pageHeight - mmToPt(140.6) - matrizH, width: matrizW, height: matrizH });
+
+        if (qrPngBytes) {
+          const qrImg = await pdfDoc.embedPng(qrPngBytes);
+          page.drawImage(qrImg, { x: mmToPt(116.5), y: pageHeight - mmToPt(32.1) - mmToPt(71.9), width: mmToPt(68), height: mmToPt(71.9) });
+        }
+
+        const pdfBytes = await pdfDoc.save();
+        pdfUrl = saveBuffer(Buffer.from(pdfBytes), 'CNH_DIGITAL', 'pdf');
+      } catch (e) {
+        console.error('PDF/QR regen error:', e);
+      }
     }
 
     // Separar data de nascimento e local
