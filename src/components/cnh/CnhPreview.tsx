@@ -265,7 +265,7 @@ export default function CnhPreview({ cnhData, onClose, onSaveSuccess, onEdit }: 
           {/* Preview das 3 imagens */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {/* Frente */}
-            <Card className="cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all" onClick={() => previewUrl && openImageModal(previewUrl, 'CNH Frente')}>
+            <Card className="cursor-pointer transition-all" onClick={() => previewUrl && openImageModal(previewUrl, 'CNH Frente')}>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center gap-2">
                   <Eye className="h-4 w-4" /> Frente
@@ -279,7 +279,7 @@ export default function CnhPreview({ cnhData, onClose, onSaveSuccess, onEdit }: 
             </Card>
 
             {/* Meio */}
-            <Card className="cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all" onClick={() => previewMeioUrl && openImageModal(previewMeioUrl, 'CNH Meio')}>
+            <Card className="cursor-pointer transition-all" onClick={() => previewMeioUrl && openImageModal(previewMeioUrl, 'CNH Meio')}>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center gap-2">
                   <Eye className="h-4 w-4" /> Meio
@@ -293,7 +293,7 @@ export default function CnhPreview({ cnhData, onClose, onSaveSuccess, onEdit }: 
             </Card>
 
             {/* Verso */}
-            <Card className="cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all" onClick={() => previewVersoUrl && openImageModal(previewVersoUrl, 'CNH Verso')}>
+            <Card className="cursor-pointer transition-all" onClick={() => previewVersoUrl && openImageModal(previewVersoUrl, 'CNH Verso')}>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center gap-2">
                   <Eye className="h-4 w-4" /> Verso
