@@ -10,14 +10,9 @@ import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
 const FONTS = [
-  { name: 'Mr Dafoe', css: "'Mr Dafoe', cursive" },
-  { name: 'Herr Von Muellerhoff', css: "'Herr Von Muellerhoff', cursive" },
-  { name: 'Mrs Saint Delafield', css: "'Mrs Saint Delafield', cursive" },
+  { name: 'Caveat', css: "'Caveat', cursive" },
   { name: 'Homemade Apple', css: "'Homemade Apple', cursive" },
   { name: 'Nothing You Could Do', css: "'Nothing You Could Do', cursive" },
-  { name: 'La Belle Aurore', css: "'La Belle Aurore', cursive" },
-  { name: 'Caveat', css: "'Caveat', cursive" },
-  { name: 'Kalam', css: "'Kalam', cursive" },
 ];
 
 const GOOGLE_FONTS_URL = `https://fonts.googleapis.com/css2?${FONTS.map(f => `family=${f.name.replace(/ /g, '+')}`).join('&')}&display=swap`;
