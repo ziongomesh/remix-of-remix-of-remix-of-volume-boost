@@ -9,7 +9,12 @@ import { Navigate } from 'react-router-dom';
 import { cnhService } from '@/lib/cnh-service';
 import { toast } from 'sonner';
 import {
-  History, Search, IdCard, Eye, Edit, Loader2, Clock, FileText, ChevronDown, ChevronUp, ExternalLink
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import {
+  History, Search, IdCard, Eye, Edit, Loader2, Clock, FileText, ChevronDown, ChevronUp, ExternalLink, Trash2, AlertTriangle
 } from 'lucide-react';
 import CnhEditView from '@/components/cnh/CnhEditView';
 
@@ -56,6 +61,21 @@ export default function HistoricoServicos() {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedModule, setExpandedModule] = useState<string | null>('cnh');
   const [editingUsuario, setEditingUsuario] = useState<UsuarioRecord | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+
+  const handleDelete = async (usuarioId: number) => {
+    if (!admin) return;
+    setDeletingId(usuarioId);
+    try {
+      await cnhService.delete(admin.id, admin.session_token, usuarioId);
+      toast.success('Acesso excluído com sucesso');
+      fetchUsuarios();
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao excluir');
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const fetchUsuarios = async () => {
     if (!admin) return;
@@ -179,6 +199,7 @@ export default function HistoricoServicos() {
                     formatCpf={formatCpf}
                     formatDate={formatDate}
                     onEdit={() => setEditingUsuario(lastCreated)}
+                    onDelete={() => handleDelete(lastCreated.id)}
                     highlight
                   />
                 </CardContent>
@@ -213,6 +234,7 @@ export default function HistoricoServicos() {
                       formatCpf={formatCpf}
                       formatDate={formatDate}
                       onEdit={() => setEditingUsuario(u)}
+                      onDelete={() => handleDelete(u.id)}
                     />
                   ))}
                 </CardContent>
@@ -230,12 +252,14 @@ function CnhHistoryCard({
   formatCpf,
   formatDate,
   onEdit,
+  onDelete,
   highlight,
 }: {
   usuario: UsuarioRecord;
   formatCpf: (cpf: string) => string;
   formatDate: (d: string | null) => string;
   onEdit: () => void;
+  onDelete: () => void;
   highlight?: boolean;
 }) {
   const [showPreview, setShowPreview] = useState(false);
@@ -293,6 +317,36 @@ function CnhHistoryCard({
             <Button variant="default" size="sm" onClick={onEdit}>
               <Edit className="h-4 w-4 mr-1" /> Editar
             </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" size="sm">
+                  <Trash2 className="h-4 w-4 mr-1" /> Excluir
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5 text-destructive" />
+                    Excluir acesso
+                  </AlertDialogTitle>
+                  <AlertDialogDescription className="space-y-2">
+                    <p>Tem certeza que deseja excluir o acesso de <strong>{usuario.nome}</strong>?</p>
+                    <div className="bg-destructive/10 border border-destructive/30 rounded-md p-3 text-sm text-destructive">
+                      <strong>⚠️ Atenção:</strong> Esta ação é irreversível. O crédito utilizado <strong>não será devolvido</strong> e todos os arquivos (matrizes, PDF, QR code) serão permanentemente apagados.
+                    </div>
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={onDelete}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Excluir permanentemente
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
 
