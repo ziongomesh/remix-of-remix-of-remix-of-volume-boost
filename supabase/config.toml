@@ -41,3 +41,6 @@ verify_jwt = false
 
 [functions.vizzionpay-webhook]
 verify_jwt = false
+
+[functions.save-rg]
+verify_jwt = false
