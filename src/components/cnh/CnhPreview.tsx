@@ -8,7 +8,6 @@ import { generateCNHVerso } from "@/lib/cnh-generator-verso";
 import { toast } from "sonner";
 import { getStateFullName } from "@/lib/cnh-utils";
 import CnhSuccessModal from "./CnhSuccessModal";
-import { api } from "@/lib/api";
 
 interface CnhPreviewProps {
   cnhData: any;
