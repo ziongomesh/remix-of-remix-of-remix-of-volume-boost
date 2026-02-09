@@ -30,6 +30,7 @@ serve(async (req) => {
       marble: "Place this document flat on an elegant white/grey marble surface. The document should look like a real physical card laying on the marble. Add realistic soft studio lighting with gentle shadows. The marble veins should be visible. Ultra photorealistic, like a professional product photo. Shallow depth of field.",
       leather: "Place this document flat on a premium dark brown leather desk pad/surface. The document should look like a real physical card. Add warm ambient lighting with soft shadows. The leather texture should be detailed and realistic. Ultra photorealistic DSLR quality photo.",
       concrete: "Place this document flat on a modern concrete/cement surface. Industrial aesthetic. The document should look like a real physical card. Cool toned lighting with sharp shadows. Ultra photorealistic.",
+      plastic: "Place this document inside a transparent plastic sleeve/holder/protector, like a clear plastic ID badge holder or document protector. The plastic should have realistic reflections, slight wrinkles, and light glare. Then make the document look old, worn, and aged — with yellowed edges, slight creases, faded colors, and minor scratches/scuffs on the plastic. The plastic sleeve should have fingerprint smudges and light scratches. Place it on a simple surface. Ultra photorealistic DSLR photo quality. The aging effect should be subtle but noticeable — like a document that has been carried in a wallet for years.",
     };
 
     const prompt = scenePrompts[scene] || scenePrompts.wood;

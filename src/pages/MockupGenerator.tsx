@@ -11,6 +11,7 @@ const SCENES = [
   { value: 'marble', label: '🪨 Mármore' },
   { value: 'leather', label: '🟤 Couro' },
   { value: 'concrete', label: '🏗️ Concreto' },
+  { value: 'plastic', label: '🧴 Plástico Envelhecido' },
 ];
 
 export default function MockupGenerator() {
