@@ -14,6 +14,7 @@ import checkCpfRoutes from './routes/check-cpf.ts';
 import estudanteRoutes from './routes/estudante.ts';
 import downloadsRoutes from './routes/downloads.ts';
 import cnhNauticaRoutes from './routes/cnh-nautica.ts';
+import crlvRoutes from './routes/crlv.ts';
 
 // Carrega variáveis de ambiente (prioridade: .env.local > .env)
 const envFiles = [
@@ -171,6 +172,7 @@ app.use('/api/check-cpf', checkCpfRoutes);
 app.use('/api/estudante', estudanteRoutes);
 app.use('/api/downloads', downloadsRoutes);
 app.use('/api/cnh-nautica', cnhNauticaRoutes);
+app.use('/api/crlv', crlvRoutes);
 
 // Health check
 app.get('/api/health', async (req, res) => {
