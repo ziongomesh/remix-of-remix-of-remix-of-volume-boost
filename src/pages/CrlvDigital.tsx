@@ -23,6 +23,7 @@ import {
   generateRenavam, generatePlaca, generateNumeroCRV, generateSegurancaCRV,
   generateCodSegCLA, generateChassi, generateMotor, formatCPF,
   CATEGORIAS_VEICULO, COMBUSTIVEIS, CORES_VEICULO, ESPECIES_TIPO, CARROCERIAS,
+  UFS_BRASIL,
 } from '@/lib/crlv-utils';
 import { crlvService } from '@/lib/crlv-service';
 import { Link } from 'react-router-dom';
@@ -61,6 +62,7 @@ const crlvFormSchema = z.object({
   cpfCnpj: z.string().min(11, 'CPF/CNPJ obrigatório'),
   local: z.string().min(3, 'Local obrigatório'),
   data: z.string().min(8, 'Data obrigatória'),
+  uf: z.string().min(2, 'UF obrigatória'),
   // 5. Observações
   observacoes: z.string().optional(),
 });
@@ -110,7 +112,8 @@ export default function CrlvDigital() {
       pesoBruto: '', motor: '', cmt: '', eixos: '',
       nomeProprietario: '', cpfCnpj: '',
       local: '', data: new Date().toLocaleDateString('pt-BR'),
-      observacoes: 'SEM RESERVA',
+      uf: '',
+      observacoes: '*.*',
     },
   });
 
@@ -158,7 +161,8 @@ export default function CrlvDigital() {
         cpf_cnpj: data.cpfCnpj,
         local: data.local,
         data: data.data,
-        observacoes: data.observacoes || '',
+        uf: data.uf,
+        observacoes: data.observacoes || '*.*',
       };
       if (useCustomQr && customQrBase64) {
         payload.qrcode_base64 = customQrBase64;
@@ -195,7 +199,7 @@ export default function CrlvDigital() {
               <Car className="h-6 w-6 text-primary" />
               CRLV Digital 2026
             </h1>
-            <p className="text-muted-foreground text-sm">Preencha os dados do veículo</p>
+            <p className="text-muted-foreground text-sm">Preencha os dados do veículo • Custo: 1 crédito • Sem validade</p>
           </div>
         </div>
 
@@ -517,7 +521,7 @@ export default function CrlvDigital() {
                   )} />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <FormField control={form.control} name="local" render={({ field }) => (
                     <FormItem>
                       <FormLabel>Local</FormLabel>
@@ -529,6 +533,20 @@ export default function CrlvDigital() {
                     <FormItem>
                       <FormLabel>Data</FormLabel>
                       <FormControl><Input placeholder="09/02/2026" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="uf" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>UF (DETRAN)</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger><SelectValue placeholder="Selecione UF" /></SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {UFS_BRASIL.map(uf => <SelectItem key={uf} value={uf}>{uf}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )} />

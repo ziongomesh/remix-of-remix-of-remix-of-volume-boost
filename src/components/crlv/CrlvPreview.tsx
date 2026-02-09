@@ -77,6 +77,10 @@ const WHITEOUT_RECTS: { x: number; y: number; w: number; h: number }[] = [
   { x: 240, y: 100, w: 175, h: 195 },
   // Observações area
   { x: 18, y: 505, w: 270, h: 245 },
+  // DETRAN-UF area
+  { x: 310, y: 340, w: 280, h: 22 },
+  // Documento emitido line
+  { x: 18, y: 480, w: 560, h: 20 },
 ];
 
 export function CrlvPreview({ form, customQrPreview }: CrlvPreviewProps) {
@@ -145,14 +149,27 @@ export function CrlvPreview({ form, customQrPreview }: CrlvPreviewProps) {
       ctx.fillText(text, field.x * scale, field.y * scale);
     }
 
-    // Draw observações
-    if (v.observacoes) {
-      const lines = (v.observacoes as string).split('\n');
-      ctx.font = `bold ${11 * scale}px Courier, monospace`;
-      lines.forEach((line: string, i: number) => {
-        ctx.fillText(line, 25 * scale, (530 + i * 16) * scale);
-      });
+    // Draw DETRAN-UF
+    if (v.uf) {
+      ctx.font = `bold ${12 * scale}px "Open Sans", sans-serif`;
+      ctx.fillText(`DETRAN-   ${v.uf}`, 310 * scale, 355 * scale);
     }
+
+    // Draw "Documento emitido por CDT..."
+    const cpfClean = (v.cpfCnpj || '').replace(/\D/g, '');
+    const cpfHash = cpfClean.slice(0, 9) || '000000000';
+    const hashCode = `${cpfHash.slice(0,3)}${cpfHash.slice(3,5)}f${cpfHash.slice(5,8)}`;
+    const docText = `Documento emitido por CDT (${hashCode}) em ${v.data || new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}.`;
+    ctx.font = `${8 * scale}px Courier, monospace`;
+    ctx.fillText(docText, 80 * scale, 495 * scale);
+
+    // Draw observações
+    const obsText = v.observacoes || '*.*';
+    const obsLines = (obsText as string).split('\n');
+    ctx.font = `bold ${11 * scale}px Courier, monospace`;
+    obsLines.forEach((line: string, i: number) => {
+      ctx.fillText(line, 25 * scale, (530 + i * 16) * scale);
+    });
 
     // Draw custom QR if provided
     if (customQrPreview) {

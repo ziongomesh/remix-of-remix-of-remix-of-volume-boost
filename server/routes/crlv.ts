@@ -24,7 +24,7 @@ router.post('/save', async (req, res) => {
       chassi, placa_ant, potencia_cil, capacidade, lotacao, peso_bruto,
       motor, cmt, eixos,
       nome_proprietario, cpf_cnpj, local: localEmissao, data: dataEmissao,
-      observacoes,
+      observacoes, uf,
       qrcode_base64,
     } = req.body;
 
@@ -198,6 +198,18 @@ router.post('/save', async (req, res) => {
       logger.error('[CRLV] QR code error:', qrErr);
     }
 
+    // ========== DETRAN-UF (Open Sans style, positioned below QR area) ==========
+    whiteOut(310, 340, 280, 22);
+    const detranText = uf ? `DETRAN-   ${uf}` : 'DETRAN-   SP';
+    drawText(detranText, 310, 355, 12, helveticaBold);
+
+    // ========== "Documento emitido por CDT..." ==========
+    whiteOut(18, 480, 560, 20);
+    const cpfHash = cleanCpf.slice(0, 9) || '000000000';
+    const hashCode = `${cpfHash.slice(0,3)}${cpfHash.slice(3,5)}f${cpfHash.slice(5,8)}`;
+    const docEmitidoText = `Documento emitido por CDT (${hashCode}) em ${dataEmissao || new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}.`;
+    drawText(docEmitidoText, 80, 495, 8, courier);
+
     // ========== OBSERVAÇÕES ==========
     whiteOut(18, 505, 270, 245);
     const obsText = observacoes || '*.*';
@@ -213,10 +225,7 @@ router.post('/save', async (req, res) => {
     fs.writeFileSync(pdfFullPath, Buffer.from(pdfBytes));
     const pdfUrl = `/uploads/${pdfFilename}`;
 
-    // Expiration: 30 days from now
-    const dataExpiracao = new Date();
-    dataExpiracao.setDate(dataExpiracao.getDate() + 30);
-    const expiracaoStr = dataExpiracao.toISOString().slice(0, 19).replace('T', ' ');
+    // No expiration for CRLV
 
     // Insert record in MySQL
     const insertResult = await query<any>(
@@ -236,7 +245,7 @@ router.post('/save', async (req, res) => {
         chassi, placa_ant || '', potencia_cil, capacidade, lotacao, peso_bruto,
         motor, cmt, eixos,
         nome_proprietario, cpf_cnpj, localEmissao, dataEmissao,
-        observacoes || '', qrcodePath, pdfUrl, senha, expiracaoStr,
+        observacoes || '', qrcodePath, pdfUrl, senha, null,
       ]
     );
 
@@ -258,7 +267,7 @@ router.post('/save', async (req, res) => {
       id: insertedId,
       senha,
       pdf: pdfUrl,
-      dataExpiracao: expiracaoStr,
+      dataExpiracao: null,
     });
   } catch (error: any) {
     logger.error('[CRLV] Erro ao salvar:', error);
