@@ -218,8 +218,8 @@ function CategorySection({ category, hasCredits }: { category: ServiceCategory; 
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <CollapsibleTrigger asChild>
-        <div className="flex items-center justify-between cursor-pointer p-4 rounded-xl bg-card border border-border hover:bg-muted/50 transition-colors">
+      <CollapsibleTrigger className="w-full text-left [text-decoration:none]" asChild>
+        <div className="flex items-center justify-between cursor-pointer p-4 rounded-xl bg-card border border-border hover:bg-muted/50 transition-colors [text-decoration:none]">
           <div className="flex items-center gap-3">
             <div className="h-11 w-11 rounded-xl gradient-blue flex items-center justify-center">
               <Icon className="h-5 w-5 text-primary-foreground" />
