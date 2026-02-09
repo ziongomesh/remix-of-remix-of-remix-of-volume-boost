@@ -317,6 +317,27 @@ export const mysqlApi = {
     },
   },
 
+  estudante: {
+    save: async (data: any) => {
+      return fetchAPI('/estudante/save', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+    },
+    list: async (adminId: number, sessionToken: string) => {
+      return fetchAPI('/estudante/list', {
+        method: 'POST',
+        body: JSON.stringify({ admin_id: adminId, session_token: sessionToken }),
+      });
+    },
+    delete: async (adminId: number, sessionToken: string, estudanteId: number) => {
+      return fetchAPI('/estudante/delete', {
+        method: 'POST',
+        body: JSON.stringify({ admin_id: adminId, session_token: sessionToken, estudante_id: estudanteId }),
+      });
+    },
+  },
+
   health: async () => {
     try {
       await fetchAPI('/health');
