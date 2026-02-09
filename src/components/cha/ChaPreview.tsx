@@ -49,7 +49,7 @@ function drawChaFront(
   const catText = data.categoria.toUpperCase();
   
   const catDisplayMap: Record<string, { pt: string; en: string }> = {
-    'ARRAIS AMADOR': { pt: 'MOTONAUTA', en: 'PERSONAL WATERCRAFT PILOT' },
+    'ARRAIS AMADOR': { pt: 'ARRAIS AMADOR', en: 'AMATEUR SKIPPER' },
     'MESTRE AMADOR': { pt: 'MESTRE AMADOR', en: 'AMATEUR MASTER' },
     'CAPITÃO AMADOR': { pt: 'CAPITÃO AMADOR', en: 'AMATEUR CAPTAIN' },
   };
@@ -130,8 +130,7 @@ function drawChaBack(
   const matchingKey = Object.keys(limiteEnFullMap).find(k => cleanLimite.includes(k.replace(/\./g, '').replace(/,/g, '')));
   if (matchingKey) {
     ctx.font = '10px Arial, sans-serif';
-    const enY = h * 0.090 + limiteLines * 14 + 2;
-    wrapText(ctx, limiteEnFullMap[matchingKey], w * 0.083, enY, w * 0.88, 13);
+    wrapText(ctx, limiteEnFullMap[matchingKey], w * 0.083, h * 0.274, w * 0.88, 13);
   }
 
   // Requisitos
