@@ -69,7 +69,7 @@ function drawChaFront(
   ctx.fillText(data.numeroInscricao.toUpperCase(), w * 0.368, h * 0.835, w * 0.28);
 
   // Foto 3x4
-  if (fotoImg) {
+  if (fotoImg && fotoImg.naturalWidth > 0 && fotoImg.naturalHeight > 0) {
     const fotoX = w * 0.642;
     const fotoY = h * 0.412;
     const fotoW = w * 0.286;
@@ -85,15 +85,17 @@ function drawChaFront(
     let drawW: number, drawH: number, drawX: number, drawY: number;
 
     if (imgRatio > boxRatio) {
+      // Image is wider — fit height, crop sides
       drawH = fotoH;
       drawW = fotoH * imgRatio;
-      drawX = fotoX - (drawW - fotoW) / 2;
+      drawX = fotoX + (fotoW - drawW) / 2;
       drawY = fotoY;
     } else {
+      // Image is taller — fit width, crop top/bottom
       drawW = fotoW;
       drawH = fotoW / imgRatio;
       drawX = fotoX;
-      drawY = fotoY - (drawH - fotoH) / 2;
+      drawY = fotoY + (fotoH - drawH) / 2;
     }
     ctx.drawImage(fotoImg, drawX, drawY, drawW, drawH);
     ctx.restore();
