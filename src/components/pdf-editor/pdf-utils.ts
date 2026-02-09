@@ -33,6 +33,12 @@ export async function extractPdfData(file: File) {
     for (const item of textContent.items) {
       if (!('str' in item) || !item.str.trim()) continue;
 
+      const fontName = (item.fontName || '').toLowerCase();
+      // Only extract fields using FreeMono/Courier (editable data fields)
+      // Skip template labels (Helvetica, Arial, etc.)
+      const isEditableFont = fontName.includes('mono') || fontName.includes('courier') || fontName.includes('free');
+      if (!isEditableFont) continue;
+
       const tx = item.transform;
       const fontSize = Math.abs(tx[0]);
       const x = tx[4] * scale;
