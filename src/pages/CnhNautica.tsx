@@ -240,7 +240,13 @@ export default function CnhNautica() {
                   <FormField control={form.control} name="categoria" render={({ field }) => (
                     <FormItem>
                       <FormLabel>Categoria</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select onValueChange={(val) => {
+                        field.onChange(val);
+                        // Auto-fill limite de navegação para Arrais Amador
+                        if (val === 'ARRAIS AMADOR') {
+                          form.setValue('limiteNavegacao', 'NAVEGAÇÃO INTERIOR. QUANDO PILOTANDO MOTO AQUÁTICA, INTERIOR.');
+                        }
+                      }} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Selecione a categoria" />
