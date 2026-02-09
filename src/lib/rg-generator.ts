@@ -1,4 +1,5 @@
 // Gerador de RG Digital (Canvas client-side)
+import { rgFrente, rgVerso, rgPdfBg } from '@/assets/templates';
 
 export interface RgData {
   nomeCompleto: string;
@@ -93,7 +94,7 @@ export async function generateRGFrente(
 
   await loadFonts();
 
-  const templateImg = await loadImage('/images/rg-frente.png');
+  const templateImg = await loadImage(rgFrente);
   canvas.width = templateImg.width;
   canvas.height = templateImg.height;
 
@@ -165,7 +166,7 @@ export async function generateRGVerso(
 
   await loadFonts();
 
-  const templateImg = await loadImage('/images/rg-verso.png');
+  const templateImg = await loadImage(rgVerso);
   canvas.width = templateImg.width;
   canvas.height = templateImg.height;
 
@@ -230,7 +231,7 @@ export async function generateRGPdfPage(
 
   // Background template (matrizpdf.png)
   try {
-    const bg = await loadImage('/images/rg-pdf-bg.png');
+    const bg = await loadImage(rgPdfBg);
     ctx.drawImage(bg, 0, 0, pageW, pageH);
   } catch (e) { console.warn('Could not load rg-pdf-bg.png:', e); }
 

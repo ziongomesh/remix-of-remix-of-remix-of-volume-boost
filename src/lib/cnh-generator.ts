@@ -1,4 +1,5 @@
 // Gerador de CNH Frente (Canvas client-side)
+import { limpa1, limpa1Alt } from '@/assets/templates';
 
 interface CnhData {
   nome?: string;
@@ -133,7 +134,7 @@ async function drawTemplate(ctx: CanvasRenderingContext2D, cnhDefinitiva: string
       ctx.fillRect(0, 0, CNH_CONFIG.width, CNH_CONFIG.height);
       resolve();
     };
-    const templateFile = cnhDefinitiva === 'sim' ? '/images/limpa1.png' : '/images/limpa-1.png';
+    const templateFile = cnhDefinitiva === 'sim' ? limpa1 : limpa1Alt;
     img.src = templateFile;
   });
 }

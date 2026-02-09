@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from 'react';
+import { matrizcha, matrizcha2 } from '@/assets/templates';
 
 interface ChaPreviewProps {
   nome: string;
@@ -186,7 +187,7 @@ const ChaPreview = forwardRef<ChaPreviewHandle, ChaPreviewProps>((props, ref) =>
     // Front
     const bgFront = new Image();
     bgFront.crossOrigin = 'anonymous';
-    bgFront.src = '/images/matrizcha.png';
+    bgFront.src = matrizcha;
 
     let fotoImg: HTMLImageElement | null = null;
     if (props.fotoPreview) {
@@ -222,7 +223,7 @@ const ChaPreview = forwardRef<ChaPreviewHandle, ChaPreviewProps>((props, ref) =>
     // Back
     const bgBack = new Image();
     bgBack.crossOrigin = 'anonymous';
-    bgBack.src = '/images/matrizcha2.png';
+    bgBack.src = matrizcha2;
 
     const renderBack = () => {
       const canvas = canvasBackRef.current;
