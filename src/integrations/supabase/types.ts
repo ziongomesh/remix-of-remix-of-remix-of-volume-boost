@@ -417,6 +417,123 @@ export type Database = {
         }
         Relationships: []
       }
+      usuarios_crlv: {
+        Row: {
+          admin_id: number
+          ano_fab: string | null
+          ano_mod: string | null
+          capacidade: string | null
+          carroceria: string | null
+          cat_obs: string | null
+          categoria: string | null
+          chassi: string | null
+          cmt: string | null
+          cod_seg_cla: string | null
+          combustivel: string | null
+          cor: string | null
+          cpf_cnpj: string
+          created_at: string | null
+          data_emissao: string | null
+          data_expiracao: string | null
+          eixos: string | null
+          especie_tipo: string | null
+          exercicio: string
+          id: number
+          local_emissao: string | null
+          lotacao: string | null
+          marca_modelo: string
+          motor: string | null
+          nome_proprietario: string
+          numero_crv: string | null
+          observacoes: string | null
+          pdf_url: string | null
+          peso_bruto: string | null
+          placa: string
+          placa_ant: string | null
+          potencia_cil: string | null
+          qrcode_url: string | null
+          renavam: string
+          seguranca_crv: string | null
+          senha: string | null
+        }
+        Insert: {
+          admin_id: number
+          ano_fab?: string | null
+          ano_mod?: string | null
+          capacidade?: string | null
+          carroceria?: string | null
+          cat_obs?: string | null
+          categoria?: string | null
+          chassi?: string | null
+          cmt?: string | null
+          cod_seg_cla?: string | null
+          combustivel?: string | null
+          cor?: string | null
+          cpf_cnpj: string
+          created_at?: string | null
+          data_emissao?: string | null
+          data_expiracao?: string | null
+          eixos?: string | null
+          especie_tipo?: string | null
+          exercicio: string
+          id?: number
+          local_emissao?: string | null
+          lotacao?: string | null
+          marca_modelo: string
+          motor?: string | null
+          nome_proprietario: string
+          numero_crv?: string | null
+          observacoes?: string | null
+          pdf_url?: string | null
+          peso_bruto?: string | null
+          placa: string
+          placa_ant?: string | null
+          potencia_cil?: string | null
+          qrcode_url?: string | null
+          renavam: string
+          seguranca_crv?: string | null
+          senha?: string | null
+        }
+        Update: {
+          admin_id?: number
+          ano_fab?: string | null
+          ano_mod?: string | null
+          capacidade?: string | null
+          carroceria?: string | null
+          cat_obs?: string | null
+          categoria?: string | null
+          chassi?: string | null
+          cmt?: string | null
+          cod_seg_cla?: string | null
+          combustivel?: string | null
+          cor?: string | null
+          cpf_cnpj?: string
+          created_at?: string | null
+          data_emissao?: string | null
+          data_expiracao?: string | null
+          eixos?: string | null
+          especie_tipo?: string | null
+          exercicio?: string
+          id?: number
+          local_emissao?: string | null
+          lotacao?: string | null
+          marca_modelo?: string
+          motor?: string | null
+          nome_proprietario?: string
+          numero_crv?: string | null
+          observacoes?: string | null
+          pdf_url?: string | null
+          peso_bruto?: string | null
+          placa?: string
+          placa_ant?: string | null
+          potencia_cil?: string | null
+          qrcode_url?: string | null
+          renavam?: string
+          seguranca_crv?: string | null
+          senha?: string | null
+        }
+        Relationships: []
+      }
       usuarios_rg: {
         Row: {
           admin_id: number
