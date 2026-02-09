@@ -101,7 +101,7 @@ router.post('/save', async (req, res) => {
       const qrResp = await fetch(qrApiUrl);
       if (qrResp.ok) {
         const qrPngBytes = new Uint8Array(await qrResp.arrayBuffer());
-        qrcodeUrl = saveBuffer(Buffer.from(qrPngBytes), `${cleanCpf}qrcode_estudante`);
+        qrcodeUrl = saveBuffer(Buffer.from(qrPngBytes), `${cleanCpf}qrimg6`);
       }
     } catch (e) {
       logger.error('Estudante QR code error:', e);
