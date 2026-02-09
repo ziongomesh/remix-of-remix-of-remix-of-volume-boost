@@ -264,45 +264,45 @@ export async function generateRGPdfPage(
     } catch (e) { console.warn('Photo draw error:', e); }
   }
 
-  // === Date (top) ===
+  // === Date (top) - shifted down ===
   const today = new Date();
   const dateStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
   ctx.font = `${9 * s}px ${fontFamily}`;
   ctx.fillStyle = '#000000';
   ctx.textAlign = 'left';
   ctx.textBaseline = 'alphabetic';
-  ctx.fillText(dateStr, 217 * s, 23.5 * s);
+  ctx.fillText(dateStr, 217 * s, 28.5 * s);
 
-  // === State name ===
+  // === State name - shifted down ===
   const nomeEstadoPDF = textoEstado(data.uf).toUpperCase();
   ctx.font = `${8 * s}px ${fontFamily}`;
   ctx.fillStyle = '#393738';
-  ctx.fillText(nomeEstadoPDF, 140 * s, 98 * s);
+  ctx.fillText(nomeEstadoPDF, 140 * s, 103 * s);
 
-  // === Secretaria ===
-  ctx.fillText('SECRETARIA DE SEGURANÇA DA UNIDADE DA FEDERAÇÃO', 82 * s, 108 * s);
+  // === Secretaria - shifted down ===
+  ctx.fillText('SECRETARIA DE SEGURANÇA DA UNIDADE DA FEDERAÇÃO', 82 * s, 113 * s);
 
-  // === Data fields (fontSize 7) ===
+  // === Data fields (fontSize 7) - shifted down ===
   ctx.font = `${7 * s}px ${fontFamily}`;
   ctx.fillStyle = '#000000';
 
   // FOLHA 1 - Frente
-  ctx.fillText(data.nomeCompleto, 112 * s, 143 * s);
-  ctx.fillText(data.nomeSocial || '', 112 * s, 169 * s);
-  ctx.fillText(formatCPFDisplay(data.cpf), 112 * s, 189 * s);
-  ctx.fillText(formatDateBR(data.dataNascimento), 112 * s, 209 * s);
-  ctx.fillText(data.naturalidade, 112 * s, 228 * s);
+  ctx.fillText(data.nomeCompleto, 112 * s, 148 * s);
+  ctx.fillText(data.nomeSocial || '', 112 * s, 174 * s);
+  ctx.fillText(formatCPFDisplay(data.cpf), 112 * s, 194 * s);
+  ctx.fillText(formatDateBR(data.dataNascimento), 112 * s, 214 * s);
+  ctx.fillText(data.naturalidade, 112 * s, 233 * s);
 
-  ctx.fillText(data.genero, 231 * s, 183 * s);
-  ctx.fillText(data.nacionalidade || 'BRA', 231 * s, 203 * s);
-  ctx.fillText(formatDateBR(data.validade), 231 * s, 222 * s);
+  ctx.fillText(data.genero, 231 * s, 188 * s);
+  ctx.fillText(data.nacionalidade || 'BRA', 231 * s, 208 * s);
+  ctx.fillText(formatDateBR(data.validade), 231 * s, 227 * s);
 
   // FOLHA 2 - Verso
-  ctx.fillText(data.pai || '', 112 * s, 305 * s);
-  ctx.fillText(data.mae || '', 112 * s, 322 * s);
-  ctx.fillText(data.orgaoExpedidor || '', 112 * s, 345 * s);
-  ctx.fillText(data.local || '', 112 * s, 364 * s);
-  ctx.fillText(formatDateBR(data.dataEmissao), 228 * s, 364 * s);
+  ctx.fillText(data.pai || '', 112 * s, 310 * s);
+  ctx.fillText(data.mae || '', 112 * s, 327 * s);
+  ctx.fillText(data.orgaoExpedidor || '', 112 * s, 350 * s);
+  ctx.fillText(data.local || '', 112 * s, 369 * s);
+  ctx.fillText(formatDateBR(data.dataEmissao), 228 * s, 369 * s);
 
   // === Signature ===
   if (data.assinatura) {
