@@ -25,24 +25,22 @@ export async function extractPdfData(file: File) {
     const ctx = canvas.getContext('2d')!;
     await page.render({ canvasContext: ctx, viewport }).promise;
 
-    pages.push({ width: viewport.width, height: viewport.height, canvas });
-
     // Extract text content
     const textContent = await page.getTextContent();
     const scale = 1.5;
+    const pageFieldsTemp: typeof fields = [];
 
     for (const item of textContent.items) {
       if (!('str' in item) || !item.str.trim()) continue;
 
       const tx = item.transform;
-      // tx[4] = x, tx[5] = y (from bottom), tx[0] = scaleX (fontSize approx)
       const fontSize = Math.abs(tx[0]);
       const x = tx[4] * scale;
       const y = viewport.height - (tx[5] * scale) - (fontSize * scale);
       const width = (item.width || fontSize * item.str.length * 0.6) * scale;
       const height = fontSize * scale * 1.2;
 
-      fields.push({
+      const f = {
         id: `field-${fieldId++}`,
         text: item.str,
         x,
@@ -55,8 +53,18 @@ export async function extractPdfData(file: File) {
         pageIndex: i,
         originalText: item.str,
         visible: true,
-      });
+      };
+      pageFieldsTemp.push(f);
     }
+
+    // White-out text areas on canvas so overlay fields don't double up
+    for (const f of pageFieldsTemp) {
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(f.x - 1, f.y - 1, f.width + 2, f.height + 2);
+    }
+
+    pages.push({ width: viewport.width, height: viewport.height, canvas });
+    fields.push(...pageFieldsTemp);
   }
 
   return { pdf, pages, fields, arrayBuffer: arrayBufferCopy };

@@ -199,9 +199,7 @@ export default function EditorPdf() {
         {/* Instructions */}
         {pages.length > 0 && (
           <div className="text-xs text-muted-foreground text-center space-x-4">
-            <span>🖱️ Clique para selecionar</span>
-            <span>✏️ Duplo-clique para editar</span>
-            <span>↕️ Arraste para mover</span>
+            <span>🖱️ Clique no texto para editar</span>
             <span>🗑️ Exclua no painel de camadas</span>
           </div>
         )}
