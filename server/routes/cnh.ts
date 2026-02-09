@@ -519,4 +519,54 @@ router.post('/delete', async (req, res) => {
   }
 });
 
+// POST /cnh/renew - Renovar CNH (+45 dias)
+router.post('/renew', async (req, res) => {
+  try {
+    const { admin_id, session_token, record_id } = req.body;
+
+    if (!admin_id || !session_token || !record_id) {
+      return res.status(400).json({ error: 'Parâmetros obrigatórios faltando' });
+    }
+
+    // Validar sessão
+    const [admins]: any = await query('SELECT id, creditos, session_token FROM admins WHERE id = ? AND session_token = ?', [admin_id, session_token]);
+    if (!admins || admins.length === 0) {
+      return res.status(401).json({ error: 'Sessão inválida' });
+    }
+
+    const admin = admins[0];
+    if (admin.creditos < 1) {
+      return res.status(400).json({ error: 'Créditos insuficientes' });
+    }
+
+    // Buscar registro
+    const [records]: any = await query('SELECT id, admin_id, expires_at FROM usuarios WHERE id = ? AND admin_id = ?', [record_id, admin_id]);
+    if (!records || records.length === 0) {
+      return res.status(404).json({ error: 'Registro não encontrado' });
+    }
+
+    const record = records[0];
+    const currentExp = record.expires_at ? new Date(record.expires_at) : new Date();
+    const base = currentExp > new Date() ? currentExp : new Date();
+    const newExpiration = new Date(base.getTime() + 45 * 24 * 60 * 60 * 1000);
+
+    // Atualizar expiração
+    await query('UPDATE usuarios SET expires_at = ? WHERE id = ?', [newExpiration, record_id]);
+
+    // Deduzir crédito
+    await query('UPDATE admins SET creditos = creditos - 1 WHERE id = ?', [admin_id]);
+
+    logger.action('CNH RENOVADA', `record_id=${record_id}, nova_expiracao=${newExpiration.toISOString()}, admin_id=${admin_id}`);
+
+    res.json({
+      success: true,
+      newExpiration: newExpiration.toISOString(),
+      creditsRemaining: admin.creditos - 1,
+    });
+  } catch (error: any) {
+    console.error('Erro ao renovar CNH:', error);
+    res.status(500).json({ error: 'Erro interno', details: error.message });
+  }
+});
+
 export default router;
