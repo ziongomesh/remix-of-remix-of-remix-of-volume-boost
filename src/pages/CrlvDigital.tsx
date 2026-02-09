@@ -129,7 +129,7 @@ export default function CrlvDigital() {
       catObs: '***',
       carroceria: 'SEDAN',
       chassi: generateChassi(),
-      placaAnt: '*******/**',
+      placaAnt: '*.*',
       potenciaCil: '177CV / 2755CC',
       capacidade: '1.00T',
       lotacao: '05',
