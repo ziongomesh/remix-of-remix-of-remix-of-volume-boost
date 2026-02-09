@@ -14,7 +14,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function EditorPdf() {
   const [fields, setFields] = useState<PdfTextField[]>([]);
-  const [pages, setPages] = useState<{ width: number; height: number; canvas: HTMLCanvasElement }[]>([]);
+  const [pages, setPages] = useState<{ width: number; height: number; canvas: HTMLCanvasElement; bgCanvas: HTMLCanvasElement }[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [pdfBytes, setPdfBytes] = useState<ArrayBuffer | null>(null);
@@ -173,6 +173,7 @@ export default function EditorPdf() {
                 <div className="p-6 flex justify-center">
                   <PdfCanvas
                     pageCanvas={pages[currentPage]?.canvas || null}
+                    bgCanvas={pages[currentPage]?.bgCanvas || null}
                     fields={fields}
                     selectedId={selectedId}
                     onSelect={setSelectedId}
