@@ -487,8 +487,10 @@ router.post('/update', async (req, res) => {
       }
 
       const embedBase64Pdf = async (b64: string) => {
+        const isJpeg = b64.startsWith('data:image/jpeg') || b64.startsWith('data:image/jpg');
         const clean = b64.replace(/^data:image\/\w+;base64,/, '');
-        return await pdfDoc.embedPng(Buffer.from(clean, 'base64'));
+        const buf = Buffer.from(clean, 'base64');
+        return isJpeg ? await pdfDoc.embedJpg(buf) : await pdfDoc.embedPng(buf);
       };
 
       // QR
