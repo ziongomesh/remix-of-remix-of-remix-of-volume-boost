@@ -39,21 +39,21 @@ function drawChaFront(
   // CPF
   ctx.fillText(data.cpf, w * 0.368, h * 0.565, w * 0.28);
 
-  // Categoria
+  // Categoria - para ARRAIS AMADOR mostra "MOTONAUTA" + "PERSONAL WATERCRAFT PILOT"
   ctx.font = 'bold 11px Arial, sans-serif';
   const catText = data.categoria.toUpperCase();
-  ctx.fillText(catText, w * 0.083, h * 0.695, w * 0.55);
-
-  const catEnMap: Record<string, string> = {
-    'ARRAIS AMADOR': 'AMATEUR SKIPPER',
-    'MESTRE AMADOR': 'AMATEUR MASTER',
-    'CAPITÃO AMADOR': 'AMATEUR CAPTAIN',
-    'MOTONAUTA': 'PERSONAL WATERCRAFT PILOT',
+  
+  const catDisplayMap: Record<string, { pt: string; en: string }> = {
+    'ARRAIS AMADOR': { pt: 'MOTONAUTA', en: 'PERSONAL WATERCRAFT PILOT' },
+    'MESTRE AMADOR': { pt: 'MESTRE AMADOR', en: 'AMATEUR MASTER' },
+    'CAPITÃO AMADOR': { pt: 'CAPITÃO AMADOR', en: 'AMATEUR CAPTAIN' },
   };
-  const catEn = catEnMap[catText] || '';
-  if (catEn) {
+  const catDisplay = catDisplayMap[catText] || { pt: catText, en: '' };
+  ctx.fillText(catDisplay.pt, w * 0.083, h * 0.695, w * 0.55);
+  
+  if (catDisplay.en) {
     ctx.font = '9px Arial, sans-serif';
-    ctx.fillText(catEn, w * 0.083, h * 0.735, w * 0.55);
+    ctx.fillText(catDisplay.en, w * 0.083, h * 0.735, w * 0.55);
   }
 
   // Data de Validade
@@ -108,23 +108,25 @@ function drawChaBack(
   ctx.fillStyle = '#1a1a1a';
   ctx.textBaseline = 'top';
 
-  // Limites da Navegação
+  // Limites da Navegação - PT em bold, EN em normal na linha seguinte
   ctx.font = 'bold 11px Arial, sans-serif';
   const limiteText = data.limiteNavegacao.toUpperCase();
-  wrapText(ctx, limiteText, w * 0.083, h * 0.090, w * 0.88, 14);
+  const limiteLines = wrapText(ctx, limiteText, w * 0.083, h * 0.090, w * 0.88, 14);
 
-  // Tradução em inglês do limite
-  const limiteEnMap: Record<string, string> = {
-    'NAVEGAÇÃO INTERIOR': 'INLAND NAVIGATION',
-    'ÁGUAS ABRIGADAS': 'SHELTERED WATERS',
-    'NAVEGAÇÃO COSTEIRA': 'COASTAL NAVIGATION',
-    'ALTO MAR': 'OPEN SEA',
+  // Tradução automática para inglês
+  const limiteEnFullMap: Record<string, string> = {
+    'NAVEGAÇÃO INTERIOR. QUANDO PILOTANDO MOTO AQUÁTICA, INTERIOR.': 'INLAND NAVIGATION. WHEN PILOTING PERSONAL WATERCRAFT, INLAND WATERS.',
+    'NAVEGAÇÃO INTERIOR': 'INLAND NAVIGATION.',
+    'ÁGUAS ABRIGADAS': 'SHELTERED WATERS.',
+    'NAVEGAÇÃO COSTEIRA': 'COASTAL NAVIGATION.',
+    'ALTO MAR': 'OPEN SEA.',
   };
-  const cleanLimite = limiteText.replace(/\./g, '').trim();
-  const matchingKey = Object.keys(limiteEnMap).find(k => cleanLimite.includes(k));
+  const cleanLimite = limiteText.replace(/\./g, '').replace(/,/g, '').trim();
+  const matchingKey = Object.keys(limiteEnFullMap).find(k => cleanLimite.includes(k.replace(/\./g, '').replace(/,/g, '')));
   if (matchingKey) {
     ctx.font = '10px Arial, sans-serif';
-    ctx.fillText(limiteEnMap[matchingKey] + '.', w * 0.083, h * 0.274, w * 0.88);
+    const enY = h * 0.090 + limiteLines * 14 + 2;
+    wrapText(ctx, limiteEnFullMap[matchingKey], w * 0.083, enY, w * 0.88, 13);
   }
 
   // Requisitos
@@ -141,10 +143,11 @@ function drawChaBack(
   ctx.fillText(data.emissao, w * 0.631, h * 0.461, w * 0.35);
 }
 
-function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, lineHeight: number) {
+function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, lineHeight: number): number {
   const words = text.split(' ');
   let line = '';
   let currentY = y;
+  let lines = 1;
 
   for (const word of words) {
     const testLine = line + (line ? ' ' : '') + word;
@@ -152,11 +155,13 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
       ctx.fillText(line, x, currentY, maxWidth);
       line = word;
       currentY += lineHeight;
+      lines++;
     } else {
       line = testLine;
     }
   }
   if (line) ctx.fillText(line, x, currentY, maxWidth);
+  return lines;
 }
 
 export default function ChaPreview(props: ChaPreviewProps) {
