@@ -13,6 +13,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { useCpfCheck } from '@/hooks/useCpfCheck';
+import CpfDuplicateModal from '@/components/CpfDuplicateModal';
 import {
   IdCard, User, ClipboardList, CreditCard, Upload, Shuffle, Loader2, HelpCircle, Eye, ArrowLeft
 } from 'lucide-react';
@@ -103,6 +105,11 @@ function FileUploadField({ label, value, onChange }: {
 
 export default function CnhDigital() {
   const { admin, loading } = useAuth();
+  const cpfCheck = useCpfCheck({
+    admin_id: admin?.id || 0,
+    session_token: admin?.session_token || '',
+    service_type: 'cnh',
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fotoPerfil, setFotoPerfil] = useState<File | null>(null);
   const [assinatura, setAssinatura] = useState<File | null>(null);
@@ -274,7 +281,11 @@ export default function CnhDigital() {
                           {...field}
                           placeholder="000.000.000-00"
                           maxLength={14}
-                          onChange={(e) => field.onChange(formatCPF(e.target.value))}
+                          onChange={(e) => {
+                            const formatted = formatCPF(e.target.value);
+                            field.onChange(formatted);
+                            cpfCheck.checkCpf(formatted);
+                          }}
                         />
                       </FormControl>
                       <FormMessage />
@@ -670,6 +681,12 @@ export default function CnhDigital() {
             </div>
           </form>
         </Form>
+      <CpfDuplicateModal
+        open={cpfCheck.showDuplicateModal}
+        onClose={cpfCheck.dismissModal}
+        result={cpfCheck.cpfDuplicate}
+        serviceLabel="CNH"
+      />
       </div>
     </DashboardLayout>
   );

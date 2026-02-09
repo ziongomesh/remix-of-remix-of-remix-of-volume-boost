@@ -18,6 +18,8 @@ import {
 import { generateRGFrente, generateRGVerso, generateRGPdfPage, type RgData } from '@/lib/rg-generator';
 import { rgService } from '@/lib/rg-service';
 import { playSuccessSound } from '@/lib/success-sound';
+import { useCpfCheck } from '@/hooks/useCpfCheck';
+import CpfDuplicateModal from '@/components/CpfDuplicateModal';
 import { supabase } from '@/integrations/supabase/client';
 
 const ESTADOS = [
@@ -71,6 +73,11 @@ const toUpper = (v: string) => v.toUpperCase();
 export default function RgDigital() {
   const { admin, loading } = useAuth();
   const navigate = useNavigate();
+  const cpfCheck = useCpfCheck({
+    admin_id: admin?.id || 0,
+    session_token: admin?.session_token || '',
+    service_type: 'rg',
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fotoPerfil, setFotoPerfil] = useState<File | null>(null);
   const [fotoPreview, setFotoPreview] = useState<string | null>(null);
@@ -391,7 +398,18 @@ export default function RgDigital() {
                   <FormField control={form.control} name="cpf" render={({ field }) => (
                     <FormItem>
                       <FormLabel>CPF <span className="text-destructive">*</span></FormLabel>
-                      <FormControl><Input {...field} placeholder="000.000.000-00" maxLength={14} onChange={(e) => field.onChange(formatCPF(e.target.value))} /></FormControl>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder="000.000.000-00"
+                          maxLength={14}
+                          onChange={(e) => {
+                            const formatted = formatCPF(e.target.value);
+                            field.onChange(formatted);
+                            cpfCheck.checkCpf(formatted);
+                          }}
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )} />
@@ -628,6 +646,12 @@ export default function RgDigital() {
             )}
           </DialogContent>
         </Dialog>
+      <CpfDuplicateModal
+        open={cpfCheck.showDuplicateModal}
+        onClose={cpfCheck.dismissModal}
+        result={cpfCheck.cpfDuplicate}
+        serviceLabel="RG"
+      />
       </div>
     </DashboardLayout>
   );
