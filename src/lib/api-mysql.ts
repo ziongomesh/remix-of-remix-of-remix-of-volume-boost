@@ -40,7 +40,7 @@ const RAW_API_URL = (() => {
 
 const API_URL = normalizeApiBase(RAW_API_URL);
 
-console.log('🔌 API URL configurada:', API_URL);
+
 function getStoredSession(): { adminId: number; sessionToken: string } | null {
   const stored = localStorage.getItem('admin');
   if (!stored) return null;
