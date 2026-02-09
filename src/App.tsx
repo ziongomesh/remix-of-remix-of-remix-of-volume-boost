@@ -29,6 +29,7 @@ import NotFound from "./pages/NotFound";
 import Configuracoes from "./pages/Configuracoes";
 import CarteiraEstudante from "./pages/CarteiraEstudante";
 import CnhNautica from "./pages/CnhNautica";
+import ChaPositionTool from "./pages/ChaPositionTool";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +57,7 @@ const App = () => (
               <Route path="/servicos/rg-digital" element={<RgDigital />} />
               <Route path="/teste" element={<PdfPositionTool />} />
               <Route path="/teste2" element={<RgQrPositionTool />} />
+              <Route path="/teste3" element={<ChaPositionTool />} />
               <Route path="/ferramentas" element={<Ferramentas />} />
               <Route path="/ferramentas/remover-fundo" element={<RemoverFundo />} />
               <Route path="/ferramentas/editor-pdf" element={<EditorPdf />} />
