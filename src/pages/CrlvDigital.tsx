@@ -16,6 +16,7 @@ import {
   Car, User, Loader2, ArrowLeft, Shuffle, Wrench, FileText, Eye, ClipboardList, QrCode, Upload, X
 } from 'lucide-react';
 import { CrlvPreview } from '@/components/crlv/CrlvPreview';
+import { CrlvPdfEditor } from '@/components/crlv/CrlvPdfEditor';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import {
@@ -643,43 +644,13 @@ export default function CrlvDigital() {
           </form>
         </Form>
 
-        {/* PDF PREVIEW after generation */}
+        {/* PDF PREVIEW + EDITOR after generation */}
         {generatedPdfUrl && (
-          <Card className="mt-6">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Eye className="h-4 w-4 text-primary" />
-                  Preview do CRLV Gerado
-                </CardTitle>
-                <div className="flex items-center gap-2">
-                  {generatedSenha && (
-                    <span className="text-xs text-muted-foreground">Senha: <strong>{generatedSenha}</strong></span>
-                  )}
-                  <a href={generatedPdfUrl} target="_blank" rel="noopener noreferrer">
-                    <Button variant="outline" size="sm" className="gap-1">
-                      <FileText className="h-3.5 w-3.5" /> Abrir PDF
-                    </Button>
-                  </a>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => { setGeneratedPdfUrl(null); setGeneratedSenha(null); }}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <iframe
-                src={generatedPdfUrl}
-                className="w-full rounded-lg border border-border"
-                style={{ height: '80vh' }}
-                title="Preview CRLV"
-              />
-            </CardContent>
-          </Card>
+          <CrlvPdfEditor
+            pdfUrl={generatedPdfUrl}
+            senha={generatedSenha}
+            onClose={() => { setGeneratedPdfUrl(null); setGeneratedSenha(null); }}
+          />
         )}
           </div>
 
