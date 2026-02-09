@@ -103,7 +103,7 @@ export async function generateRGFrente(
   ctx.font = '21px "Noto Sans", Tahoma, Arial, sans-serif';
   ctx.fillStyle = '#4A4A4D';
   ctx.textAlign = 'center';
-  ctx.fillText(textoEstado(data.uf), canvas.width / 2 + 20, 150);
+  ctx.fillText(textoEstado(data.uf), canvas.width / 2 + 30, 150);
   ctx.fillText('Secretaria de Segurança Pública da Unidade de Federação', canvas.width / 2, 175);
 
   // Foto
@@ -248,15 +248,15 @@ export async function generateRGPdfPage(
   const dateStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
   ctx.font = `${8 * scale}px ${fontFamily}`;
   ctx.fillStyle = '#666666';
-  ctx.fillText('Compartilhado pelo aplicativo ', mmToPx(13), mmToPx(16.5));
+  ctx.fillText('Compartilhado pelo aplicativo ', mmToPx(13), mmToPx(18));
   const w1 = ctx.measureText('Compartilhado pelo aplicativo ').width;
   ctx.font = `bold ${8 * scale}px ${fontFamily}`;
   ctx.fillStyle = '#262626';
-  ctx.fillText('gov.br', mmToPx(13) + w1, mmToPx(16.5));
+  ctx.fillText('gov.br', mmToPx(13) + w1, mmToPx(18));
   const w2 = ctx.measureText('gov.br').width;
   ctx.font = `${8 * scale}px ${fontFamily}`;
   ctx.fillStyle = '#666666';
-  ctx.fillText(` em ${dateStr}`, mmToPx(13) + w1 + w2, mmToPx(16.5));
+  ctx.fillText(` em ${dateStr}`, mmToPx(13) + w1 + w2, mmToPx(18));
 
   // gov.br top right
   ctx.font = `bold ${10 * scale}px ${fontFamily}`;

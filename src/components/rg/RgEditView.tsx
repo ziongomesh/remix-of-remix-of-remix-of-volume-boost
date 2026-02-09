@@ -153,9 +153,12 @@ export default function RgEditView({ registro, onClose, onSaved }: RgEditViewPro
       let assinaturaFile: File | string | undefined = newAssinatura || undefined;
       if (!assinaturaFile && assinaturaUrl) {
         try {
+          console.log('✍️ Fetching assinatura from record URL:', assinaturaUrl);
           const resp = await fetch(assinaturaUrl);
+          console.log('✍️ Assinatura fetch status:', resp.status, resp.ok);
           if (resp.ok) {
             const blob = await resp.blob();
+            console.log('✍️ Assinatura blob size:', blob.size);
             assinaturaFile = new File([blob], 'assinatura.png', { type: 'image/png' });
           }
         } catch (e) { console.warn('Could not fetch assinatura from record URL:', e); }
@@ -165,13 +168,16 @@ export default function RgEditView({ registro, onClose, onSaved }: RgEditViewPro
         try {
           const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
           const assUrl = `${supabaseUrl}/storage/v1/object/public/uploads/rg_${cleanCpf}_assinatura.png`;
+          console.log('✍️ Fetching assinatura from storage fallback:', assUrl);
           const resp = await fetch(assUrl);
+          console.log('✍️ Storage fallback status:', resp.status, resp.ok);
           if (resp.ok) {
             const blob = await resp.blob();
             assinaturaFile = new File([blob], 'assinatura.png', { type: 'image/png' });
           }
         } catch (e) { console.warn('Could not fetch signature from storage:', e); }
       }
+      console.log('✍️ Final assinaturaFile:', assinaturaFile ? 'found' : 'NOT FOUND');
 
       const rgData: RgData = {
         nomeCompleto: form.nomeCompleto,
