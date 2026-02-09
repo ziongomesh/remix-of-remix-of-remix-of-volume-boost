@@ -9,8 +9,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Slider } from '@/components/ui/slider';
 import { Navigate } from 'react-router-dom';
 import api from '@/lib/api';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { CreditCard, Tag, QrCode, Loader2, Clock, CheckCircle, XCircle, History, RefreshCw, TrendingDown, Bitcoin, Star, Crown, Gem, Info } from 'lucide-react';
+import { CreditCard, Tag, QrCode, Loader2, Clock, CheckCircle, XCircle, History, RefreshCw, TrendingDown, Bitcoin, Star, Crown, Gem, Info, MessageCircle, User } from 'lucide-react';
 import ReactCanvasConfetti from 'react-canvas-confetti';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -207,7 +208,12 @@ export default function Recarregar() {
     return <Navigate to="/login" replace />;
   }
 
-  if (role !== 'master') {
+  // Revendedor: mostrar tela de contato com master
+  if (role === 'revendedor') {
+    return <ResellerRechargeView adminId={admin.id} sessionToken={admin.session_token} credits={credits} />;
+  }
+
+  if (role !== 'master' && role !== 'dono') {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -785,6 +791,102 @@ export default function Recarregar() {
           zIndex: 9999
         }}
       />
+    </DashboardLayout>
+  );
+}
+
+// ======== Reseller Recharge View ========
+function ResellerRechargeView({ adminId, sessionToken, credits }: { adminId: number; sessionToken: string; credits: number }) {
+  const [creatorName, setCreatorName] = useState<string | null>(null);
+  const [loadingCreator, setLoadingCreator] = useState(true);
+
+  useEffect(() => {
+    const fetchCreator = async () => {
+      try {
+        const { data, error } = await supabase.rpc('get_creator_name', {
+          p_admin_id: adminId,
+          p_session_token: sessionToken,
+        });
+        if (!error && data && data.length > 0) {
+          setCreatorName(data[0].creator_name);
+        }
+      } catch (err) {
+        console.error('Erro ao buscar criador:', err);
+      } finally {
+        setLoadingCreator(false);
+      }
+    };
+    fetchCreator();
+  }, [adminId, sessionToken]);
+
+  return (
+    <DashboardLayout>
+      <div className="space-y-6 animate-fade-in max-w-2xl mx-auto">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Recarregar Créditos</h1>
+          <p className="text-sm text-muted-foreground mt-1">Solicite créditos ao seu master</p>
+        </div>
+
+        {/* Saldo atual */}
+        <Card>
+          <CardContent className="p-6 flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Seu saldo atual</p>
+              <p className="text-3xl font-bold text-primary">{credits}</p>
+              <p className="text-xs text-muted-foreground">créditos disponíveis</p>
+            </div>
+            <div className="h-14 w-14 rounded-xl bg-primary/10 flex items-center justify-center">
+              <CreditCard className="h-7 w-7 text-primary" />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Contato com Master */}
+        <Card className="border-primary/30">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <MessageCircle className="h-5 w-5 text-primary" />
+              Como recarregar?
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="bg-muted/50 rounded-xl p-5 space-y-3">
+              <p className="text-sm text-foreground leading-relaxed">
+                Para recarregar seus créditos, entre em contato com o <strong>master</strong> que criou o seu acesso e solicite a recarga.
+              </p>
+              
+              {loadingCreator ? (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Buscando informações...
+                </div>
+              ) : creatorName ? (
+                <div className="flex items-center gap-3 bg-card border border-border rounded-lg p-4">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <User className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Seu Master</p>
+                    <p className="font-semibold text-foreground">{creatorName}</p>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground italic">Não foi possível identificar o master responsável.</p>
+              )}
+
+              <div className="border-t border-border pt-3 space-y-2">
+                <p className="text-xs text-muted-foreground font-medium">Passos para recarregar:</p>
+                <ol className="text-sm text-muted-foreground space-y-1.5 list-decimal list-inside">
+                  <li>Entre em contato com seu master</li>
+                  <li>Informe a quantidade de créditos desejada</li>
+                  <li>Realize o pagamento conforme combinado</li>
+                  <li>Aguarde a transferência dos créditos</li>
+                </ol>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </DashboardLayout>
   );
 }
