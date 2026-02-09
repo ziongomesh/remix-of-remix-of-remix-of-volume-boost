@@ -1,7 +1,8 @@
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ImageMinus, FileText, PenLine } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 
 const tools = [
   {
@@ -28,6 +29,11 @@ const tools = [
 ];
 
 export default function Ferramentas() {
+  const { admin, loading } = useAuth();
+
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-background"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
+  if (!admin) return <Navigate to="/login" replace />;
+
   return (
     <DashboardLayout>
       <div className="space-y-6">

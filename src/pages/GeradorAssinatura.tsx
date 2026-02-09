@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Download, PenLine, ArrowLeft } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 
 const FONTS = [
@@ -18,10 +19,14 @@ const FONTS = [
 const GOOGLE_FONTS_URL = `https://fonts.googleapis.com/css2?${FONTS.map(f => `family=${f.name.replace(/ /g, '+')}`).join('&')}&display=swap`;
 
 export default function GeradorAssinatura() {
+  const { admin, loading: authLoading } = useAuth();
   const [nome, setNome] = useState('');
   const [selectedFont, setSelectedFont] = useState(FONTS[0]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [fontsLoaded, setFontsLoaded] = useState(false);
+
+  if (authLoading) return <div className="min-h-screen flex items-center justify-center bg-background"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
+  if (!admin) return <Navigate to="/login" replace />;
 
   // Load Google Fonts
   useEffect(() => {
