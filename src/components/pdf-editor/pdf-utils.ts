@@ -30,13 +30,22 @@ export async function extractPdfData(file: File) {
     const scale = 1.5;
     const pageFieldsTemp: typeof fields = [];
 
+    // Collect all unique font names for debugging
+    const uniqueFonts = new Set<string>();
+    for (const item of textContent.items) {
+      if ('fontName' in item) uniqueFonts.add(item.fontName || 'unknown');
+    }
+    console.log(`[PDF] Page ${i + 1} fonts:`, Array.from(uniqueFonts));
+
     for (const item of textContent.items) {
       if (!('str' in item) || !item.str.trim()) continue;
 
       const fontName = (item.fontName || '').toLowerCase();
-      // Only extract fields using FreeMono/Courier (editable data fields)
-      // Skip template labels (Helvetica, Arial, etc.)
-      const isEditableFont = fontName.includes('mono') || fontName.includes('courier') || fontName.includes('free');
+      // Log each field's font for debugging
+      // Only extract fields using FreeMono/Courier or custom embedded fonts (g_d0_fX pattern from pdf-lib)
+      // Skip known template fonts (Helvetica, Arial, Times, etc.)
+      const isTemplateFont = fontName.includes('helvetica') || fontName.includes('arial') || fontName.includes('times') || fontName.includes('calibri');
+      const isEditableFont = !isTemplateFont;
       if (!isEditableFont) continue;
 
       const tx = item.transform;
