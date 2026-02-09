@@ -18,6 +18,7 @@ import {
 import { generateRGFrente, generateRGVerso, type RgData } from '@/lib/rg-generator';
 import { rgService } from '@/lib/rg-service';
 import { playSuccessSound } from '@/lib/success-sound';
+import { supabase } from '@/integrations/supabase/client';
 
 const ESTADOS = [
   { value: "AC", label: "Acre" }, { value: "AL", label: "Alagoas" },
@@ -78,6 +79,13 @@ export default function RgDigital() {
   const [previewData, setPreviewData] = useState<RgFormData | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [rgInfo, setRgInfo] = useState<{ cpf: string; senha: string; pdf: string | null } | null>(null);
+  const [downloadLinks, setDownloadLinks] = useState<{ govbr_iphone: string; govbr_apk: string }>({ govbr_iphone: '', govbr_apk: '' });
+
+  useEffect(() => {
+    supabase.from('downloads').select('govbr_iphone, govbr_apk').eq('id', 1).maybeSingle().then(({ data }) => {
+      if (data) setDownloadLinks({ govbr_iphone: data.govbr_iphone || '', govbr_apk: data.govbr_apk || '' });
+    });
+  }, []);
 
   const frenteCanvasRef = useRef<HTMLCanvasElement>(null);
   const versoCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -538,13 +546,21 @@ export default function RgDigital() {
                 </Button>
                 <div className="flex gap-3">
                   <Button variant="outline" className="flex-1" onClick={() => {
-                    window.open('https://www.mediafire.com/file/bekdtw54t81o0gq/Carteira+Identidade+Nacional.apk/file', '_blank');
+                    if (downloadLinks.govbr_apk) {
+                      window.open(downloadLinks.govbr_apk, '_blank');
+                    } else {
+                      toast.error('Link APK não configurado');
+                    }
                   }}>
                     <Smartphone className="h-4 w-4 mr-2" /> App Android
                   </Button>
                   <Button variant="outline" className="flex-1" onClick={() => {
-                    navigator.clipboard.writeText('https://consulta-rgdigital-vio.info/acesso.php?chave=4837834dsadsaasdsadhj');
-                    toast.success('Link iPhone copiado!');
+                    if (downloadLinks.govbr_iphone) {
+                      navigator.clipboard.writeText(downloadLinks.govbr_iphone);
+                      toast.success('Link iPhone copiado!');
+                    } else {
+                      toast.error('Link iPhone não configurado');
+                    }
                   }}>
                     <Copy className="h-4 w-4 mr-2" /> Link iPhone
                   </Button>
