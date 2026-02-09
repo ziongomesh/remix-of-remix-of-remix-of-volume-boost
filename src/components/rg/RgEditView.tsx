@@ -117,37 +117,42 @@ export default function RgEditView({ registro, onClose, onSaved }: RgEditViewPro
     setChangedMatrices(changed);
   }, [form, newFoto, newAssinatura]);
 
-  const handleRegenerate = async () => {
-    if (changedMatrices.size === 0) {
-      toast.info('Nenhuma alteração detectada');
-      return;
-    }
+  // Auto-generate preview on mount
+  const [initialGenerated, setInitialGenerated] = useState(false);
+  useEffect(() => {
+    if (initialGenerated) return;
+    setInitialGenerated(true);
+    const timer = setTimeout(() => {
+      regenerateAll();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [initialGenerated]);
 
+  const regenerateAll = async () => {
     setRegenerating(true);
     try {
-      let fotoFile: File | string | undefined = newFoto || undefined;
-      if (!fotoFile && changedMatrices.has('frente') && registro.foto_url) {
-        const resp = await fetch(registro.foto_url);
-        const blob = await resp.blob();
-        fotoFile = new File([blob], 'foto.png', { type: 'image/png' });
-      }
-
-      let assinaturaFile: File | string | undefined = newAssinatura || undefined;
-      if (!assinaturaFile && (changedMatrices.has('frente') || changedMatrices.has('verso'))) {
-        // Try to fetch existing signature
-        const cleanCpf = registro.cpf.replace(/\D/g, '');
+      let fotoFile: File | string | undefined;
+      if (registro.foto_url) {
         try {
-          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-          const assUrl = `${supabaseUrl}/storage/v1/object/public/uploads/rg_${cleanCpf}_assinatura.png`;
-          const resp = await fetch(assUrl);
+          const resp = await fetch(registro.foto_url);
           if (resp.ok) {
             const blob = await resp.blob();
-            assinaturaFile = new File([blob], 'assinatura.png', { type: 'image/png' });
+            fotoFile = new File([blob], 'foto.png', { type: 'image/png' });
           }
-        } catch (e) {
-          console.warn('Could not fetch existing signature:', e);
-        }
+        } catch (e) { console.warn('Could not fetch foto:', e); }
       }
+
+      let assinaturaFile: File | string | undefined;
+      const cleanCpf = registro.cpf.replace(/\D/g, '');
+      try {
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const assUrl = `${supabaseUrl}/storage/v1/object/public/uploads/rg_${cleanCpf}_assinatura.png`;
+        const resp = await fetch(assUrl);
+        if (resp.ok) {
+          const blob = await resp.blob();
+          assinaturaFile = new File([blob], 'assinatura.png', { type: 'image/png' });
+        }
+      } catch (e) { console.warn('Could not fetch signature:', e); }
 
       const rgData: RgData = {
         nomeCompleto: form.nomeCompleto,
@@ -168,13 +173,12 @@ export default function RgEditView({ registro, onClose, onSaved }: RgEditViewPro
         assinatura: assinaturaFile,
       };
 
-      if (changedMatrices.has('frente') && canvasFrenteRef.current) {
+      if (canvasFrenteRef.current) {
         await generateRGFrente(canvasFrenteRef.current, rgData);
         setPreviewUrls(prev => ({ ...prev, frente: canvasFrenteRef.current!.toDataURL('image/png') }));
       }
 
-      if (changedMatrices.has('verso') && canvasVersoRef.current) {
-        const cleanCpf = registro.cpf.replace(/\D/g, '');
+      if (canvasVersoRef.current) {
         const senha = cleanCpf.slice(-6);
         const qrPayload = JSON.stringify({
           url: `https://govbr.consulta-rgdigital-vio.info/qr/index.php?cpf=${cleanCpf}`,
@@ -190,14 +194,20 @@ export default function RgEditView({ registro, onClose, onSaved }: RgEditViewPro
         await generateRGVerso(canvasVersoRef.current, rgData, qrPreviewUrl);
         setPreviewUrls(prev => ({ ...prev, verso: canvasVersoRef.current!.toDataURL('image/png') }));
       }
-
-      toast.success(`Preview regenerado: ${[...changedMatrices].join(', ')}`);
     } catch (err: any) {
-      console.error('Erro ao regenerar:', err);
-      toast.error('Erro ao regenerar preview');
+      console.error('Erro ao gerar preview inicial:', err);
     } finally {
       setRegenerating(false);
     }
+  };
+
+  const handleRegenerate = async () => {
+    if (changedMatrices.size === 0) {
+      toast.info('Nenhuma alteração detectada');
+      return;
+    }
+    await regenerateAll();
+    toast.success(`Preview regenerado: ${[...changedMatrices].join(', ')}`);
   };
 
   const handleSave = async () => {
@@ -209,9 +219,12 @@ export default function RgEditView({ registro, onClose, onSaved }: RgEditViewPro
 
     setSaving(true);
     try {
-      const rgFrenteBase64 = changedMatrices.has('frente') && canvasFrenteRef.current
+      // Auto-regenerate before saving to ensure canvas has content
+      await regenerateAll();
+
+      const rgFrenteBase64 = canvasFrenteRef.current
         ? canvasFrenteRef.current.toDataURL('image/png') : '';
-      const rgVersoBase64 = changedMatrices.has('verso') && canvasVersoRef.current
+      const rgVersoBase64 = canvasVersoRef.current
         ? canvasVersoRef.current.toDataURL('image/png') : '';
 
       let fotoBase64 = '';
@@ -249,7 +262,7 @@ export default function RgEditView({ registro, onClose, onSaved }: RgEditViewPro
         orgaoExpedidor: form.orgaoExpedidor,
         pai: form.pai,
         mae: form.mae,
-        changedMatrices: [...changedMatrices],
+        changedMatrices: ['frente', 'verso'],
         rgFrenteBase64,
         rgVersoBase64,
         fotoBase64,
