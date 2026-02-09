@@ -279,6 +279,7 @@ export default function RgEditView({ registro, onClose, onSaved }: RgEditViewPro
         });
         const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrPayload)}&format=png&ecc=M`;
         pdfPageBase64 = await generateRGPdfPage(canvasFrenteRef.current, canvasVersoRef.current, qrUrl);
+        console.log('📄 pdfPageBase64 generated, length:', pdfPageBase64.length);
       }
 
       let fotoBase64 = '';
