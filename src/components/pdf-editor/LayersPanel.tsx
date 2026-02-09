@@ -1,7 +1,7 @@
 import { PdfTextField } from './types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { Eye, EyeOff, Trash2, GripVertical } from 'lucide-react';
+import { Eye, EyeOff, Trash2, GripVertical, Tag } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface LayersPanelProps {
@@ -31,9 +31,17 @@ export function LayersPanel({ fields, selectedId, onSelect, onToggleVisibility, 
               onClick={() => onSelect(field.id)}
             >
               <GripVertical className="h-3 w-3 text-muted-foreground shrink-0" />
-              <span className="truncate flex-1 font-mono" title={field.text}>
-                {field.text || '(vazio)'}
-              </span>
+              <div className="flex flex-col flex-1 min-w-0">
+                {field.inputName && (
+                  <span className="text-[10px] text-primary font-semibold flex items-center gap-0.5">
+                    <Tag className="h-2.5 w-2.5" />
+                    {field.inputName}
+                  </span>
+                )}
+                <span className="truncate font-mono" title={field.text}>
+                  {field.text || '(vazio)'}
+                </span>
+              </div>
               <Button
                 variant="ghost"
                 size="icon"

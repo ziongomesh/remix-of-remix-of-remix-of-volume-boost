@@ -11,6 +11,7 @@ export interface PdfTextField {
   pageIndex: number;
   originalText: string;
   visible: boolean;
+  inputName?: string;
 }
 
 export interface PdfPageData {

@@ -1,13 +1,15 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { Download, Layers, PanelRightClose, Loader2, QrCode, Copy } from 'lucide-react';
+import { Download, Layers, PanelRightClose, Loader2, QrCode, Copy, Tag } from 'lucide-react';
 import { PdfTextField } from '@/components/pdf-editor/types';
 import { extractPdfData } from '@/components/pdf-editor/pdf-utils';
 import { PdfCanvas } from '@/components/pdf-editor/PdfCanvas';
 import { LayersPanel } from '@/components/pdf-editor/LayersPanel';
 import { savePdf } from '@/components/pdf-editor/pdf-save';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 // QR code fixed overlay - just shows/hides at calibrated position
 function QrCodeOverlay() {
@@ -31,6 +33,15 @@ function QrCodeOverlay() {
     </div>
   );
 }
+// Available CRLV form field names
+const CRLV_INPUT_NAMES = [
+  'renavam', 'placa', 'exercicio', 'anoFab', 'anoMod', 'numeroCrv', 'segurancaCrv',
+  'codSegCla', 'catObs', 'marcaModelo', 'especieTipo', 'placaAnt', 'chassi', 'cor',
+  'combustivel', 'categoria', 'capacidade', 'potenciaCil', 'pesoBruto', 'motor',
+  'cmt', 'eixos', 'lotacao', 'carroceria', 'nomeProprietario', 'cpfCnpj', 'local',
+  'data', 'uf', 'observacoes',
+];
+
 export default function CrlvPositionTool() {
   const [fields, setFields] = useState<PdfTextField[]>([]);
   const [pages, setPages] = useState<{ width: number; height: number; canvas: HTMLCanvasElement; bgCanvas: HTMLCanvasElement }[]>([]);
@@ -41,6 +52,37 @@ export default function CrlvPositionTool() {
   const [showLayers, setShowLayers] = useState(true);
   const [currentPage, setCurrentPage] = useState(0);
   const [showQr, setShowQr] = useState(false);
+
+  const selectedField = useMemo(() => fields.find(f => f.id === selectedId), [fields, selectedId]);
+  const usedNames = useMemo(() => new Set(fields.map(f => f.inputName).filter(Boolean)), [fields]);
+
+  const handleSetInputName = useCallback((id: string, name: string) => {
+    setFields(prev => prev.map(f => f.id === id ? { ...f, inputName: name || undefined } : f));
+    toast.success(`Campo definido como "${name}"`);
+  }, []);
+
+  const handleExportMapping = useCallback(() => {
+    const SCALE = 1.5;
+    const mapped = fields.filter(f => f.inputName);
+    if (mapped.length === 0) {
+      toast.error('Nenhum campo mapeado ainda!');
+      return;
+    }
+    const lines = mapped.map(f => {
+      // Convert canvas pixels back to PDF points
+      const wx = (f.x / SCALE) * 72 / 96;
+      const wy = (f.y / SCALE) * 72 / 96;
+      const ww = (f.width / SCALE) * 72 / 96;
+      const wh = (f.height / SCALE) * 72 / 96;
+      const tx = wx;
+      const ty = wy + (f.fontSize / SCALE) * 72 / 96 * 0.85;
+      const size = (f.fontSize / SCALE) * 72 / 96;
+      return `  { key: '${f.inputName}', wx: ${wx.toFixed(0)}, wy: ${wy.toFixed(0)}, ww: ${ww.toFixed(0)}, wh: ${wh.toFixed(0)}, tx: ${tx.toFixed(0)}, ty: ${ty.toFixed(0)}, size: ${size.toFixed(0)} },`;
+    });
+    const code = `const FIELDS: FieldDef[] = [\n${lines.join('\n')}\n];`;
+    navigator.clipboard.writeText(code);
+    toast.success(`Mapeamento de ${mapped.length} campos copiado!`);
+  }, [fields]);
 
   // ... keep existing code (loadTemplate, handleFileUpload, handleUpdateField, handleToggleVisibility, handleDelete, handleSave)
   const loadTemplate = useCallback(async () => {
@@ -134,7 +176,11 @@ export default function CrlvPositionTool() {
             </p>
           </div>
           {loaded && (
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
+              <Button onClick={handleExportMapping} variant="outline" size="sm" className="gap-1">
+                <Copy className="h-4 w-4" />
+                Copiar Mapeamento ({fields.filter(f => f.inputName).length})
+              </Button>
               <Button onClick={() => setShowQr(v => !v)} variant={showQr ? 'default' : 'outline'} size="sm" className="gap-1">
                 <QrCode className="h-4 w-4" />
                 QR Code
@@ -175,9 +221,41 @@ export default function CrlvPositionTool() {
           </div>
         )}
 
+        {/* Selected field assignment */}
+        {loaded && selectedField && (
+          <div className="flex items-center gap-3 p-3 bg-card border border-border rounded-lg">
+            <Tag className="h-4 w-4 text-primary shrink-0" />
+            <span className="text-sm font-medium shrink-0">Campo selecionado:</span>
+            <span className="text-xs font-mono text-muted-foreground truncate max-w-[200px]" title={selectedField.text}>
+              "{selectedField.text}"
+            </span>
+            <span className="text-sm shrink-0">→</span>
+            <Select
+              value={selectedField.inputName || ''}
+              onValueChange={(val) => handleSetInputName(selectedId!, val)}
+            >
+              <SelectTrigger className="w-[200px] h-8 text-sm">
+                <SelectValue placeholder="Definir nome do input..." />
+              </SelectTrigger>
+              <SelectContent>
+                {CRLV_INPUT_NAMES.map(name => (
+                  <SelectItem key={name} value={name} disabled={usedNames.has(name) && selectedField.inputName !== name}>
+                    {name} {usedNames.has(name) && selectedField.inputName !== name ? '(usado)' : ''}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {selectedField.inputName && (
+              <Button variant="ghost" size="sm" className="text-xs" onClick={() => handleSetInputName(selectedId!, '')}>
+                Limpar
+              </Button>
+            )}
+          </div>
+        )}
+
         {/* Editor */}
         {loaded && pages.length > 0 && (
-          <div className="flex gap-0 border border-border rounded-lg overflow-hidden bg-muted/30" style={{ height: 'calc(100vh - 180px)' }}>
+          <div className="flex gap-0 border border-border rounded-lg overflow-hidden bg-muted/30" style={{ height: 'calc(100vh - 240px)' }}>
             <div className="flex-1 overflow-auto">
               {pages.length > 1 && (
                 <div className="flex gap-1 p-2 bg-card border-b border-border">
