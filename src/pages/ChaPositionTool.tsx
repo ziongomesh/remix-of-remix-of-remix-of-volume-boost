@@ -37,33 +37,50 @@ const BACK_FIELDS: TextField[] = [
 ];
 
 function FieldOverlay({
-  field, containerW, containerH, onDrag, selected, onSelect,
+  field, containerW, containerH, onDrag, onResize, selected, onSelect,
 }: {
   field: TextField; containerW: number; containerH: number;
-  onDrag: (id: string, x: number, y: number) => void; selected: boolean; onSelect: () => void;
+  onDrag: (id: string, x: number, y: number) => void;
+  onResize?: (id: string, w: number, h: number) => void;
+  selected: boolean; onSelect: () => void;
 }) {
   const [dragging, setDragging] = useState(false);
-  const startRef = useRef({ mx: 0, my: 0, fx: 0, fy: 0 });
+  const [resizing, setResizing] = useState(false);
+  const startRef = useRef({ mx: 0, my: 0, fx: 0, fy: 0, fw: 0, fh: 0 });
 
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
     onSelect();
     setDragging(true);
-    startRef.current = { mx: e.clientX, my: e.clientY, fx: field.x, fy: field.y };
+    startRef.current = { mx: e.clientX, my: e.clientY, fx: field.x, fy: field.y, fw: field.w || 0, fh: field.h || 0 };
+  };
+
+  const handleResizeDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onSelect();
+    setResizing(true);
+    startRef.current = { mx: e.clientX, my: e.clientY, fx: field.x, fy: field.y, fw: field.w || 30, fh: field.h || 50 };
   };
 
   useEffect(() => {
-    if (!dragging) return;
+    if (!dragging && !resizing) return;
     const handleMove = (e: MouseEvent) => {
-      const dx = ((e.clientX - startRef.current.mx) / containerW) * 100;
-      const dy = ((e.clientY - startRef.current.my) / containerH) * 100;
-      onDrag(field.id, startRef.current.fx + dx, startRef.current.fy + dy);
+      if (resizing && onResize) {
+        const dw = ((e.clientX - startRef.current.mx) / containerW) * 100;
+        const dh = ((e.clientY - startRef.current.my) / containerH) * 100;
+        onResize(field.id, Math.max(5, startRef.current.fw + dw), Math.max(5, startRef.current.fh + dh));
+      } else if (dragging) {
+        const dx = ((e.clientX - startRef.current.mx) / containerW) * 100;
+        const dy = ((e.clientY - startRef.current.my) / containerH) * 100;
+        onDrag(field.id, startRef.current.fx + dx, startRef.current.fy + dy);
+      }
     };
-    const handleUp = () => setDragging(false);
+    const handleUp = () => { setDragging(false); setResizing(false); };
     window.addEventListener('mousemove', handleMove);
     window.addEventListener('mouseup', handleUp);
     return () => { window.removeEventListener('mousemove', handleMove); window.removeEventListener('mouseup', handleUp); };
-  }, [dragging, containerW, containerH, field.id, onDrag]);
+  }, [dragging, resizing, containerW, containerH, field.id, onDrag, onResize]);
 
   const px = (field.x / 100) * containerW;
   const py = (field.y / 100) * containerH;
@@ -78,10 +95,16 @@ function FieldOverlay({
         style={{
           left: px, top: py, width: fw, height: fh,
           border: selected ? '2px dashed #ef4444' : '2px dashed rgba(100,100,100,0.4)',
-          zIndex: dragging ? 50 : 10,
+          zIndex: dragging || resizing ? 50 : 10,
         }}
       >
         <img src="/images/cha-sample-foto.png" alt="Foto" className="w-full h-full object-cover" draggable={false} />
+        {/* Resize handle */}
+        <div
+          onMouseDown={handleResizeDown}
+          className="absolute bottom-0 right-0 w-4 h-4 cursor-nwse-resize"
+          style={{ background: 'rgba(239,68,68,0.7)', borderRadius: '2px 0 0 0' }}
+        />
       </div>
     );
   }
@@ -106,10 +129,11 @@ function FieldOverlay({
 }
 
 function MatrixPanel({
-  title, bgSrc, fields, onUpdateField, selectedId, onSelect,
+  title, bgSrc, fields, onUpdateField, onResizeField, selectedId, onSelect,
 }: {
   title: string; bgSrc: string; fields: TextField[];
   onUpdateField: (id: string, x: number, y: number) => void;
+  onResizeField?: (id: string, w: number, h: number) => void;
   selectedId: string | null; onSelect: (id: string) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -135,7 +159,7 @@ function MatrixPanel({
         {size.w > 0 && fields.map((f) => (
           <FieldOverlay
             key={f.id} field={f} containerW={size.w} containerH={size.h}
-            onDrag={onUpdateField} selected={selectedId === f.id} onSelect={() => onSelect(f.id)}
+            onDrag={onUpdateField} onResize={onResizeField} selected={selectedId === f.id} onSelect={() => onSelect(f.id)}
           />
         ))}
       </div>
@@ -169,6 +193,10 @@ export default function ChaPositionTool() {
   const updateBack = useCallback((id: string, x: number, y: number) => {
     updateWithSync(backFields, setBackFields, id, x, y);
   }, [updateWithSync, backFields]);
+
+  const resizeFront = useCallback((id: string, w: number, h: number) => {
+    setFrontFields((prev) => prev.map((f) => (f.id === id ? { ...f, w, h } : f)));
+  }, []);
 
   const generateCode = () => {
     const lines: string[] = ['// === FRENTE ==='];
@@ -225,6 +253,7 @@ export default function ChaPositionTool() {
             bgSrc="/images/matrizcha.png"
             fields={frontFields}
             onUpdateField={updateFront}
+            onResizeField={resizeFront}
             selectedId={selected}
             onSelect={setSelected}
           />
