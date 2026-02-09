@@ -58,8 +58,8 @@ const services: Service[] = [
     features: ['Dados completos do veículo', 'QR Code de verificação', 'Design 2026'],
     validity: '45 dias',
     credits: 1,
-    available: true,
-    route: '/servicos/crlv-digital',
+    available: false,
+    route: '#',
     icon: Car,
   },
   {
