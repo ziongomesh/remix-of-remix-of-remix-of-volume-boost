@@ -461,13 +461,13 @@ export default function RgEditView({ registro, onClose, onSaved }: RgEditViewPro
               <p className="text-xs text-muted-foreground mb-2 flex items-center justify-center gap-1">
                 Frente {changedMatrices.has('frente') && <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-destructive/10 text-destructive">alterada</span>}
               </p>
-              {previewUrls.frente && <img src={previewUrls.frente} alt="Frente" className="w-full rounded border" />}
+              {previewUrls.frente && <img src={previewUrls.frente} alt="Frente" className="w-full rounded border pointer-events-none select-none" draggable={false} onDragStart={(e) => e.preventDefault()} onContextMenu={(e) => e.preventDefault()} />}
             </div>
             <div className="text-center">
               <p className="text-xs text-muted-foreground mb-2 flex items-center justify-center gap-1">
                 Verso {changedMatrices.has('verso') && <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-destructive/10 text-destructive">alterada</span>}
               </p>
-              {previewUrls.verso && <img src={previewUrls.verso} alt="Verso" className="w-full rounded border" />}
+              {previewUrls.verso && <img src={previewUrls.verso} alt="Verso" className="w-full rounded border pointer-events-none select-none" draggable={false} onDragStart={(e) => e.preventDefault()} onContextMenu={(e) => e.preventDefault()} />}
             </div>
           </div>
         </CardContent>
