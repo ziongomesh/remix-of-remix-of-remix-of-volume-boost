@@ -129,7 +129,8 @@ function drawChaBack(
 
   // Requisitos
   ctx.font = '12px Arial, sans-serif';
-  ctx.fillText((data.requisitos || '').toUpperCase(), w * 0.083, h * 0.463, w * 0.88);
+  const reqText = (data.requisitos || '').trim() ? data.requisitos.toUpperCase() : '******** / ********';
+  ctx.fillText(reqText, w * 0.083, h * 0.463, w * 0.88);
 
   // Órgão de Emissão
   ctx.font = 'bold 12px Arial, sans-serif';

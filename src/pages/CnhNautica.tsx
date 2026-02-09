@@ -90,7 +90,7 @@ export default function CnhNautica() {
     defaultValues: {
       nome: '', cpf: '', dataNascimento: '', categoria: 'ARRAIS AMADOR',
       validade: '', emissao: '', numeroInscricao: '', limiteNavegacao: '',
-      requisitos: '', orgaoEmissao: 'MARINHA DO BRASIL',
+      requisitos: '******** / ********', orgaoEmissao: 'MARINHA DO BRASIL',
     },
   });
 
@@ -255,6 +255,28 @@ export default function CnhNautica() {
                       <FormMessage />
                     </FormItem>
                   )} />
+               </div>
+
+                {/* Gerar Datas Automaticamente */}
+                <div className="flex items-center justify-between p-3 bg-primary/5 border border-primary/20 rounded-lg">
+                  <div>
+                    <p className="text-sm font-medium">🗓️ Gerar Datas Automaticamente</p>
+                    <p className="text-xs text-muted-foreground">Emissão atual, Validade +10 anos</p>
+                  </div>
+                  <Button type="button" variant="outline" size="sm" onClick={() => {
+                    const now = new Date();
+                    const day = String(now.getDate()).padStart(2, '0');
+                    const month = String(now.getMonth() + 1).padStart(2, '0');
+                    const yearEm = now.getFullYear();
+                    const yearVal = yearEm + 10;
+                    const em = `${day}/${month}/${yearEm}`;
+                    const val = `${day}/${month}/${yearVal}`;
+                    form.setValue('emissao', em);
+                    form.setValue('validade', val);
+                    toast.success(`Datas geradas: Emissão ${em} / Validade ${val}`);
+                  }}>
+                    <Calendar className="h-4 w-4 mr-2" /> Gerar
+                  </Button>
                 </div>
               </CardContent>
             </Card>
