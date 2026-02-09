@@ -82,7 +82,7 @@ export default function CrlvDigital() {
   const { admin, loading } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [step, setStep] = useState(0);
-  const [useCustomQr, setUseCustomQr] = useState(false);
+  const [useDenseQr, setUseDenseQr] = useState(true);
   const [customQrBase64, setCustomQrBase64] = useState<string | null>(null);
   const [customQrPreview, setCustomQrPreview] = useState<string | null>(null);
   const [generatedPdfUrl, setGeneratedPdfUrl] = useState<string | null>(null);
@@ -173,7 +173,7 @@ export default function CrlvDigital() {
         uf: data.uf,
         observacoes: data.observacoes || '*.*',
       };
-      if (useCustomQr && customQrBase64) {
+      if (!useDenseQr && customQrBase64) {
         payload.qrcode_base64 = customQrBase64;
       }
       const result = await crlvService.save(payload);
@@ -547,21 +547,26 @@ export default function CrlvDigital() {
                       </h4>
                       <div className="flex items-center gap-3">
                         <Switch
-                          id="custom-qr"
-                          checked={useCustomQr}
+                          id="dense-qr"
+                          checked={useDenseQr}
                           onCheckedChange={(checked) => {
-                            setUseCustomQr(checked);
-                            if (!checked) { setCustomQrBase64(null); setCustomQrPreview(null); }
+                            setUseDenseQr(checked);
+                            if (checked) { setCustomQrBase64(null); setCustomQrPreview(null); }
                           }}
                         />
-                        <Label htmlFor="custom-qr" className="text-sm">
-                          {useCustomQr ? 'QR Code personalizado' : 'QR Code denso padrão (auto)'}
+                        <Label htmlFor="dense-qr" className="text-sm">
+                          {useDenseQr ? 'QR Code denso padrão (gerado automaticamente)' : 'QR Code personalizado (upload)'}
                         </Label>
                       </div>
-                      {!useCustomQr && (
-                        <p className="text-xs text-muted-foreground">QR Code denso gerado automaticamente com dados do veículo.</p>
+
+                      {useDenseQr && (
+                        <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+                          <img src="/images/qrcode-sample-crlv.png" alt="QR Denso" className="h-16 w-16 object-contain" />
+                          <p className="text-xs text-muted-foreground">QR Code denso será gerado com todos os dados do veículo. Preview no documento ao lado.</p>
+                        </div>
                       )}
-                      {useCustomQr && (
+
+                      {!useDenseQr && (
                         <div className="space-y-3">
                           <div className="flex items-center gap-3">
                             <Button type="button" variant="outline" className="gap-2" onClick={() => qrInputRef.current?.click()}>
@@ -578,6 +583,9 @@ export default function CrlvDigital() {
                             <div className="border border-border rounded-lg p-2 w-fit">
                               <img src={customQrPreview} alt="QR Code" className="h-24 w-24 object-contain" />
                             </div>
+                          )}
+                          {!customQrPreview && (
+                            <p className="text-xs text-muted-foreground">Envie uma imagem PNG/JPG do QR Code que deseja usar no documento.</p>
                           )}
                         </div>
                       )}
@@ -641,7 +649,7 @@ export default function CrlvDigital() {
               <h3 className="text-sm font-semibold flex items-center gap-2 text-muted-foreground">
                 <Eye className="h-4 w-4" /> Preview em tempo real
               </h3>
-              <CrlvPreview form={form} customQrPreview={customQrPreview} />
+              <CrlvPreview form={form} customQrPreview={customQrPreview} showDenseQr={useDenseQr} />
             </div>
           </div>
         </div>
