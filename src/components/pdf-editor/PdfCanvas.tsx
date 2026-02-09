@@ -35,19 +35,19 @@ export function PdfCanvas({ pageCanvas, bgCanvas, fields, selectedId, onSelect, 
 
       // Restore background (without text) for this area
       if (bgCanvas) {
-        const sx = Math.max(0, Math.floor(field.x - 2));
-        const sy = Math.max(0, Math.floor(field.y - 2));
-        const sw = Math.ceil(field.width + 6);
-        const sh = Math.ceil(field.height + 6);
-        const bgCtx = bgCanvas.getContext('2d')!;
-        const bgData = bgCtx.getImageData(sx, sy, sw, sh);
-        ctx.putImageData(bgData, sx, sy);
+        const sx = Math.max(0, Math.floor(field.x));
+        const sy = Math.max(0, Math.floor(field.y));
+        const sw = Math.ceil(field.width);
+        const sh = Math.ceil(field.height);
+        // Draw white rectangle (minimal area, no overflow)
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(sx, sy, sw, sh);
       }
 
-      // Draw the new text
+      // Draw the new text with FreeMonoBold
       if (field.text.trim()) {
         ctx.fillStyle = field.color || '#000000';
-        ctx.font = `${field.fontSize}px sans-serif`;
+        ctx.font = `bold ${field.fontSize}px "FreeMono", "Courier New", monospace`;
         ctx.textBaseline = 'top';
         ctx.fillText(field.text, field.x, field.y);
       }
