@@ -28,6 +28,7 @@ import RgDigital from "./pages/RgDigital";
 import NotFound from "./pages/NotFound";
 import Configuracoes from "./pages/Configuracoes";
 import CarteiraEstudante from "./pages/CarteiraEstudante";
+import CnhNautica from "./pages/CnhNautica";
 
 const queryClient = new QueryClient();
 
@@ -63,6 +64,7 @@ const App = () => (
               <Route path="/downloads" element={<Downloads />} />
               <Route path="/configuracoes" element={<Configuracoes />} />
               <Route path="/servicos/carteira-estudante" element={<CarteiraEstudante />} />
+              <Route path="/servicos/cnh-nautica" element={<CnhNautica />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>
