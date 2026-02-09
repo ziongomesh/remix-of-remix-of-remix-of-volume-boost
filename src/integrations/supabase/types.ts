@@ -503,6 +503,13 @@ export type Database = {
           nome: string
         }[]
       }
+      get_creator_name: {
+        Args: { p_admin_id: number; p_session_token: string }
+        Returns: {
+          creator_id: number
+          creator_name: string
+        }[]
+      }
       get_dashboard_stats: {
         Args: { p_admin_id: number; p_session_token: string }
         Returns: {
