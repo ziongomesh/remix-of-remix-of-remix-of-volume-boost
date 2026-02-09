@@ -1,6 +1,7 @@
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ImageMinus, FileText, PenLine } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { ImageMinus, FileText, PenLine, Clock } from 'lucide-react';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -11,6 +12,7 @@ const tools = [
     icon: ImageMinus,
     href: '/ferramentas/remover-fundo',
     color: 'text-blue-500',
+    available: true,
   },
   {
     title: 'Editor de PDF',
@@ -18,6 +20,7 @@ const tools = [
     icon: FileText,
     href: '/ferramentas/editor-pdf',
     color: 'text-orange-500',
+    available: false,
   },
   {
     title: 'Gerador de Assinatura',
@@ -25,6 +28,7 @@ const tools = [
     icon: PenLine,
     href: '/ferramentas/gerador-assinatura',
     color: 'text-purple-500',
+    available: true,
   },
 ];
 
@@ -44,21 +48,42 @@ export default function Ferramentas() {
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {tools.map((tool) => (
-            <Link key={tool.href} to={tool.href}>
-              <Card className="hover:border-primary/50 transition-colors cursor-pointer h-full">
-                <CardHeader className="flex flex-row items-center gap-4 pb-2">
-                  <div className={`p-2 rounded-lg bg-primary/10 ${tool.color}`}>
-                    <tool.icon className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg">{tool.title}</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription>{tool.description}</CardDescription>
-                </CardContent>
-              </Card>
-            </Link>
+            tool.available ? (
+              <Link key={tool.href} to={tool.href}>
+                <Card className="hover:border-primary/50 transition-colors cursor-pointer h-full">
+                  <CardHeader className="flex flex-row items-center gap-4 pb-2">
+                    <div className={`p-2 rounded-lg bg-primary/10 ${tool.color}`}>
+                      <tool.icon className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg">{tool.title}</CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <CardDescription>{tool.description}</CardDescription>
+                  </CardContent>
+                </Card>
+              </Link>
+            ) : (
+              <div key={tool.href}>
+                <Card className="opacity-50 h-full">
+                  <CardHeader className="flex flex-row items-center gap-4 pb-2">
+                    <div className={`p-2 rounded-lg bg-primary/10 ${tool.color}`}>
+                      <tool.icon className="h-6 w-6" />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CardTitle className="text-lg">{tool.title}</CardTitle>
+                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                        <Clock className="h-2.5 w-2.5 mr-0.5" /> Em Breve
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <CardDescription>{tool.description}</CardDescription>
+                  </CardContent>
+                </Card>
+              </div>
+            )
           ))}
         </div>
       </div>
