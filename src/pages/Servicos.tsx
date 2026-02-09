@@ -1,5 +1,5 @@
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { FileText, CheckCircle, Clock, CreditCard, AlertTriangle, Anchor, IdCard, ScrollText } from 'lucide-react';
+import { FileText, CheckCircle, Clock, CreditCard, AlertTriangle, Anchor, IdCard, ScrollText, Car } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useNavigate, Navigate } from 'react-router-dom';
@@ -50,6 +50,17 @@ const services: Service[] = [
     available: true,
     route: '/servicos/cnh-nautica',
     icon: Anchor,
+  },
+  {
+    id: 'crlv-digital-2026',
+    name: 'CRLV Digital 2026',
+    description: 'Certificado de Registro e Licenciamento de Veículo',
+    features: ['Dados completos do veículo', 'QR Code de verificação', 'Design 2026'],
+    validity: '45 dias',
+    credits: 1,
+    available: true,
+    route: '/servicos/crlv-digital',
+    icon: Car,
   },
   {
     id: 'carteira-abafe',
