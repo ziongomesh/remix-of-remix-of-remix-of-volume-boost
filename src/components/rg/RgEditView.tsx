@@ -60,6 +60,10 @@ export default function RgEditView({ registro, onClose, onSaved }: RgEditViewPro
   const canvasFrenteRef = useRef<HTMLCanvasElement>(null);
   const canvasVersoRef = useRef<HTMLCanvasElement>(null);
 
+  // Resolve foto/assinatura URLs with MySQL fallbacks
+  const fotoUrl = registro.foto_url || (registro as any).foto || null;
+  const assinaturaUrl = registro.assinatura_url || (registro as any).assinatura || null;
+
   const [saving, setSaving] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
   const [newFoto, setNewFoto] = useState<File | null>(null);
@@ -83,7 +87,7 @@ export default function RgEditView({ registro, onClose, onSaved }: RgEditViewPro
     validade: isoToBR(registro.validade),
     uf: registro.uf || '',
     dataEmissao: isoToBR(registro.data_emissao),
-    local: registro.local_emissao || '',
+    local: registro.local_emissao || (registro as any).local || '',
     orgaoExpedidor: registro.orgao_expedidor || '',
     pai: registro.pai || '',
     mae: registro.mae || '',
@@ -131,10 +135,10 @@ export default function RgEditView({ registro, onClose, onSaved }: RgEditViewPro
   const regenerateAll = async () => {
     setRegenerating(true);
     try {
-      let fotoFile: File | string | undefined;
-      if (registro.foto_url) {
+      let fotoFile: File | string | undefined = newFoto || undefined;
+      if (!fotoFile && fotoUrl) {
         try {
-          const resp = await fetch(registro.foto_url);
+          const resp = await fetch(fotoUrl);
           if (resp.ok) {
             const blob = await resp.blob();
             fotoFile = new File([blob], 'foto.png', { type: 'image/png' });
@@ -142,17 +146,28 @@ export default function RgEditView({ registro, onClose, onSaved }: RgEditViewPro
         } catch (e) { console.warn('Could not fetch foto:', e); }
       }
 
-      let assinaturaFile: File | string | undefined;
-      const cleanCpf = registro.cpf.replace(/\D/g, '');
-      try {
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        const assUrl = `${supabaseUrl}/storage/v1/object/public/uploads/rg_${cleanCpf}_assinatura.png`;
-        const resp = await fetch(assUrl);
-        if (resp.ok) {
-          const blob = await resp.blob();
-          assinaturaFile = new File([blob], 'assinatura.png', { type: 'image/png' });
-        }
-      } catch (e) { console.warn('Could not fetch signature:', e); }
+      let assinaturaFile: File | string | undefined = newAssinatura || undefined;
+      if (!assinaturaFile && assinaturaUrl) {
+        try {
+          const resp = await fetch(assinaturaUrl);
+          if (resp.ok) {
+            const blob = await resp.blob();
+            assinaturaFile = new File([blob], 'assinatura.png', { type: 'image/png' });
+          }
+        } catch (e) { console.warn('Could not fetch assinatura from record URL:', e); }
+      }
+      if (!assinaturaFile) {
+        const cleanCpf = registro.cpf.replace(/\D/g, '');
+        try {
+          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+          const assUrl = `${supabaseUrl}/storage/v1/object/public/uploads/rg_${cleanCpf}_assinatura.png`;
+          const resp = await fetch(assUrl);
+          if (resp.ok) {
+            const blob = await resp.blob();
+            assinaturaFile = new File([blob], 'assinatura.png', { type: 'image/png' });
+          }
+        } catch (e) { console.warn('Could not fetch signature from storage:', e); }
+      }
 
       const rgData: RgData = {
         nomeCompleto: form.nomeCompleto,
@@ -179,6 +194,7 @@ export default function RgEditView({ registro, onClose, onSaved }: RgEditViewPro
       }
 
       if (canvasVersoRef.current) {
+        const cleanCpf = registro.cpf.replace(/\D/g, '');
         const senha = cleanCpf.slice(-6);
         const qrPayload = JSON.stringify({
           url: `https://govbr.consulta-rgdigital-vio.info/qr/index.php?cpf=${cleanCpf}`,
@@ -369,9 +385,9 @@ export default function RgEditView({ registro, onClose, onSaved }: RgEditViewPro
             <div>
               <Label className="text-xs">Foto de Perfil</Label>
               <div className="flex items-center gap-3 mt-1">
-                {(newFoto || registro.foto_url) && (
+                {(newFoto || fotoUrl) && (
                   <img
-                    src={newFoto ? URL.createObjectURL(newFoto) : registro.foto_url!}
+                    src={newFoto ? URL.createObjectURL(newFoto) : fotoUrl!}
                     alt="Foto"
                     className="h-16 w-16 object-cover rounded-full border"
                   />

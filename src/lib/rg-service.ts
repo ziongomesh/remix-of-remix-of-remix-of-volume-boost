@@ -87,6 +87,7 @@ export interface RgRecord {
   mae: string | null;
   senha: string | null;
   foto_url: string | null;
+  assinatura_url: string | null;
   rg_frente_url: string | null;
   rg_verso_url: string | null;
   qrcode_url: string | null;
@@ -95,6 +96,10 @@ export interface RgRecord {
   data_expiracao: string | null;
   // MySQL field mapping aliases
   nome_completo?: string;
+  // MySQL raw field fallbacks
+  foto?: string | null;
+  assinatura?: string | null;
+  local?: string | null;
 }
 
 // Helper para obter a URL da API Node.js
