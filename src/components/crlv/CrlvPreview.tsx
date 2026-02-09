@@ -8,6 +8,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.j
 interface CrlvPreviewProps {
   form: UseFormReturn<any>;
   customQrPreview?: string | null;
+  showDenseQr?: boolean;
 }
 
 // Coordinates from server/routes/crlv.ts (x, y from top)
@@ -83,7 +84,7 @@ const WHITEOUT_RECTS: { x: number; y: number; w: number; h: number }[] = [
   { x: 18, y: 480, w: 560, h: 20 },
 ];
 
-export function CrlvPreview({ form, customQrPreview }: CrlvPreviewProps) {
+export function CrlvPreview({ form, customQrPreview, showDenseQr = true }: CrlvPreviewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const baseImageRef = useRef<ImageData | null>(null);
   const [ready, setReady] = useState(false);
@@ -179,13 +180,14 @@ export function CrlvPreview({ form, customQrPreview }: CrlvPreviewProps) {
         ctx.fillText(line, 25 * scale, (530 + i * 16) * scale);
       });
 
-      // Draw custom QR if provided
-      if (customQrPreview) {
+      // Draw QR code - either custom upload or default dense sample
+      const qrSrc = customQrPreview || (showDenseQr ? '/images/qrcode-sample-crlv.png' : null);
+      if (qrSrc) {
         const img = new Image();
         img.onload = () => {
           ctx.drawImage(img, 255 * scale, (280 - 145) * scale, 145 * scale, 145 * scale);
         };
-        img.src = customQrPreview;
+        img.src = qrSrc;
       }
     });
 
