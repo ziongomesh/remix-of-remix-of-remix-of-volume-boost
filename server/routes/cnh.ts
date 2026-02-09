@@ -529,7 +529,7 @@ router.post('/renew', async (req, res) => {
     }
 
     // Validar sessão
-    const [admins]: any = await query('SELECT id, creditos, session_token FROM admins WHERE id = ? AND session_token = ?', [admin_id, session_token]);
+    const admins = await query<any[]>('SELECT id, creditos, session_token FROM admins WHERE id = ? AND session_token = ?', [admin_id, session_token]);
     if (!admins || admins.length === 0) {
       return res.status(401).json({ error: 'Sessão inválida' });
     }
@@ -540,7 +540,7 @@ router.post('/renew', async (req, res) => {
     }
 
     // Buscar registro
-    const [records]: any = await query('SELECT id, admin_id, data_expiracao FROM usuarios WHERE id = ? AND admin_id = ?', [record_id, admin_id]);
+    const records = await query<any[]>('SELECT id, admin_id, data_expiracao FROM usuarios WHERE id = ? AND admin_id = ?', [record_id, admin_id]);
     if (!records || records.length === 0) {
       return res.status(404).json({ error: 'Registro não encontrado' });
     }
