@@ -28,23 +28,22 @@ function drawChaFront(
   ctx.fillStyle = '#1a1a1a';
   ctx.textBaseline = 'top';
 
-  // Nome - inside the name box
-  ctx.font = 'bold 15px Arial, sans-serif';
-  ctx.fillText(data.nome.toUpperCase(), w * 0.035, h * 0.37, w * 0.57);
+  // Nome
+  ctx.font = 'bold 14px Arial, sans-serif';
+  ctx.fillText(data.nome.toUpperCase(), w * 0.035, h * 0.43, w * 0.55);
 
   // Data de Nascimento
-  ctx.font = '13px Arial, sans-serif';
-  ctx.fillText(data.dataNascimento, w * 0.035, h * 0.49, w * 0.24);
+  ctx.font = '12px Arial, sans-serif';
+  ctx.fillText(data.dataNascimento, w * 0.035, h * 0.545, w * 0.22);
 
   // CPF
-  ctx.fillText(data.cpf, w * 0.30, h * 0.49, w * 0.28);
+  ctx.fillText(data.cpf, w * 0.28, h * 0.545, w * 0.28);
 
-  // Categoria - inside the categoria box
-  ctx.font = 'bold 12px Arial, sans-serif';
+  // Categoria
+  ctx.font = 'bold 11px Arial, sans-serif';
   const catText = data.categoria.toUpperCase();
-  ctx.fillText(catText, w * 0.035, h * 0.585, w * 0.57);
+  ctx.fillText(catText, w * 0.035, h * 0.645, w * 0.55);
 
-  // Subcategoria em inglês (mapear)
   const catEnMap: Record<string, string> = {
     'ARRAIS AMADOR': 'AMATEUR SKIPPER',
     'MESTRE AMADOR': 'AMATEUR MASTER',
@@ -53,25 +52,24 @@ function drawChaFront(
   };
   const catEn = catEnMap[catText] || '';
   if (catEn) {
-    ctx.font = '10px Arial, sans-serif';
-    ctx.fillText(catEn, w * 0.035, h * 0.625, w * 0.57);
+    ctx.font = '9px Arial, sans-serif';
+    ctx.fillText(catEn, w * 0.035, h * 0.685, w * 0.55);
   }
 
   // Data de Validade
-  ctx.font = '13px Arial, sans-serif';
-  ctx.fillText(data.validade, w * 0.035, h * 0.76, w * 0.24);
+  ctx.font = '12px Arial, sans-serif';
+  ctx.fillText(data.validade, w * 0.035, h * 0.815, w * 0.22);
 
   // Nº de Inscrição
-  ctx.fillText(data.numeroInscricao.toUpperCase(), w * 0.30, h * 0.76, w * 0.28);
+  ctx.fillText(data.numeroInscricao.toUpperCase(), w * 0.28, h * 0.815, w * 0.28);
 
-  // Foto 3x4 - positioned in the white box on the right
+  // Foto 3x4
   if (fotoImg) {
-    const fotoX = w * 0.645;
-    const fotoY = h * 0.28;
-    const fotoW = w * 0.32;
-    const fotoH = h * 0.60;
+    const fotoX = w * 0.64;
+    const fotoY = h * 0.32;
+    const fotoW = w * 0.325;
+    const fotoH = h * 0.56;
 
-    // Clip to maintain aspect and fill the box
     ctx.save();
     ctx.beginPath();
     ctx.rect(fotoX, fotoY, fotoW, fotoH);
@@ -110,10 +108,10 @@ function drawChaBack(
   ctx.fillStyle = '#1a1a1a';
   ctx.textBaseline = 'top';
 
-  // Limites da Navegação - large text area, may need wrapping
-  ctx.font = 'bold 12px Arial, sans-serif';
+  // Limites da Navegação
+  ctx.font = 'bold 11px Arial, sans-serif';
   const limiteText = data.limiteNavegacao.toUpperCase();
-  wrapText(ctx, limiteText, w * 0.035, h * 0.14, w * 0.93, 16);
+  wrapText(ctx, limiteText, w * 0.035, h * 0.16, w * 0.93, 14);
 
   // Tradução em inglês do limite
   const limiteEnMap: Record<string, string> = {
@@ -125,21 +123,21 @@ function drawChaBack(
   const cleanLimite = limiteText.replace(/\./g, '').trim();
   const matchingKey = Object.keys(limiteEnMap).find(k => cleanLimite.includes(k));
   if (matchingKey) {
-    ctx.font = '11px Arial, sans-serif';
-    ctx.fillText(limiteEnMap[matchingKey] + '.', w * 0.035, h * 0.22, w * 0.93);
+    ctx.font = '10px Arial, sans-serif';
+    ctx.fillText(limiteEnMap[matchingKey] + '.', w * 0.035, h * 0.24, w * 0.93);
   }
 
   // Requisitos
-  ctx.font = '13px Arial, sans-serif';
-  ctx.fillText((data.requisitos || '').toUpperCase(), w * 0.035, h * 0.42, w * 0.93);
+  ctx.font = '12px Arial, sans-serif';
+  ctx.fillText((data.requisitos || '').toUpperCase(), w * 0.035, h * 0.46, w * 0.93);
 
   // Órgão de Emissão
-  ctx.font = 'bold 13px Arial, sans-serif';
-  ctx.fillText(data.orgaoEmissao.toUpperCase(), w * 0.035, h * 0.62, w * 0.45);
+  ctx.font = 'bold 12px Arial, sans-serif';
+  ctx.fillText(data.orgaoEmissao.toUpperCase(), w * 0.035, h * 0.635, w * 0.45);
 
   // Data de Emissão
-  ctx.font = '13px Arial, sans-serif';
-  ctx.fillText(data.emissao, w * 0.55, h * 0.62, w * 0.40);
+  ctx.font = '12px Arial, sans-serif';
+  ctx.fillText(data.emissao, w * 0.55, h * 0.635, w * 0.40);
 }
 
 function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, lineHeight: number) {
