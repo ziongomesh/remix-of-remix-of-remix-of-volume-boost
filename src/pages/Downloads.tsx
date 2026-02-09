@@ -4,13 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Download, Smartphone, Apple, Copy, Check, Save, Loader2, ChevronDown, CreditCard, Shield, GraduationCap, Wrench } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { isUsingMySQL } from '@/lib/db-config';
+import { mysqlApi } from '@/lib/api-mysql';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Downloads() {
   const { admin, loading, role } = useAuth();
@@ -36,19 +37,30 @@ export default function Downloads() {
   const fetchLinks = async () => {
     setLoadingData(true);
     try {
-      const { data } = await supabase
-        .from('downloads')
-        .select('cnh_iphone, cnh_apk, govbr_iphone, govbr_apk, abafe_apk, abafe_iphone')
-        .eq('id', 1)
-        .maybeSingle();
-
-      if (data) {
-        setCnhIphone(data.cnh_iphone || '');
-        setCnhApk(data.cnh_apk || '');
-        setGovbrIphone(data.govbr_iphone || '');
-        setGovbrApk(data.govbr_apk || '');
-        setAbafeApk((data as any).abafe_apk || '');
-        setAbafeIphone((data as any).abafe_iphone || '');
+      if (isUsingMySQL()) {
+        const data = await mysqlApi.downloads.fetch();
+        if (data) {
+          setCnhIphone(data.cnh_iphone || '');
+          setCnhApk(data.cnh_apk || '');
+          setGovbrIphone(data.govbr_iphone || '');
+          setGovbrApk(data.govbr_apk || '');
+          setAbafeApk(data.abafe_apk || '');
+          setAbafeIphone(data.abafe_iphone || '');
+        }
+      } else {
+        const { data } = await supabase
+          .from('downloads')
+          .select('cnh_iphone, cnh_apk, govbr_iphone, govbr_apk, abafe_apk, abafe_iphone')
+          .eq('id', 1)
+          .maybeSingle();
+        if (data) {
+          setCnhIphone(data.cnh_iphone || '');
+          setCnhApk(data.cnh_apk || '');
+          setGovbrIphone(data.govbr_iphone || '');
+          setGovbrApk(data.govbr_apk || '');
+          setAbafeApk(data.abafe_apk || '');
+          setAbafeIphone(data.abafe_iphone || '');
+        }
       }
     } catch (err) {
       console.error('Erro ao carregar links:', err);
@@ -61,19 +73,30 @@ export default function Downloads() {
     if (!admin) return;
     setSaving(true);
     try {
-      const { error } = await supabase.functions.invoke('update-downloads', {
-        body: {
-          admin_id: admin.id,
-          session_token: admin.session_token,
+      if (isUsingMySQL()) {
+        await mysqlApi.downloads.update({
           cnh_iphone: cnhIphone,
           cnh_apk: cnhApk,
           govbr_iphone: govbrIphone,
           govbr_apk: govbrApk,
           abafe_apk: abafeApk,
           abafe_iphone: abafeIphone,
-        },
-      });
-      if (error) throw error;
+        });
+      } else {
+        const { error } = await supabase.functions.invoke('update-downloads', {
+          body: {
+            admin_id: admin.id,
+            session_token: admin.session_token,
+            cnh_iphone: cnhIphone,
+            cnh_apk: cnhApk,
+            govbr_iphone: govbrIphone,
+            govbr_apk: govbrApk,
+            abafe_apk: abafeApk,
+            abafe_iphone: abafeIphone,
+          },
+        });
+        if (error) throw error;
+      }
       toast.success('Links atualizados com sucesso!');
     } catch (err: any) {
       toast.error(err.message || 'Erro ao salvar');
