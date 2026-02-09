@@ -141,10 +141,10 @@ function ServiceCard({ service, hasCredits }: { service: Service; hasCredits: bo
   const Icon = service.icon || FileText;
 
   return (
-    <div className={`bg-card border border-border rounded-xl p-5 flex flex-col gap-4 transition-shadow ${service.available ? (canAccess ? 'hover:shadow-lg' : '') : 'opacity-50'}`}>
+    <div className={`bg-card border border-border rounded-xl p-4 flex flex-col gap-3 transition-shadow ${service.available ? (canAccess ? 'hover:shadow-lg' : '') : 'opacity-50'}`}>
       <div className="flex items-start justify-between">
-        <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
-          <Icon className="h-6 w-6 text-primary" />
+        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+          <Icon className="h-5 w-5 text-primary" />
         </div>
         <Badge
           variant={service.available ? 'default' : 'secondary'}
@@ -159,32 +159,33 @@ function ServiceCard({ service, hasCredits }: { service: Service; hasCredits: bo
       </div>
 
       <div>
-        <h3 className="font-semibold text-lg text-foreground">{service.name}</h3>
-        <p className="text-sm text-muted-foreground mt-1">{service.description}</p>
+        <h3 className="font-semibold text-sm text-foreground">{service.name}</h3>
+        <p className="text-xs text-muted-foreground mt-0.5">{service.description}</p>
       </div>
 
-      <ul className="space-y-2">
+      <ul className="space-y-1">
         {service.features.map((feature, i) => (
-          <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+          <li key={i} className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span className="h-1 w-1 rounded-full bg-primary shrink-0" />
             {feature}
           </li>
         ))}
       </ul>
 
-      <div className="flex items-center justify-between text-sm text-muted-foreground border-t border-border pt-4 mt-auto">
-        <div className="flex items-center gap-1.5">
-          <Clock className="h-4 w-4" />
+      <div className="flex items-center justify-between text-xs text-muted-foreground border-t border-border pt-3 mt-auto">
+        <div className="flex items-center gap-1">
+          <Clock className="h-3.5 w-3.5" />
           {service.validity}
         </div>
-        <div className="flex items-center gap-1.5">
-          <CreditCard className="h-4 w-4" />
+        <div className="flex items-center gap-1">
+          <CreditCard className="h-3.5 w-3.5" />
           <strong>{service.credits} crédito{service.credits > 1 ? 's' : ''}</strong>
         </div>
       </div>
 
       <Button
         className="w-full"
+        size="sm"
         disabled={!canAccess}
         variant={service.available ? 'default' : 'secondary'}
         onClick={() => service.available && navigate(service.route)}
@@ -223,7 +224,7 @@ function CategorySection({ category, hasCredits }: { category: ServiceCategory; 
       </CollapsibleTrigger>
 
       <CollapsibleContent>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
           {category.services.map((service) => (
             <ServiceCard key={service.id} service={service} hasCredits={hasCredits} />
           ))}
