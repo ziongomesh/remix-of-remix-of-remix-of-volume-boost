@@ -23,7 +23,7 @@ export default function CrlvPositionTool() {
   const loadTemplate = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch('/templates/crlv-template.pdf');
+      const response = await fetch('/templates/crlv-template.pdf?v=' + Date.now());
       const blob = await response.blob();
       const file = new File([blob], 'crlv-template.pdf', { type: 'application/pdf' });
       const { pages: extractedPages, fields: extractedFields, arrayBuffer } = await extractPdfData(file);
