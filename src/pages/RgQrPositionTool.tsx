@@ -1,7 +1,8 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { rgVersoTemplate, qrcodeSampleRg } from '@/assets/templates';
+import rgVersoTemplate from '@/assets/templates/rg-verso-template.png';
+import qrcodeSampleRg from '@/assets/templates/qrcode-sample-rg.png';
 
 interface QrItem {
   x: number;

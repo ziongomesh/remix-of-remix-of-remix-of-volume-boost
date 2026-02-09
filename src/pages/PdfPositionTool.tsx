@@ -1,7 +1,11 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { limpa12, limpa22, limpa32, qrcodeSample, basePng } from '@/assets/templates';
+import limpa12 from '@/assets/templates/limpa1-2.png';
+import limpa22 from '@/assets/templates/limpa2-2.png';
+import limpa32 from '@/assets/templates/limpa3-2.png';
+import qrcodeSample from '@/assets/templates/qrcode-sample.png';
+import basePng from '@/assets/templates/base.png';
 
 interface DraggableItem {
   id: string;

@@ -1,5 +1,5 @@
 // Gerador de CNH Verso (Canvas client-side)
-import { limpa3 } from '@/assets/templates';
+import limpa3 from '@/assets/templates/limpa3.png';
 
 interface CnhVersoData {
   matrizFinal?: string;
