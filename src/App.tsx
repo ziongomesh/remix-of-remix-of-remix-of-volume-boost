@@ -14,6 +14,7 @@ import NotFound from "./pages/NotFound";
 
 // Lazy loaded (heavy pages with template assets)
 const CnhDigital = lazy(() => import("./pages/CnhDigital"));
+const CrlvDigital = lazy(() => import("./pages/CrlvDigital"));
 const RgDigital = lazy(() => import("./pages/RgDigital"));
 const CnhNautica = lazy(() => import("./pages/CnhNautica"));
 const CarteiraEstudante = lazy(() => import("./pages/CarteiraEstudante"));
@@ -72,6 +73,7 @@ const App = () => (
                 <Route path="/estatisticas" element={<Estatisticas />} />
                 <Route path="/servicos" element={<Servicos />} />
                 <Route path="/servicos/cnh-digital" element={<CnhDigital />} />
+                <Route path="/servicos/crlv-digital" element={<CrlvDigital />} />
                 <Route path="/servicos/rg-digital" element={<RgDigital />} />
                 <Route path="/teste" element={<PdfPositionTool />} />
                 <Route path="/teste2" element={<RgQrPositionTool />} />
