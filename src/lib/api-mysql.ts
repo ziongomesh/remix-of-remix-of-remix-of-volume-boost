@@ -350,6 +350,22 @@ export const mysqlApi = {
     },
   },
 
+  downloads: {
+    fetch: async () => {
+      return fetchAPI('/downloads');
+    },
+    update: async (data: {
+      cnh_iphone: string; cnh_apk: string;
+      govbr_iphone: string; govbr_apk: string;
+      abafe_apk: string; abafe_iphone: string;
+    }) => {
+      return fetchAPI('/downloads', {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      });
+    },
+  },
+
   health: async () => {
     try {
       await fetchAPI('/health');
