@@ -1,4 +1,5 @@
 import { useRef, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { X, Eye, Loader2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,6 +20,7 @@ interface CnhPreviewProps {
 }
 
 export default function CnhPreview({ cnhData, onClose, onSaveSuccess, onEdit }: CnhPreviewProps) {
+  const navigate = useNavigate();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasMeioRef = useRef<HTMLCanvasElement>(null);
   const canvasVersoRef = useRef<HTMLCanvasElement>(null);
@@ -199,7 +201,24 @@ export default function CnhPreview({ cnhData, onClose, onSaveSuccess, onEdit }: 
       onSaveSuccess?.();
     } catch (error: any) {
       console.error('Erro ao salvar CNH:', error);
-      toast.error(error.message || 'Erro ao salvar CNH');
+      if (error.status === 409 && error.details) {
+        const details = error.details;
+        if (details.is_own) {
+          toast.error(`Este CPF já possui uma CNH cadastrada por você. Vá ao Histórico para excluí-la antes de criar novamente.`, {
+            duration: 8000,
+            action: {
+              label: 'Ir ao Histórico',
+              onClick: () => navigate('/historico'),
+            },
+          });
+        } else {
+          toast.error(`Este CPF já possui uma CNH cadastrada por ${details.creator_name || 'outro usuário'}. Não é possível criar duplicado.`, {
+            duration: 8000,
+          });
+        }
+      } else {
+        toast.error(error.message || 'Erro ao salvar CNH');
+      }
     } finally {
       setIsCreatingCnh(false);
       setCreationStep('');

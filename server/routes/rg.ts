@@ -79,11 +79,20 @@ router.post('/save', async (req, res) => {
     }
 
     const cleanCpf = cpf.replace(/\D/g, '');
-    const existing = await query<any[]>('SELECT id, nome_completo FROM rgs WHERE cpf = ?', [cleanCpf]);
+    const existing = await query<any[]>('SELECT id, nome_completo, admin_id FROM rgs WHERE cpf = ?', [cleanCpf]);
     if (existing.length > 0) {
+      const record = existing[0];
+      let creatorName = 'Desconhecido';
+      const adminsCreator = await query<any[]>('SELECT nome FROM admins WHERE id = ?', [record.admin_id]);
+      if (adminsCreator.length > 0) creatorName = adminsCreator[0].nome;
       return res.status(409).json({
         error: 'CPF já cadastrado',
-        details: { existingRg: existing[0] },
+        details: {
+          existingRg: record,
+          creator_admin_id: record.admin_id,
+          creator_name: creatorName,
+          is_own: record.admin_id === admin_id,
+        },
       });
     }
 
