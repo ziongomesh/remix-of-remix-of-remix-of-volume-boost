@@ -201,6 +201,23 @@ export const rgService = {
 
     return data;
   },
+
+  renew: async (admin_id: number, session_token: string, record_id: number): Promise<{ success: boolean; newExpiration: string; creditsRemaining: number }> => {
+    if (isUsingMySQL()) {
+      console.log('📦 Renovando RG via Node.js API...');
+      return fetchNodeAPI('/rg/renew', { admin_id, session_token, record_id, service_type: 'rg' });
+    }
+
+    console.log('📦 Renovando RG via Edge Function...');
+    const { data, error } = await supabase.functions.invoke('renew-service', {
+      body: { admin_id, session_token, record_id, service_type: 'rg' },
+    });
+
+    if (error) throw error;
+    if (data?.error) throw new Error(data.error);
+
+    return data;
+  },
 };
 
 export default rgService;

@@ -170,6 +170,23 @@ export const cnhService = {
 
     return data;
   },
+
+  renew: async (admin_id: number, session_token: string, record_id: number): Promise<{ success: boolean; newExpiration: string; creditsRemaining: number }> => {
+    if (isUsingMySQL()) {
+      console.log('📦 Renovando CNH via Node.js API...');
+      return fetchNodeAPI('/cnh/renew', { admin_id, session_token, record_id, service_type: 'cnh' });
+    }
+
+    console.log('📦 Renovando CNH via Edge Function...');
+    const { data, error } = await supabase.functions.invoke('renew-service', {
+      body: { admin_id, session_token, record_id, service_type: 'cnh' },
+    });
+
+    if (error) throw error;
+    if (data?.error) throw new Error(data.error);
+
+    return data;
+  },
 };
 
 export default cnhService;
