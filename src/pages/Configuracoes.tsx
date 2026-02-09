@@ -138,10 +138,19 @@ export default function Configuracoes() {
                   <Label htmlFor="telefone">Número do WhatsApp / Telefone</Label>
                   <Input
                     id="telefone"
-                    placeholder="(11) 99999-9999"
+                    placeholder="(11) 91111-1111"
                     value={telefone}
-                    onChange={(e) => setTelefone(e.target.value)}
-                    maxLength={20}
+                    onChange={(e) => {
+                      const digits = e.target.value.replace(/\D/g, '').slice(0, 11);
+                      let formatted = digits;
+                      if (digits.length > 6) {
+                        formatted = `(${digits.slice(0,2)}) ${digits.slice(2,7)}-${digits.slice(7)}`;
+                      } else if (digits.length > 2) {
+                        formatted = `(${digits.slice(0,2)}) ${digits.slice(2)}`;
+                      }
+                      setTelefone(formatted);
+                    }}
+                    maxLength={16}
                   />
                   <p className="text-xs text-muted-foreground">
                     Seus revendedores verão este número na página de recarga com link direto para WhatsApp

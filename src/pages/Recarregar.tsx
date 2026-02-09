@@ -12,7 +12,7 @@ import { Navigate } from 'react-router-dom';
 import api from '@/lib/api';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { CreditCard, Tag, QrCode, Loader2, Clock, CheckCircle, XCircle, History, RefreshCw, TrendingDown, Bitcoin, Star, Crown, Gem, Info, MessageCircle, User } from 'lucide-react';
+import { CreditCard, Tag, QrCode, Loader2, Clock, CheckCircle, XCircle, History, RefreshCw, TrendingDown, Bitcoin, Star, Crown, Gem, Info, MessageCircle, User, Smartphone } from 'lucide-react';
 import ReactCanvasConfetti from 'react-canvas-confetti';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -888,9 +888,17 @@ function ResellerRechargeView({ adminId, sessionToken, credits }: { adminId: num
                   </div>
                   {creatorPhone && (
                     <div className="flex items-center gap-2 pl-13 text-sm">
-                      <span className="text-muted-foreground">📞</span>
+                      <Smartphone className="h-4 w-4 text-primary" />
                       <a href={`https://wa.me/55${creatorPhone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
-                        {creatorPhone}
+                        {(() => {
+                          const digits = creatorPhone.replace(/\D/g, '');
+                          if (digits.length === 11) {
+                            return `(${digits.slice(0,2)}) ${digits.slice(2,7)}-${digits.slice(7)}`;
+                          } else if (digits.length === 10) {
+                            return `(${digits.slice(0,2)}) ${digits.slice(2,6)}-${digits.slice(6)}`;
+                          }
+                          return creatorPhone;
+                        })()}
                       </a>
                     </div>
                   )}
