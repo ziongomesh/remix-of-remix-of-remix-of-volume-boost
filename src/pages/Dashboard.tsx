@@ -3,7 +3,7 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { StatsCard } from '@/components/dashboard/StatsCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CreditCard, Crown, Sparkles, TrendingUp, Users, Clock, FileText, IdCard, GraduationCap, Car, Trophy, Medal, Award } from 'lucide-react';
+import { CreditCard, Crown, Sparkles, TrendingUp, Users, Clock, FileText, IdCard, GraduationCap, Car, Trophy, Medal, Award, Wallet, BarChart3 } from 'lucide-react';
 import { Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import api from '@/lib/api';
@@ -38,6 +38,7 @@ export default function Dashboard() {
   const { admin, role, credits, loading } = useAuth();
   const [topResellers, setTopResellers] = useState<TopReseller[]>([]);
   const [recentResellers, setRecentResellers] = useState<RecentReseller[]>([]);
+  const [topCreditResellers, setTopCreditResellers] = useState<{id: number; nome: string; creditos: number}[]>([]);
   const [totalResellers, setTotalResellers] = useState(0);
   const [documentStats, setDocumentStats] = useState<DocumentStats | null>(null);
   const [loadingStats, setLoadingStats] = useState(true);
@@ -57,6 +58,13 @@ export default function Dashboard() {
             nome: r.nome,
             created_at: r.created_at || ''
           })));
+
+          // Top resellers by credit balance
+          const sortedByCredits = [...resellers]
+            .sort((a: any, b: any) => (b.creditos || 0) - (a.creditos || 0))
+            .slice(0, 5)
+            .map((r: any) => ({ id: r.id, nome: r.nome, creditos: r.creditos || 0 }));
+          setTopCreditResellers(sortedByCredits);
 
           // Calculate top resellers from transactions
           try {
@@ -414,7 +422,141 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Updates Section */}
+        {/* Rankings Section */}
+        {(role === 'master' || role === 'dono') && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+            {/* Ranking by Credits */}
+            <Card className="border border-border">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                  <Wallet className="h-5 w-5 text-emerald-500" />
+                  Ranking por Créditos
+                  <Badge variant="secondary" className="text-[10px] ml-auto">Saldo</Badge>
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Revendedores com maior saldo de créditos
+                </p>
+              </CardHeader>
+              <CardContent>
+                {loadingStats ? (
+                  <div className="flex justify-center py-4">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
+                  </div>
+                ) : topCreditResellers.length > 0 ? (
+                  <div className="space-y-3">
+                    {topCreditResellers.map((reseller, index) => (
+                      <div 
+                        key={reseller.id} 
+                        className={`flex items-center justify-between p-3 rounded-lg transition-all ${
+                          index === 0 
+                            ? 'bg-gradient-to-r from-emerald-500/20 via-emerald-400/10 to-transparent border border-emerald-500/30 shadow-sm' 
+                            : index === 1 
+                              ? 'bg-gradient-to-r from-emerald-400/15 via-emerald-300/5 to-transparent border border-emerald-400/20' 
+                              : index === 2 
+                                ? 'bg-gradient-to-r from-emerald-300/10 via-emerald-200/5 to-transparent border border-emerald-300/20' 
+                                : 'bg-muted/50'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className={`
+                            w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold
+                            ${index === 0 ? 'bg-emerald-500 text-white' : 
+                              index === 1 ? 'bg-emerald-400/80 text-white' : 
+                              index === 2 ? 'bg-emerald-300/80 text-emerald-900' : 
+                              'bg-muted text-muted-foreground'}
+                          `}>
+                            {index + 1}
+                          </span>
+                          <span className={`font-medium text-sm sm:text-base ${index === 0 ? 'text-emerald-600 dark:text-emerald-400' : ''}`}>
+                            {reseller.nome}
+                          </span>
+                        </div>
+                        <Badge variant="secondary">
+                          <CreditCard className="h-3 w-3 mr-1" />
+                          {reseller.creditos.toLocaleString('pt-BR')}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-center text-muted-foreground py-4 text-sm">
+                    Nenhum revendedor encontrado
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Most Used Services */}
+            <Card className="border border-border">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                  <BarChart3 className="h-5 w-5 text-blue-500" />
+                  Serviços Mais Usados
+                  <Badge variant="secondary" className="text-[10px] ml-auto">Popularidade</Badge>
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Ranking dos serviços mais utilizados no sistema
+                </p>
+              </CardHeader>
+              <CardContent>
+                {loadingStats ? (
+                  <div className="flex justify-center py-4">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
+                  </div>
+                ) : documentStats ? (() => {
+                  const services = [
+                    { name: 'CNH Digital', count: documentStats.totalCnh, icon: Car, color: 'text-green-500', bg: 'bg-green-500' },
+                    { name: 'RG Digital', count: documentStats.totalRg, icon: IdCard, color: 'text-purple-500', bg: 'bg-purple-500' },
+                    { name: 'Carteira Estudante', count: documentStats.totalCarteira, icon: GraduationCap, color: 'text-amber-500', bg: 'bg-amber-500' },
+                  ].sort((a, b) => b.count - a.count);
+                  const maxCount = services[0]?.count || 1;
+
+                  return (
+                    <div className="space-y-4">
+                      {services.map((service, index) => {
+                        const Icon = service.icon;
+                        const percentage = maxCount > 0 ? (service.count / maxCount) * 100 : 0;
+                        return (
+                          <div key={service.name} className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <span className={`
+                                  w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white
+                                  ${index === 0 ? 'bg-yellow-500' : index === 1 ? 'bg-gray-400' : 'bg-amber-600'}
+                                `}>
+                                  {index + 1}
+                                </span>
+                                <Icon className={`h-4 w-4 ${service.color}`} />
+                                <span className="font-medium text-sm">{service.name}</span>
+                              </div>
+                              <span className="font-bold text-sm">{service.count.toLocaleString('pt-BR')}</span>
+                            </div>
+                            <div className="w-full bg-muted rounded-full h-2.5">
+                              <div 
+                                className={`${service.bg} h-2.5 rounded-full transition-all duration-500`}
+                                style={{ width: `${percentage}%`, opacity: 0.7 }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                      <div className="pt-2 border-t border-border text-center">
+                        <span className="text-sm text-muted-foreground">Total: </span>
+                        <span className="font-bold text-primary">{documentStats.totalDocuments.toLocaleString('pt-BR')}</span>
+                        <span className="text-sm text-muted-foreground"> documentos</span>
+                      </div>
+                    </div>
+                  );
+                })() : (
+                  <p className="text-center text-muted-foreground py-4 text-sm">
+                    Nenhum dado de serviço disponível
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
