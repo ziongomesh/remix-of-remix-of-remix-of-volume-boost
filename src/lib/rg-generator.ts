@@ -103,7 +103,7 @@ export async function generateRGFrente(
   ctx.font = '21px "Noto Sans", Tahoma, Arial, sans-serif';
   ctx.fillStyle = '#4A4A4D';
   ctx.textAlign = 'center';
-  ctx.fillText(textoEstado(data.uf), canvas.width / 2, 150);
+  ctx.fillText(textoEstado(data.uf), canvas.width / 2 + 15, 150);
   ctx.fillText('Secretaria de Segurança Pública da Unidade de Federação', canvas.width / 2, 175);
 
   // Foto
@@ -134,7 +134,7 @@ export async function generateRGFrente(
   ctx.fillText(data.naturalidade || '', 436, 575);
   ctx.fillText(data.genero || '', 829, 455);
   ctx.fillText(data.nacionalidade || 'BRA', 829, 515);
-  ctx.fillText(formatDateBR(data.validade || ''), 829, 575);
+  ctx.fillText(formatDateBR(data.validade || ''), 829, 583);
 
   // Assinatura
   if (data.assinatura) {
