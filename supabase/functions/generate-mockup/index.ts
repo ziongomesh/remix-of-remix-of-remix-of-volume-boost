@@ -75,9 +75,36 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const resultImage = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    console.log("AI response keys:", JSON.stringify(Object.keys(data)));
+    console.log("AI choices:", JSON.stringify(data.choices?.[0]?.message ? Object.keys(data.choices[0].message) : "no message"));
+    
+    // Try multiple paths to find the image
+    let resultImage = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    
+    if (!resultImage) {
+      // Try inline_data format
+      resultImage = data.choices?.[0]?.message?.images?.[0]?.url;
+    }
+    
+    if (!resultImage) {
+      // Check content array for image parts
+      const content = data.choices?.[0]?.message?.content;
+      if (Array.isArray(content)) {
+        for (const part of content) {
+          if (part.type === "image_url" && part.image_url?.url) {
+            resultImage = part.image_url.url;
+            break;
+          }
+          if (part.type === "image" && part.url) {
+            resultImage = part.url;
+            break;
+          }
+        }
+      }
+    }
 
     if (!resultImage) {
+      console.error("No image in response. Full response:", JSON.stringify(data).slice(0, 500));
       return new Response(
         JSON.stringify({ error: "Não foi possível gerar o mockup. Tente novamente." }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
