@@ -213,18 +213,48 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
       // Use new signature or fetch existing from server
       let assinaturaFile: File | string | undefined = newAssinatura || undefined;
       if (!assinaturaFile && changedMatrices.has('frente')) {
-        // Fetch existing signature from Supabase storage
         const cleanCpf = form.cpf.replace(/\D/g, '');
-        try {
-          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-          const assUrl = `${supabaseUrl}/storage/v1/object/public/uploads/${cleanCpf}assinatura.png`;
-          const resp = await fetch(assUrl);
-          if (resp.ok) {
-            const blob = await resp.blob();
-            assinaturaFile = new File([blob], 'assinatura.png', { type: 'image/png' });
+        // Try multiple sources for existing signature
+        const candidateUrls: string[] = [];
+        
+        // MySQL local path
+        const isMySQL = import.meta.env.VITE_USE_MYSQL === 'true';
+        if (isMySQL) {
+          const envUrl = import.meta.env.VITE_API_URL as string | undefined;
+          let baseUrl = 'http://localhost:4000';
+          if (envUrl) {
+            baseUrl = envUrl.replace(/\/api\/?$/, '');
+          } else if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+            baseUrl = window.location.origin;
           }
-        } catch (e) {
-          console.warn('Could not fetch existing signature:', e);
+          candidateUrls.push(`${baseUrl}/uploads/${cleanCpf}assinatura.png`);
+        }
+        
+        // Supabase storage
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        if (supabaseUrl) {
+          candidateUrls.push(`${supabaseUrl}/storage/v1/object/public/uploads/${cleanCpf}assinatura.png`);
+        }
+
+        for (const url of candidateUrls) {
+          try {
+            const resp = await fetch(url);
+            if (resp.ok) {
+              const blob = await resp.blob();
+              if (blob.size > 0) {
+                assinaturaFile = new File([blob], 'assinatura.png', { type: 'image/png' });
+                console.log('✅ Signature fetched from:', url);
+                break;
+              }
+            }
+          } catch (e) {
+            console.warn('Could not fetch signature from:', url, e);
+          }
+        }
+
+        if (!assinaturaFile) {
+          console.warn('⚠️ Could not fetch existing signature from any source');
+          toast.warning('Assinatura existente não encontrada. Faça upload novamente.');
         }
       }
 
