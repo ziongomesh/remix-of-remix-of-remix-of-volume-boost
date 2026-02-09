@@ -207,9 +207,9 @@ router.post('/save', async (req, res) => {
         try {
           const fotoImg = await embedBase64(fotoBase64);
           // Foto principal
-          page.drawImage(fotoImg, { x: 35, y: ty(140, 86), width: 69, height: 86 });
+          page.drawImage(fotoImg, { x: 35, y: ty(137.5, 86), width: 69, height: 86 });
           // Foto menor (segunda posição)
-          page.drawImage(fotoImg, { x: 297, y: ty(305, 32), width: 28, height: 32 });
+          page.drawImage(fotoImg, { x: 297, y: ty(302.5, 32), width: 28, height: 32 });
         } catch (e) { logger.error('Erro ao embutir foto no PDF:', e); }
       }
 
