@@ -252,7 +252,7 @@ router.post('/save', async (req, res) => {
       [admin_id, admin_id, 'crlv_creation']
     );
 
-    logger.info(`[CRLV] Gerado com sucesso para CPF/CNPJ ${cleanCpf} por admin ${admin_id}`);
+    logger.action('CRLV', `Gerado com sucesso para CPF/CNPJ ${cleanCpf} por admin ${admin_id}`);
 
     res.json({
       success: true,
