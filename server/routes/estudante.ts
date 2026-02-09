@@ -197,4 +197,125 @@ router.post('/delete', async (req, res) => {
   }
 });
 
+// ========== UPDATE CARTEIRA ESTUDANTE ==========
+router.post('/update', async (req, res) => {
+  try {
+    const {
+      admin_id, session_token, estudante_id,
+      nome, rg, data_nascimento, faculdade, graduacao,
+      fotoBase64,
+    } = req.body;
+
+    if (!await validateSession(admin_id, session_token)) {
+      return res.status(401).json({ error: 'Sessão inválida' });
+    }
+
+    const existing = await query<any[]>('SELECT * FROM carteira_estudante WHERE id = ?', [estudante_id]);
+    if (!existing.length) {
+      return res.status(404).json({ error: 'Registro não encontrado' });
+    }
+
+    const record = existing[0];
+    const cleanCpf = record.cpf;
+
+    // Update photo if provided
+    if (fotoBase64) {
+      saveFile(fotoBase64, `${cleanCpf}img6`);
+    }
+
+    // Regenerate QR code
+    const qrBaseUrl = process.env.ABAFE_QR_URL || process.env.VITE_ABAFE_QR_URL || 'https://abafe-certificado.info/qrcode.php?cpf=';
+    const qrLink = `${qrBaseUrl}${cleanCpf}`;
+    const qrPayload = JSON.stringify({
+      url: qrLink,
+      doc: "CARTEIRA_ESTUDANTE", ver: "1.0",
+      cpf: cleanCpf, nome: nome || record.nome, rg: rg || record.rg,
+      dn: data_nascimento || record.data_nascimento, fac: faculdade || record.faculdade, grad: graduacao || record.graduacao,
+      sn: record.senha, ts: Date.now(),
+    });
+    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrPayload)}&format=png&ecc=M`;
+
+    let qrcodeUrl = record.qrcode;
+    try {
+      const qrResp = await fetch(qrApiUrl);
+      if (qrResp.ok) {
+        const qrPngBytes = new Uint8Array(await qrResp.arrayBuffer());
+        qrcodeUrl = saveBuffer(Buffer.from(qrPngBytes), `${cleanCpf}qrimg6`);
+      }
+    } catch (e) {
+      logger.error('Estudante QR update error:', e);
+    }
+
+    let mysqlDate = data_nascimento || record.data_nascimento;
+    if (mysqlDate && mysqlDate.includes('/')) {
+      const parts = mysqlDate.split('/');
+      if (parts.length === 3) mysqlDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+    }
+
+    await query(
+      `UPDATE carteira_estudante SET nome = ?, rg = ?, data_nascimento = ?, faculdade = ?, graduacao = ?, qrcode = ? WHERE id = ?`,
+      [nome || record.nome, rg || record.rg, mysqlDate, faculdade || record.faculdade, graduacao || record.graduacao, qrcodeUrl, estudante_id]
+    );
+
+    if (fotoBase64) {
+      await query('UPDATE carteira_estudante SET perfil_imagem = ? WHERE id = ?', [`/uploads/${cleanCpf}img6.png`, estudante_id]);
+    }
+
+    res.json({ success: true });
+  } catch (error: any) {
+    logger.error('Estudante update error:', error);
+    res.status(500).json({ error: 'Erro interno', details: error.message });
+  }
+});
+
+// ========== RENEW CARTEIRA ESTUDANTE ==========
+router.post('/renew', async (req, res) => {
+  try {
+    const { admin_id, session_token, record_id } = req.body;
+
+    if (!admin_id || !session_token || !record_id) {
+      return res.status(400).json({ error: 'Parâmetros obrigatórios faltando' });
+    }
+
+    const admins = await query<any[]>('SELECT id, creditos, session_token FROM admins WHERE id = ? AND session_token = ?', [admin_id, session_token]);
+    if (!admins || admins.length === 0) {
+      return res.status(401).json({ error: 'Sessão inválida' });
+    }
+
+    const admin = admins[0];
+    if (admin.creditos < 1) {
+      return res.status(400).json({ error: 'Créditos insuficientes' });
+    }
+
+    // Buscar registro - note: carteira_estudante doesn't have expires_at in original MySQL schema
+    // We check data_expiracao if it exists, otherwise use created_at + 45 days
+    const records = await query<any[]>('SELECT id, admin_id, created_at FROM carteira_estudante WHERE id = ? AND admin_id = ?', [record_id, admin_id]);
+    if (!records || records.length === 0) {
+      return res.status(404).json({ error: 'Registro não encontrado' });
+    }
+
+    const now = new Date();
+    const newExpiration = new Date(now.getTime() + 45 * 24 * 60 * 60 * 1000);
+
+    // Try adding data_expiracao column if it doesn't exist, or just update created_at
+    try {
+      await query('ALTER TABLE carteira_estudante ADD COLUMN IF NOT EXISTS data_expiracao TIMESTAMP DEFAULT NULL', []);
+    } catch { /* column may already exist */ }
+
+    await query('UPDATE carteira_estudante SET data_expiracao = ? WHERE id = ?', [newExpiration, record_id]);
+    await query('UPDATE admins SET creditos = creditos - 1 WHERE id = ?', [admin_id]);
+
+    logger.action('ESTUDANTE RENOVADO', `record_id=${record_id}, nova_expiracao=${newExpiration.toISOString()}, admin_id=${admin_id}`);
+
+    res.json({
+      success: true,
+      newExpiration: newExpiration.toISOString(),
+      creditsRemaining: admin.creditos - 1,
+    });
+  } catch (error: any) {
+    logger.error('Estudante renew error:', error);
+    res.status(500).json({ error: 'Erro interno', details: error.message });
+  }
+});
+
 export default router;

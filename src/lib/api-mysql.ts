@@ -336,6 +336,18 @@ export const mysqlApi = {
         body: JSON.stringify({ admin_id: adminId, session_token: sessionToken, estudante_id: estudanteId }),
       });
     },
+    update: async (data: any) => {
+      return fetchAPI('/estudante/update', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+    },
+    renew: async (adminId: number, sessionToken: string, recordId: number) => {
+      return fetchAPI('/estudante/renew', {
+        method: 'POST',
+        body: JSON.stringify({ admin_id: adminId, session_token: sessionToken, record_id: recordId }),
+      });
+    },
   },
 
   health: async () => {

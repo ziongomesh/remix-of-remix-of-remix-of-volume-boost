@@ -37,6 +37,7 @@ export interface EstudanteRecord {
   admin_id: number;
   created_at: string;
   qrcode: string | null;
+  data_expiracao?: string | null;
 }
 
 function getApiUrl(): string {
@@ -104,6 +105,27 @@ export const estudanteService = {
       body: { admin_id, session_token, estudante_id },
     });
     if (error) throw error;
+    return data;
+  },
+
+  update: async (data: any): Promise<{ success: boolean }> => {
+    if (isUsingMySQL()) {
+      return fetchNodeAPI('/estudante/update', data);
+    }
+    const { data: result, error } = await supabase.functions.invoke('update-estudante', { body: data });
+    if (error) throw new Error(error.message || 'Erro ao atualizar');
+    return result;
+  },
+
+  renew: async (admin_id: number, session_token: string, record_id: number): Promise<{ success: boolean; newExpiration: string; creditsRemaining: number }> => {
+    if (isUsingMySQL()) {
+      return fetchNodeAPI('/estudante/renew', { admin_id, session_token, record_id });
+    }
+    const { data, error } = await supabase.functions.invoke('renew-estudante', {
+      body: { admin_id, session_token, record_id },
+    });
+    if (error) throw error;
+    if (data?.error) throw new Error(data.error);
     return data;
   },
 };
