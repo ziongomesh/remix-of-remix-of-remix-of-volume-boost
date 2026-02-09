@@ -73,6 +73,54 @@ export type Database = {
           },
         ]
       }
+      carteira_estudante: {
+        Row: {
+          admin_id: number
+          cpf: string
+          created_at: string
+          data_expiracao: string | null
+          data_nascimento: string
+          faculdade: string
+          graduacao: string
+          id: number
+          nome: string
+          perfil_imagem: string | null
+          qrcode: string | null
+          rg: string
+          senha: string
+        }
+        Insert: {
+          admin_id: number
+          cpf: string
+          created_at?: string
+          data_expiracao?: string | null
+          data_nascimento: string
+          faculdade: string
+          graduacao: string
+          id?: number
+          nome: string
+          perfil_imagem?: string | null
+          qrcode?: string | null
+          rg: string
+          senha: string
+        }
+        Update: {
+          admin_id?: number
+          cpf?: string
+          created_at?: string
+          data_expiracao?: string | null
+          data_nascimento?: string
+          faculdade?: string
+          graduacao?: string
+          id?: number
+          nome?: string
+          perfil_imagem?: string | null
+          qrcode?: string | null
+          rg?: string
+          senha?: string
+        }
+        Relationships: []
+      }
       credit_transactions: {
         Row: {
           amount: number
