@@ -48,8 +48,8 @@ export function PdfCanvas({ pageCanvas, fields, selectedId, onSelect, onUpdateFi
       <img src={bgUrl} alt="PDF page" className="absolute inset-0 w-full h-full" draggable={false} />
 
       {pageFields.map((field) => {
-        const isSelected = selectedId === field.id;
         const isEditing = editing === field.id;
+        const wasEdited = field.text !== field.originalText;
 
         return (
           <div
@@ -65,7 +65,7 @@ export function PdfCanvas({ pageCanvas, fields, selectedId, onSelect, onUpdateFi
               minHeight: field.height,
               fontSize: field.fontSize,
               color: field.color,
-              backgroundColor: isEditing ? 'rgba(255,255,255,0.95)' : 'transparent',
+              backgroundColor: (isEditing || wasEdited) ? 'rgba(255,255,255,0.95)' : 'transparent',
               zIndex: isEditing ? 50 : 10,
               lineHeight: 1,
               padding: '1px 0',
@@ -83,7 +83,10 @@ export function PdfCanvas({ pageCanvas, fields, selectedId, onSelect, onUpdateFi
                 onClick={(e) => e.stopPropagation()}
               />
             ) : (
-              <span className="whitespace-nowrap leading-none select-none pointer-events-none" style={{ opacity: 0 }}>
+              <span
+                className="whitespace-nowrap leading-none select-none pointer-events-none"
+                style={{ opacity: wasEdited ? 1 : 0 }}
+              >
                 {field.text}
               </span>
             )}
