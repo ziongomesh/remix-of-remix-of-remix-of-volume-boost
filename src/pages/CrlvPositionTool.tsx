@@ -39,7 +39,7 @@ const CRLV_INPUT_NAMES = [
   'codSegCla', 'catObs', 'marcaModelo', 'especieTipo', 'placaAnt', 'chassi', 'cor',
   'combustivel', 'categoria', 'capacidade', 'potenciaCil', 'pesoBruto', 'motor',
   'cmt', 'eixos', 'lotacao', 'carroceria', 'nomeProprietario', 'cpfCnpj', 'local',
-  'data', 'uf', 'observacoes',
+  'data', 'uf', 'observacoes', 'detranUf', 'docEmitido',
 ];
 
 export default function CrlvPositionTool() {
