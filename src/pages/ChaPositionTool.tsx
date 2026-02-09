@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { chaSampleFoto, matrizcha, matrizcha2 } from '@/assets/templates';
+import chaSampleFoto from '@/assets/templates/cha-sample-foto.png';
+import matrizcha from '@/assets/templates/matrizcha.png';
+import matrizcha2 from '@/assets/templates/matrizcha2.png';
 
 interface TextField {
   id: string;

@@ -1,5 +1,6 @@
 // Gerador de CNH Frente (Canvas client-side)
-import { limpa1, limpa1Alt } from '@/assets/templates';
+import limpa1 from '@/assets/templates/limpa1.png';
+import limpa1Alt from '@/assets/templates/limpa-1.png';
 
 interface CnhData {
   nome?: string;

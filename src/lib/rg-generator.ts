@@ -1,5 +1,7 @@
 // Gerador de RG Digital (Canvas client-side)
-import { rgFrente, rgVerso, rgPdfBg } from '@/assets/templates';
+import rgFrente from '@/assets/templates/rg-frente.png';
+import rgVerso from '@/assets/templates/rg-verso.png';
+import rgPdfBg from '@/assets/templates/rg-pdf-bg.png';
 
 export interface RgData {
   nomeCompleto: string;

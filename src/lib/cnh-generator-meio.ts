@@ -1,5 +1,5 @@
 // Gerador de CNH Meio (Canvas client-side)
-import { limpa2 } from '@/assets/templates';
+import limpa2 from '@/assets/templates/limpa2.png';
 
 interface CnhMeioData {
   obs?: string;

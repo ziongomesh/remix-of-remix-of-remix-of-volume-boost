@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from 'react';
-import { matrizcha, matrizcha2 } from '@/assets/templates';
+import matrizcha from '@/assets/templates/matrizcha.png';
+import matrizcha2 from '@/assets/templates/matrizcha2.png';
 
 interface ChaPreviewProps {
   nome: string;
