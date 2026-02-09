@@ -1,9 +1,7 @@
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import * as pdfjsLib from 'pdfjs-dist';
-
-// Configure worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+import { extractPdfData } from '@/components/pdf-editor/pdf-utils';
+import { PdfTextField } from '@/components/pdf-editor/types';
 
 interface CrlvPreviewProps {
   form: UseFormReturn<any>;
@@ -11,156 +9,169 @@ interface CrlvPreviewProps {
   showDenseQr?: boolean;
 }
 
-// Coordinates from server/routes/crlv.ts (x, y from top)
-const FIELD_MAP: { key: string; x: number; y: number; size: number }[] = [
-  // LEFT COLUMN
-  { key: 'renavam', x: 18, y: 115, size: 12 },
-  { key: 'placa', x: 18, y: 146, size: 12 },
-  { key: 'exercicio', x: 130, y: 146, size: 12 },
-  { key: 'anoFab', x: 18, y: 176, size: 12 },
-  { key: 'anoMod', x: 130, y: 176, size: 12 },
-  { key: 'numeroCrv', x: 18, y: 208, size: 11 },
-  { key: 'codSegCla', x: 18, y: 328, size: 11 },
-  { key: 'catObs', x: 200, y: 328, size: 11 },
-  { key: 'marcaModelo', x: 18, y: 363, size: 11 },
-  { key: 'especieTipo', x: 18, y: 400, size: 11 },
-  { key: 'placaAnt', x: 18, y: 433, size: 11 },
-  { key: 'chassi', x: 135, y: 433, size: 10 },
-  { key: 'cor', x: 18, y: 465, size: 11 },
-  { key: 'combustivel', x: 135, y: 465, size: 10 },
-  // RIGHT COLUMN
-  { key: 'categoria', x: 310, y: 105, size: 12 },
-  { key: 'capacidade', x: 510, y: 105, size: 12 },
-  { key: 'potenciaCil', x: 310, y: 140, size: 12 },
-  { key: 'pesoBruto', x: 510, y: 140, size: 10 },
-  { key: 'motor', x: 310, y: 172, size: 10 },
-  { key: 'cmt', x: 476, y: 172, size: 10 },
-  { key: 'eixos', x: 520, y: 172, size: 10 },
-  { key: 'lotacao', x: 548, y: 172, size: 10 },
-  { key: 'carroceria', x: 310, y: 208, size: 11 },
-  { key: 'nomeProprietario', x: 310, y: 242, size: 11 },
-  { key: 'cpfCnpj', x: 420, y: 276, size: 11 },
-  { key: 'local', x: 310, y: 310, size: 11 },
-  { key: 'data', x: 520, y: 310, size: 10 },
+// Map form keys → approximate PDF coordinates (x, y in canvas space at scale 1.5)
+// These are used to find the closest extracted field
+const FORM_TO_PDF_MAP: { key: string; x: number; y: number }[] = [
+  // Left column
+  { key: 'renavam', x: 27, y: 150 },
+  { key: 'placa', x: 27, y: 195 },
+  { key: 'exercicio', x: 195, y: 195 },
+  { key: 'anoFab', x: 27, y: 237 },
+  { key: 'anoMod', x: 195, y: 237 },
+  { key: 'numeroCrv', x: 27, y: 288 },
+  { key: 'codSegCla', x: 27, y: 468 },
+  { key: 'catObs', x: 300, y: 468 },
+  { key: 'marcaModelo', x: 27, y: 520 },
+  { key: 'especieTipo', x: 27, y: 575 },
+  { key: 'placaAnt', x: 27, y: 625 },
+  { key: 'chassi', x: 202, y: 625 },
+  { key: 'cor', x: 27, y: 672 },
+  { key: 'combustivel', x: 202, y: 672 },
+  // Right column
+  { key: 'categoria', x: 465, y: 135 },
+  { key: 'capacidade', x: 765, y: 135 },
+  { key: 'potenciaCil', x: 465, y: 186 },
+  { key: 'pesoBruto', x: 765, y: 186 },
+  { key: 'motor', x: 465, y: 234 },
+  { key: 'cmt', x: 714, y: 234 },
+  { key: 'eixos', x: 780, y: 234 },
+  { key: 'lotacao', x: 822, y: 234 },
+  { key: 'carroceria', x: 465, y: 288 },
+  { key: 'nomeProprietario', x: 465, y: 339 },
+  { key: 'cpfCnpj', x: 630, y: 390 },
+  { key: 'local', x: 465, y: 441 },
+  { key: 'data', x: 780, y: 441 },
 ];
 
-// White-out rectangles from server (x, y from top, w, h)
-const WHITEOUT_RECTS: { x: number; y: number; w: number; h: number }[] = [
-  { x: 18, y: 100, w: 200, h: 20 },
-  { x: 18, y: 132, w: 100, h: 18 },
-  { x: 130, y: 132, w: 90, h: 18 },
-  { x: 18, y: 162, w: 100, h: 18 },
-  { x: 130, y: 162, w: 90, h: 18 },
-  { x: 18, y: 192, w: 200, h: 20 },
-  { x: 18, y: 312, w: 165, h: 20 },
-  { x: 195, y: 312, w: 50, h: 20 },
-  { x: 18, y: 347, w: 230, h: 22 },
-  { x: 18, y: 382, w: 230, h: 22 },
-  { x: 18, y: 418, w: 110, h: 18 },
-  { x: 135, y: 418, w: 120, h: 18 },
-  { x: 18, y: 450, w: 110, h: 18 },
-  { x: 135, y: 450, w: 120, h: 18 },
-  // Right column
-  { x: 310, y: 87, w: 190, h: 22 },
-  { x: 500, y: 87, w: 80, h: 22 },
-  { x: 310, y: 122, w: 190, h: 22 },
-  { x: 500, y: 122, w: 80, h: 22 },
-  { x: 310, y: 156, w: 165, h: 20 },
-  { x: 476, y: 156, w: 40, h: 20 },
-  { x: 518, y: 156, w: 25, h: 20 },
-  { x: 545, y: 156, w: 40, h: 20 },
-  { x: 310, y: 190, w: 280, h: 22 },
-  { x: 310, y: 224, w: 280, h: 22 },
-  { x: 420, y: 258, w: 170, h: 22 },
-  { x: 310, y: 292, w: 190, h: 22 },
-  { x: 520, y: 292, w: 70, h: 22 },
-  // QR area
-  { x: 240, y: 100, w: 175, h: 195 },
-  // Observações area
-  { x: 18, y: 505, w: 270, h: 245 },
-  // DETRAN-UF area
-  { x: 310, y: 340, w: 280, h: 22 },
-  // Documento emitido line
-  { x: 18, y: 480, w: 560, h: 20 },
-];
+function findClosestField(fields: PdfTextField[], targetX: number, targetY: number): PdfTextField | null {
+  let best: PdfTextField | null = null;
+  let bestDist = Infinity;
+  for (const f of fields) {
+    const dx = f.x - targetX;
+    const dy = f.y - targetY;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist < bestDist && dist < 80) { // 80px tolerance
+      bestDist = dist;
+      best = f;
+    }
+  }
+  return best;
+}
 
 export function CrlvPreview({ form, customQrPreview, showDenseQr = true }: CrlvPreviewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const baseImageRef = useRef<ImageData | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [pageCanvas, setPageCanvas] = useState<HTMLCanvasElement | null>(null);
+  const [bgCanvas, setBgCanvas] = useState<HTMLCanvasElement | null>(null);
+  const [extractedFields, setExtractedFields] = useState<PdfTextField[]>([]);
   const [ready, setReady] = useState(false);
   const rafRef = useRef<number>(0);
 
   const v = form.watch();
 
-  // Load PDF template once and store base image
+  // Load PDF template once
   useEffect(() => {
     let cancelled = false;
-    const loadPdf = async () => {
+    const load = async () => {
       try {
-        const pdf = await pdfjsLib.getDocument('/templates/crlv-template.pdf').promise;
-        const page = await pdf.getPage(1);
-        const scale = 1.5;
-        const viewport = page.getViewport({ scale });
-
-        const canvas = canvasRef.current;
-        if (!canvas || cancelled) return;
-
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-
-        await page.render({ canvasContext: ctx, viewport }).promise;
+        const response = await fetch('/templates/crlv-template.pdf?v=' + Date.now());
+        const blob = await response.blob();
+        const file = new File([blob], 'crlv-template.pdf', { type: 'application/pdf' });
+        const { pages, fields } = await extractPdfData(file);
         if (cancelled) return;
-
-        baseImageRef.current = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        if (pages.length > 0) {
+          setPageCanvas(pages[0].canvas);
+          setBgCanvas(pages[0].bgCanvas);
+        }
+        setExtractedFields(fields);
         setReady(true);
       } catch (err) {
         console.error('Erro ao carregar template CRLV:', err);
       }
     };
-    loadPdf();
+    load();
     return () => { cancelled = true; };
   }, []);
 
-  // Redraw on form changes - debounced with rAF
+  // Build field mapping once extracted fields are ready
+  const fieldMapping = useMemo(() => {
+    if (extractedFields.length === 0) return new Map<string, string>();
+    const map = new Map<string, string>(); // formKey -> fieldId
+    const used = new Set<string>();
+
+    for (const mapping of FORM_TO_PDF_MAP) {
+      const available = extractedFields.filter(f => !used.has(f.id));
+      const match = findClosestField(available, mapping.x, mapping.y);
+      if (match) {
+        map.set(mapping.key, match.id);
+        used.add(match.id);
+      }
+    }
+    return map;
+  }, [extractedFields]);
+
+  // Redraw on form changes
   useEffect(() => {
-    if (!ready) return;
+    if (!ready || !pageCanvas) return;
 
     cancelAnimationFrame(rafRef.current);
     rafRef.current = requestAnimationFrame(() => {
       const canvas = canvasRef.current;
-      const baseImage = baseImageRef.current;
-      if (!canvas || !baseImage) return;
-
+      if (!canvas) return;
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
-      const scale = 1.5;
+      canvas.width = pageCanvas.width;
+      canvas.height = pageCanvas.height;
 
-      // Restore base image
-      ctx.putImageData(baseImage, 0, 0);
+      // Draw original page
+      ctx.drawImage(pageCanvas, 0, 0);
 
-      // Draw white-out rectangles
-      ctx.fillStyle = '#FFFFFF';
-      for (const rect of WHITEOUT_RECTS) {
-        ctx.fillRect(rect.x * scale, rect.y * scale, rect.w * scale, rect.h * scale);
+      // For each form field that has a mapped PDF field, white-out + redraw
+      for (const [formKey, fieldId] of fieldMapping.entries()) {
+        const formValue = v[formKey] || '';
+        const field = extractedFields.find(f => f.id === fieldId);
+        if (!field) continue;
+
+        // White-out the original text area
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(field.x, field.y, field.width, field.height);
+
+        // Draw new text
+        if (formValue.trim()) {
+          ctx.fillStyle = '#000000';
+          ctx.font = `bold ${field.fontSize}px "FreeMono", "Courier New", monospace`;
+          ctx.textBaseline = 'alphabetic';
+          ctx.fillText(formValue, field.x, field.y + field.fontSize * 0.85);
+        }
       }
 
-      // Draw text fields
-      ctx.fillStyle = '#000000';
-      for (const field of FIELD_MAP) {
-        const text = v[field.key] || '';
-        if (!text) continue;
-        ctx.font = `bold ${field.size * scale}px Courier, monospace`;
-        ctx.fillText(text, field.x * scale, field.y * scale);
-      }
-
-      // Draw DETRAN-UF
+      // Draw DETRAN-UF (find the DETRAN field or draw at known position)
       if (v.uf) {
-        ctx.font = `bold ${12 * scale}px "Open Sans", sans-serif`;
-        ctx.fillText(`DETRAN-   ${v.uf}`, 310 * scale, 355 * scale);
+        const detranField = extractedFields.find(f => f.text?.includes('DETRAN'));
+        if (detranField) {
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(detranField.x, detranField.y, detranField.width + 50, detranField.height);
+          ctx.fillStyle = '#000000';
+          ctx.font = `bold ${detranField.fontSize}px "FreeMono", "Courier New", monospace`;
+          ctx.textBaseline = 'alphabetic';
+          ctx.fillText(`DETRAN-   ${v.uf}`, detranField.x, detranField.y + detranField.fontSize * 0.85);
+        }
+      }
+
+      // Draw observações
+      const obsText = v.observacoes || '*.*';
+      const obsField = extractedFields.find(f => f.text?.includes('*.*') || f.text?.includes('NADA'));
+      if (obsField) {
+        const lines = obsText.split('\n');
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(obsField.x - 2, obsField.y - 2, 400, lines.length * obsField.fontSize * 1.4 + 10);
+        ctx.fillStyle = '#000000';
+        ctx.font = `bold ${obsField.fontSize}px "FreeMono", "Courier New", monospace`;
+        ctx.textBaseline = 'alphabetic';
+        lines.forEach((line: string, i: number) => {
+          ctx.fillText(line, obsField.x, obsField.y + obsField.fontSize * 0.85 + i * obsField.fontSize * 1.3);
+        });
       }
 
       // Draw "Documento emitido por CDT..."
@@ -169,38 +180,50 @@ export function CrlvPreview({ form, customQrPreview, showDenseQr = true }: CrlvP
       const hashCode = `${cpfHash.slice(0,3)}${cpfHash.slice(3,5)}f${cpfHash.slice(5,8)}`;
       const now = new Date();
       const docText = `Documento emitido por CDT (${hashCode}) em ${v.data || now.toLocaleDateString('pt-BR')} às ${now.toLocaleTimeString('pt-BR')}.`;
-      ctx.font = `${8 * scale}px Courier, monospace`;
-      ctx.fillText(docText, 80 * scale, 495 * scale);
+      const cdtField = extractedFields.find(f => f.text?.includes('Documento emitido'));
+      if (cdtField) {
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(cdtField.x - 2, cdtField.y - 2, 820, cdtField.height + 4);
+        ctx.fillStyle = '#000000';
+        ctx.font = `${cdtField.fontSize}px "Courier New", monospace`;
+        ctx.textBaseline = 'alphabetic';
+        ctx.fillText(docText, cdtField.x, cdtField.y + cdtField.fontSize * 0.85);
+      }
 
-      // Draw observações
-      const obsText = v.observacoes || '*.*';
-      const obsLines = (obsText as string).split('\n');
-      ctx.font = `bold ${11 * scale}px Courier, monospace`;
-      obsLines.forEach((line: string, i: number) => {
-        ctx.fillText(line, 25 * scale, (530 + i * 16) * scale);
-      });
-
-      // Draw QR code - either custom upload or default dense sample
+      // QR Code overlay
       const qrSrc = customQrPreview || (showDenseQr ? '/images/qrcode-sample-crlv.png' : null);
       if (qrSrc) {
         const img = new Image();
         img.onload = () => {
-          ctx.drawImage(img, 255 * scale, (280 - 145) * scale, 145 * scale, 145 * scale);
+          // QR position calibrated from /teste5: x=120pt, y=64pt, size=84pt at scale 1.5
+          const ptToCanvas = 96 / 72 * 1.5;
+          const qrX = 120.0 * ptToCanvas;
+          const qrY = 64.0 * ptToCanvas;
+          const qrSize = 84.0 * ptToCanvas;
+          // White-out QR area first
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(qrX, qrY, qrSize, qrSize);
+          ctx.drawImage(img, qrX, qrY, qrSize, qrSize);
         };
         img.src = qrSrc;
       }
     });
 
     return () => cancelAnimationFrame(rafRef.current);
-  }, [v, customQrPreview, ready]);
+  }, [v, customQrPreview, showDenseQr, ready, pageCanvas, fieldMapping, extractedFields]);
 
   return (
-    <div className="rounded-lg border border-border overflow-hidden bg-muted">
+    <div ref={containerRef} className="rounded-lg border border-border overflow-hidden bg-muted">
       <canvas
         ref={canvasRef}
         className="w-full h-auto"
         style={{ display: 'block' }}
       />
+      {!ready && (
+        <div className="flex items-center justify-center py-20 text-muted-foreground text-sm">
+          Carregando preview...
+        </div>
+      )}
     </div>
   );
 }
