@@ -212,9 +212,16 @@ export default function CrlvDigital() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr,380px] gap-6">
-          {/* LEFT: Form */}
-          <div>
+        {/* Preview em cima - grande */}
+        <div className="space-y-2">
+          <h3 className="text-sm font-semibold flex items-center gap-2 text-muted-foreground">
+            <Eye className="h-4 w-4" /> Preview em tempo real
+          </h3>
+          <CrlvPreview form={form} customQrPreview={customQrPreview} showDenseQr={useDenseQr} />
+        </div>
+
+        {/* Formulário embaixo */}
+        <div>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSave)} className="space-y-4">
             {/* Step indicators */}
@@ -641,17 +648,6 @@ export default function CrlvDigital() {
             onClose={() => { setGeneratedPdfUrl(null); setGeneratedSenha(null); }}
           />
         )}
-          </div>
-
-          {/* RIGHT: Live Preview */}
-          <div className="hidden lg:block">
-            <div className="sticky top-4 space-y-3">
-              <h3 className="text-sm font-semibold flex items-center gap-2 text-muted-foreground">
-                <Eye className="h-4 w-4" /> Preview em tempo real
-              </h3>
-              <CrlvPreview form={form} customQrPreview={customQrPreview} showDenseQr={useDenseQr} />
-            </div>
-          </div>
         </div>
 
       </div>
