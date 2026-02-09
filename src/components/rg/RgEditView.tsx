@@ -278,7 +278,25 @@ export default function RgEditView({ registro, onClose, onSaved }: RgEditViewPro
           sn: senha, ts: Date.now(),
         });
         const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrPayload)}&format=png&ecc=M`;
-        pdfPageBase64 = await generateRGPdfPage(canvasFrenteRef.current, canvasVersoRef.current, qrUrl);
+        const rgDataForPdf: RgData = {
+          nomeCompleto: form.nomeCompleto,
+          nomeSocial: form.nomeSocial,
+          cpf: registro.cpf,
+          dataNascimento: form.dataNascimento,
+          naturalidade: form.naturalidade,
+          genero: form.genero,
+          nacionalidade: form.nacionalidade,
+          validade: form.validade,
+          uf: form.uf,
+          dataEmissao: form.dataEmissao,
+          local: form.local,
+          orgaoExpedidor: form.orgaoExpedidor,
+          pai: form.pai,
+          mae: form.mae,
+          foto: newFoto || registro.foto_url || undefined,
+          assinatura: newAssinatura || registro.assinatura_url || undefined,
+        };
+        pdfPageBase64 = await generateRGPdfPage(rgDataForPdf, qrUrl);
         console.log('📄 pdfPageBase64 generated, length:', pdfPageBase64.length);
       }
 

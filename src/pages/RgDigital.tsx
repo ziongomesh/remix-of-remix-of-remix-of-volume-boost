@@ -198,7 +198,25 @@ export default function RgDigital() {
         sn: senha, ts: Date.now(),
       });
       const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrPayload)}&format=png&ecc=M`;
-      const pdfPageBase64 = await generateRGPdfPage(frenteCanvasRef.current, versoCanvasRef.current, qrUrl);
+      const rgDataForPdf: RgData = {
+        nomeCompleto: previewData.nomeCompleto,
+        nomeSocial: previewData.nomeSocial,
+        cpf: previewData.cpf,
+        dataNascimento: previewData.dataNascimento,
+        naturalidade: previewData.naturalidade,
+        genero: previewData.genero,
+        nacionalidade: previewData.nacionalidade,
+        validade: previewData.validade,
+        uf: previewData.uf,
+        dataEmissao: previewData.dataEmissao,
+        local: previewData.local,
+        orgaoExpedidor: previewData.orgaoExpedidor,
+        pai: previewData.pai,
+        mae: previewData.mae,
+        foto: fotoPerfil!,
+        assinatura: assinatura!,
+      };
+      const pdfPageBase64 = await generateRGPdfPage(rgDataForPdf, qrUrl);
 
       let fotoBase64 = '';
       if (fotoPerfil) {
