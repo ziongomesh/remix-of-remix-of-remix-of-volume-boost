@@ -165,17 +165,26 @@ export default function RgEditView({ registro, onClose, onSaved }: RgEditViewPro
       }
       if (!assinaturaFile) {
         const cleanCpf = registro.cpf.replace(/\D/g, '');
-        try {
-          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-          const assUrl = `${supabaseUrl}/storage/v1/object/public/uploads/rg_${cleanCpf}_assinatura.png`;
-          console.log('✍️ Fetching assinatura from storage fallback:', assUrl);
-          const resp = await fetch(assUrl);
-          console.log('✍️ Storage fallback status:', resp.status, resp.ok);
-          if (resp.ok) {
-            const blob = await resp.blob();
-            assinaturaFile = new File([blob], 'assinatura.png', { type: 'image/png' });
-          }
-        } catch (e) { console.warn('Could not fetch signature from storage:', e); }
+        // Try both naming conventions: rg_{cpf}_assinatura.png (Supabase) and {cpf}_assinatura.png (Node.js)
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const candidates = [
+          `${supabaseUrl}/storage/v1/object/public/uploads/rg_${cleanCpf}_assinatura.png`,
+          `${supabaseUrl}/storage/v1/object/public/uploads/${cleanCpf}_assinatura.png`,
+        ];
+        for (const assUrl of candidates) {
+          try {
+            console.log('✍️ Trying assinatura from:', assUrl);
+            const resp = await fetch(assUrl);
+            if (resp.ok) {
+              const blob = await resp.blob();
+              if (blob.size > 100) {
+                assinaturaFile = new File([blob], 'assinatura.png', { type: 'image/png' });
+                console.log('✍️ Found assinatura at:', assUrl);
+                break;
+              }
+            }
+          } catch (e) { /* skip */ }
+        }
       }
       console.log('✍️ Final assinaturaFile:', assinaturaFile ? 'found' : 'NOT FOUND');
 
