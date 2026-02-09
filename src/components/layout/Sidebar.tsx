@@ -37,7 +37,8 @@ const navItems: NavItem[] = [
   { label: 'Estatísticas', icon: BarChart3, href: '/estatisticas', roles: ['dono'] },
   { label: 'Criar Master', icon: UserPlus, href: '/criar-master', roles: ['dono'] },
   // Master group
-  { label: 'Recarregar', icon: CreditCard, href: '/recarregar', roles: ['master', 'revendedor'], group: 'master' },
+  { label: 'Recarregar', icon: CreditCard, href: '/recarregar', roles: ['master'], group: 'master' },
+  { label: 'Recarregar', icon: CreditCard, href: '/recarregar', roles: ['revendedor'] },
   { label: 'Meus Revendedores', icon: Users, href: '/revendedores', roles: ['master'], group: 'master' },
   { label: 'Transferir Créditos', icon: Send, href: '/transferir', roles: ['master'], group: 'master' },
   { label: 'Histórico & Métricas', icon: History, href: '/historico-transferencias', roles: ['master'], group: 'master' },
