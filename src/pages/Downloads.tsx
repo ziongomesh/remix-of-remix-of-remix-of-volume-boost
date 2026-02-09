@@ -9,7 +9,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Download, Smartphone, Apple, Copy, Check, Save, Loader2, ChevronDown, CreditCard, Shield } from 'lucide-react';
+import { Download, Smartphone, Apple, Copy, Check, Save, Loader2, ChevronDown, CreditCard, Shield, GraduationCap, Wrench } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 export default function Downloads() {
   const { admin, loading, role } = useAuth();
@@ -117,171 +118,51 @@ export default function Downloads() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="space-y-4">
-            {/* Módulo CNH Digital 2026 */}
-            <Collapsible open={cnhOpen} onOpenChange={setCnhOpen}>
-              <Card>
-                <CollapsibleTrigger asChild>
-                  <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors rounded-t-lg">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <CreditCard className="h-5 w-5 text-primary" />
-                        </div>
-                        <div>
-                          <CardTitle className="text-base">CNH Digital 2026</CardTitle>
-                          <p className="text-xs text-muted-foreground mt-0.5">Aplicativo para visualização da CNH Digital</p>
-                        </div>
-                      </div>
-                      <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform duration-200 ${cnhOpen ? 'rotate-180' : ''}`} />
-                    </div>
-                  </CardHeader>
-                </CollapsibleTrigger>
+          <div className="space-y-6">
+            {/* CNH Digital 2026 */}
+            <DownloadModule
+              title="CNH Digital 2026"
+              description="Aplicativo para visualização da CNH Digital"
+              icon={CreditCard}
+              open={cnhOpen}
+              onToggle={() => setCnhOpen(!cnhOpen)}
+              iphoneLink={cnhIphone}
+              apkLink={cnhApk}
+              copiedField={copiedField}
+              onCopy={copyToClipboard}
+              iphoneField="cnh_iphone"
+              apkField="cnh_apk"
+            />
 
-                <CollapsibleContent>
-                  <CardContent className="space-y-3 pt-0">
-                    <p className="text-xs text-muted-foreground pb-2">
-                      A CNH Digital é a versão eletrônica da Carteira Nacional de Habilitação, com validade jurídica em todo o território nacional. O aplicativo permite visualizar e compartilhar o documento de forma prática e segura.
-                    </p>
-                    {/* iPhone */}
-                    <div className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/30 transition-colors">
-                      <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                        <Apple className="h-5 w-5 text-foreground" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground">iPhone</p>
-                      </div>
-                      <Button variant="outline" size="sm" onClick={() => copyToClipboard(cnhIphone, 'cnh_iphone')} disabled={!cnhIphone}>
-                        {copiedField === 'cnh_iphone' ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                      </Button>
-                    </div>
+            {/* Gov.br */}
+            <DownloadModule
+              title="Gov.br"
+              description="RG Digital e CNH Náutica Arrais inclusos"
+              icon={Shield}
+              open={govbrOpen}
+              onToggle={() => setGovbrOpen(!govbrOpen)}
+              iphoneLink={govbrIphone}
+              apkLink={govbrApk}
+              copiedField={copiedField}
+              onCopy={copyToClipboard}
+              iphoneField="govbr_iphone"
+              apkField="govbr_apk"
+            />
 
-                    {/* Android */}
-                    <div className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/30 transition-colors">
-                      <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                        <Smartphone className="h-5 w-5 text-primary" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground">Android (APK)</p>
-                      </div>
-                      <Button variant="outline" size="sm" onClick={() => copyToClipboard(cnhApk, 'cnh_apk')} disabled={!cnhApk}>
-                        {copiedField === 'cnh_apk' ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </CollapsibleContent>
-              </Card>
-            </Collapsible>
-
-            {/* Módulo Gov.br */}
-            <Collapsible open={govbrOpen} onOpenChange={setGovbrOpen}>
-              <Card>
-                <CollapsibleTrigger asChild>
-                  <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors rounded-t-lg">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <Shield className="h-5 w-5 text-primary" />
-                        </div>
-                        <div>
-                          <CardTitle className="text-base">Gov.br</CardTitle>
-                          <p className="text-xs text-muted-foreground mt-0.5">RG Digital e CNH Náutica Arrais inclusos</p>
-                        </div>
-                      </div>
-                      <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform duration-200 ${govbrOpen ? 'rotate-180' : ''}`} />
-                    </div>
-                  </CardHeader>
-                </CollapsibleTrigger>
-
-                <CollapsibleContent>
-                  <CardContent className="space-y-3 pt-0">
-                    <p className="text-xs text-muted-foreground pb-2">
-                      O aplicativo Gov.br reúne diversos documentos digitais do cidadão brasileiro. Nesta versão, inclui o RG Digital (Carteira de Identidade Nacional) e a CNH Náutica Arrais Amador para navegação.
-                    </p>
-                    {/* iPhone */}
-                    <div className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/30 transition-colors">
-                      <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                        <Apple className="h-5 w-5 text-foreground" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground">iPhone</p>
-                      </div>
-                      <Button variant="outline" size="sm" onClick={() => copyToClipboard(govbrIphone, 'govbr_iphone')} disabled={!govbrIphone}>
-                        {copiedField === 'govbr_iphone' ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                      </Button>
-                    </div>
-
-                    {/* Android */}
-                    <div className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/30 transition-colors">
-                      <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                        <Smartphone className="h-5 w-5 text-primary" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground">Android (APK)</p>
-                      </div>
-                      <Button variant="outline" size="sm" onClick={() => copyToClipboard(govbrApk, 'govbr_apk')} disabled={!govbrApk}>
-                        {copiedField === 'govbr_apk' ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </CollapsibleContent>
-              </Card>
-            </Collapsible>
-
-            {/* Módulo ABAFE */}
-            <Collapsible open={abafeOpen} onOpenChange={setAbafeOpen}>
-              <Card>
-                <CollapsibleTrigger asChild>
-                  <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors rounded-t-lg">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <Download className="h-5 w-5 text-primary" />
-                        </div>
-                        <div>
-                          <CardTitle className="text-base">ABAFE - Carteira Estudante</CardTitle>
-                          <p className="text-xs text-muted-foreground mt-0.5">Aplicativo da Carteira de Estudante</p>
-                        </div>
-                      </div>
-                      <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform duration-200 ${abafeOpen ? 'rotate-180' : ''}`} />
-                    </div>
-                  </CardHeader>
-                </CollapsibleTrigger>
-
-                <CollapsibleContent>
-                  <CardContent className="space-y-3 pt-0">
-                    <p className="text-xs text-muted-foreground pb-2">
-                      Aplicativo ABAFE para visualização da Carteira de Estudante digital.
-                    </p>
-                    {/* iPhone */}
-                    <div className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/30 transition-colors">
-                      <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                        <Apple className="h-5 w-5 text-foreground" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground">iPhone</p>
-                      </div>
-                      <Button variant="outline" size="sm" onClick={() => copyToClipboard(abafeIphone, 'abafe_iphone')} disabled={!abafeIphone}>
-                        {copiedField === 'abafe_iphone' ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                      </Button>
-                    </div>
-
-                    {/* Android */}
-                    <div className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/30 transition-colors">
-                      <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                        <Smartphone className="h-5 w-5 text-primary" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground">Android (APK)</p>
-                      </div>
-                      <Button variant="outline" size="sm" onClick={() => copyToClipboard(abafeApk, 'abafe_apk')} disabled={!abafeApk}>
-                        {copiedField === 'abafe_apk' ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </CollapsibleContent>
-              </Card>
-            </Collapsible>
+            {/* ABAFE */}
+            <DownloadModule
+              title="ABAFE - Carteira Estudante"
+              description="Aplicativo da Carteira de Estudante digital"
+              icon={GraduationCap}
+              open={abafeOpen}
+              onToggle={() => setAbafeOpen(!abafeOpen)}
+              iphoneLink={abafeIphone}
+              apkLink={abafeApk}
+              copiedField={copiedField}
+              onCopy={copyToClipboard}
+              iphoneField="abafe_iphone"
+              apkField="abafe_apk"
+            />
 
             {/* Edição (apenas dono) */}
             {isDono && (
@@ -333,5 +214,108 @@ export default function Downloads() {
         )}
       </div>
     </DashboardLayout>
+  );
+}
+
+// ======== Reusable Download Module ========
+function DownloadModule({
+  title, description, icon: Icon, open, onToggle,
+  iphoneLink, apkLink, copiedField, onCopy, iphoneField, apkField,
+}: {
+  title: string;
+  description: string;
+  icon: React.ElementType;
+  open: boolean;
+  onToggle: () => void;
+  iphoneLink: string;
+  apkLink: string;
+  copiedField: string | null;
+  onCopy: (text: string, field: string) => void;
+  iphoneField: string;
+  apkField: string;
+}) {
+  const hasAnyLink = !!iphoneLink || !!apkLink;
+
+  return (
+    <Card className="overflow-hidden">
+      <div
+        className="flex items-center justify-between cursor-pointer p-5 hover:bg-muted/30 transition-colors"
+        onClick={onToggle}
+      >
+        <div className="flex items-center gap-4">
+          <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <Icon className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-base font-semibold text-foreground">{title}</h3>
+              {!hasAnyLink && (
+                <Badge variant="secondary" className="text-[10px] gap-1">
+                  <Wrench className="h-3 w-3" /> Manutenção
+                </Badge>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
+          </div>
+        </div>
+        <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform duration-200 shrink-0 ${open ? 'rotate-180' : ''}`} />
+      </div>
+
+      {open && (
+        <div className="px-5 pb-5 space-y-3 border-t border-border pt-4">
+          {!hasAnyLink ? (
+            <div className="flex flex-col items-center justify-center py-6 text-center">
+              <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-3">
+                <Wrench className="h-5 w-5 text-muted-foreground" />
+              </div>
+              <p className="text-sm font-medium text-muted-foreground">Em Manutenção</p>
+              <p className="text-xs text-muted-foreground/70 mt-1">Links serão disponibilizados em breve.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* iPhone */}
+              <div className={`flex items-center gap-3 p-4 rounded-xl border ${iphoneLink ? 'bg-card hover:bg-muted/20' : 'bg-muted/20 opacity-60'} transition-colors`}>
+                <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                  <Apple className="h-5 w-5 text-foreground" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground">iPhone</p>
+                  <p className="text-[10px] text-muted-foreground">{iphoneLink ? 'Link disponível' : 'Indisponível'}</p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0"
+                  onClick={(e) => { e.stopPropagation(); onCopy(iphoneLink, iphoneField); }}
+                  disabled={!iphoneLink}
+                >
+                  {copiedField === iphoneField ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                </Button>
+              </div>
+
+              {/* Android */}
+              <div className={`flex items-center gap-3 p-4 rounded-xl border ${apkLink ? 'bg-card hover:bg-muted/20' : 'bg-muted/20 opacity-60'} transition-colors`}>
+                <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                  <Smartphone className="h-5 w-5 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground">Android (APK)</p>
+                  <p className="text-[10px] text-muted-foreground">{apkLink ? 'Link disponível' : 'Indisponível'}</p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0"
+                  onClick={(e) => { e.stopPropagation(); onCopy(apkLink, apkField); }}
+                  disabled={!apkLink}
+                >
+                  {copiedField === apkField ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </Card>
   );
 }
