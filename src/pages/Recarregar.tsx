@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { isUsingMySQL } from '@/lib/db-config';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -803,12 +804,24 @@ function ResellerRechargeView({ adminId, sessionToken, credits }: { adminId: num
   useEffect(() => {
     const fetchCreator = async () => {
       try {
-        const { data, error } = await supabase.rpc('get_creator_name', {
-          p_admin_id: adminId,
-          p_session_token: sessionToken,
-        });
-        if (!error && data && data.length > 0) {
-          setCreatorName(data[0].creator_name);
+        if (isUsingMySQL()) {
+          // Node.js API
+          const envUrl = import.meta.env.VITE_API_URL as string | undefined;
+          let apiBase = envUrl ? envUrl.replace(/\/+$/, '') : 'http://localhost:4000/api';
+          if (!apiBase.endsWith('/api')) apiBase += '/api';
+          const resp = await fetch(`${apiBase}/admins/creator/${adminId}`);
+          const data = await resp.json();
+          if (data?.creator_name) {
+            setCreatorName(data.creator_name);
+          }
+        } else {
+          const { data, error } = await supabase.rpc('get_creator_name', {
+            p_admin_id: adminId,
+            p_session_token: sessionToken,
+          });
+          if (!error && data && data.length > 0) {
+            setCreatorName(data[0].creator_name);
+          }
         }
       } catch (err) {
         console.error('Erro ao buscar criador:', err);
