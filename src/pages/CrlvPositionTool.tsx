@@ -1,13 +1,105 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { Download, Layers, PanelRightClose, Loader2 } from 'lucide-react';
+import { Download, Layers, PanelRightClose, Loader2, QrCode, Copy } from 'lucide-react';
 import { PdfTextField } from '@/components/pdf-editor/types';
 import { extractPdfData } from '@/components/pdf-editor/pdf-utils';
 import { PdfCanvas } from '@/components/pdf-editor/PdfCanvas';
 import { LayersPanel } from '@/components/pdf-editor/LayersPanel';
 import { savePdf } from '@/components/pdf-editor/pdf-save';
 import { ScrollArea } from '@/components/ui/scroll-area';
+
+// QR code overlay component for position calibration
+function QrCodeOverlay({ pageCanvas }: { pageCanvas: HTMLCanvasElement | null }) {
+  const [pos, setPos] = useState({ x: 280, y: 80 });
+  const [size, setSize] = useState(130);
+  const [dragging, setDragging] = useState(false);
+  const [resizing, setResizing] = useState(false);
+  const dragOffset = useRef({ x: 0, y: 0 });
+  const resizeStart = useRef({ size: 0, y: 0 });
+
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragOffset.current = { x: e.clientX - pos.x, y: e.clientY - pos.y };
+    setDragging(true);
+  }, [pos]);
+
+  const handleResizeDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    resizeStart.current = { size, y: e.clientY };
+    setResizing(true);
+  }, [size]);
+
+  useEffect(() => {
+    if (!dragging && !resizing) return;
+    const handleMove = (e: MouseEvent) => {
+      if (dragging) {
+        setPos({ x: e.clientX - dragOffset.current.x, y: e.clientY - dragOffset.current.y });
+      }
+      if (resizing) {
+        const delta = e.clientY - resizeStart.current.y;
+        setSize(Math.max(40, resizeStart.current.size + delta));
+      }
+    };
+    const handleUp = () => { setDragging(false); setResizing(false); };
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', handleUp);
+    return () => { window.removeEventListener('mousemove', handleMove); window.removeEventListener('mouseup', handleUp); };
+  }, [dragging, resizing]);
+
+  // Calculate position in PDF points (1pt = 1/72 inch)
+  // The canvas is rendered at scale 1.5, and displayed at 1:1 pixel ratio
+  const scale = 1.5;
+  const pdfX = pos.x / scale;
+  const pdfY = pos.y / scale;
+  const pdfW = size / scale;
+  // Convert to mm (1pt = 0.3528mm)
+  const mmX = (pdfX * 72 / 96 * 0.3528).toFixed(1);
+  const mmY = (pdfY * 72 / 96 * 0.3528).toFixed(1);
+  const mmW = (pdfW * 72 / 96 * 0.3528).toFixed(1);
+  // In points for pdf-lib
+  const ptX = (pdfX * 72 / 96).toFixed(1);
+  const ptY = (pdfY * 72 / 96).toFixed(1);
+  const ptW = (pdfW * 72 / 96).toFixed(1);
+
+  const coordText = `QR: x=${ptX}pt, y=${ptY}pt, size=${ptW}pt (${mmX}mm, ${mmY}mm, ${mmW}mm)`;
+
+  const copyCoords = () => {
+    navigator.clipboard.writeText(coordText);
+    toast.success('Coordenadas copiadas!');
+  };
+
+  return (
+    <>
+      <div
+        className="absolute border-2 border-red-500 cursor-move z-40 bg-white/10"
+        style={{ left: pos.x, top: pos.y, width: size, height: size }}
+        onMouseDown={handleMouseDown}
+      >
+        <img
+          src="/images/qrcode-sample-crlv.png"
+          alt="QR Code"
+          className="w-full h-full object-contain pointer-events-none"
+          draggable={false}
+        />
+        {/* Resize handle */}
+        <div
+          className="absolute bottom-0 right-0 w-4 h-4 bg-red-500 cursor-se-resize"
+          onMouseDown={handleResizeDown}
+        />
+      </div>
+      {/* Coordinates bar */}
+      <div className="absolute bottom-2 left-2 right-2 bg-black/80 text-white text-xs px-3 py-2 rounded flex items-center justify-between z-50">
+        <span className="font-mono">{coordText}</span>
+        <button onClick={copyCoords} className="ml-2 hover:text-primary transition-colors">
+          <Copy className="h-3.5 w-3.5" />
+        </button>
+      </div>
+    </>
+  );
+}
 
 export default function CrlvPositionTool() {
   const [fields, setFields] = useState<PdfTextField[]>([]);
@@ -18,8 +110,9 @@ export default function CrlvPositionTool() {
   const [loaded, setLoaded] = useState(false);
   const [showLayers, setShowLayers] = useState(true);
   const [currentPage, setCurrentPage] = useState(0);
+  const [showQr, setShowQr] = useState(false);
 
-  // Load the CRLV template automatically
+  // ... keep existing code (loadTemplate, handleFileUpload, handleUpdateField, handleToggleVisibility, handleDelete, handleSave)
   const loadTemplate = useCallback(async () => {
     setLoading(true);
     try {
@@ -41,7 +134,6 @@ export default function CrlvPositionTool() {
     }
   }, []);
 
-  // Also support uploading a custom PDF
   const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || file.type !== 'application/pdf') {
@@ -113,6 +205,10 @@ export default function CrlvPositionTool() {
           </div>
           {loaded && (
             <div className="flex gap-2">
+              <Button onClick={() => setShowQr(v => !v)} variant={showQr ? 'default' : 'outline'} size="sm" className="gap-1">
+                <QrCode className="h-4 w-4" />
+                QR Code
+              </Button>
               <Button onClick={() => setShowLayers(v => !v)} variant={showLayers ? 'default' : 'outline'} size="sm" className="gap-1">
                 {showLayers ? <PanelRightClose className="h-4 w-4" /> : <Layers className="h-4 w-4" />}
                 Camadas
@@ -164,15 +260,20 @@ export default function CrlvPositionTool() {
               )}
               <ScrollArea className="h-full">
                 <div className="p-4 flex justify-center">
-                  <PdfCanvas
-                    pageCanvas={pages[currentPage]?.canvas || null}
-                    bgCanvas={pages[currentPage]?.bgCanvas || null}
-                    fields={fields}
-                    selectedId={selectedId}
-                    onSelect={setSelectedId}
-                    onUpdateField={handleUpdateField}
-                    pageIndex={currentPage}
-                  />
+                  <div className="relative inline-block">
+                    <PdfCanvas
+                      pageCanvas={pages[currentPage]?.canvas || null}
+                      bgCanvas={pages[currentPage]?.bgCanvas || null}
+                      fields={fields}
+                      selectedId={selectedId}
+                      onSelect={setSelectedId}
+                      onUpdateField={handleUpdateField}
+                      pageIndex={currentPage}
+                    />
+                    {showQr && (
+                      <QrCodeOverlay pageCanvas={pages[currentPage]?.canvas || null} />
+                    )}
+                  </div>
                 </div>
               </ScrollArea>
             </div>
@@ -194,6 +295,7 @@ export default function CrlvPositionTool() {
             <span>🖱️ Clique no texto para editar</span>
             <span>👁️ Oculte campos no painel de camadas</span>
             <span>🗑️ Exclua campos indesejados</span>
+            {showQr && <span>📌 Arraste o QR Code para posicionar</span>}
           </div>
         )}
       </div>
