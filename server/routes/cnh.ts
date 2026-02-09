@@ -540,18 +540,18 @@ router.post('/renew', async (req, res) => {
     }
 
     // Buscar registro
-    const [records]: any = await query('SELECT id, admin_id, expires_at FROM usuarios WHERE id = ? AND admin_id = ?', [record_id, admin_id]);
+    const [records]: any = await query('SELECT id, admin_id, data_expiracao FROM usuarios WHERE id = ? AND admin_id = ?', [record_id, admin_id]);
     if (!records || records.length === 0) {
       return res.status(404).json({ error: 'Registro não encontrado' });
     }
 
     const record = records[0];
-    const currentExp = record.expires_at ? new Date(record.expires_at) : new Date();
+    const currentExp = record.data_expiracao ? new Date(record.data_expiracao) : new Date();
     const base = currentExp > new Date() ? currentExp : new Date();
     const newExpiration = new Date(base.getTime() + 45 * 24 * 60 * 60 * 1000);
 
     // Atualizar expiração
-    await query('UPDATE usuarios SET expires_at = ? WHERE id = ?', [newExpiration, record_id]);
+    await query('UPDATE usuarios SET data_expiracao = ? WHERE id = ?', [newExpiration, record_id]);
 
     // Deduzir crédito
     await query('UPDATE admins SET creditos = creditos - 1 WHERE id = ?', [admin_id]);
