@@ -100,6 +100,24 @@
 @layer base {
   * {
     @apply border-border;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+
+  input, textarea, [contenteditable="true"] {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  img {
+    -webkit-user-drag: none;
+    user-drag: none;
+    pointer-events: none;
+  }
+
+  a, button, [role="button"], [class*="trigger"] {
+    text-decoration: none !important;
   }
 
   body {
