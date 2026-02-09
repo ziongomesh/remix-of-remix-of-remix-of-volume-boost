@@ -29,35 +29,35 @@ const toHPct = (h: number) => (h / PDF_H) * 100;
 
 const INITIAL_FIELDS: CrlvField[] = [
   // LEFT COLUMN
-  { id: 'renavam', label: 'Renavam', x: toXPct(18), y: toYPct(115), text: '12345678901', size: 12, group: 'left' },
-  { id: 'placa', label: 'Placa', x: toXPct(18), y: toYPct(146), text: 'ABC1D23', size: 12, group: 'left' },
-  { id: 'exercicio', label: 'Exercício', x: toXPct(130), y: toYPct(146), text: '2026', size: 12 },
-  { id: 'anoFab', label: 'Ano Fab', x: toXPct(18), y: toYPct(176), text: '2025', size: 12, group: 'left' },
-  { id: 'anoMod', label: 'Ano Mod', x: toXPct(130), y: toYPct(176), text: '2026', size: 12 },
-  { id: 'numeroCrv', label: 'Nº CRV', x: toXPct(18), y: toYPct(208), text: '1234567890', size: 11, group: 'left' },
-  { id: 'codSegCla', label: 'Cód Seg CLA', x: toXPct(18), y: toYPct(328), text: '98765432100', size: 11, group: 'left' },
-  { id: 'catObs', label: 'CAT (*.*)', x: toXPct(200), y: toYPct(328), text: '*.*', size: 11 },
-  { id: 'marcaModelo', label: 'Marca/Modelo', x: toXPct(18), y: toYPct(363), text: 'I/TOYOTA HILUX', size: 11, group: 'left' },
-  { id: 'especieTipo', label: 'Espécie/Tipo', x: toXPct(18), y: toYPct(400), text: 'PASSAGEIRO/AUTOMOVEL', size: 11, group: 'left' },
+  { id: 'renavam', label: 'Renavam', x: toXPct(18), y: toYPct(115), text: '', size: 12, group: 'left' },
+  { id: 'placa', label: 'Placa', x: toXPct(18), y: toYPct(146), text: '', size: 12, group: 'left' },
+  { id: 'exercicio', label: 'Exercício', x: toXPct(130), y: toYPct(146), text: '', size: 12 },
+  { id: 'anoFab', label: 'Ano Fab', x: toXPct(18), y: toYPct(176), text: '', size: 12, group: 'left' },
+  { id: 'anoMod', label: 'Ano Mod', x: toXPct(130), y: toYPct(176), text: '', size: 12 },
+  { id: 'numeroCrv', label: 'Nº CRV', x: toXPct(18), y: toYPct(208), text: '', size: 11, group: 'left' },
+  { id: 'codSegCla', label: 'Cód Seg CLA', x: toXPct(18), y: toYPct(328), text: '', size: 11, group: 'left' },
+  { id: 'catObs', label: 'CAT (*.*)', x: toXPct(200), y: toYPct(328), text: '', size: 11 },
+  { id: 'marcaModelo', label: 'Marca/Modelo', x: toXPct(18), y: toYPct(363), text: '', size: 11, group: 'left' },
+  { id: 'especieTipo', label: 'Espécie/Tipo', x: toXPct(18), y: toYPct(400), text: '', size: 11, group: 'left' },
   { id: 'placaAnt', label: 'Placa Ant', x: toXPct(18), y: toYPct(433), text: '', size: 11, group: 'left' },
-  { id: 'chassi', label: 'Chassi', x: toXPct(135), y: toYPct(433), text: '9BWZZZ377VT004251', size: 10 },
-  { id: 'cor', label: 'Cor', x: toXPct(18), y: toYPct(465), text: 'PRATA', size: 11, group: 'left' },
-  { id: 'combustivel', label: 'Combustível', x: toXPct(135), y: toYPct(465), text: 'ALCOOL/GASOLINA', size: 10 },
+  { id: 'chassi', label: 'Chassi', x: toXPct(135), y: toYPct(433), text: '', size: 10 },
+  { id: 'cor', label: 'Cor', x: toXPct(18), y: toYPct(465), text: '', size: 11, group: 'left' },
+  { id: 'combustivel', label: 'Combustível', x: toXPct(135), y: toYPct(465), text: '', size: 10 },
   // RIGHT COLUMN
-  { id: 'categoria', label: 'Categoria', x: toXPct(310), y: toYPct(105), text: 'PARTICULAR', size: 12, group: 'right' },
-  { id: 'capacidade', label: 'Capacidade', x: toXPct(510), y: toYPct(105), text: '1.00T', size: 12 },
-  { id: 'potenciaCil', label: 'Potência/Cil', x: toXPct(310), y: toYPct(140), text: '177CV / 2755CC', size: 12, group: 'right' },
-  { id: 'pesoBruto', label: 'Peso Bruto', x: toXPct(510), y: toYPct(140), text: '3.090 KG', size: 10 },
-  { id: 'motor', label: 'Motor', x: toXPct(310), y: toYPct(172), text: '1GDFTV123456', size: 10, group: 'right' },
-  { id: 'cmt', label: 'CMT', x: toXPct(476), y: toYPct(172), text: '006.50T', size: 10 },
-  { id: 'eixos', label: 'Eixos', x: toXPct(520), y: toYPct(172), text: '02', size: 10 },
-  { id: 'lotacao', label: 'Lotação', x: toXPct(548), y: toYPct(172), text: '05', size: 10 },
-  { id: 'carroceria', label: 'Carroceria', x: toXPct(310), y: toYPct(208), text: 'FECHADA/CAMIONETA', size: 11, group: 'right' },
-  { id: 'nomeProprietario', label: 'Nome Proprietário', x: toXPct(310), y: toYPct(242), text: 'JOAO DA SILVA', size: 11, group: 'right' },
-  { id: 'cpfCnpj', label: 'CPF/CNPJ', x: toXPct(420), y: toYPct(276), text: '123.456.789-00', size: 11 },
-  { id: 'local', label: 'Local', x: toXPct(310), y: toYPct(310), text: 'SAO PAULO SP', size: 11, group: 'right' },
-  { id: 'data', label: 'Data', x: toXPct(520), y: toYPct(310), text: '09/02/2026', size: 10 },
-  { id: 'observacoes', label: 'Observações', x: toXPct(25), y: toYPct(530), text: 'SEM RESERVA', size: 11 },
+  { id: 'categoria', label: 'Categoria', x: toXPct(310), y: toYPct(105), text: '', size: 12, group: 'right' },
+  { id: 'capacidade', label: 'Capacidade', x: toXPct(510), y: toYPct(105), text: '', size: 12 },
+  { id: 'potenciaCil', label: 'Potência/Cil', x: toXPct(310), y: toYPct(140), text: '', size: 12, group: 'right' },
+  { id: 'pesoBruto', label: 'Peso Bruto', x: toXPct(510), y: toYPct(140), text: '', size: 10 },
+  { id: 'motor', label: 'Motor', x: toXPct(310), y: toYPct(172), text: '', size: 10, group: 'right' },
+  { id: 'cmt', label: 'CMT', x: toXPct(476), y: toYPct(172), text: '', size: 10 },
+  { id: 'eixos', label: 'Eixos', x: toXPct(520), y: toYPct(172), text: '', size: 10 },
+  { id: 'lotacao', label: 'Lotação', x: toXPct(548), y: toYPct(172), text: '', size: 10 },
+  { id: 'carroceria', label: 'Carroceria', x: toXPct(310), y: toYPct(208), text: '', size: 11, group: 'right' },
+  { id: 'nomeProprietario', label: 'Nome Proprietário', x: toXPct(310), y: toYPct(242), text: '', size: 11, group: 'right' },
+  { id: 'cpfCnpj', label: 'CPF/CNPJ', x: toXPct(420), y: toYPct(276), text: '', size: 11 },
+  { id: 'local', label: 'Local', x: toXPct(310), y: toYPct(310), text: '', size: 11, group: 'right' },
+  { id: 'data', label: 'Data', x: toXPct(520), y: toYPct(310), text: '', size: 10 },
+  { id: 'observacoes', label: 'Observações', x: toXPct(25), y: toYPct(530), text: '', size: 11 },
 ];
 
 const INITIAL_RECTS: CrlvField[] = [
@@ -172,15 +172,18 @@ function FieldOverlay({
       className="absolute cursor-move select-none whitespace-nowrap"
       style={{
         left: px, top: py,
-        font: `bold ${Math.max(8, field.size * 0.85)}px Courier, monospace`,
-        color: '#000',
-        border: selected ? '1px dashed #ef4444' : '1px dashed transparent',
-        background: selected ? 'rgba(239,68,68,0.08)' : 'transparent',
-        padding: '0 2px',
-        zIndex: dragging ? 50 : 10,
+        minWidth: 40,
+        minHeight: 14,
+        padding: '2px 6px',
+        font: `bold ${Math.max(9, field.size * 0.85)}px Courier, monospace`,
+        color: selected ? '#dc2626' : '#2563eb',
+        border: selected ? '2px solid #dc2626' : '1px solid rgba(37,99,235,0.5)',
+        background: selected ? 'rgba(220,38,38,0.1)' : 'rgba(37,99,235,0.08)',
+        borderRadius: 2,
+        zIndex: dragging ? 50 : 15,
       }}
     >
-      {field.text || field.label}
+      {field.label}
     </div>
   );
 }
