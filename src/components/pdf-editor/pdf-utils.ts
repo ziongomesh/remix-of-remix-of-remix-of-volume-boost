@@ -40,13 +40,12 @@ export async function extractPdfData(file: File) {
     for (const item of textContent.items) {
       if (!('str' in item) || !item.str.trim()) continue;
 
-      const fontName = (item.fontName || '').toLowerCase();
-      // Log each field's font for debugging
-      // Only extract fields using FreeMono/Courier or custom embedded fonts (g_d0_fX pattern from pdf-lib)
-      // Skip known template fonts (Helvetica, Arial, Times, etc.)
-      const isTemplateFont = fontName.includes('helvetica') || fontName.includes('arial') || fontName.includes('times') || fontName.includes('calibri');
-      const isEditableFont = !isTemplateFont;
-      if (!isEditableFont) continue;
+      const fontName = (item.fontName || '');
+      const text = item.str.trim();
+      // Log font per field for debugging
+      console.log(`[PDF] Font: "${fontName}" | Text: "${text}"`);
+
+      // All fields pass through - we'll refine the filter after seeing the font mapping
 
       const tx = item.transform;
       const fontSize = Math.abs(tx[0]);
