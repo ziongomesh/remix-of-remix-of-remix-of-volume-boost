@@ -1,274 +1,201 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
-import * as pdfjsLib from 'pdfjs-dist';
-
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
-
-interface ExtractedField {
-  id: string;
-  text: string;
-  x: number; // percentage of container
-  y: number;
-  w: number; // percentage
-  h: number;
-  fontSize: number;
-  originalText: string;
-}
+import { Download, Layers, PanelRightClose, Loader2 } from 'lucide-react';
+import { PdfTextField } from '@/components/pdf-editor/types';
+import { extractPdfData } from '@/components/pdf-editor/pdf-utils';
+import { PdfCanvas } from '@/components/pdf-editor/PdfCanvas';
+import { LayersPanel } from '@/components/pdf-editor/LayersPanel';
+import { savePdf } from '@/components/pdf-editor/pdf-save';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function CrlvPositionTool() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [bgDataUrl, setBgDataUrl] = useState<string | null>(null);
-  const [containerSize, setContainerSize] = useState({ w: 0, h: 0 });
-  const [fields, setFields] = useState<ExtractedField[]>([]);
-  const [selected, setSelected] = useState<string | null>(null);
-  const [dragState, setDragState] = useState<{ id: string; startMx: number; startMy: number; startX: number; startY: number } | null>(null);
-  const [pdfDims, setPdfDims] = useState({ w: 595, h: 842 });
+  const [fields, setFields] = useState<PdfTextField[]>([]);
+  const [pages, setPages] = useState<{ width: number; height: number; canvas: HTMLCanvasElement; bgCanvas: HTMLCanvasElement }[]>([]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [pdfBytes, setPdfBytes] = useState<ArrayBuffer | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const [showLayers, setShowLayers] = useState(true);
+  const [currentPage, setCurrentPage] = useState(0);
 
-  // Load PDF and extract real text positions
-  useEffect(() => {
-    const loadPdf = async () => {
-      try {
-        const pdf = await pdfjsLib.getDocument('/templates/crlv-template.pdf').promise;
-        const page = await pdf.getPage(1);
-        const scale = 2;
-        const viewport = page.getViewport({ scale });
-
-        // Render to get background image
-        const canvas = document.createElement('canvas');
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-        const ctx = canvas.getContext('2d')!;
-        await page.render({ canvasContext: ctx, viewport }).promise;
-        setBgDataUrl(canvas.toDataURL());
-
-        // Get original page dimensions for export
-        const origViewport = page.getViewport({ scale: 1 });
-        setPdfDims({ w: origViewport.width, h: origViewport.height });
-
-        // Extract real text content
-        const textContent = await page.getTextContent();
-        const extracted: ExtractedField[] = [];
-        let idx = 0;
-
-        for (const item of textContent.items) {
-          if (!('str' in item) || !item.str.trim()) continue;
-
-          const tx = item.transform;
-          const fontSize = Math.abs(tx[0]);
-          // Convert to percentage of viewport
-          const x = (tx[4] * scale / viewport.width) * 100;
-          const y = ((viewport.height - tx[5] * scale - fontSize * scale) / viewport.height) * 100;
-          const w = ((item.width || fontSize * item.str.length * 0.6) * scale / viewport.width) * 100;
-          const h = (fontSize * scale * 1.3 / viewport.height) * 100;
-
-          extracted.push({
-            id: `f-${idx++}`,
-            text: item.str,
-            x, y,
-            w: Math.max(w, 1),
-            h: Math.max(h, 0.5),
-            fontSize,
-            originalText: item.str,
-          });
-        }
-
-        setFields(extracted);
-        toast.success(`${extracted.length} campos extraídos do PDF`);
-      } catch (err) {
-        console.error('Erro ao carregar template:', err);
-        toast.error('Erro ao carregar template CRLV');
-      }
-    };
-    loadPdf();
+  // Load the CRLV template automatically
+  const loadTemplate = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('/templates/crlv-template.pdf');
+      const blob = await response.blob();
+      const file = new File([blob], 'crlv-template.pdf', { type: 'application/pdf' });
+      const { pages: extractedPages, fields: extractedFields, arrayBuffer } = await extractPdfData(file);
+      setPages(extractedPages);
+      setFields(extractedFields);
+      setPdfBytes(arrayBuffer);
+      setCurrentPage(0);
+      setLoaded(true);
+      toast.success(`PDF carregado! ${extractedFields.length} campos de texto encontrados.`);
+    } catch (err) {
+      console.error(err);
+      toast.error('Erro ao carregar template CRLV');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  // Measure container
-  useEffect(() => {
-    const measure = () => {
-      if (containerRef.current) {
-        const r = containerRef.current.getBoundingClientRect();
-        setContainerSize({ w: r.width, h: r.height });
-      }
-    };
-    measure();
-    window.addEventListener('resize', measure);
-    return () => window.removeEventListener('resize', measure);
-  }, [bgDataUrl]);
-
-  // Global mouse handlers for dragging
-  useEffect(() => {
-    if (!dragState) return;
-    const handleMove = (e: MouseEvent) => {
-      const dx = ((e.clientX - dragState.startMx) / containerSize.w) * 100;
-      const dy = ((e.clientY - dragState.startMy) / containerSize.h) * 100;
-      setFields(prev => prev.map(f =>
-        f.id === dragState.id ? { ...f, x: dragState.startX + dx, y: dragState.startY + dy } : f
-      ));
-    };
-    const handleUp = () => setDragState(null);
-    window.addEventListener('mousemove', handleMove);
-    window.addEventListener('mouseup', handleUp);
-    return () => { window.removeEventListener('mousemove', handleMove); window.removeEventListener('mouseup', handleUp); };
-  }, [dragState, containerSize]);
-
-  const handleFieldMouseDown = useCallback((e: React.MouseEvent, field: ExtractedField) => {
-    e.preventDefault();
-    setSelected(field.id);
-    setDragState({ id: field.id, startMx: e.clientX, startMy: e.clientY, startX: field.x, startY: field.y });
+  // Also support uploading a custom PDF
+  const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || file.type !== 'application/pdf') {
+      toast.error('Selecione um arquivo PDF');
+      return;
+    }
+    setLoading(true);
+    try {
+      const { pages: extractedPages, fields: extractedFields, arrayBuffer } = await extractPdfData(file);
+      setPages(extractedPages);
+      setFields(extractedFields);
+      setPdfBytes(arrayBuffer);
+      setCurrentPage(0);
+      setLoaded(true);
+      toast.success(`PDF carregado! ${extractedFields.length} campos encontrados.`);
+    } catch (err) {
+      console.error(err);
+      toast.error('Erro ao carregar PDF');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const updateFieldText = useCallback((id: string, text: string) => {
-    setFields(prev => prev.map(f => f.id === id ? { ...f, text } : f));
+  const handleUpdateField = useCallback((id: string, updates: Partial<PdfTextField>) => {
+    setFields(prev => prev.map(f => f.id === id ? { ...f, ...updates } : f));
   }, []);
 
-  const deleteField = useCallback((id: string) => {
+  const handleToggleVisibility = useCallback((id: string) => {
+    setFields(prev => prev.map(f => f.id === id ? { ...f, visible: !f.visible } : f));
+  }, []);
+
+  const handleDelete = useCallback((id: string) => {
     setFields(prev => prev.filter(f => f.id !== id));
-    if (selected === id) setSelected(null);
-  }, [selected]);
+    if (selectedId === id) setSelectedId(null);
+  }, [selectedId]);
 
-  const selectedField = fields.find(f => f.id === selected);
-
-  const generateCode = () => {
-    const lines: string[] = ['// === FIELD_MAP (coordenadas em pt para pdf-lib) ==='];
-    lines.push('const FIELD_MAP = [');
-    fields.forEach(f => {
-      const ptX = Math.round((f.x / 100) * pdfDims.w);
-      const ptY = Math.round((f.y / 100) * pdfDims.h);
-      lines.push(`  { key: '${f.id}', x: ${ptX}, y: ${ptY}, size: ${f.fontSize}, text: '${f.text.replace(/'/g, "\\'")}' },`);
-    });
-    lines.push('];');
-    return lines.join('\n');
+  const handleSave = async () => {
+    if (!pdfBytes) return;
+    try {
+      const pageScales = pages.map(p => ({ width: p.width, height: p.height }));
+      const savedBytes = await savePdf(pdfBytes, fields, pageScales);
+      const blob = new Blob([savedBytes.buffer as ArrayBuffer], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'crlv_editado.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast.success('PDF salvo!');
+    } catch (err) {
+      console.error(err);
+      toast.error('Erro ao salvar PDF');
+    }
   };
 
-  const copyCode = () => {
-    navigator.clipboard.writeText(generateCode()).then(() => toast.success('Código copiado!'));
-  };
-
-  if (!bgDataUrl) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    );
-  }
+  const currentPageFields = fields.filter(f => f.pageIndex === currentPage);
 
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-7xl mx-auto space-y-4">
-        <h1 className="text-xl font-bold">📐 Calibrar CRLV — Edição Direta</h1>
-        <p className="text-sm text-muted-foreground">
-          Arraste os textos reais do PDF para reposicionar. Clique para selecionar e editar o conteúdo.
-        </p>
-
-        {/* Selected field info */}
-        {selectedField && (
-          <div className="bg-muted/50 rounded-lg p-3 border text-sm space-y-2">
-            <div className="flex items-center justify-between">
-              <p className="font-semibold font-mono text-xs">
-                "{selectedField.text}" — x: <span className="text-primary">{selectedField.x.toFixed(1)}%</span> ({Math.round((selectedField.x / 100) * pdfDims.w)}pt)
-                {' | '} y: <span className="text-primary">{selectedField.y.toFixed(1)}%</span> ({Math.round((selectedField.y / 100) * pdfDims.h)}pt)
-                {' | '} size: {selectedField.fontSize}pt
-              </p>
-              <Button size="sm" variant="destructive" onClick={() => deleteField(selectedField.id)}>
-                Remover
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold">📐 Editor CRLV — Edição Direta no PDF</h1>
+            <p className="text-sm text-muted-foreground">
+              Clique em qualquer texto do PDF para editar diretamente. Igual ao Sejda.
+            </p>
+          </div>
+          {loaded && (
+            <div className="flex gap-2">
+              <Button onClick={() => setShowLayers(v => !v)} variant={showLayers ? 'default' : 'outline'} size="sm" className="gap-1">
+                {showLayers ? <PanelRightClose className="h-4 w-4" /> : <Layers className="h-4 w-4" />}
+                Camadas
+              </Button>
+              <Button onClick={handleSave} size="sm" className="gap-1">
+                <Download className="h-4 w-4" /> Salvar PDF
               </Button>
             </div>
-            <div className="flex gap-2 items-center">
-              <span className="text-xs shrink-0">Texto:</span>
-              <Input
-                value={selectedField.text}
-                onChange={(e) => updateFieldText(selectedField.id, e.target.value)}
-                className="h-7 text-xs"
-              />
+          )}
+        </div>
+
+        {/* Load options */}
+        {!loaded && !loading && (
+          <div className="flex flex-col items-center justify-center py-16 gap-6">
+            <div className="flex gap-4">
+              <Button onClick={loadTemplate} size="lg" className="gap-2">
+                📄 Carregar Template CRLV
+              </Button>
+              <label>
+                <Button variant="outline" size="lg" className="gap-2 cursor-pointer" asChild>
+                  <span>📂 Enviar outro PDF</span>
+                </Button>
+                <input type="file" accept=".pdf" className="hidden" onChange={handleFileUpload} />
+              </label>
             </div>
+            <p className="text-sm text-muted-foreground">Escolha o template padrão ou envie um PDF preenchido para editar</p>
           </div>
         )}
 
-        <div className="flex gap-4">
-          {/* Main template view */}
-          <div className="flex-1">
-            <div
-              ref={containerRef}
-              className="relative border rounded-lg overflow-hidden cursor-crosshair"
-              style={{ aspectRatio: `${pdfDims.w}/${pdfDims.h}` }}
-              onClick={(e) => {
-                if (e.target === e.currentTarget || (e.target as HTMLElement).tagName === 'IMG') {
-                  setSelected(null);
-                }
-              }}
-            >
-              <img src={bgDataUrl} alt="CRLV Template" className="w-full h-full object-fill" draggable={false} />
-              {containerSize.w > 0 && fields.map(f => {
-                const px = (f.x / 100) * containerSize.w;
-                const py = (f.y / 100) * containerSize.h;
-                const isSelected = selected === f.id;
-                const isDragging = dragState?.id === f.id;
-                return (
-                  <div
-                    key={f.id}
-                    onMouseDown={(e) => handleFieldMouseDown(e, f)}
-                    className="absolute cursor-move select-none whitespace-nowrap"
-                    style={{
-                      left: px,
-                      top: py,
-                      padding: '1px 3px',
-                      fontSize: Math.max(8, f.fontSize * (containerSize.w / (pdfDims.w * 2)) * 2),
-                      fontFamily: 'Courier, monospace',
-                      fontWeight: 'bold',
-                      color: isSelected ? '#dc2626' : '#000',
-                      border: isSelected ? '2px solid #dc2626' : '1px solid transparent',
-                      background: isSelected ? 'rgba(220,38,38,0.08)' : 'transparent',
-                      borderRadius: 2,
-                      zIndex: isDragging ? 100 : isSelected ? 50 : 10,
-                      transition: isDragging ? 'none' : 'border-color 0.15s',
-                    }}
-                    title={`${f.text} (${f.x.toFixed(1)}%, ${f.y.toFixed(1)}%)`}
-                  >
-                    {f.text}
-                  </div>
-                );
-              })}
-            </div>
+        {loading && (
+          <div className="flex flex-col items-center justify-center py-20 gap-4">
+            <Loader2 className="h-10 w-10 animate-spin text-primary" />
+            <p className="text-muted-foreground">Analisando PDF e extraindo campos...</p>
           </div>
+        )}
 
-          {/* Right sidebar — field list */}
-          <div className="w-64 space-y-3">
-            <p className="text-sm font-semibold">Campos ({fields.length})</p>
-            <ScrollArea className="h-[70vh]">
-              <div className="space-y-1 pr-2">
-                {fields.map(f => (
-                  <button
-                    key={f.id}
-                    onClick={() => setSelected(f.id)}
-                    className={`text-left w-full p-1.5 rounded border text-xs transition-colors ${
-                      selected === f.id ? 'border-primary bg-primary/10' : 'border-border hover:bg-muted/50'
-                    }`}
-                  >
-                    <p className="font-mono truncate">{f.text}</p>
-                    <p className="text-muted-foreground text-[10px]">
-                      {f.x.toFixed(1)}%, {f.y.toFixed(1)}% — {f.fontSize}pt
-                    </p>
-                  </button>
-                ))}
-              </div>
-            </ScrollArea>
-
-            <div className="space-y-2 pt-2 border-t">
-              <Button size="sm" className="w-full" onClick={copyCode}>📋 Copiar Código</Button>
+        {/* Editor */}
+        {loaded && pages.length > 0 && (
+          <div className="flex gap-0 border border-border rounded-lg overflow-hidden bg-muted/30" style={{ height: 'calc(100vh - 180px)' }}>
+            <div className="flex-1 overflow-auto">
+              {pages.length > 1 && (
+                <div className="flex gap-1 p-2 bg-card border-b border-border">
+                  {pages.map((_, i) => (
+                    <Button key={i} size="sm" variant={currentPage === i ? 'default' : 'ghost'} onClick={() => setCurrentPage(i)}>
+                      Página {i + 1}
+                    </Button>
+                  ))}
+                </div>
+              )}
+              <ScrollArea className="h-full">
+                <div className="p-4 flex justify-center">
+                  <PdfCanvas
+                    pageCanvas={pages[currentPage]?.canvas || null}
+                    bgCanvas={pages[currentPage]?.bgCanvas || null}
+                    fields={fields}
+                    selectedId={selectedId}
+                    onSelect={setSelectedId}
+                    onUpdateField={handleUpdateField}
+                    pageIndex={currentPage}
+                  />
+                </div>
+              </ScrollArea>
             </div>
-          </div>
-        </div>
 
-        {/* Generated code */}
-        <details className="border rounded-lg">
-          <summary className="p-3 cursor-pointer text-sm font-semibold">Código Gerado</summary>
-          <pre className="p-3 text-xs font-mono overflow-x-auto max-h-64 overflow-y-auto bg-muted">
-            {generateCode()}
-          </pre>
-        </details>
+            {showLayers && (
+              <LayersPanel
+                fields={currentPageFields}
+                selectedId={selectedId}
+                onSelect={setSelectedId}
+                onToggleVisibility={handleToggleVisibility}
+                onDelete={handleDelete}
+              />
+            )}
+          </div>
+        )}
+
+        {loaded && (
+          <div className="text-xs text-muted-foreground text-center space-x-4">
+            <span>🖱️ Clique no texto para editar</span>
+            <span>👁️ Oculte campos no painel de camadas</span>
+            <span>🗑️ Exclua campos indesejados</span>
+          </div>
+        )}
       </div>
     </div>
   );
