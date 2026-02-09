@@ -44,3 +44,15 @@ verify_jwt = false
 
 [functions.save-rg]
 verify_jwt = false
+
+[functions.list-rg]
+verify_jwt = false
+
+[functions.update-rg]
+verify_jwt = false
+
+[functions.delete-rg]
+verify_jwt = false
+
+[functions.renew-service]
+verify_jwt = false
