@@ -381,9 +381,9 @@ function CnhHistoryCard({
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-3 sm:gap-4 min-w-0">
             {usuario.foto_url ? (
-              <img src={usuario.foto_url} alt="Foto" className="h-12 w-12 sm:h-16 sm:w-16 object-cover rounded-full border cursor-pointer hover:ring-2 hover:ring-primary/50 shrink-0" onClick={() => setShowPreview(!showPreview)} {...imgProps} />
+              <img src={usuario.foto_url} alt="Foto" className="h-12 w-12 sm:h-16 sm:w-16 object-cover rounded-full border cursor-pointer hover:ring-2 hover:ring-muted-foreground/30 shrink-0" onClick={() => setShowPreview(!showPreview)} {...imgProps} />
             ) : usuario.cnh_frente_url ? (
-              <img src={usuario.cnh_frente_url} alt="CNH Frente" className="h-12 w-16 sm:h-16 sm:w-24 object-cover rounded border cursor-pointer hover:ring-2 hover:ring-primary/50 shrink-0" onClick={() => setShowPreview(!showPreview)} {...imgProps} />
+              <img src={usuario.cnh_frente_url} alt="CNH Frente" className="h-12 w-16 sm:h-16 sm:w-24 object-cover rounded border cursor-pointer hover:ring-2 hover:ring-muted-foreground/30 shrink-0" onClick={() => setShowPreview(!showPreview)} {...imgProps} />
             ) : null}
             <div className="min-w-0">
               <h3 className="font-semibold text-foreground text-sm sm:text-base truncate">{usuario.nome}</h3>
@@ -474,9 +474,9 @@ function RgHistoryCard({
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-3 sm:gap-4 min-w-0">
             {registro.foto_url ? (
-              <img src={registro.foto_url} alt="Foto" className="h-12 w-12 sm:h-16 sm:w-16 object-cover rounded-full border cursor-pointer hover:ring-2 hover:ring-primary/50 shrink-0" onClick={() => setShowPreview(!showPreview)} {...imgProps} />
+              <img src={registro.foto_url} alt="Foto" className="h-12 w-12 sm:h-16 sm:w-16 object-cover rounded-full border cursor-pointer hover:ring-2 hover:ring-muted-foreground/30 shrink-0" onClick={() => setShowPreview(!showPreview)} {...imgProps} />
             ) : registro.rg_frente_url ? (
-              <img src={registro.rg_frente_url} alt="RG Frente" className="h-12 w-16 sm:h-16 sm:w-24 object-cover rounded border cursor-pointer hover:ring-2 hover:ring-primary/50 shrink-0" onClick={() => setShowPreview(!showPreview)} {...imgProps} />
+              <img src={registro.rg_frente_url} alt="RG Frente" className="h-12 w-16 sm:h-16 sm:w-24 object-cover rounded border cursor-pointer hover:ring-2 hover:ring-muted-foreground/30 shrink-0" onClick={() => setShowPreview(!showPreview)} {...imgProps} />
             ) : null}
             <div className="min-w-0">
               <h3 className="font-semibold text-foreground text-sm sm:text-base truncate">{nome}</h3>
