@@ -113,11 +113,13 @@ export async function generateRGFrente(
       if (data.foto instanceof File) {
         fotoSrc = await readFileAsDataURL(data.foto);
       } else {
-        fotoSrc = data.foto.startsWith('data:') ? data.foto : data.foto;
+        fotoSrc = data.foto;
       }
       const fotoImg = await loadImage(fotoSrc);
       ctx.drawImage(fotoImg, 159, 287, 241, 299);
-    } catch { /* silencioso */ }
+    } catch (e) { console.error('RG Frente: erro ao desenhar foto:', e); }
+  } else {
+    console.warn('RG Frente: nenhuma foto fornecida');
   }
 
   // Textos
@@ -141,12 +143,14 @@ export async function generateRGFrente(
       if (data.assinatura instanceof File) {
         assSrc = await readFileAsDataURL(data.assinatura);
       } else {
-        assSrc = data.assinatura.startsWith('data:') ? data.assinatura : data.assinatura;
+        assSrc = data.assinatura;
       }
       const assImg = await loadImage(assSrc);
       const escala = Math.min(279 / assImg.width, 52 / assImg.height);
       ctx.drawImage(assImg, 491, 640, assImg.width * escala, assImg.height * escala);
-    } catch { /* silencioso */ }
+    } catch (e) { console.error('RG Frente: erro ao desenhar assinatura:', e); }
+  } else {
+    console.warn('RG Frente: nenhuma assinatura fornecida');
   }
 }
 
