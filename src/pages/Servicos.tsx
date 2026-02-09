@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { Shield, FileText, CheckCircle, Clock, CreditCard, AlertTriangle, ChevronDown, Anchor, BookOpen, GraduationCap, IdCard, Wallet } from 'lucide-react';
+import { Shield, FileText, CheckCircle, Clock, CreditCard, AlertTriangle, ChevronDown, Anchor, BookOpen, GraduationCap, IdCard, Wallet, Smartphone, ScrollText } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -145,6 +145,82 @@ const categories: ServiceCategory[] = [
         available: false,
         route: '#',
         icon: Wallet,
+      },
+    ],
+  },
+  {
+    id: 'documentos-digitais',
+    name: 'Documentos Digitais',
+    description: 'Certidões e documentos em formato digital',
+    icon: ScrollText,
+    services: [
+      {
+        id: 'certidao-nascimento',
+        name: 'Certidão de Nascimento',
+        description: 'Certidão de Nascimento Digital em PDF com QR Code',
+        features: [
+          'Geração em PDF',
+          'QR Code de verificação',
+          'Dados personalizáveis',
+        ],
+        validity: '45 dias',
+        credits: 1,
+        available: false,
+        route: '#',
+        icon: ScrollText,
+      },
+    ],
+  },
+  {
+    id: 'aplicativos',
+    name: 'Aplicativos',
+    description: 'Apps complementares para uso dos documentos',
+    icon: Smartphone,
+    services: [
+      {
+        id: 'app-cnh',
+        name: 'App CNH Digital',
+        description: 'Aplicativo para visualização da CNH Digital',
+        features: [
+          'Disponível para Android e iOS',
+          'Interface oficial',
+          'Atualização automática',
+        ],
+        validity: 'Permanente',
+        credits: 0,
+        available: true,
+        route: '/downloads',
+        icon: Smartphone,
+      },
+      {
+        id: 'app-govbr',
+        name: 'App Gov.br',
+        description: 'Aplicativo Gov.br para documentos digitais',
+        features: [
+          'Disponível para Android e iOS',
+          'Interface oficial Gov.br',
+          'Suporte a múltiplos documentos',
+        ],
+        validity: 'Permanente',
+        credits: 0,
+        available: true,
+        route: '/downloads',
+        icon: Smartphone,
+      },
+      {
+        id: 'app-abafe',
+        name: 'App ABAFE',
+        description: 'Aplicativo ABAFE para carteira estudantil',
+        features: [
+          'Disponível para Android e iOS',
+          'Interface oficial ABAFE',
+          'Verificação digital',
+        ],
+        validity: 'Permanente',
+        credits: 0,
+        available: true,
+        route: '/downloads',
+        icon: Smartphone,
       },
     ],
   },
