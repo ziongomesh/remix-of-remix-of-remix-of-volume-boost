@@ -2,7 +2,8 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { FileText, CheckCircle, Clock, CreditCard, AlertTriangle, Anchor, IdCard, ScrollText } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Service {
   id: string;
@@ -136,9 +137,11 @@ function ServiceCard({ service, hasCredits }: { service: Service; hasCredits: bo
 }
 
 export default function Servicos() {
-  const adminStr = localStorage.getItem('admin');
-  const admin = adminStr ? JSON.parse(adminStr) : null;
-  const hasCredits = (admin?.creditos ?? 0) > 0;
+  const { admin, credits, loading } = useAuth();
+  const hasCredits = credits > 0;
+
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-background"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
+  if (!admin) return <Navigate to="/login" replace />;
 
   return (
     <DashboardLayout>

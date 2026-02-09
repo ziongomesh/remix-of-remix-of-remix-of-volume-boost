@@ -1,4 +1,6 @@
 import { useState, useCallback } from 'react';
+import { Navigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -13,6 +15,7 @@ import { savePdf } from '@/components/pdf-editor/pdf-save';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function EditorPdf() {
+  const { admin, loading: authLoading } = useAuth();
   const [fields, setFields] = useState<PdfTextField[]>([]);
   const [pages, setPages] = useState<{ width: number; height: number; canvas: HTMLCanvasElement; bgCanvas: HTMLCanvasElement }[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -21,6 +24,7 @@ export default function EditorPdf() {
   const [fileName, setFileName] = useState('');
   const [currentPage, setCurrentPage] = useState(0);
   const [showLayers, setShowLayers] = useState(false);
+
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -59,6 +63,9 @@ export default function EditorPdf() {
     setFields(prev => prev.filter(f => f.id !== id));
     if (selectedId === id) setSelectedId(null);
   }, [selectedId]);
+
+  if (authLoading) return <div className="min-h-screen flex items-center justify-center bg-background"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
+  if (!admin) return <Navigate to="/login" replace />;
 
   const handleSave = async () => {
     if (!pdfBytes) return;
