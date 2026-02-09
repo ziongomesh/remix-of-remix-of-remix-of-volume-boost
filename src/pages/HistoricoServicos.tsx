@@ -16,7 +16,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import {
-  History, Search, IdCard, Eye, Edit, Loader2, Clock, FileText, ChevronDown, ChevronUp, ExternalLink, Trash2, AlertTriangle, CreditCard, RefreshCw, Timer, GraduationCap
+  History, Search, IdCard, Eye, Edit, Loader2, Clock, FileText, ChevronDown, ChevronUp, ExternalLink, Trash2, AlertTriangle, CreditCard, RefreshCw, Timer, GraduationCap, Copy, Check
 } from 'lucide-react';
 import CnhEditView from '@/components/cnh/CnhEditView';
 import RgEditView from '@/components/rg/RgEditView';
@@ -605,6 +605,36 @@ export default function HistoricoServicos() {
   );
 }
 
+// ======== Copy Data Button (shared) ========
+function CopyDataButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    toast.success('Dados copiados!');
+    setTimeout(() => setCopied(false), 2000);
+  };
+  return (
+    <Button variant="outline" size="sm" onClick={handleCopy} className="border-primary/50 text-primary hover:bg-primary/10">
+      {copied ? <Check className="h-4 w-4 sm:mr-1" /> : <Copy className="h-4 w-4 sm:mr-1" />}
+      <span className="hidden sm:inline">{copied ? 'Copiado' : 'Copiar Dados'}</span>
+    </Button>
+  );
+}
+
+function buildCnhCopyText(u: UsuarioRecord, formatCpf: (cpf: string) => string) {
+  return `Olá! Segue os dados do seu acesso:\n\n📋 CPF: ${formatCpf(u.cpf)}\n🔑 Senha: ${u.senha || '—'}\n\n⚠️ O acesso é válido por 45 dias a partir da data de criação.`;
+}
+
+function buildRgCopyText(r: RgRecord, formatCpf: (cpf: string) => string) {
+  const nome = r.nome_completo || r.nome || '';
+  return `Olá! Segue os dados do seu acesso:\n\n📋 CPF: ${formatCpf(r.cpf)}\n🔑 Senha: ${r.senha || '—'}\n\n⚠️ O acesso é válido por 45 dias a partir da data de criação.`;
+}
+
+function buildEstudanteCopyText(e: EstudanteRecord, formatCpf: (cpf: string) => string) {
+  return `Olá! Segue os dados do seu acesso:\n\n📋 CPF: ${formatCpf(e.cpf)}\n🔑 Senha: ${e.senha || '—'}\n\n⚠️ O acesso é válido por 45 dias a partir da data de criação.`;
+}
+
 // ======== Renew Button (shared) ========
 function RenewButton({ id, type, onRenew, renewingId }: { id: number; type: 'cnh' | 'rg' | 'estudante'; onRenew: () => void; renewingId: string | null }) {
   const key = `${type}-${id}`;
@@ -692,7 +722,8 @@ function CnhHistoryCard({
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+          <div className="flex items-center gap-2 shrink-0 self-end sm:self-center flex-wrap">
+            <CopyDataButton text={buildCnhCopyText(usuario, formatCpf)} />
             <RenewButton id={usuario.id} type="cnh" onRenew={onRenew} renewingId={renewingId} />
             {usuario.pdf_url && (
               <Button variant="outline" size="sm" asChild>
@@ -792,7 +823,8 @@ function RgHistoryCard({
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+          <div className="flex items-center gap-2 shrink-0 self-end sm:self-center flex-wrap">
+            <CopyDataButton text={buildRgCopyText(registro, formatCpf)} />
             <RenewButton id={registro.id} type="rg" onRenew={onRenew} renewingId={renewingId} />
             {registro.pdf_url && (
               <Button variant="outline" size="sm" asChild>
@@ -905,7 +937,8 @@ function EstudanteHistoryCard({
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+        <div className="flex items-center gap-2 shrink-0 self-end sm:self-center flex-wrap">
+          <CopyDataButton text={buildEstudanteCopyText(registro, formatCpf)} />
           <RenewButton id={registro.id} type="estudante" onRenew={onRenew} renewingId={renewingId} />
           <Button variant="default" size="sm" onClick={onEdit}>
             <Edit className="h-4 w-4 sm:mr-1" /> <span className="hidden sm:inline">Editar</span>
