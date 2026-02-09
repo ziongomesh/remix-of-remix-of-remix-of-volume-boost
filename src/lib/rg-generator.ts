@@ -277,10 +277,10 @@ export async function generateRGPdfPage(
   const nomeEstadoPDF = textoEstado(data.uf).toUpperCase();
   ctx.font = `${8 * s}px ${fontFamily}`;
   ctx.fillStyle = '#393738';
-  ctx.fillText(nomeEstadoPDF, 140 * s, 108 * s);
+  ctx.fillText(nomeEstadoPDF, 140 * s, 109 * s);
 
   // === Secretaria ===
-  ctx.fillText('SECRETARIA DE SEGURANÇA DA UNIDADE DA FEDERAÇÃO', 82 * s, 118 * s);
+  ctx.fillText('SECRETARIA DE SEGURANÇA DA UNIDADE DA FEDERAÇÃO', 82 * s, 119 * s);
 
   // === Data fields (fontSize 7) ===
   ctx.font = `${7 * s}px ${fontFamily}`;
@@ -310,9 +310,9 @@ export async function generateRGPdfPage(
   const linha1 = 'IDBRA5398762281453987622814<<0';
   const linha2 = '051120M340302BRA<<<<<<<<<<<<<2';
   const linha3 = formatarNomeMRZ(data.nomeCompleto);
-  ctx.fillText(linha1, 65 * s, 423 * s);
-  ctx.fillText(linha2, 65 * s, 437 * s);
-  ctx.fillText(linha3, 62 * s, 451 * s);
+  ctx.fillText(linha1, 65 * s, 425 * s);
+  ctx.fillText(linha2, 65 * s, 439 * s);
+  ctx.fillText(linha3, 62 * s, 453 * s);
 
   return canvas.toDataURL('image/png');
 }
