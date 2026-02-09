@@ -10,9 +10,11 @@ interface CrlvPreviewProps {
   showDenseQr?: boolean;
 }
 
-// Scale factor: PDF points → canvas pixels
-const SCALE = 1.5;
-const s = (v: number) => v * SCALE;
+// pdfjs viewport scale
+const PDF_SCALE = 1.5;
+// PDF points → canvas pixels: pdfjs maps at 96/72 * scale
+const PX_RATIO = (96 / 72) * PDF_SCALE; // = 2.0
+const s = (v: number) => v * PX_RATIO;
 
 // Each field: formKey, whiteout rect (x, y, w, h in PDF pts), text position (x, y in PDF pts), fontSize, bold
 interface FieldDef {
@@ -71,7 +73,7 @@ export function CrlvPreview({ form, customQrPreview, showDenseQr = true }: CrlvP
         const arrayBuffer = await response.arrayBuffer();
         const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
         const page = await pdf.getPage(1);
-        const viewport = page.getViewport({ scale: SCALE });
+        const viewport = page.getViewport({ scale: PDF_SCALE });
 
         const canvas = document.createElement('canvas');
         canvas.width = viewport.width;
