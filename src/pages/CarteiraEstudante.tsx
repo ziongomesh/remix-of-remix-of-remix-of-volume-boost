@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -12,10 +12,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
-  GraduationCap, User, CreditCard, Upload, Loader2, Copy, CheckCircle, AlertTriangle
+  GraduationCap, User, CreditCard, Upload, Loader2, Copy, CheckCircle, AlertTriangle, Calendar, KeyRound, Smartphone, Apple
 } from 'lucide-react';
 import { estudanteService } from '@/lib/estudante-service';
 import { playSuccessSound } from '@/lib/success-sound';
+import { supabase } from '@/integrations/supabase/client';
 
 const estudanteSchema = z.object({
   nome: z.string().min(1, 'Nome obrigatório'),
@@ -46,6 +47,22 @@ export default function CarteiraEstudante() {
   const [fotoPreview, setFotoPreview] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [resultInfo, setResultInfo] = useState<{ cpf: string; senha: string; qrcode: string | null } | null>(null);
+  const [abafeApk, setAbafeApk] = useState('');
+  const [abafeIphone, setAbafeIphone] = useState('');
+
+  useEffect(() => {
+    supabase
+      .from('downloads')
+      .select('abafe_apk, abafe_iphone')
+      .eq('id', 1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) {
+          setAbafeApk((data as any).abafe_apk || '');
+          setAbafeIphone((data as any).abafe_iphone || '');
+        }
+      });
+  }, []);
 
   const form = useForm<EstudanteFormData>({
     resolver: zodResolver(estudanteSchema),
@@ -121,10 +138,45 @@ export default function CarteiraEstudante() {
     }
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success('Copiado!');
+  const copyToClipboard = (text: string, msg = 'Copiado!') => {
+    navigator.clipboard.writeText(text).then(() => {
+      toast.success(msg);
+    }).catch(() => {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      toast.success(msg);
+    });
   };
+
+  const formatCpfDisplay = (cpf: string) => {
+    const clean = cpf.replace(/\D/g, '');
+    return clean.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+  };
+
+  const getDataText = () => {
+    if (!resultInfo) return '';
+    return `Olá! Sua Carteira de Estudante está pronta!
+
+📋 DADOS DE ACESSO:
+👤 CPF: ${formatCpfDisplay(resultInfo.cpf)}
+🔑 Senha: ${resultInfo.senha}
+
+📅 VALIDADE:
+⏳ Documento válido por 45 dias!
+
+⚠️ Mantenha suas credenciais seguras.
+🎉 Obrigado por adquirir seu acesso!`;
+  };
+
+  const expirationDate = (() => {
+    const now = new Date();
+    now.setDate(now.getDate() + 45);
+    return now.toLocaleDateString('pt-BR');
+  })();
 
   return (
     <DashboardLayout>
@@ -264,36 +316,94 @@ export default function CarteiraEstudante() {
       </div>
 
       {/* Success Modal */}
-      <Dialog open={showSuccess} onOpenChange={setShowSuccess}>
-        <DialogContent className="max-w-md">
+      <Dialog open={showSuccess} onOpenChange={(open) => { if (!open) setShowSuccess(false); }}>
+        <DialogContent className="max-w-lg mx-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-primary">
-              <CheckCircle className="h-5 w-5" /> Carteira Gerada com Sucesso!
+            <DialogTitle className="flex items-center gap-3">
+              <div className="p-2 bg-green-500 rounded-lg">
+                <CheckCircle className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <span>Carteira Gerada com Sucesso!</span>
+                <div className="text-sm text-muted-foreground mt-1">
+                  Carteira de Estudante ABAFE pronta para uso
+                </div>
+              </div>
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+
+          <div className="space-y-4 py-4">
             {resultInfo && (
               <>
-                <div className="bg-muted rounded-lg p-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">CPF:</span>
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-sm">{resultInfo.cpf}</span>
-                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard(resultInfo.cpf)}>
-                        <Copy className="h-3 w-3" />
-                      </Button>
-                    </div>
+                {/* Dados de Acesso */}
+                <div className="bg-primary/5 rounded-xl p-4 border border-primary/20">
+                  <div className="flex items-center gap-2 mb-3">
+                    <KeyRound className="h-4 w-4 text-primary" />
+                    <h4 className="font-semibold">Dados de Acesso</h4>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Senha:</span>
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-sm font-bold text-primary">{resultInfo.senha}</span>
-                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard(resultInfo.senha)}>
-                        <Copy className="h-3 w-3" />
-                      </Button>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-background/50 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <span>👤</span>
+                        <span className="text-muted-foreground">CPF:</span>
+                      </div>
+                      <span className="font-mono font-semibold">{formatCpfDisplay(resultInfo.cpf)}</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-background/50 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <span>🔑</span>
+                        <span className="text-muted-foreground">Senha:</span>
+                      </div>
+                      <span className="font-mono font-semibold">{resultInfo.senha}</span>
                     </div>
                   </div>
                 </div>
+
+                {/* Validade */}
+                <div className="bg-green-500/5 rounded-xl p-4 border border-green-500/20">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Calendar className="h-4 w-4 text-green-600" />
+                    <h4 className="font-semibold">Validade: 45 dias</h4>
+                  </div>
+                  <p className="text-sm text-muted-foreground">Expira em: <strong>{expirationDate}</strong></p>
+                </div>
+
+                {/* Ações */}
+                <div className="space-y-3">
+                  <Button
+                    onClick={() => copyToClipboard(getDataText(), 'Dados copiados!')}
+                    className="w-full"
+                    variant="outline"
+                  >
+                    <Copy className="w-4 h-4 mr-2" />
+                    Copiar Dados
+                  </Button>
+
+                  <Button
+                    onClick={() => {
+                      if (!abafeIphone) { toast.error('Link iPhone não configurado'); return; }
+                      copyToClipboard(abafeIphone, 'Link iPhone copiado!');
+                    }}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    <Apple className="w-4 h-4 mr-2" />
+                    Copiar Link iPhone
+                  </Button>
+
+                  <Button
+                    onClick={() => {
+                      if (!abafeApk) { toast.error('Link APK não configurado'); return; }
+                      copyToClipboard(abafeApk, 'Link APK copiado!');
+                    }}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    <Smartphone className="w-4 h-4 mr-2" />
+                    Baixar APK Android
+                  </Button>
+                </div>
+
                 <Button className="w-full" onClick={() => {
                   setShowSuccess(false);
                   form.reset();
@@ -304,6 +414,12 @@ export default function CarteiraEstudante() {
                 </Button>
               </>
             )}
+          </div>
+
+          <div className="flex justify-end pt-4 border-t">
+            <Button onClick={() => setShowSuccess(false)} variant="outline">
+              Fechar
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
