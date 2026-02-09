@@ -395,7 +395,7 @@ export default function RgDigital() {
                   <FormField control={form.control} name="naturalidade" render={({ field }) => (
                     <FormItem>
                       <FormLabel>Naturalidade <span className="text-destructive">*</span></FormLabel>
-                      <FormControl><Input {...field} placeholder="CIDADE" onChange={(e) => field.onChange(toUpper(e.target.value))} /></FormControl>
+                      <FormControl><Input {...field} placeholder="SÃO PAULO/SP" onChange={(e) => field.onChange(toUpper(e.target.value))} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )} />
