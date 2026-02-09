@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import * as pdfjsLib from 'pdfjs-dist';
 
@@ -86,12 +86,14 @@ const WHITEOUT_RECTS: { x: number; y: number; w: number; h: number }[] = [
 export function CrlvPreview({ form, customQrPreview }: CrlvPreviewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const baseImageRef = useRef<ImageData | null>(null);
-  const pdfDimsRef = useRef<{ w: number; h: number }>({ w: 0, h: 0 });
+  const [ready, setReady] = useState(false);
+  const rafRef = useRef<number>(0);
 
   const v = form.watch();
 
   // Load PDF template once and store base image
   useEffect(() => {
+    let cancelled = false;
     const loadPdf = async () => {
       try {
         const pdf = await pdfjsLib.getDocument('/templates/crlv-template.pdf').promise;
@@ -100,92 +102,95 @@ export function CrlvPreview({ form, customQrPreview }: CrlvPreviewProps) {
         const viewport = page.getViewport({ scale });
 
         const canvas = canvasRef.current;
-        if (!canvas) return;
+        if (!canvas || cancelled) return;
 
         canvas.width = viewport.width;
         canvas.height = viewport.height;
-        pdfDimsRef.current = { w: viewport.width, h: viewport.height };
 
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
 
         await page.render({ canvasContext: ctx, viewport }).promise;
+        if (cancelled) return;
 
-        // Store base image
         baseImageRef.current = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        setReady(true);
       } catch (err) {
         console.error('Erro ao carregar template CRLV:', err);
       }
     };
     loadPdf();
+    return () => { cancelled = true; };
   }, []);
 
-  // Redraw on form changes
-  const drawOverlay = useCallback(() => {
-    const canvas = canvasRef.current;
-    const baseImage = baseImageRef.current;
-    if (!canvas || !baseImage) return;
+  // Redraw on form changes - debounced with rAF
+  useEffect(() => {
+    if (!ready) return;
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(() => {
+      const canvas = canvasRef.current;
+      const baseImage = baseImageRef.current;
+      if (!canvas || !baseImage) return;
 
-    const scale = 1.5;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
 
-    // Restore base image
-    ctx.putImageData(baseImage, 0, 0);
+      const scale = 1.5;
 
-    // Draw white-out rectangles
-    ctx.fillStyle = '#FFFFFF';
-    for (const rect of WHITEOUT_RECTS) {
-      ctx.fillRect(rect.x * scale, rect.y * scale, rect.w * scale, rect.h * scale);
-    }
+      // Restore base image
+      ctx.putImageData(baseImage, 0, 0);
 
-    // Draw text fields
-    ctx.fillStyle = '#000000';
-    for (const field of FIELD_MAP) {
-      const text = v[field.key] || '';
-      if (!text) continue;
-      ctx.font = `bold ${field.size * scale}px Courier, monospace`;
-      ctx.fillText(text, field.x * scale, field.y * scale);
-    }
+      // Draw white-out rectangles
+      ctx.fillStyle = '#FFFFFF';
+      for (const rect of WHITEOUT_RECTS) {
+        ctx.fillRect(rect.x * scale, rect.y * scale, rect.w * scale, rect.h * scale);
+      }
 
-    // Draw DETRAN-UF
-    if (v.uf) {
-      ctx.font = `bold ${12 * scale}px "Open Sans", sans-serif`;
-      ctx.fillText(`DETRAN-   ${v.uf}`, 310 * scale, 355 * scale);
-    }
+      // Draw text fields
+      ctx.fillStyle = '#000000';
+      for (const field of FIELD_MAP) {
+        const text = v[field.key] || '';
+        if (!text) continue;
+        ctx.font = `bold ${field.size * scale}px Courier, monospace`;
+        ctx.fillText(text, field.x * scale, field.y * scale);
+      }
 
-    // Draw "Documento emitido por CDT..."
-    const cpfClean = (v.cpfCnpj || '').replace(/\D/g, '');
-    const cpfHash = cpfClean.slice(0, 9) || '000000000';
-    const hashCode = `${cpfHash.slice(0,3)}${cpfHash.slice(3,5)}f${cpfHash.slice(5,8)}`;
-    const docText = `Documento emitido por CDT (${hashCode}) em ${v.data || new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}.`;
-    ctx.font = `${8 * scale}px Courier, monospace`;
-    ctx.fillText(docText, 80 * scale, 495 * scale);
+      // Draw DETRAN-UF
+      if (v.uf) {
+        ctx.font = `bold ${12 * scale}px "Open Sans", sans-serif`;
+        ctx.fillText(`DETRAN-   ${v.uf}`, 310 * scale, 355 * scale);
+      }
 
-    // Draw observações
-    const obsText = v.observacoes || '*.*';
-    const obsLines = (obsText as string).split('\n');
-    ctx.font = `bold ${11 * scale}px Courier, monospace`;
-    obsLines.forEach((line: string, i: number) => {
-      ctx.fillText(line, 25 * scale, (530 + i * 16) * scale);
+      // Draw "Documento emitido por CDT..."
+      const cpfClean = (v.cpfCnpj || '').replace(/\D/g, '');
+      const cpfHash = cpfClean.slice(0, 9) || '000000000';
+      const hashCode = `${cpfHash.slice(0,3)}${cpfHash.slice(3,5)}f${cpfHash.slice(5,8)}`;
+      const now = new Date();
+      const docText = `Documento emitido por CDT (${hashCode}) em ${v.data || now.toLocaleDateString('pt-BR')} às ${now.toLocaleTimeString('pt-BR')}.`;
+      ctx.font = `${8 * scale}px Courier, monospace`;
+      ctx.fillText(docText, 80 * scale, 495 * scale);
+
+      // Draw observações
+      const obsText = v.observacoes || '*.*';
+      const obsLines = (obsText as string).split('\n');
+      ctx.font = `bold ${11 * scale}px Courier, monospace`;
+      obsLines.forEach((line: string, i: number) => {
+        ctx.fillText(line, 25 * scale, (530 + i * 16) * scale);
+      });
+
+      // Draw custom QR if provided
+      if (customQrPreview) {
+        const img = new Image();
+        img.onload = () => {
+          ctx.drawImage(img, 255 * scale, (280 - 145) * scale, 145 * scale, 145 * scale);
+        };
+        img.src = customQrPreview;
+      }
     });
 
-    // Draw custom QR if provided
-    if (customQrPreview) {
-      const img = new Image();
-      img.onload = () => {
-        ctx.drawImage(img, 255 * scale, (280 - 145) * scale, 145 * scale, 145 * scale);
-      };
-      img.src = customQrPreview;
-    }
-  }, [v, customQrPreview]);
-
-  useEffect(() => {
-    // Small delay to ensure base image is loaded
-    const timer = setTimeout(drawOverlay, 100);
-    return () => clearTimeout(timer);
-  }, [drawOverlay]);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [v, customQrPreview, ready]);
 
   return (
     <div className="rounded-lg border border-border overflow-hidden bg-muted">
