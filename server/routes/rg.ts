@@ -66,6 +66,7 @@ router.post('/save', async (req, res) => {
       dataNascimento, naturalidade, genero, nacionalidade, validade,
       uf, dataEmissao, local, orgaoExpedidor, pai, mae,
       rgFrenteBase64, rgVersoBase64, fotoBase64, assinaturaBase64,
+      pdfPageBase64,
     } = req.body;
 
     if (!await validateSession(admin_id, session_token)) {
@@ -156,136 +157,123 @@ router.post('/save', async (req, res) => {
       logger.error('RG QR code generation error:', e);
     }
 
-    // Gerar PDF (igual rgDigitalUtils.ts - fundo matrizpdf.png + textos diretos)
+    // Gerar PDF
     let pdfUrl: string | null = null;
     try {
       const pageWidth = 595.28;
       const pageHeight = 841.89;
-      const pdfDoc = await PDFDocument.create();
-      const page = pdfDoc.addPage([pageWidth, pageHeight]);
 
-      // Fontes
-      const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
-      const courier = await pdfDoc.embedFont(StandardFonts.Courier);
-      const fontSize = 7;
-      const fillColor = rgb(0, 0, 0);
-      const grayColor = rgb(0.224, 0.216, 0.22); // #393738
+      if (pdfPageBase64) {
+        // Use client-rendered full-page image (single PNG = non-editable)
+        const pdfDoc = await PDFDocument.create();
+        const page = pdfDoc.addPage([pageWidth, pageHeight]);
+        const cleanB64 = pdfPageBase64.replace(/^data:image\/\w+;base64,/, '');
+        const imgBytes = Buffer.from(cleanB64, 'base64');
+        const fullPageImg = await pdfDoc.embedPng(imgBytes);
+        page.drawImage(fullPageImg, { x: 0, y: 0, width: pageWidth, height: pageHeight });
+        const pdfBytes = await pdfDoc.save();
+        pdfUrl = saveBuffer(Buffer.from(pdfBytes), `RG_DIGITAL_${cleanCpf}`, 'pdf');
+      } else {
+        // Fallback: server-side PDF generation
+        const pdfDoc = await PDFDocument.create();
+        const page = pdfDoc.addPage([pageWidth, pageHeight]);
+        const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
+        const courier = await pdfDoc.embedFont(StandardFonts.Courier);
+        const fontSize = 7;
+        const fillColor = rgb(0, 0, 0);
+        const grayColor = rgb(0.224, 0.216, 0.22);
+        const ty = (pdfkitY: number, h: number = 0) => pageHeight - pdfkitY - h;
 
-      // Helper: pdfkit Y (top-left) → pdf-lib Y (bottom-left)
-      const ty = (pdfkitY: number, h: number = 0) => pageHeight - pdfkitY - h;
+        const bgPath = path.resolve(process.cwd(), '..', 'public', 'templates', 'matrizpdf.png');
+        const bgFallback = path.resolve(process.cwd(), '..', 'public', 'images', 'rg-pdf-bg.png');
+        const bgFile = fs.existsSync(bgPath) ? bgPath : (fs.existsSync(bgFallback) ? bgFallback : null);
+        if (bgFile) {
+          const bgBytes = fs.readFileSync(bgFile);
+          const bgImg = await pdfDoc.embedPng(bgBytes);
+          page.drawImage(bgImg, { x: 0, y: 0, width: pageWidth, height: pageHeight });
+        }
 
-      // Fundo matrizpdf.png
-      const bgPath = path.resolve(process.cwd(), '..', 'public', 'templates', 'matrizpdf.png');
-      const bgFallback = path.resolve(process.cwd(), '..', 'public', 'images', 'rg-pdf-bg.png');
-      const bgFile = fs.existsSync(bgPath) ? bgPath : (fs.existsSync(bgFallback) ? bgFallback : null);
-      if (bgFile) {
-        const bgBytes = fs.readFileSync(bgFile);
-        const bgImg = await pdfDoc.embedPng(bgBytes);
-        page.drawImage(bgImg, { x: 0, y: 0, width: pageWidth, height: pageHeight });
+        const embedBase64 = async (b64: string) => {
+          const isJpeg = b64.startsWith('data:image/jpeg') || b64.startsWith('data:image/jpg');
+          const clean = b64.replace(/^data:image\/\w+;base64,/, '');
+          const buf = Buffer.from(clean, 'base64');
+          return isJpeg ? await pdfDoc.embedJpg(buf) : await pdfDoc.embedPng(buf);
+        };
+
+        if (qrPngBytes) {
+          const qrImg = await pdfDoc.embedPng(qrPngBytes);
+          const qrX = 462 * 0.85;
+          const qrY_pk = 90 * 0.85;
+          const qrSz = 180 * 0.85;
+          page.drawImage(qrImg, { x: qrX, y: ty(qrY_pk, qrSz), width: qrSz, height: qrSz });
+          page.drawImage(qrImg, { x: 39, y: ty(314, 57), width: 57, height: 57 });
+        }
+
+        if (fotoBase64) {
+          try {
+            const fotoImg = await embedBase64(fotoBase64);
+            page.drawImage(fotoImg, { x: 35, y: ty(137.5, 86), width: 69, height: 86 });
+            page.drawImage(fotoImg, { x: 297, y: ty(302.5, 32), width: 28, height: 32 });
+          } catch (e) { logger.error('Erro ao embutir foto no PDF:', e); }
+        }
+
+        const fmtDate = (d: string) => {
+          if (!d) return '';
+          if (d.includes('/')) return d;
+          const p = d.split('-');
+          return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : d;
+        };
+        const dataAtual = new Date().toLocaleDateString('pt-BR');
+        const drawText = (text: string, x: number, pdfkitY: number, opts?: { font?: any; size?: number; color?: any }) => {
+          page.drawText(text || '', {
+            x, y: ty(pdfkitY, opts?.size || fontSize),
+            size: opts?.size || fontSize,
+            font: opts?.font || helvetica,
+            color: opts?.color || fillColor,
+          });
+        };
+
+        drawText(nomeCompleto, 112, 146);
+        drawText(nomeSocial || '', 112, 172);
+        drawText(formatCPF(cleanCpf), 112, 192);
+        drawText(fmtDate(dataNascimento), 112, 212);
+        drawText(naturalidade, 112, 231);
+        drawText(genero, 231, 186);
+        drawText(nacionalidade || 'BRA', 231, 206);
+        drawText(fmtDate(validade), 231, 225);
+        drawText(pai || '', 112, 308);
+        drawText(mae || '', 112, 325);
+        drawText(orgaoExpedidor || '', 112, 348);
+        drawText(local || '', 112, 367);
+        drawText(fmtDate(dataEmissao), 228, 367);
+        drawText(dataAtual, 217, 26.5, { size: 9 });
+        const nomeEstado = textoEstado(uf).toUpperCase();
+        drawText(nomeEstado, 120, 101, { size: 8, color: grayColor });
+        drawText('SECRETARIA DE SEGURANÇA DA UNIDADE DA FEDERAÇÃO', 82, 111, { size: 8, color: grayColor });
+        const linha1 = 'IDBRA5398762281453987622814<<0';
+        const linha2 = '051120M340302BRA<<<<<<<<<<<<<2';
+        const linha3 = formatarNomeMRZ(nomeCompleto);
+        drawText(linha1, 65, 423, { font: courier, size: 12, color: grayColor });
+        drawText(linha2, 65, 435, { font: courier, size: 12, color: grayColor });
+        drawText(linha3, 62, 447, { font: courier, size: 12, color: grayColor });
+
+        if (assinaturaBase64) {
+          try {
+            const assImg = await embedBase64(assinaturaBase64);
+            page.drawImage(assImg, { x: 130, y: ty(240, 15), width: 110, height: 15 });
+            page.drawImage(assImg, { x: 20, y: ty(583, 15), width: 110, height: 15 });
+          } catch (e) { logger.error('PDF ass error:', e); }
+        }
+
+        const tempPdfBytes = await pdfDoc.save();
+        const tempDoc = await PDFDocument.load(tempPdfBytes);
+        const flatDoc = await PDFDocument.create();
+        const [embeddedPage] = await flatDoc.embedPages(tempDoc.getPages());
+        const flatPage = flatDoc.addPage([pageWidth, pageHeight]);
+        flatPage.drawPage(embeddedPage, { x: 0, y: 0, width: pageWidth, height: pageHeight });
+        const pdfBytes = await flatDoc.save();
+        pdfUrl = saveBuffer(Buffer.from(pdfBytes), `RG_DIGITAL_${cleanCpf}`, 'pdf');
       }
-
-      // Helper para embed base64
-      const embedBase64 = async (b64: string) => {
-        const clean = b64.replace(/^data:image\/\w+;base64,/, '');
-        return await pdfDoc.embedPng(Buffer.from(clean, 'base64'));
-      };
-
-      // QR Code em duas posições
-      if (qrPngBytes) {
-        const qrImg = await pdfDoc.embedPng(qrPngBytes);
-        // QR primário (grande)
-        const qrX = 462 * 0.85;
-        const qrY_pk = 90 * 0.85;
-        const qrSz = 180 * 0.85;
-        page.drawImage(qrImg, { x: qrX, y: ty(qrY_pk, qrSz), width: qrSz, height: qrSz });
-        // QR secundário (pequeno, dentro do verso)
-        page.drawImage(qrImg, { x: 39, y: ty(314, 57), width: 57, height: 57 });
-      }
-
-      // Foto do perfil em duas posições
-      if (fotoBase64) {
-        try {
-          const fotoImg = await embedBase64(fotoBase64);
-          // Foto principal
-          page.drawImage(fotoImg, { x: 35, y: ty(137.5, 86), width: 69, height: 86 });
-          // Foto menor (segunda posição)
-          page.drawImage(fotoImg, { x: 297, y: ty(302.5, 32), width: 28, height: 32 });
-        } catch (e) { logger.error('Erro ao embutir foto no PDF:', e); }
-      }
-
-      // Formatar datas
-      const fmtDate = (d: string) => {
-        if (!d) return '';
-        if (d.includes('/')) return d;
-        const p = d.split('-');
-        return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : d;
-      };
-
-      const dataAtual = new Date().toLocaleDateString('pt-BR');
-
-      // ---- TEXTOS FOLHA 1 (frente) ----
-      const drawText = (text: string, x: number, pdfkitY: number, opts?: { font?: any; size?: number; color?: any }) => {
-        page.drawText(text || '', {
-          x,
-          y: ty(pdfkitY, opts?.size || fontSize),
-          size: opts?.size || fontSize,
-          font: opts?.font || helvetica,
-          color: opts?.color || fillColor,
-        });
-      };
-
-      drawText(nomeCompleto, 112, 146);
-      drawText(nomeSocial || '', 112, 172);
-      drawText(formatCPF(cleanCpf), 112, 192);
-      drawText(fmtDate(dataNascimento), 112, 212);
-      drawText(naturalidade, 112, 231);
-      drawText(genero, 231, 186);
-      drawText(nacionalidade || 'BRA', 231, 206);
-      drawText(fmtDate(validade), 231, 225);
-
-      // ---- TEXTOS FOLHA 2 (verso) ----
-      drawText(pai || '', 112, 308);
-      drawText(mae || '', 112, 325);
-      drawText(orgaoExpedidor || '', 112, 348);
-      drawText(local || '', 112, 367);
-      drawText(fmtDate(dataEmissao), 228, 367);
-
-      // Data atual
-      drawText(dataAtual, 217, 26.5, { size: 9 });
-
-      // Estado
-      const nomeEstado = textoEstado(uf).toUpperCase();
-      drawText(nomeEstado, 120, 101, { size: 8, color: grayColor });
-
-      // Secretaria
-      drawText('SECRETARIA DE SEGURANÇA DA UNIDADE DA FEDERAÇÃO', 82, 111, { size: 8, color: grayColor });
-
-      // ---- MRZ ----
-      const linha1 = 'IDBRA5398762281453987622814<<0';
-      const linha2 = '051120M340302BRA<<<<<<<<<<<<<2';
-      const linha3 = formatarNomeMRZ(nomeCompleto);
-      drawText(linha1, 65, 423, { font: courier, size: 12, color: grayColor });
-      drawText(linha2, 65, 435, { font: courier, size: 12, color: grayColor });
-      drawText(linha3, 62, 447, { font: courier, size: 12, color: grayColor });
-
-      // Assinatura em duas posições
-      if (assinaturaBase64) {
-        try {
-          const assImg = await embedBase64(assinaturaBase64);
-          page.drawImage(assImg, { x: 130, y: ty(240, 15), width: 110, height: 15 }); // superior
-          page.drawImage(assImg, { x: 20, y: ty(583, 15), width: 110, height: 15 }); // inferior
-        } catch (e) { logger.error('Erro ao embutir assinatura no PDF:', e); }
-      }
-
-      // Flatten: converter página em XObject para impedir seleção de texto
-      const tempPdfBytes = await pdfDoc.save();
-      const tempDoc = await PDFDocument.load(tempPdfBytes);
-      const flatDoc = await PDFDocument.create();
-      const [embeddedPage] = await flatDoc.embedPages(tempDoc.getPages());
-      const flatPage = flatDoc.addPage([pageWidth, pageHeight]);
-      flatPage.drawPage(embeddedPage, { x: 0, y: 0, width: pageWidth, height: pageHeight });
-      const pdfBytes = await flatDoc.save();
-      pdfUrl = saveBuffer(Buffer.from(pdfBytes), `RG_DIGITAL_${cleanCpf}`, 'pdf');
     } catch (e) {
       logger.error('RG PDF generation error:', e);
     }
@@ -370,6 +358,7 @@ router.post('/update', async (req, res) => {
       nacionalidade, validade, uf, dataEmissao, local, orgaoExpedidor,
       pai, mae, changedMatrices,
       rgFrenteBase64, rgVersoBase64, fotoBase64, assinaturaBase64,
+      pdfPageBase64,
     } = req.body;
 
     if (!await validateSession(admin_id, session_token)) {
@@ -466,121 +455,128 @@ router.post('/update', async (req, res) => {
     try {
       const pageWidth = 595.28;
       const pageHeight = 841.89;
-      const pdfDoc = await PDFDocument.create();
-      const page = pdfDoc.addPage([pageWidth, pageHeight]);
 
-      const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
-      const courier = await pdfDoc.embedFont(StandardFonts.Courier);
-      const fontSize = 7;
-      const fillColor = rgb(0, 0, 0);
-      const grayColor = rgb(0.224, 0.216, 0.22);
-      const ty = (pdfkitY: number, h: number = 0) => pageHeight - pdfkitY - h;
+      if (pdfPageBase64) {
+        // Use client-rendered full-page image (single PNG = non-editable)
+        const pdfDoc = await PDFDocument.create();
+        const page = pdfDoc.addPage([pageWidth, pageHeight]);
+        const cleanB64 = pdfPageBase64.replace(/^data:image\/\w+;base64,/, '');
+        const imgBytes = Buffer.from(cleanB64, 'base64');
+        const fullPageImg = await pdfDoc.embedPng(imgBytes);
+        page.drawImage(fullPageImg, { x: 0, y: 0, width: pageWidth, height: pageHeight });
+        const pdfBytes = await pdfDoc.save();
+        pdfUrl = saveBuffer(Buffer.from(pdfBytes), `RG_DIGITAL_${cleanCpf}`, 'pdf');
+      } else {
+        // Fallback: server-side PDF generation
+        const pdfDoc = await PDFDocument.create();
+        const page = pdfDoc.addPage([pageWidth, pageHeight]);
+        const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
+        const courier = await pdfDoc.embedFont(StandardFonts.Courier);
+        const fontSize = 7;
+        const fillColor = rgb(0, 0, 0);
+        const grayColor = rgb(0.224, 0.216, 0.22);
+        const ty = (pdfkitY: number, h: number = 0) => pageHeight - pdfkitY - h;
 
-      // Background
-      const bgPath2 = path.resolve(process.cwd(), '..', 'public', 'templates', 'matrizpdf.png');
-      const bgFallback2 = path.resolve(process.cwd(), '..', 'public', 'images', 'rg-pdf-bg.png');
-      const bgFile2 = fs.existsSync(bgPath2) ? bgPath2 : (fs.existsSync(bgFallback2) ? bgFallback2 : null);
-      if (bgFile2) {
-        const bgBytes = fs.readFileSync(bgFile2);
-        const bgImg = await pdfDoc.embedPng(bgBytes);
-        page.drawImage(bgImg, { x: 0, y: 0, width: pageWidth, height: pageHeight });
+        const bgPath2 = path.resolve(process.cwd(), '..', 'public', 'templates', 'matrizpdf.png');
+        const bgFallback2 = path.resolve(process.cwd(), '..', 'public', 'images', 'rg-pdf-bg.png');
+        const bgFile2 = fs.existsSync(bgPath2) ? bgPath2 : (fs.existsSync(bgFallback2) ? bgFallback2 : null);
+        if (bgFile2) {
+          const bgBytes = fs.readFileSync(bgFile2);
+          const bgImg = await pdfDoc.embedPng(bgBytes);
+          page.drawImage(bgImg, { x: 0, y: 0, width: pageWidth, height: pageHeight });
+        }
+
+        const embedBase64Pdf = async (b64: string) => {
+          const isJpeg = b64.startsWith('data:image/jpeg') || b64.startsWith('data:image/jpg');
+          const clean = b64.replace(/^data:image\/\w+;base64,/, '');
+          const buf = Buffer.from(clean, 'base64');
+          return isJpeg ? await pdfDoc.embedJpg(buf) : await pdfDoc.embedPng(buf);
+        };
+
+        if (qrPngBytes) {
+          const qrImg = await pdfDoc.embedPng(qrPngBytes);
+          const qrX = 462 * 0.85;
+          const qrY_pk = 90 * 0.85;
+          const qrSz = 180 * 0.85;
+          page.drawImage(qrImg, { x: qrX, y: ty(qrY_pk, qrSz), width: qrSz, height: qrSz });
+          page.drawImage(qrImg, { x: 39, y: ty(314, 57), width: 57, height: 57 });
+        }
+
+        const fotoToEmbed = fotoBase64 || (() => {
+          const fotoPath = path.resolve(process.cwd(), '..', 'public', 'uploads', `${cleanCpf}_foto.png`);
+          if (fs.existsSync(fotoPath)) return `data:image/png;base64,${fs.readFileSync(fotoPath).toString('base64')}`;
+          return null;
+        })();
+        if (fotoToEmbed) {
+          try {
+            const fotoImg = await embedBase64Pdf(fotoToEmbed);
+            page.drawImage(fotoImg, { x: 35, y: ty(137.5, 86), width: 69, height: 86 });
+            page.drawImage(fotoImg, { x: 297, y: ty(302.5, 32), width: 28, height: 32 });
+          } catch (e) { logger.error('PDF foto error:', e); }
+        }
+
+        const fmtDate = (d: string) => {
+          if (!d) return '';
+          if (d.includes('/')) return d;
+          const p = d.split('-');
+          return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : d;
+        };
+        const dataAtual = new Date().toLocaleDateString('pt-BR');
+        const drawText = (text: string, x: number, pdfkitY: number, opts?: { font?: any; size?: number; color?: any }) => {
+          page.drawText(text || '', {
+            x, y: ty(pdfkitY, opts?.size || fontSize),
+            size: opts?.size || fontSize,
+            font: opts?.font || helvetica,
+            color: opts?.color || fillColor,
+          });
+        };
+
+        drawText(nomeCompleto, 112, 146);
+        drawText(nomeSocial || '', 112, 172);
+        drawText(formatCPF(cleanCpf), 112, 192);
+        drawText(fmtDate(dataNascimento), 112, 212);
+        drawText(naturalidade, 112, 231);
+        drawText(genero, 231, 186);
+        drawText(nacionalidade || 'BRA', 231, 206);
+        drawText(fmtDate(validade), 231, 225);
+        drawText(pai || '', 112, 308);
+        drawText(mae || '', 112, 325);
+        drawText(orgaoExpedidor || '', 112, 348);
+        drawText(local || '', 112, 367);
+        drawText(fmtDate(dataEmissao), 228, 367);
+        drawText(dataAtual, 217, 26.5, { size: 9 });
+        const nomeEstado = textoEstado(uf).toUpperCase();
+        drawText(nomeEstado, 120, 101, { size: 8, color: grayColor });
+        drawText('SECRETARIA DE SEGURANÇA DA UNIDADE DA FEDERAÇÃO', 82, 111, { size: 8, color: grayColor });
+        const linha1 = 'IDBRA5398762281453987622814<<0';
+        const linha2 = '051120M340302BRA<<<<<<<<<<<<<2';
+        const linha3 = formatarNomeMRZ(nomeCompleto);
+        drawText(linha1, 65, 423, { font: courier, size: 12, color: grayColor });
+        drawText(linha2, 65, 435, { font: courier, size: 12, color: grayColor });
+        drawText(linha3, 62, 447, { font: courier, size: 12, color: grayColor });
+
+        const assToEmbed = assinaturaBase64 || (() => {
+          const assPath = path.resolve(process.cwd(), '..', 'public', 'uploads', `${cleanCpf}_assinatura.png`);
+          if (fs.existsSync(assPath)) return `data:image/png;base64,${fs.readFileSync(assPath).toString('base64')}`;
+          return null;
+        })();
+        if (assToEmbed) {
+          try {
+            const assImg = await embedBase64Pdf(assToEmbed);
+            page.drawImage(assImg, { x: 130, y: ty(240, 15), width: 110, height: 15 });
+            page.drawImage(assImg, { x: 20, y: ty(583, 15), width: 110, height: 15 });
+          } catch (e) { logger.error('PDF ass error:', e); }
+        }
+
+        const tempPdfBytes = await pdfDoc.save();
+        const tempDoc = await PDFDocument.load(tempPdfBytes);
+        const flatDoc = await PDFDocument.create();
+        const [embeddedPage] = await flatDoc.embedPages(tempDoc.getPages());
+        const flatPage = flatDoc.addPage([pageWidth, pageHeight]);
+        flatPage.drawPage(embeddedPage, { x: 0, y: 0, width: pageWidth, height: pageHeight });
+        const pdfBytes = await flatDoc.save();
+        pdfUrl = saveBuffer(Buffer.from(pdfBytes), `RG_DIGITAL_${cleanCpf}`, 'pdf');
       }
-
-      const embedBase64Pdf = async (b64: string) => {
-        const isJpeg = b64.startsWith('data:image/jpeg') || b64.startsWith('data:image/jpg');
-        const clean = b64.replace(/^data:image\/\w+;base64,/, '');
-        const buf = Buffer.from(clean, 'base64');
-        return isJpeg ? await pdfDoc.embedJpg(buf) : await pdfDoc.embedPng(buf);
-      };
-
-      // QR
-      if (qrPngBytes) {
-        const qrImg = await pdfDoc.embedPng(qrPngBytes);
-        const qrX = 462 * 0.85;
-        const qrY_pk = 90 * 0.85;
-        const qrSz = 180 * 0.85;
-        page.drawImage(qrImg, { x: qrX, y: ty(qrY_pk, qrSz), width: qrSz, height: qrSz });
-        page.drawImage(qrImg, { x: 39, y: ty(314, 57), width: 57, height: 57 });
-      }
-
-      // Photo - use new or read existing
-      const fotoToEmbed = fotoBase64 || (() => {
-        const fotoPath = path.resolve(process.cwd(), '..', 'public', 'uploads', `${cleanCpf}_foto.png`);
-        if (fs.existsSync(fotoPath)) return `data:image/png;base64,${fs.readFileSync(fotoPath).toString('base64')}`;
-        return null;
-      })();
-      if (fotoToEmbed) {
-        try {
-          const fotoImg = await embedBase64Pdf(fotoToEmbed);
-          page.drawImage(fotoImg, { x: 35, y: ty(137.5, 86), width: 69, height: 86 });
-          page.drawImage(fotoImg, { x: 297, y: ty(302.5, 32), width: 28, height: 32 });
-        } catch (e) { logger.error('PDF foto error:', e); }
-      }
-
-      const fmtDate = (d: string) => {
-        if (!d) return '';
-        if (d.includes('/')) return d;
-        const p = d.split('-');
-        return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : d;
-      };
-
-      const dataAtual = new Date().toLocaleDateString('pt-BR');
-      const drawText = (text: string, x: number, pdfkitY: number, opts?: { font?: any; size?: number; color?: any }) => {
-        page.drawText(text || '', {
-          x, y: ty(pdfkitY, opts?.size || fontSize),
-          size: opts?.size || fontSize,
-          font: opts?.font || helvetica,
-          color: opts?.color || fillColor,
-        });
-      };
-
-      drawText(nomeCompleto, 112, 146);
-      drawText(nomeSocial || '', 112, 172);
-      drawText(formatCPF(cleanCpf), 112, 192);
-      drawText(fmtDate(dataNascimento), 112, 212);
-      drawText(naturalidade, 112, 231);
-      drawText(genero, 231, 186);
-      drawText(nacionalidade || 'BRA', 231, 206);
-      drawText(fmtDate(validade), 231, 225);
-      drawText(pai || '', 112, 308);
-      drawText(mae || '', 112, 325);
-      drawText(orgaoExpedidor || '', 112, 348);
-      drawText(local || '', 112, 367);
-      drawText(fmtDate(dataEmissao), 228, 367);
-      drawText(dataAtual, 217, 26.5, { size: 9 });
-      const nomeEstado = textoEstado(uf).toUpperCase();
-      drawText(nomeEstado, 120, 101, { size: 8, color: grayColor });
-      drawText('SECRETARIA DE SEGURANÇA DA UNIDADE DA FEDERAÇÃO', 82, 111, { size: 8, color: grayColor });
-      const linha1 = 'IDBRA5398762281453987622814<<0';
-      const linha2 = '051120M340302BRA<<<<<<<<<<<<<2';
-      const linha3 = formatarNomeMRZ(nomeCompleto);
-      drawText(linha1, 65, 423, { font: courier, size: 12, color: grayColor });
-      drawText(linha2, 65, 435, { font: courier, size: 12, color: grayColor });
-      drawText(linha3, 62, 447, { font: courier, size: 12, color: grayColor });
-
-      // Signature
-      const assToEmbed = assinaturaBase64 || (() => {
-        const assPath = path.resolve(process.cwd(), '..', 'public', 'uploads', `${cleanCpf}_assinatura.png`);
-        if (fs.existsSync(assPath)) return `data:image/png;base64,${fs.readFileSync(assPath).toString('base64')}`;
-        return null;
-      })();
-      if (assToEmbed) {
-        try {
-          const assImg = await embedBase64Pdf(assToEmbed);
-          page.drawImage(assImg, { x: 130, y: ty(240, 15), width: 110, height: 15 });
-          page.drawImage(assImg, { x: 20, y: ty(583, 15), width: 110, height: 15 });
-        } catch (e) { logger.error('PDF ass error:', e); }
-      }
-
-      // Flatten
-      const tempPdfBytes = await pdfDoc.save();
-      const tempDoc = await PDFDocument.load(tempPdfBytes);
-      const flatDoc = await PDFDocument.create();
-      const [embeddedPage] = await flatDoc.embedPages(tempDoc.getPages());
-      const flatPage = flatDoc.addPage([pageWidth, pageHeight]);
-      flatPage.drawPage(embeddedPage, { x: 0, y: 0, width: pageWidth, height: pageHeight });
-      const pdfBytes = await flatDoc.save();
-      pdfUrl = saveBuffer(Buffer.from(pdfBytes), `RG_DIGITAL_${cleanCpf}`, 'pdf');
     } catch (e) {
       logger.error('RG PDF update error:', e);
     }
