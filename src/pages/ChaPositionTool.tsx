@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { chaSampleFoto, matrizcha, matrizcha2 } from '@/assets/templates';
 
 interface TextField {
   id: string;
@@ -98,7 +99,7 @@ function FieldOverlay({
           zIndex: dragging || resizing ? 50 : 10,
         }}
       >
-        <img src="/images/cha-sample-foto.png" alt="Foto" className="w-full h-full object-cover" draggable={false} />
+        <img src={chaSampleFoto} alt="Foto" className="w-full h-full object-cover" draggable={false} />
         {/* Resize handle */}
         <div
           onMouseDown={handleResizeDown}
@@ -250,7 +251,7 @@ export default function ChaPositionTool() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <MatrixPanel
             title="Frente (matrizcha.png)"
-            bgSrc="/images/matrizcha.png"
+            bgSrc={matrizcha}
             fields={frontFields}
             onUpdateField={updateFront}
             onResizeField={resizeFront}
@@ -259,7 +260,7 @@ export default function ChaPositionTool() {
           />
           <MatrixPanel
             title="Verso (matrizcha2.png)"
-            bgSrc="/images/matrizcha2.png"
+            bgSrc={matrizcha2}
             fields={backFields}
             onUpdateField={updateBack}
             selectedId={selected}

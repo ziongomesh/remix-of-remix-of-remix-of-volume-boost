@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { rgVersoTemplate, qrcodeSampleRg } from '@/assets/templates';
 
 interface QrItem {
   x: number;
@@ -114,7 +115,7 @@ export default function RgQrPositionTool() {
           onMouseLeave={handleMouseUp}
         >
           <img
-            src="/images/rg-verso-template.png"
+            src={rgVersoTemplate}
             alt="RG Verso"
             className="block max-w-full"
             draggable={false}
@@ -139,7 +140,7 @@ export default function RgQrPositionTool() {
             onMouseDown={handleMouseDown}
           >
             <img
-              src="/images/qrcode-sample-rg.png"
+              src={qrcodeSampleRg}
               alt="QR Code"
               className="w-full h-full object-fill pointer-events-none opacity-80"
               draggable={false}

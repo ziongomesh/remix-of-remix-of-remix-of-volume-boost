@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { limpa12, limpa22, limpa32, qrcodeSample, basePng } from '@/assets/templates';
 
 interface DraggableItem {
   id: string;
@@ -20,10 +21,10 @@ const A4_H_MM = 297;
 const MATRIX_IDS = ["frente", "meio", "verso"];
 
 const INITIAL_ITEMS: DraggableItem[] = [
-  { id: "frente", label: "Matriz 1 (Frente)", x: 13.406, y: 21.595, width: 85, height: 55, color: "rgba(255,0,0,0.6)", image: "/images/limpa1-2.png" },
-  { id: "meio", label: "Matriz 2 (Meio)", x: 13.406, y: 84.691, width: 85, height: 55, color: "rgba(0,128,255,0.6)", image: "/images/limpa2-2.png" },
-  { id: "verso", label: "Matriz 3 (Verso)", x: 13.406, y: 148.693, width: 85, height: 55, color: "rgba(0,200,0,0.6)", image: "/images/limpa3-2.png" },
-  { id: "qrcode", label: "QR Code", x: 118.276, y: 35.975, width: 63.788, height: 63.788, color: "rgba(255,165,0,0.6)", image: "/images/qrcode-sample.png" },
+  { id: "frente", label: "Matriz 1 (Frente)", x: 13.406, y: 21.595, width: 85, height: 55, color: "rgba(255,0,0,0.6)", image: limpa12 },
+  { id: "meio", label: "Matriz 2 (Meio)", x: 13.406, y: 84.691, width: 85, height: 55, color: "rgba(0,128,255,0.6)", image: limpa22 },
+  { id: "verso", label: "Matriz 3 (Verso)", x: 13.406, y: 148.693, width: 85, height: 55, color: "rgba(0,200,0,0.6)", image: limpa32 },
+  { id: "qrcode", label: "QR Code", x: 118.276, y: 35.975, width: 63.788, height: 63.788, color: "rgba(255,165,0,0.6)", image: qrcodeSample },
 ];
 
 export default function PdfPositionTool() {
@@ -138,7 +139,7 @@ export default function PdfPositionTool() {
           style={{
             width: "595px",
             height: "842px",
-            backgroundImage: "url(/images/base.png)",
+            backgroundImage: `url(${basePng})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}

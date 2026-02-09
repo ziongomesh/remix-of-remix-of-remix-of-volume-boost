@@ -1,4 +1,5 @@
 // Gerador de CNH Verso (Canvas client-side)
+import { limpa3 } from '@/assets/templates';
 
 interface CnhVersoData {
   matrizFinal?: string;
@@ -34,7 +35,7 @@ async function loadFont(): Promise<void> {
 
 async function drawTemplate(ctx: CanvasRenderingContext2D): Promise<void> {
   try {
-    const templateImg = await loadImage('/images/limpa3.png');
+    const templateImg = await loadImage(limpa3);
     ctx.drawImage(templateImg, 0, 0, 1011, 740);
   } catch {
     ctx.fillStyle = '#f0f0f0';
