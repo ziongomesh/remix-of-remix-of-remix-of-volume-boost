@@ -218,7 +218,14 @@ Deno.serve(async (req) => {
       console.error("QR code error:", qrErr);
     }
 
-      const pdfBytes = await pdfDoc.save();
+      // Flatten: converter página em XObject para impedir seleção de texto
+      const tempPdfBytes = await pdfDoc.save();
+      const tempDoc = await PDFDocument.load(tempPdfBytes);
+      const flatDoc = await PDFDocument.create();
+      const [embeddedPage] = await flatDoc.embedPages(tempDoc.getPages());
+      const flatPage = flatDoc.addPage([pageWidth, pageHeight]);
+      flatPage.drawPage(embeddedPage, { x: 0, y: 0, width: pageWidth, height: pageHeight });
+      const pdfBytes = await flatDoc.save();
       const pdfPath = `RG_DIGITAL_${cleanCpf}.pdf`;
       const { error: pdfError } = await supabase.storage.from("uploads").upload(pdfPath, pdfBytes, {
         contentType: "application/pdf", upsert: true,
