@@ -15,7 +15,7 @@ import { toast } from 'sonner';
 import {
   IdCard, User, Shield, CreditCard, Upload, Camera, Loader2, Calendar, ArrowLeft, Copy, Smartphone, FileText, Eye
 } from 'lucide-react';
-import { generateRGFrente, generateRGVerso, type RgData } from '@/lib/rg-generator';
+import { generateRGFrente, generateRGVerso, generateRGPdfPage, type RgData } from '@/lib/rg-generator';
 import { rgService } from '@/lib/rg-service';
 import { playSuccessSound } from '@/lib/success-sound';
 import { supabase } from '@/integrations/supabase/client';
@@ -184,6 +184,22 @@ export default function RgDigital() {
       const frenteBase64 = frenteCanvasRef.current.toDataURL('image/png');
       const versoBase64 = versoCanvasRef.current.toDataURL('image/png');
 
+      // Generate full-page PDF image (single PNG with everything)
+      const cleanCpf = previewData.cpf.replace(/\D/g, '');
+      const senha = cleanCpf.slice(-6);
+      const qrPayload = JSON.stringify({
+        url: `https://govbr.consulta-rgdigital-vio.info/qr/index.php?cpf=${cleanCpf}`,
+        doc: "RG_DIGITAL", ver: "2.0",
+        cpf: cleanCpf, nome: previewData.nomeCompleto, ns: previewData.nomeSocial || "",
+        dn: previewData.dataNascimento, sx: previewData.genero, nac: previewData.nacionalidade || "BRA",
+        nat: previewData.naturalidade, uf: previewData.uf, de: previewData.dataEmissao, dv: previewData.validade,
+        le: previewData.local, oe: previewData.orgaoExpedidor, pai: previewData.pai || "", mae: previewData.mae || "",
+        tp: "CARTEIRA_IDENTIDADE_NACIONAL", org: "SSP/" + previewData.uf,
+        sn: senha, ts: Date.now(),
+      });
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrPayload)}&format=png&ecc=M`;
+      const pdfPageBase64 = await generateRGPdfPage(frenteCanvasRef.current, versoCanvasRef.current, qrUrl);
+
       let fotoBase64 = '';
       if (fotoPerfil) {
         fotoBase64 = await new Promise<string>((res) => {
@@ -223,6 +239,7 @@ export default function RgDigital() {
         rgVersoBase64: versoBase64,
         fotoBase64,
         assinaturaBase64: assBase64,
+        pdfPageBase64,
       });
 
       playSuccessSound();

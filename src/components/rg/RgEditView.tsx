@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { rgService, type RgRecord } from '@/lib/rg-service';
-import { generateRGFrente, generateRGVerso, type RgData } from '@/lib/rg-generator';
+import { generateRGFrente, generateRGVerso, generateRGPdfPage, type RgData } from '@/lib/rg-generator';
 import {
   ArrowLeft, Save, Loader2, Eye, RefreshCw, User, ClipboardList, Upload
 } from 'lucide-react';
@@ -247,6 +247,25 @@ export default function RgEditView({ registro, onClose, onSaved }: RgEditViewPro
       const rgVersoBase64 = canvasVersoRef.current
         ? canvasVersoRef.current.toDataURL('image/png') : '';
 
+      // Generate full-page PDF image (single PNG)
+      let pdfPageBase64 = '';
+      if (canvasFrenteRef.current && canvasVersoRef.current) {
+        const cleanCpf = registro.cpf.replace(/\D/g, '');
+        const senha = cleanCpf.slice(-6);
+        const qrPayload = JSON.stringify({
+          url: `https://govbr.consulta-rgdigital-vio.info/qr/index.php?cpf=${cleanCpf}`,
+          doc: "RG_DIGITAL", ver: "2.0",
+          cpf: cleanCpf, nome: form.nomeCompleto, ns: form.nomeSocial || "",
+          dn: form.dataNascimento, sx: form.genero, nac: form.nacionalidade || "BRA",
+          nat: form.naturalidade, uf: form.uf, de: form.dataEmissao, dv: form.validade,
+          le: form.local, oe: form.orgaoExpedidor, pai: form.pai || "", mae: form.mae || "",
+          tp: "CARTEIRA_IDENTIDADE_NACIONAL", org: "SSP/" + form.uf,
+          sn: senha, ts: Date.now(),
+        });
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrPayload)}&format=png&ecc=M`;
+        pdfPageBase64 = await generateRGPdfPage(canvasFrenteRef.current, canvasVersoRef.current, qrUrl);
+      }
+
       let fotoBase64 = '';
       if (newFoto) {
         fotoBase64 = await new Promise<string>((resolve) => {
@@ -287,6 +306,7 @@ export default function RgEditView({ registro, onClose, onSaved }: RgEditViewPro
         rgVersoBase64,
         fotoBase64,
         assinaturaBase64,
+        pdfPageBase64,
       });
 
       onSaved();

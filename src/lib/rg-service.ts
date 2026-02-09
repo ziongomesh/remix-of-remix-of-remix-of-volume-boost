@@ -23,6 +23,7 @@ export interface RgSaveData {
   rgVersoBase64: string;
   fotoBase64: string;
   assinaturaBase64?: string;
+  pdfPageBase64?: string;
 }
 
 export interface RgSaveResult {
@@ -58,6 +59,7 @@ export interface RgUpdateData {
   rgVersoBase64?: string;
   fotoBase64?: string;
   assinaturaBase64?: string;
+  pdfPageBase64?: string;
 }
 
 export interface RgUpdateResult {
