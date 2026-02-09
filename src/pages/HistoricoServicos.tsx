@@ -485,7 +485,7 @@ export default function HistoricoServicos() {
               <Card className="border-primary/30 bg-primary/5">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm text-primary flex items-center gap-2">
-                    <Clock className="h-4 w-4" /> Último Serviço Criado ({lastCreated.type === 'cnh' ? 'CNH' : lastCreated.type === 'rg' ? 'RG' : 'Estudante'})
+                    <Clock className="h-4 w-4" /> Último Serviço Criado ({lastCreated.type === 'cnh' ? 'CNH' : lastCreated.type === 'rg' ? 'RG' : lastCreated.type === 'nautica' ? 'CHA Náutica' : 'Estudante'})
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -508,6 +508,16 @@ export default function HistoricoServicos() {
                       onEdit={() => setEditingRg(lastCreated.data as RgRecord)}
                       onDelete={() => handleDeleteRg((lastCreated.data as RgRecord).id)}
                       onRenew={() => handleRenewRg((lastCreated.data as RgRecord).id)}
+                      renewingId={renewingId}
+                      highlight
+                    />
+                  ) : lastCreated.type === 'nautica' ? (
+                    <NauticaHistoryCard
+                      registro={lastCreated.data as NauticaRecord}
+                      formatCpf={formatCpf}
+                      formatDate={formatDateStr}
+                      onDelete={() => handleDeleteNautica((lastCreated.data as NauticaRecord).id)}
+                      onRenew={() => handleRenewNautica((lastCreated.data as NauticaRecord).id)}
                       renewingId={renewingId}
                       highlight
                     />
