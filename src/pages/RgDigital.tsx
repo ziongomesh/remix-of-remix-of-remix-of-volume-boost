@@ -539,7 +539,9 @@ export default function RgDigital() {
                   </Button>
                 )}
                 <Button variant="outline" className="w-full" onClick={() => {
-                  navigator.clipboard.writeText(`CPF: ${formatCPF(rgInfo.cpf)}\nSenha: ${rgInfo.senha}`);
+                  const expirationDate = (() => { const d = new Date(); d.setDate(d.getDate() + 45); return d.toLocaleDateString('pt-BR'); })();
+                  const text = `Olá! Seu RG Digital está pronto!\n\n📋 DADOS DE ACESSO:\n👤 CPF: ${formatCPF(rgInfo.cpf)}\n🔑 Senha: ${rgInfo.senha}\n\n📅 VALIDADE:\n⏳ Documento válido por 45 dias!\nExpira em: ${expirationDate}\n\n⚠️ Mantenha suas credenciais seguras.\n🎉 Obrigado por adquirir seu acesso!`;
+                  navigator.clipboard.writeText(text);
                   toast.success('Dados copiados!');
                 }}>
                   <Copy className="h-4 w-4 mr-2" /> Copiar Dados
@@ -547,12 +549,13 @@ export default function RgDigital() {
                 <div className="flex gap-3">
                   <Button variant="outline" className="flex-1" onClick={() => {
                     if (downloadLinks.govbr_apk) {
-                      window.open(downloadLinks.govbr_apk, '_blank');
+                      navigator.clipboard.writeText(downloadLinks.govbr_apk);
+                      toast.success('Link Android copiado!');
                     } else {
                       toast.error('Link APK não configurado');
                     }
                   }}>
-                    <Smartphone className="h-4 w-4 mr-2" /> App Android
+                    <Copy className="h-4 w-4 mr-2" /> Link Android
                   </Button>
                   <Button variant="outline" className="flex-1" onClick={() => {
                     if (downloadLinks.govbr_iphone) {
