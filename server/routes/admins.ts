@@ -422,4 +422,27 @@ router.get('/reseller-details/:resellerId', async (req, res) => {
   }
 });
 
+// GET /admins/creator/:adminId - Buscar nome do master que criou o acesso
+router.get('/creator/:adminId', async (req, res) => {
+  try {
+    const adminId = parseInt(req.params.adminId);
+    const rows = await query<any[]>(
+      `SELECT a2.id as creator_id, a2.nome as creator_name
+       FROM admins a1
+       JOIN admins a2 ON a1.criado_por = a2.id
+       WHERE a1.id = ?`,
+      [adminId]
+    );
+
+    if (rows.length === 0) {
+      return res.json({ creator_id: null, creator_name: null });
+    }
+
+    res.json(rows[0]);
+  } catch (error) {
+    console.error('Erro ao buscar criador:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
 export default router;
