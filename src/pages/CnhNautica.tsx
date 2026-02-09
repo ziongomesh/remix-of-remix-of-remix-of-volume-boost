@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { nauticaService } from '@/lib/cnh-nautica-service';
-import ChaPreview from '@/components/cha/ChaPreview';
+import ChaPreview, { ChaPreviewHandle } from '@/components/cha/ChaPreview';
 import { playSuccessSound } from '@/lib/success-sound';
 import { isUsingMySQL } from '@/lib/db-config';
 import { mysqlApi } from '@/lib/api-mysql';
@@ -57,6 +57,7 @@ export default function CnhNautica() {
   const [resultInfo, setResultInfo] = useState<{ cpf: string; senha: string } | null>(null);
   const [govbrApk, setGovbrApk] = useState('');
   const [govbrIphone, setGovbrIphone] = useState('');
+  const chaPreviewRef = useRef<ChaPreviewHandle>(null);
 
   // Fetch download links for Gov.br (CNH Náutica uses Gov.br app)
   useState(() => {
@@ -138,6 +139,8 @@ export default function CnhNautica() {
         requisitos: (data.requisitos || '').toUpperCase(),
         orgao_emissao: data.orgaoEmissao.toUpperCase(),
         fotoBase64,
+        matrizFrenteBase64: chaPreviewRef.current?.getFrenteBase64() || '',
+        matrizVersoBase64: chaPreviewRef.current?.getVersoBase64() || '',
       });
 
       playSuccessSound();
@@ -393,6 +396,7 @@ export default function CnhNautica() {
               </CardHeader>
               <CardContent>
                 <ChaPreview
+                  ref={chaPreviewRef}
                   nome={form.watch('nome')}
                   cpf={form.watch('cpf')}
                   dataNascimento={form.watch('dataNascimento')}
