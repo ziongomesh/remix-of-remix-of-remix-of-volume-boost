@@ -44,12 +44,13 @@ export function PdfCanvas({ pageCanvas, bgCanvas, fields, selectedId, onSelect, 
         ctx.fillRect(sx, sy, sw, sh);
       }
 
-      // Draw the new text with FreeMonoBold
+      // Draw the new text with FreeMonoBold at exact baseline position
       if (field.text.trim()) {
         ctx.fillStyle = field.color || '#000000';
         ctx.font = `bold ${field.fontSize}px "FreeMono", "Courier New", monospace`;
-        ctx.textBaseline = 'top';
-        ctx.fillText(field.text, field.x, field.y);
+        ctx.textBaseline = 'alphabetic';
+        // field.y is the top of the text box, so baseline ≈ y + fontSize * 0.85
+        ctx.fillText(field.text, field.x, field.y + field.fontSize * 0.85);
       }
     }
   }, [pageCanvas, bgCanvas, pageFields]);
