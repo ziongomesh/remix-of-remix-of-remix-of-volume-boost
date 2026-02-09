@@ -5,9 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Upload, Download, Loader2, ImageMinus, ArrowLeft, Crop, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
 import Cropper, { Area } from 'react-easy-crop';
 import { Slider } from '@/components/ui/slider';
+import { removeBackground } from '@imgly/background-removal';
 
 async function getCroppedImg(imageSrc: string, crop: Area): Promise<string> {
   const image = new Image();
@@ -25,16 +25,66 @@ async function getCroppedImg(imageSrc: string, crop: Area): Promise<string> {
   return canvas.toDataURL('image/png');
 }
 
+async function removeBgLocal(imageDataUrl: string): Promise<string> {
+  // Convert data URL to blob
+  const res = await fetch(imageDataUrl);
+  const blob = await res.blob();
+
+  // Remove background using local ONNX model (no API, no limits)
+  const resultBlob = await removeBackground(blob, {
+    output: { format: 'image/png' },
+  });
+
+  // Draw result on white background
+  const img = new Image();
+  const url = URL.createObjectURL(resultBlob);
+  await new Promise<void>((resolve, reject) => {
+    img.onload = () => resolve();
+    img.onerror = reject;
+    img.src = url;
+  });
+
+  const canvas = document.createElement('canvas');
+  canvas.width = img.width;
+  canvas.height = img.height;
+  const ctx = canvas.getContext('2d')!;
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(img, 0, 0);
+  URL.revokeObjectURL(url);
+
+  return canvas.toDataURL('image/png');
+}
+
 export default function RemoverFundo() {
   const [originalImage, setOriginalImage] = useState<string | null>(null);
   const [croppedImage, setCroppedImage] = useState<string | null>(null);
   const [resultImage, setResultImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadingMsg, setLoadingMsg] = useState('');
   const [isCropping, setIsCropping] = useState(false);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const processImage = async (dataUrl: string) => {
+    setLoading(true);
+    setLoadingMsg('Carregando modelo...');
+    setResultImage(null);
+    try {
+      setLoadingMsg('Removendo fundo...');
+      const result = await removeBgLocal(dataUrl);
+      setResultImage(result);
+      toast.success('Fundo removido com sucesso!');
+    } catch (err: any) {
+      console.error(err);
+      toast.error('Erro ao remover fundo');
+    } finally {
+      setLoading(false);
+      setLoadingMsg('');
+    }
+  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -44,7 +94,8 @@ export default function RemoverFundo() {
 
     const reader = new FileReader();
     reader.onload = () => {
-      setOriginalImage(reader.result as string);
+      const img = reader.result as string;
+      setOriginalImage(img);
       setCroppedImage(null);
       setResultImage(null);
       setIsCropping(true);
@@ -64,41 +115,14 @@ export default function RemoverFundo() {
       const cropped = await getCroppedImg(originalImage, croppedAreaPixels);
       setCroppedImage(cropped);
       setIsCropping(false);
+      processImage(cropped);
     } catch { toast.error('Erro ao recortar imagem'); }
   };
 
   const handleSkipCrop = () => {
     setCroppedImage(originalImage);
     setIsCropping(false);
-  };
-
-  const handleRemoveBackground = async () => {
-    const imageToProcess = croppedImage || originalImage;
-    if (!imageToProcess) return;
-
-    setLoading(true);
-    setResultImage(null);
-
-    try {
-      const { data, error } = await supabase.functions.invoke('remove-background', {
-        body: { imageBase64: imageToProcess, outputMode: 'white' },
-      });
-
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-
-      if (data?.image) {
-        setResultImage(data.image);
-        toast.success('Fundo removido com sucesso!');
-      } else {
-        throw new Error('Resultado inesperado');
-      }
-    } catch (err: any) {
-      console.error(err);
-      toast.error(err.message || 'Erro ao remover fundo');
-    } finally {
-      setLoading(false);
-    }
+    if (originalImage) processImage(originalImage);
   };
 
   const handleDownload = () => {
@@ -134,11 +158,10 @@ export default function RemoverFundo() {
               <ImageMinus className="h-6 w-6 text-primary" />
               Removedor de Fundo
             </h1>
-            <p className="text-muted-foreground">Envie uma foto e receba com fundo branco</p>
+            <p className="text-muted-foreground">Envie uma foto e receba com fundo branco — 100% local, sem limites</p>
           </div>
         </div>
 
-        {/* Upload */}
         {!originalImage && (
           <Card
             className="border-dashed border-2 cursor-pointer hover:border-primary/50 transition-colors"
@@ -156,7 +179,6 @@ export default function RemoverFundo() {
 
         <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
 
-        {/* Cropper */}
         {isCropping && originalImage && (
           <Card>
             <CardHeader className="pb-2">
@@ -190,7 +212,6 @@ export default function RemoverFundo() {
           </Card>
         )}
 
-        {/* Preview + Result */}
         {!isCropping && (croppedImage || resultImage) && (
           <div className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
@@ -213,23 +234,18 @@ export default function RemoverFundo() {
                   {loading ? (
                     <div className="flex flex-col items-center gap-3 text-muted-foreground">
                       <Loader2 className="h-10 w-10 animate-spin text-primary" />
-                      <p className="text-sm">Removendo fundo...</p>
+                      <p className="text-sm">{loadingMsg || 'Processando...'}</p>
                     </div>
                   ) : resultImage ? (
                     <img src={resultImage} alt="Fundo branco" className="max-h-80 rounded-lg object-contain" />
                   ) : (
-                    <p className="text-sm text-muted-foreground">Clique no botão abaixo</p>
+                    <p className="text-sm text-muted-foreground">Processando...</p>
                   )}
                 </CardContent>
               </Card>
             </div>
 
             <div className="flex flex-wrap gap-3 justify-center">
-              {!loading && !resultImage && (
-                <Button onClick={handleRemoveBackground} className="gap-2" size="lg">
-                  <ImageMinus className="h-4 w-4" /> Remover Fundo
-                </Button>
-              )}
               {resultImage && (
                 <Button onClick={handleDownload} className="gap-2" size="lg">
                   <Download className="h-4 w-4" /> Salvar Imagem
