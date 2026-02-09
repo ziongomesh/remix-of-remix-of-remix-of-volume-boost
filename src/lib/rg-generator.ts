@@ -207,9 +207,9 @@ export function formatarNomeMRZ(nome: string): string {
 }
 
 // =================== FULL PDF PAGE (single PNG) ===================
+// Matches the reference rgDigitalUtils layout: matrizpdf background + data drawn directly
 export async function generateRGPdfPage(
-  frenteCanvas: HTMLCanvasElement,
-  versoCanvas: HTMLCanvasElement,
+  data: RgData,
   qrCodeDataUrl: string,
 ): Promise<string> {
   await loadFonts();
@@ -217,7 +217,7 @@ export async function generateRGPdfPage(
   const scale = 3;
   const pageW = Math.round(595.28 * scale);
   const pageH = Math.round(841.89 * scale);
-  const mmToPx = (mm: number) => mm * 2.8346 * scale;
+  const s = scale;
 
   const canvas = document.createElement('canvas');
   canvas.width = pageW;
@@ -228,7 +228,7 @@ export async function generateRGPdfPage(
   ctx.fillStyle = '#FFFFFF';
   ctx.fillRect(0, 0, pageW, pageH);
 
-  // Background template
+  // Background template (matrizpdf.png)
   try {
     const bg = await loadImage('/images/rg-pdf-bg.png');
     ctx.drawImage(bg, 0, 0, pageW, pageH);
@@ -236,149 +236,100 @@ export async function generateRGPdfPage(
 
   const fontFamily = '"Noto Sans", Tahoma, Arial, sans-serif';
 
-  // === HEADER ===
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'alphabetic';
-  ctx.font = `bold ${14 * scale}px ${fontFamily}`;
-  ctx.fillStyle = '#262626';
-  ctx.fillText('Carteira de Identidade', mmToPx(13), mmToPx(10));
-
-  // Date line
-  const today = new Date();
-  const dateStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
-  ctx.font = `${8 * scale}px ${fontFamily}`;
-  ctx.fillStyle = '#666666';
-  ctx.fillText('Compartilhado pelo aplicativo ', mmToPx(13), mmToPx(18));
-  const w1 = ctx.measureText('Compartilhado pelo aplicativo ').width;
-  ctx.font = `bold ${8 * scale}px ${fontFamily}`;
-  ctx.fillStyle = '#262626';
-  ctx.fillText('gov.br', mmToPx(13) + w1, mmToPx(18));
-  const w2 = ctx.measureText('gov.br').width;
-  ctx.font = `${8 * scale}px ${fontFamily}`;
-  ctx.fillStyle = '#666666';
-  ctx.fillText(` em ${dateStr}`, mmToPx(13) + w1 + w2, mmToPx(18));
-
-  // gov.br top right
-  ctx.font = `bold ${10 * scale}px ${fontFamily}`;
-  ctx.fillStyle = '#338033';
-  ctx.fillText('gov.br', pageW - mmToPx(20), mmToPx(12));
-
-  // === MATRICES ===
-  const matrizW = mmToPx(85);
-  const matrizH = mmToPx(55);
-  ctx.drawImage(frenteCanvas, mmToPx(13.406), mmToPx(21.595), matrizW, matrizH);
-  ctx.drawImage(versoCanvas, mmToPx(13.406), mmToPx(84.691), matrizW, matrizH);
-
-  // === QR CODE (right side) ===
+  // === QR Code - primary (right side) ===
   if (qrCodeDataUrl) {
     try {
       const qrImg = await loadImage(qrCodeDataUrl);
-      const qrSize = mmToPx(63.788);
-
-      // QR Code label
-      ctx.font = `bold ${12 * scale}px ${fontFamily}`;
-      ctx.fillStyle = '#262626';
-      ctx.fillText('QR Code', mmToPx(118), mmToPx(24));
-
-      // QR image
-      ctx.drawImage(qrImg, mmToPx(118.276), mmToPx(35.975), qrSize, qrSize);
-
-      // Verification text
-      ctx.font = `${7 * scale}px ${fontFamily}`;
-      ctx.fillStyle = '#666666';
-      const verifyY = mmToPx(35.975) + qrSize + mmToPx(5);
-      const verifyLines = [
-        'Verifique a autenticidade da Carteira de',
-        'Identidade Nacional lendo o QR code',
-        'com o aplicativo Vio.',
-      ];
-      verifyLines.forEach((line, i) => {
-        ctx.fillText(line, mmToPx(120), verifyY + i * (10 * scale));
-      });
+      // Reference: doc.image(qrCodePath, 462*0.85, 90*0.85, { width: 180*0.85 })
+      ctx.drawImage(qrImg, 462 * 0.85 * s, 90 * 0.85 * s, 180 * 0.85 * s, 180 * 0.85 * s);
+      // Reference: doc.image(qrCodePath, 39, 314, { width: 57, height: 57 })
+      ctx.drawImage(qrImg, 39 * s, 314 * s, 57 * s, 57 * s);
     } catch (e) { console.warn('QR code draw error:', e); }
   }
 
-  // === DOCUMENTO DE IDENTIFICAÇÃO BOX ===
-  const boxX = mmToPx(108);
-  const boxY = mmToPx(120);
-  const boxW = mmToPx(90);
-  const boxH = mmToPx(8);
-  ctx.fillStyle = '#ED9B1A';
-  ctx.fillRect(boxX, boxY, boxW, boxH);
-  ctx.font = `bold ${9 * scale}px ${fontFamily}`;
-  ctx.fillStyle = '#FFFFFF';
-  ctx.fillText('Documento de Identificação', boxX + mmToPx(10), boxY + mmToPx(5.5));
+  // === Photo ===
+  if (data.foto) {
+    try {
+      let fotoSrc: string;
+      if (data.foto instanceof File) {
+        fotoSrc = await readFileAsDataURL(data.foto);
+      } else {
+        fotoSrc = data.foto;
+      }
+      const fotoImg = await loadImage(fotoSrc);
+      // Reference: doc.image(foto, 35, 137.5, { width: 69, height: 86 })
+      ctx.drawImage(fotoImg, 35 * s, 137.5 * s, 69 * s, 86 * s);
+      // Reference: doc.image(foto, 297, 302.5, { width: 28, height: 32 })
+      ctx.drawImage(fotoImg, 297 * s, 302.5 * s, 28 * s, 32 * s);
+    } catch (e) { console.warn('Photo draw error:', e); }
+  }
 
-  // Legal text
-  ctx.font = `${7 * scale}px ${fontFamily}`;
-  ctx.fillStyle = '#4D4D4D';
-  const legalY = boxY + boxH + mmToPx(5);
-  const legalLines = [
-    'Este documento digital pode ser utilizado',
-    'para sua identificação, não sendo',
-    'necessária a apresentação de documento',
-    'complementar, conforme Decreto n° 10.977,',
-    'de 23 de fevereiro de 2022.',
-  ];
-  legalLines.forEach((line, i) => {
-    ctx.fillText(line, boxX + mmToPx(3), legalY + i * (10 * scale));
-  });
+  // === Date (top) ===
+  const today = new Date();
+  const dateStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
+  ctx.font = `${9 * s}px ${fontFamily}`;
+  ctx.fillStyle = '#000000';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText(dateStr, 217 * s, 23.5 * s);
 
-  // === BOTTOM TABLE ===
-  const tableX = mmToPx(13);
-  const tableY = mmToPx(155);
-  const colW = mmToPx(90);
-  const rowH = mmToPx(10);
-  const tableW = mmToPx(184);
-  const tableH = rowH * 3;
+  // === State name ===
+  const nomeEstadoPDF = textoEstado(data.uf).toUpperCase();
+  ctx.font = `${8 * s}px ${fontFamily}`;
+  ctx.fillStyle = '#393738';
+  ctx.fillText(nomeEstadoPDF, 140 * s, 98 * s);
 
-  // White background
-  ctx.fillStyle = '#FFFFFF';
-  ctx.fillRect(tableX, tableY, tableW, tableH);
+  // === Secretaria ===
+  ctx.fillText('SECRETARIA DE SEGURANÇA DA UNIDADE DA FEDERAÇÃO', 82 * s, 108 * s);
 
-  // Borders
-  ctx.strokeStyle = '#BFBFBF';
-  ctx.lineWidth = scale * 0.5;
-  ctx.strokeRect(tableX, tableY, tableW, tableH);
+  // === Data fields (fontSize 7) ===
+  ctx.font = `${7 * s}px ${fontFamily}`;
+  ctx.fillStyle = '#000000';
 
-  // Horizontal lines
-  ctx.beginPath();
-  ctx.moveTo(tableX, tableY + rowH);
-  ctx.lineTo(tableX + tableW, tableY + rowH);
-  ctx.moveTo(tableX, tableY + rowH * 2);
-  ctx.lineTo(tableX + tableW, tableY + rowH * 2);
-  ctx.stroke();
+  // FOLHA 1 - Frente
+  ctx.fillText(data.nomeCompleto, 112 * s, 143 * s);
+  ctx.fillText(data.nomeSocial || '', 112 * s, 169 * s);
+  ctx.fillText(formatCPFDisplay(data.cpf), 112 * s, 189 * s);
+  ctx.fillText(formatDateBR(data.dataNascimento), 112 * s, 209 * s);
+  ctx.fillText(data.naturalidade, 112 * s, 228 * s);
 
-  // Vertical line
-  ctx.beginPath();
-  ctx.moveTo(tableX + colW, tableY);
-  ctx.lineTo(tableX + colW, tableY + tableH);
-  ctx.stroke();
+  ctx.fillText(data.genero, 231 * s, 183 * s);
+  ctx.fillText(data.nacionalidade || 'BRA', 231 * s, 203 * s);
+  ctx.fillText(formatDateBR(data.validade), 231 * s, 222 * s);
 
-  // Table labels
-  const labelSize = 6 * scale;
-  const valueSize = 8 * scale;
-  ctx.font = `${labelSize}px ${fontFamily}`;
-  ctx.fillStyle = '#666666';
-  ctx.fillText('Título de eleitor', tableX + 4 * scale, tableY + 8 * scale);
-  ctx.fillText('Tipo sanguíneo Fator RH', tableX + colW + 4 * scale, tableY + 8 * scale);
+  // FOLHA 2 - Verso
+  ctx.fillText(data.pai || '', 112 * s, 305 * s);
+  ctx.fillText(data.mae || '', 112 * s, 322 * s);
+  ctx.fillText(data.orgaoExpedidor || '', 112 * s, 345 * s);
+  ctx.fillText(data.local || '', 112 * s, 364 * s);
+  ctx.fillText(formatDateBR(data.dataEmissao), 228 * s, 364 * s);
 
-  ctx.fillText('Estado civil', tableX + 4 * scale, tableY + rowH + 8 * scale);
-  ctx.font = `bold ${valueSize}px ${fontFamily}`;
-  ctx.fillStyle = '#262626';
-  ctx.fillText('Solteiro (a)', tableX + 4 * scale, tableY + rowH + 18 * scale);
+  // === Signature ===
+  if (data.assinatura) {
+    try {
+      let assSrc: string;
+      if (data.assinatura instanceof File) {
+        assSrc = await readFileAsDataURL(data.assinatura);
+      } else {
+        assSrc = data.assinatura;
+      }
+      const assImg = await loadImage(assSrc);
+      // Reference: doc.image(assinatura, 130, 237, { width: 110, height: 15 }) - upper
+      ctx.drawImage(assImg, 130 * s, 237 * s, 110 * s, 15 * s);
+      // Reference: doc.image(assinatura, 20, 580, { width: 110, height: 15 }) - lower
+      ctx.drawImage(assImg, 20 * s, 580 * s, 110 * s, 15 * s);
+    } catch (e) { console.warn('Signature draw error:', e); }
+  }
 
-  ctx.font = `${labelSize}px ${fontFamily}`;
-  ctx.fillStyle = '#666666';
-  ctx.fillText('Doador de Órgãos', tableX + colW + 4 * scale, tableY + rowH + 8 * scale);
-  ctx.font = `bold ${valueSize}px ${fontFamily}`;
-  ctx.fillStyle = '#262626';
-  ctx.fillText('NÃO', tableX + colW + 4 * scale, tableY + rowH + 18 * scale);
-
-  ctx.font = `${labelSize}px ${fontFamily}`;
-  ctx.fillStyle = '#666666';
-  ctx.fillText('Assinatura', tableX + 4 * scale, tableY + rowH * 2 + 8 * scale);
-  ctx.fillText('Certidão de Nasc Casamento Averb. Divórcio', tableX + colW + 4 * scale, tableY + rowH * 2 + 8 * scale);
+  // === MRZ Lines ===
+  ctx.font = `${10 * s}px "Courier New", Courier, monospace`;
+  ctx.fillStyle = '#393738';
+  const linha1 = 'IDBRA5398762281453987622814<<0';
+  const linha2 = '051120M340302BRA<<<<<<<<<<<<<2';
+  const linha3 = formatarNomeMRZ(data.nomeCompleto);
+  ctx.fillText(linha1, 65 * s, 420 * s);
+  ctx.fillText(linha2, 65 * s, 430 * s);
+  ctx.fillText(linha3, 62 * s, 440 * s);
 
   return canvas.toDataURL('image/png');
 }
