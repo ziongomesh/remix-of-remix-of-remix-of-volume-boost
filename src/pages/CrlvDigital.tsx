@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import {
   Car, User, Loader2, ArrowLeft, Shuffle, Wrench, FileText, Eye, ClipboardList, QrCode, Upload, X
 } from 'lucide-react';
+import { CrlvPreview } from '@/components/crlv/CrlvPreview';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import {
@@ -182,7 +183,7 @@ export default function CrlvDigital() {
 
   return (
     <DashboardLayout>
-      <div className="max-w-5xl mx-auto space-y-6">
+      <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center gap-3">
           <Link to="/servicos">
@@ -197,6 +198,9 @@ export default function CrlvDigital() {
           </div>
         </div>
 
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr,380px] gap-6">
+          {/* LEFT: Form */}
+          <div>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSave)} className="space-y-6">
             {/* 1. IDENTIFICAÇÃO DO VEÍCULO */}
@@ -639,7 +643,7 @@ export default function CrlvDigital() {
           </form>
         </Form>
 
-        {/* PDF PREVIEW */}
+        {/* PDF PREVIEW after generation */}
         {generatedPdfUrl && (
           <Card className="mt-6">
             <CardHeader className="pb-3">
@@ -677,6 +681,18 @@ export default function CrlvDigital() {
             </CardContent>
           </Card>
         )}
+          </div>
+
+          {/* RIGHT: Live Preview */}
+          <div className="hidden lg:block">
+            <div className="sticky top-4 space-y-3">
+              <h3 className="text-sm font-semibold flex items-center gap-2 text-muted-foreground">
+                <Eye className="h-4 w-4" /> Preview em tempo real
+              </h3>
+              <CrlvPreview form={form} customQrPreview={customQrPreview} />
+            </div>
+          </div>
+        </div>
 
       </div>
     </DashboardLayout>
