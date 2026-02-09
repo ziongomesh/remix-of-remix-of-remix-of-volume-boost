@@ -39,10 +39,10 @@ function drawChaFront(
   // CPF
   ctx.fillText(data.cpf, w * 0.30, h * 0.49, w * 0.28);
 
-  // Categoria - bold, two lines possible
-  ctx.font = 'bold 13px Arial, sans-serif';
+  // Categoria - inside the categoria box
+  ctx.font = 'bold 12px Arial, sans-serif';
   const catText = data.categoria.toUpperCase();
-  ctx.fillText(catText, w * 0.035, h * 0.60, w * 0.57);
+  ctx.fillText(catText, w * 0.035, h * 0.585, w * 0.57);
 
   // Subcategoria em inglês (mapear)
   const catEnMap: Record<string, string> = {
@@ -53,8 +53,8 @@ function drawChaFront(
   };
   const catEn = catEnMap[catText] || '';
   if (catEn) {
-    ctx.font = '11px Arial, sans-serif';
-    ctx.fillText(catEn, w * 0.035, h * 0.65, w * 0.57);
+    ctx.font = '10px Arial, sans-serif';
+    ctx.fillText(catEn, w * 0.035, h * 0.625, w * 0.57);
   }
 
   // Data de Validade
