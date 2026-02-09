@@ -102,6 +102,21 @@ const categories: ServiceCategory[] = [
     icon: GraduationCap,
     services: [
       {
+        id: 'carteira-abafe',
+        name: 'Carteira ABAFE',
+        description: 'Carteira de Estudante ABAFE',
+        features: [
+          'QR Code de verificação',
+          'Dados personalizáveis',
+          'Senha de 6 dígitos',
+        ],
+        validity: '45 dias',
+        credits: 1,
+        available: true,
+        route: '/servicos/carteira-estudante',
+        icon: IdCard,
+      },
+      {
         id: 'carteira-dne',
         name: 'Carteira DNE',
         description: 'Documento Nacional do Estudante',

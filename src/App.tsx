@@ -27,6 +27,7 @@ import Downloads from "./pages/Downloads";
 import RgDigital from "./pages/RgDigital";
 import NotFound from "./pages/NotFound";
 import Configuracoes from "./pages/Configuracoes";
+import CarteiraEstudante from "./pages/CarteiraEstudante";
 
 const queryClient = new QueryClient();
 
@@ -61,6 +62,7 @@ const App = () => (
               <Route path="/historico-servicos" element={<HistoricoServicos />} />
               <Route path="/downloads" element={<Downloads />} />
               <Route path="/configuracoes" element={<Configuracoes />} />
+              <Route path="/servicos/carteira-estudante" element={<CarteiraEstudante />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>
