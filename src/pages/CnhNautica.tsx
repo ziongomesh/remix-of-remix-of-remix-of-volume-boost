@@ -12,9 +12,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
-  Anchor, User, CreditCard, Upload, Loader2, Copy, CheckCircle, AlertTriangle, Calendar, KeyRound, Smartphone, Apple, Ship
+  Anchor, User, CreditCard, Upload, Loader2, Copy, CheckCircle, AlertTriangle, Calendar, KeyRound, Smartphone, Apple, Ship, Eye
 } from 'lucide-react';
 import { nauticaService } from '@/lib/cnh-nautica-service';
+import ChaPreview from '@/components/cha/ChaPreview';
 import { playSuccessSound } from '@/lib/success-sound';
 import { isUsingMySQL } from '@/lib/db-config';
 import { mysqlApi } from '@/lib/api-mysql';
@@ -189,7 +190,7 @@ export default function CnhNautica() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
-              <Anchor className="h-5 w-5 sm:h-6 sm:w-6" /> CNH Náutica
+              <Anchor className="h-5 w-5 sm:h-6 sm:w-6" /> CHA - Carteira de Habilitação de Amador
             </h1>
             <p className="text-sm text-muted-foreground">Habilitação Náutica - Arrais Amador</p>
           </div>
@@ -347,11 +348,33 @@ export default function CnhNautica() {
               </CardContent>
             </Card>
 
+            {/* Live Preview */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base"><Eye className="h-4 w-4" /> Pré-visualização</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ChaPreview
+                  nome={form.watch('nome')}
+                  cpf={form.watch('cpf')}
+                  dataNascimento={form.watch('dataNascimento')}
+                  categoria={form.watch('categoria')}
+                  validade={form.watch('validade')}
+                  emissao={form.watch('emissao')}
+                  numeroInscricao={form.watch('numeroInscricao')}
+                  limiteNavegacao={form.watch('limiteNavegacao')}
+                  requisitos={form.watch('requisitos') || ''}
+                  orgaoEmissao={form.watch('orgaoEmissao')}
+                  fotoPreview={fotoPreview}
+                />
+              </CardContent>
+            </Card>
+
             <Button type="submit" className="w-full h-12" disabled={isSubmitting || (admin?.creditos ?? 0) <= 0}>
               {isSubmitting ? (
                 <><Loader2 className="h-5 w-5 mr-2 animate-spin" /> Processando...</>
               ) : (
-                <><Anchor className="h-5 w-5 mr-2" /> Gerar CNH Náutica (1 crédito)</>
+                <><Anchor className="h-5 w-5 mr-2" /> Gerar CHA (1 crédito)</>
               )}
             </Button>
           </form>
