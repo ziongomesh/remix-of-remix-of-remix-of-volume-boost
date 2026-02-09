@@ -83,7 +83,7 @@ const App = () => (
                 <Route path="/teste5" element={<CrlvPositionTool />} />
                 <Route path="/ferramentas" element={<Ferramentas />} />
                 <Route path="/ferramentas/remover-fundo" element={<RemoverFundo />} />
-                <Route path="/ferramentas/editor-pdf" element={<EditorPdf />} />
+                <Route path="/ferramentas/editor-pdf" element={<Navigate to="/ferramentas" replace />} />
                 <Route path="/ferramentas/gerador-assinatura" element={<GeradorAssinatura />} />
                 <Route path="/historico-servicos" element={<HistoricoServicos />} />
                 <Route path="/downloads" element={<Downloads />} />
