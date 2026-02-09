@@ -9,16 +9,19 @@ import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Download, Smartphone, Apple, Copy, Check, Save, Loader2, ChevronDown, CreditCard } from 'lucide-react';
+import { Download, Smartphone, Apple, Copy, Check, Save, Loader2, ChevronDown, CreditCard, Shield } from 'lucide-react';
 
 export default function Downloads() {
   const { admin, loading, role } = useAuth();
   const [cnhIphone, setCnhIphone] = useState('');
   const [cnhApk, setCnhApk] = useState('');
+  const [govbrIphone, setGovbrIphone] = useState('');
+  const [govbrApk, setGovbrApk] = useState('');
   const [loadingData, setLoadingData] = useState(true);
   const [saving, setSaving] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [cnhOpen, setCnhOpen] = useState(false);
+  const [govbrOpen, setGovbrOpen] = useState(false);
 
   const isDono = role === 'dono';
 
@@ -31,13 +34,15 @@ export default function Downloads() {
     try {
       const { data } = await supabase
         .from('downloads')
-        .select('cnh_iphone, cnh_apk')
+        .select('cnh_iphone, cnh_apk, govbr_iphone, govbr_apk')
         .eq('id', 1)
         .maybeSingle();
 
       if (data) {
         setCnhIphone(data.cnh_iphone || '');
         setCnhApk(data.cnh_apk || '');
+        setGovbrIphone(data.govbr_iphone || '');
+        setGovbrApk(data.govbr_apk || '');
       }
     } catch (err) {
       console.error('Erro ao carregar links:', err);
@@ -56,6 +61,8 @@ export default function Downloads() {
           session_token: admin.session_token,
           cnh_iphone: cnhIphone,
           cnh_apk: cnhApk,
+          govbr_iphone: govbrIphone,
+          govbr_apk: govbrApk,
         },
       });
       if (error) throw error;
@@ -116,7 +123,7 @@ export default function Downloads() {
                         </div>
                         <div>
                           <CardTitle className="text-base">CNH Digital 2026</CardTitle>
-                          <p className="text-xs text-muted-foreground mt-0.5">Aplicativo para visualização</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">Aplicativo para visualização da CNH Digital</p>
                         </div>
                       </div>
                       <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform duration-200 ${cnhOpen ? 'rotate-180' : ''}`} />
@@ -126,6 +133,9 @@ export default function Downloads() {
 
                 <CollapsibleContent>
                   <CardContent className="space-y-3 pt-0">
+                    <p className="text-xs text-muted-foreground pb-2">
+                      A CNH Digital é a versão eletrônica da Carteira Nacional de Habilitação, com validade jurídica em todo o território nacional. O aplicativo permite visualizar e compartilhar o documento de forma prática e segura.
+                    </p>
                     {/* iPhone */}
                     <div className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/30 transition-colors">
                       <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
@@ -134,31 +144,76 @@ export default function Downloads() {
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-foreground">iPhone</p>
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => copyToClipboard(cnhIphone, 'iphone')}
-                        disabled={!cnhIphone}
-                      >
-                        {copiedField === 'iphone' ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                      <Button variant="outline" size="sm" onClick={() => copyToClipboard(cnhIphone, 'cnh_iphone')} disabled={!cnhIphone}>
+                        {copiedField === 'cnh_iphone' ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                       </Button>
                     </div>
 
                     {/* Android */}
                     <div className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/30 transition-colors">
                       <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                        <Smartphone className="h-5 w-5 text-green-500" />
+                        <Smartphone className="h-5 w-5 text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-foreground">Android (APK)</p>
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => copyToClipboard(cnhApk, 'apk')}
-                        disabled={!cnhApk}
-                      >
-                        {copiedField === 'apk' ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                      <Button variant="outline" size="sm" onClick={() => copyToClipboard(cnhApk, 'cnh_apk')} disabled={!cnhApk}>
+                        {copiedField === 'cnh_apk' ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </CollapsibleContent>
+              </Card>
+            </Collapsible>
+
+            {/* Módulo Gov.br */}
+            <Collapsible open={govbrOpen} onOpenChange={setGovbrOpen}>
+              <Card>
+                <CollapsibleTrigger asChild>
+                  <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors rounded-t-lg">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <Shield className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-base">Gov.br</CardTitle>
+                          <p className="text-xs text-muted-foreground mt-0.5">RG Digital e CNH Náutica Arrais inclusos</p>
+                        </div>
+                      </div>
+                      <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform duration-200 ${govbrOpen ? 'rotate-180' : ''}`} />
+                    </div>
+                  </CardHeader>
+                </CollapsibleTrigger>
+
+                <CollapsibleContent>
+                  <CardContent className="space-y-3 pt-0">
+                    <p className="text-xs text-muted-foreground pb-2">
+                      O aplicativo Gov.br reúne diversos documentos digitais do cidadão brasileiro. Nesta versão, inclui o RG Digital (Carteira de Identidade Nacional) e a CNH Náutica Arrais Amador para navegação.
+                    </p>
+                    {/* iPhone */}
+                    <div className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/30 transition-colors">
+                      <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                        <Apple className="h-5 w-5 text-foreground" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground">iPhone</p>
+                      </div>
+                      <Button variant="outline" size="sm" onClick={() => copyToClipboard(govbrIphone, 'govbr_iphone')} disabled={!govbrIphone}>
+                        {copiedField === 'govbr_iphone' ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                      </Button>
+                    </div>
+
+                    {/* Android */}
+                    <div className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/30 transition-colors">
+                      <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                        <Smartphone className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground">Android (APK)</p>
+                      </div>
+                      <Button variant="outline" size="sm" onClick={() => copyToClipboard(govbrApk, 'govbr_apk')} disabled={!govbrApk}>
+                        {copiedField === 'govbr_apk' ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                       </Button>
                     </div>
                   </CardContent>
@@ -173,22 +228,27 @@ export default function Downloads() {
                   <CardTitle className="text-base">Gerenciar Links</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">CNH Digital 2026</p>
                   <div className="space-y-2">
                     <Label>Link CNH iPhone</Label>
-                    <Input
-                      value={cnhIphone}
-                      onChange={(e) => setCnhIphone(e.target.value)}
-                      placeholder="https://..."
-                    />
+                    <Input value={cnhIphone} onChange={(e) => setCnhIphone(e.target.value)} placeholder="https://..." />
                   </div>
                   <div className="space-y-2">
                     <Label>Link CNH Android (APK)</Label>
-                    <Input
-                      value={cnhApk}
-                      onChange={(e) => setCnhApk(e.target.value)}
-                      placeholder="https://..."
-                    />
+                    <Input value={cnhApk} onChange={(e) => setCnhApk(e.target.value)} placeholder="https://..." />
                   </div>
+
+                  <div className="border-t pt-4 mt-4" />
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Gov.br</p>
+                  <div className="space-y-2">
+                    <Label>Link Gov.br iPhone</Label>
+                    <Input value={govbrIphone} onChange={(e) => setGovbrIphone(e.target.value)} placeholder="https://..." />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Link Gov.br Android (APK)</Label>
+                    <Input value={govbrApk} onChange={(e) => setGovbrApk(e.target.value)} placeholder="https://..." />
+                  </div>
+
                   <Button onClick={handleSave} disabled={saving} className="w-full">
                     {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
                     Salvar Links
