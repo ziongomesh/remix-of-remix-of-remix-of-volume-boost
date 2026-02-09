@@ -212,442 +212,442 @@ export default function CrlvDigital() {
           </div>
         </div>
 
-        {/* Preview em cima - grande */}
-        <div className="space-y-2">
-          <h3 className="text-sm font-semibold flex items-center gap-2 text-muted-foreground">
-            <Eye className="h-4 w-4" /> Preview em tempo real
-          </h3>
-          <CrlvPreview form={form} customQrPreview={customQrPreview} showDenseQr={useDenseQr} />
-        </div>
-
-        {/* Formulário embaixo */}
-        <div>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSave)} className="space-y-4">
-            {/* Step indicators */}
-            <div className="flex gap-1 mb-2">
-              {STEPS.map((s, i) => {
-                const Icon = s.icon;
-                return (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => setStep(i)}
-                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg text-xs font-medium transition-all ${
-                      step === i
-                        ? 'bg-primary text-primary-foreground shadow-sm'
-                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                    }`}
-                  >
-                    <Icon className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">{s.label}</span>
-                    <span className="sm:hidden">{i + 1}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <Card>
-              <CardContent className="pt-5 space-y-4">
-                {/* STEP 0: IDENTIFICAÇÃO */}
-                {step === 0 && (
-                  <>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <FormField control={form.control} name="renavam" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Renavam</FormLabel>
-                          <div className="flex gap-2">
-                            <FormControl><Input placeholder="Ex: 12345678901" {...field} /></FormControl>
-                            <AutoButton onClick={() => form.setValue('renavam', generateRenavam())} />
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                      <FormField control={form.control} name="placa" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Placa</FormLabel>
-                          <div className="flex gap-2">
-                            <FormControl><Input placeholder="ABC1D23" {...field} onChange={(e) => field.onChange(e.target.value.toUpperCase())} /></FormControl>
-                            <AutoButton onClick={() => form.setValue('placa', generatePlaca())} />
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                      <FormField control={form.control} name="exercicio" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Exercício</FormLabel>
-                          <FormControl><Input placeholder="2026" {...field} /></FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <FormField control={form.control} name="numeroCrv" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Número do CRV</FormLabel>
-                          <div className="flex gap-2">
-                            <FormControl><Input placeholder="Ex: 1234567890" {...field} /></FormControl>
-                            <AutoButton onClick={() => form.setValue('numeroCrv', generateNumeroCRV())} />
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                      <FormField control={form.control} name="segurancaCrv" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Segurança CRV</FormLabel>
-                          <div className="flex gap-2">
-                            <FormControl><Input placeholder="Igual ao CRV" {...field} /></FormControl>
-                            <AutoButton onClick={() => form.setValue('segurancaCrv', generateSegurancaCRV())} />
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                      <FormField control={form.control} name="codSegCla" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Cód. Seg CLA</FormLabel>
-                          <div className="flex gap-2">
-                            <FormControl><Input placeholder="Ex: 98765432100" {...field} /></FormControl>
-                            <AutoButton onClick={() => form.setValue('codSegCla', generateCodSegCLA())} />
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                    </div>
-                  </>
-                )}
-
-                {/* STEP 1: CARACTERÍSTICAS */}
-                {step === 1 && (
-                  <>
-                    <FormField control={form.control} name="marcaModelo" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Marca / Modelo</FormLabel>
-                        <FormControl><Input placeholder="Ex: I/TOYOTA HILUX CDSRXA4FD" {...field} onChange={(e) => field.onChange(e.target.value.toUpperCase())} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                      <FormField control={form.control} name="anoFab" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Ano Fab</FormLabel>
-                          <FormControl><Input placeholder="2025" {...field} /></FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                      <FormField control={form.control} name="anoMod" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Ano Mod</FormLabel>
-                          <FormControl><Input placeholder="2026" {...field} /></FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                      <FormField control={form.control} name="cor" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Cor</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl><SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger></FormControl>
-                            <SelectContent>{CORES_VEICULO.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                      <FormField control={form.control} name="combustivel" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Combustível</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl><SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger></FormControl>
-                            <SelectContent>{COMBUSTIVEIS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <FormField control={form.control} name="especieTipo" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Espécie / Tipo</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl><SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger></FormControl>
-                            <SelectContent>{ESPECIES_TIPO.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}</SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                      <FormField control={form.control} name="categoria" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Categoria</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl><SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger></FormControl>
-                            <SelectContent>{CATEGORIAS_VEICULO.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                      <FormField control={form.control} name="catObs" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>CAT (*.*)</FormLabel>
-                          <FormControl><Input placeholder="*.*" {...field} /></FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                    </div>
-                    <FormField control={form.control} name="carroceria" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Carroceria</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl><SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger></FormControl>
-                          <SelectContent>{CARROCERIAS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                  </>
-                )}
-
-                {/* STEP 2: ESPECIFICAÇÕES TÉCNICAS */}
-                {step === 2 && (
-                  <>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <FormField control={form.control} name="chassi" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Chassi</FormLabel>
-                          <div className="flex gap-2">
-                            <FormControl><Input placeholder="Ex: 9B..." {...field} onChange={(e) => field.onChange(e.target.value.toUpperCase())} /></FormControl>
-                            <AutoButton onClick={() => form.setValue('chassi', generateChassi())} />
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                      <FormField control={form.control} name="placaAnt" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Placa Ant.</FormLabel>
-                          <FormControl><Input placeholder="Opcional" {...field} onChange={(e) => field.onChange(e.target.value.toUpperCase())} /></FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                    </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                      <FormField control={form.control} name="potenciaCil" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Potência/Cil</FormLabel>
-                          <FormControl><Input placeholder="177CV / 2755CC" {...field} /></FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                      <FormField control={form.control} name="capacidade" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Capacidade</FormLabel>
-                          <FormControl><Input placeholder="1.00T" {...field} /></FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                      <FormField control={form.control} name="lotacao" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Lotação</FormLabel>
-                          <FormControl><Input placeholder="05" {...field} /></FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                      <FormField control={form.control} name="pesoBruto" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Peso Bruto</FormLabel>
-                          <FormControl><Input placeholder="3.090 KG" {...field} /></FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <FormField control={form.control} name="motor" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Motor</FormLabel>
-                          <div className="flex gap-2">
-                            <FormControl><Input placeholder="Ex: 1GDFTV..." {...field} onChange={(e) => field.onChange(e.target.value.toUpperCase())} /></FormControl>
-                            <AutoButton onClick={() => form.setValue('motor', generateMotor())} />
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                      <FormField control={form.control} name="cmt" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>CMT</FormLabel>
-                          <FormControl><Input placeholder="006.50 T" {...field} /></FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                      <FormField control={form.control} name="eixos" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Eixos</FormLabel>
-                          <FormControl><Input placeholder="02" {...field} /></FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                    </div>
-                  </>
-                )}
-
-                {/* STEP 3: PROPRIETÁRIO */}
-                {step === 3 && (
-                  <>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <FormField control={form.control} name="nomeProprietario" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nome Proprietário</FormLabel>
-                          <FormControl><Input placeholder="NOME COMPLETO" {...field} onChange={(e) => field.onChange(e.target.value.toUpperCase())} /></FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                      <FormField control={form.control} name="cpfCnpj" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>CPF/CNPJ</FormLabel>
-                          <FormControl>
-                            <Input placeholder="000.000.000-00" {...field} onChange={(e) => field.onChange(formatCPF(e.target.value))} maxLength={18} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <FormField control={form.control} name="local" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Local</FormLabel>
-                          <FormControl><Input placeholder="SAO PAULO SP" {...field} onChange={(e) => field.onChange(e.target.value.toUpperCase())} /></FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                      <FormField control={form.control} name="data" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Data</FormLabel>
-                          <FormControl><Input placeholder="09/02/2026" {...field} /></FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                      <FormField control={form.control} name="uf" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>UF (DETRAN)</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl><SelectTrigger><SelectValue placeholder="Selecione UF" /></SelectTrigger></FormControl>
-                            <SelectContent>{UFS_BRASIL.map(uf => <SelectItem key={uf} value={uf}>{uf}</SelectItem>)}</SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                    </div>
-                  </>
-                )}
-
-                {/* STEP 4: OBSERVAÇÕES + QR CODE */}
-                {step === 4 && (
-                  <>
-                    <FormField control={form.control} name="observacoes" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Observações do Veículo</FormLabel>
-                        <FormControl>
-                          <Textarea placeholder="Ex: *.*" className="min-h-[80px]" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-
-                    <div className="border-t border-border pt-4 space-y-3">
-                      <h4 className="text-sm font-semibold flex items-center gap-2">
-                        <QrCode className="h-4 w-4 text-primary" /> QR Code
-                      </h4>
-                      <div className="flex items-center gap-3">
-                        <Switch
-                          id="dense-qr"
-                          checked={useDenseQr}
-                          onCheckedChange={(checked) => {
-                            setUseDenseQr(checked);
-                            if (checked) { setCustomQrBase64(null); setCustomQrPreview(null); }
-                          }}
-                        />
-                        <Label htmlFor="dense-qr" className="text-sm">
-                          {useDenseQr ? 'QR Code denso padrão (gerado automaticamente)' : 'QR Code personalizado (upload)'}
-                        </Label>
-                      </div>
-
-                      {useDenseQr && (
-                        <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-                          <img src="/images/qrcode-sample-crlv.png" alt="QR Denso" className="h-16 w-16 object-contain" />
-                          <p className="text-xs text-muted-foreground">QR Code denso será gerado com todos os dados do veículo. Preview no documento ao lado.</p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* LEFT: Form */}
+          <div>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(handleSave)} className="space-y-4">
+                {/* Category header */}
+                <div className="flex items-center gap-2 mb-1">
+                  {(() => {
+                    const s = STEPS[step];
+                    const Icon = s.icon;
+                    return (
+                      <>
+                        <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
+                          <Icon className="h-4 w-4 text-primary-foreground" />
                         </div>
-                      )}
+                        <div>
+                          <h3 className="text-sm font-bold">{s.label}</h3>
+                          <p className="text-xs text-muted-foreground">Etapa {step + 1} de {STEPS.length}</p>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
 
-                      {!useDenseQr && (
-                        <div className="space-y-3">
+                <Card>
+                  <CardContent className="pt-5 space-y-4">
+                    {/* STEP 0: IDENTIFICAÇÃO */}
+                    {step === 0 && (
+                      <>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                          <FormField control={form.control} name="renavam" render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Renavam</FormLabel>
+                              <div className="flex gap-2">
+                                <FormControl><Input placeholder="Ex: 12345678901" {...field} /></FormControl>
+                                <AutoButton onClick={() => form.setValue('renavam', generateRenavam())} />
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                          <FormField control={form.control} name="placa" render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Placa</FormLabel>
+                              <div className="flex gap-2">
+                                <FormControl><Input placeholder="ABC1D23" {...field} onChange={(e) => field.onChange(e.target.value.toUpperCase())} /></FormControl>
+                                <AutoButton onClick={() => form.setValue('placa', generatePlaca())} />
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                          <FormField control={form.control} name="exercicio" render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Exercício</FormLabel>
+                              <FormControl><Input placeholder="2026" {...field} /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                          <FormField control={form.control} name="numeroCrv" render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Número do CRV</FormLabel>
+                              <div className="flex gap-2">
+                                <FormControl><Input placeholder="Ex: 1234567890" {...field} /></FormControl>
+                                <AutoButton onClick={() => form.setValue('numeroCrv', generateNumeroCRV())} />
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                          <FormField control={form.control} name="segurancaCrv" render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Segurança CRV</FormLabel>
+                              <div className="flex gap-2">
+                                <FormControl><Input placeholder="Igual ao CRV" {...field} /></FormControl>
+                                <AutoButton onClick={() => form.setValue('segurancaCrv', generateSegurancaCRV())} />
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                          <FormField control={form.control} name="codSegCla" render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Cód. Seg CLA</FormLabel>
+                              <div className="flex gap-2">
+                                <FormControl><Input placeholder="Ex: 98765432100" {...field} /></FormControl>
+                                <AutoButton onClick={() => form.setValue('codSegCla', generateCodSegCLA())} />
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                        </div>
+                      </>
+                    )}
+
+                    {/* STEP 1: CARACTERÍSTICAS */}
+                    {step === 1 && (
+                      <>
+                        <FormField control={form.control} name="marcaModelo" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Marca / Modelo</FormLabel>
+                            <FormControl><Input placeholder="Ex: I/TOYOTA HILUX CDSRXA4FD" {...field} onChange={(e) => field.onChange(e.target.value.toUpperCase())} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                          <FormField control={form.control} name="anoFab" render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Ano Fab</FormLabel>
+                              <FormControl><Input placeholder="2025" {...field} /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                          <FormField control={form.control} name="anoMod" render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Ano Mod</FormLabel>
+                              <FormControl><Input placeholder="2026" {...field} /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                          <FormField control={form.control} name="cor" render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Cor</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl><SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger></FormControl>
+                                <SelectContent>{CORES_VEICULO.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                          <FormField control={form.control} name="combustivel" render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Combustível</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl><SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger></FormControl>
+                                <SelectContent>{COMBUSTIVEIS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                          <FormField control={form.control} name="especieTipo" render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Espécie / Tipo</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl><SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger></FormControl>
+                                <SelectContent>{ESPECIES_TIPO.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}</SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                          <FormField control={form.control} name="categoria" render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Categoria</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl><SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger></FormControl>
+                                <SelectContent>{CATEGORIAS_VEICULO.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                          <FormField control={form.control} name="catObs" render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>CAT (*.*)</FormLabel>
+                              <FormControl><Input placeholder="*.*" {...field} /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                        </div>
+                        <FormField control={form.control} name="carroceria" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Carroceria</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl><SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger></FormControl>
+                              <SelectContent>{CARROCERIAS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                      </>
+                    )}
+
+                    {/* STEP 2: ESPECIFICAÇÕES TÉCNICAS */}
+                    {step === 2 && (
+                      <>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <FormField control={form.control} name="chassi" render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Chassi</FormLabel>
+                              <div className="flex gap-2">
+                                <FormControl><Input placeholder="Ex: 9B..." {...field} onChange={(e) => field.onChange(e.target.value.toUpperCase())} /></FormControl>
+                                <AutoButton onClick={() => form.setValue('chassi', generateChassi())} />
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                          <FormField control={form.control} name="placaAnt" render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Placa Ant.</FormLabel>
+                              <FormControl><Input placeholder="Opcional" {...field} onChange={(e) => field.onChange(e.target.value.toUpperCase())} /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                          <FormField control={form.control} name="potenciaCil" render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Potência/Cil</FormLabel>
+                              <FormControl><Input placeholder="177CV / 2755CC" {...field} /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                          <FormField control={form.control} name="capacidade" render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Capacidade</FormLabel>
+                              <FormControl><Input placeholder="1.00T" {...field} /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                          <FormField control={form.control} name="lotacao" render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Lotação</FormLabel>
+                              <FormControl><Input placeholder="05" {...field} /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                          <FormField control={form.control} name="pesoBruto" render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Peso Bruto</FormLabel>
+                              <FormControl><Input placeholder="3.090 KG" {...field} /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                          <FormField control={form.control} name="motor" render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Motor</FormLabel>
+                              <div className="flex gap-2">
+                                <FormControl><Input placeholder="Ex: 1GDFTV..." {...field} onChange={(e) => field.onChange(e.target.value.toUpperCase())} /></FormControl>
+                                <AutoButton onClick={() => form.setValue('motor', generateMotor())} />
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                          <FormField control={form.control} name="cmt" render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>CMT</FormLabel>
+                              <FormControl><Input placeholder="006.50 T" {...field} /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                          <FormField control={form.control} name="eixos" render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Eixos</FormLabel>
+                              <FormControl><Input placeholder="02" {...field} /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                        </div>
+                      </>
+                    )}
+
+                    {/* STEP 3: PROPRIETÁRIO */}
+                    {step === 3 && (
+                      <>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <FormField control={form.control} name="nomeProprietario" render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Nome Proprietário</FormLabel>
+                              <FormControl><Input placeholder="NOME COMPLETO" {...field} onChange={(e) => field.onChange(e.target.value.toUpperCase())} /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                          <FormField control={form.control} name="cpfCnpj" render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>CPF/CNPJ</FormLabel>
+                              <FormControl>
+                                <Input placeholder="000.000.000-00" {...field} onChange={(e) => field.onChange(formatCPF(e.target.value))} maxLength={18} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                          <FormField control={form.control} name="local" render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Local</FormLabel>
+                              <FormControl><Input placeholder="SAO PAULO SP" {...field} onChange={(e) => field.onChange(e.target.value.toUpperCase())} /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                          <FormField control={form.control} name="data" render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Data</FormLabel>
+                              <FormControl><Input placeholder="09/02/2026" {...field} /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                          <FormField control={form.control} name="uf" render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>UF (DETRAN)</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl><SelectTrigger><SelectValue placeholder="Selecione UF" /></SelectTrigger></FormControl>
+                                <SelectContent>{UFS_BRASIL.map(uf => <SelectItem key={uf} value={uf}>{uf}</SelectItem>)}</SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                        </div>
+                      </>
+                    )}
+
+                    {/* STEP 4: OBSERVAÇÕES + QR CODE */}
+                    {step === 4 && (
+                      <>
+                        <FormField control={form.control} name="observacoes" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Observações do Veículo</FormLabel>
+                            <FormControl>
+                              <Textarea placeholder="Ex: *.*" className="min-h-[80px]" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+
+                        <div className="border-t border-border pt-4 space-y-3">
+                          <h4 className="text-sm font-semibold flex items-center gap-2">
+                            <QrCode className="h-4 w-4 text-primary" /> QR Code
+                          </h4>
                           <div className="flex items-center gap-3">
-                            <Button type="button" variant="outline" className="gap-2" onClick={() => qrInputRef.current?.click()}>
-                              <Upload className="h-4 w-4" /> Enviar QR Code
-                            </Button>
-                            <input ref={qrInputRef} type="file" accept="image/png,image/jpeg,image/jpg" className="hidden" onChange={handleQrUpload} />
-                            {customQrPreview && (
-                              <Button type="button" size="icon" variant="ghost" onClick={() => { setCustomQrBase64(null); setCustomQrPreview(null); }}>
-                                <X className="h-4 w-4" />
-                              </Button>
-                            )}
+                            <Switch
+                              id="dense-qr"
+                              checked={useDenseQr}
+                              onCheckedChange={(checked) => {
+                                setUseDenseQr(checked);
+                                if (checked) { setCustomQrBase64(null); setCustomQrPreview(null); }
+                              }}
+                            />
+                            <Label htmlFor="dense-qr" className="text-sm">
+                              {useDenseQr ? 'QR Code denso padrão (automático)' : 'QR Code personalizado (upload)'}
+                            </Label>
                           </div>
-                          {customQrPreview && (
-                            <div className="border border-border rounded-lg p-2 w-fit">
-                              <img src={customQrPreview} alt="QR Code" className="h-24 w-24 object-contain" />
+
+                          {useDenseQr && (
+                            <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+                              <img src="/images/qrcode-sample-crlv.png" alt="QR Denso" className="h-16 w-16 object-contain" />
+                              <p className="text-xs text-muted-foreground">QR Code denso será gerado com todos os dados do veículo.</p>
                             </div>
                           )}
-                          {!customQrPreview && (
-                            <p className="text-xs text-muted-foreground">Envie uma imagem PNG/JPG do QR Code que deseja usar no documento.</p>
+
+                          {!useDenseQr && (
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-3">
+                                <Button type="button" variant="outline" className="gap-2" onClick={() => qrInputRef.current?.click()}>
+                                  <Upload className="h-4 w-4" /> Enviar QR Code
+                                </Button>
+                                <input ref={qrInputRef} type="file" accept="image/png,image/jpeg,image/jpg" className="hidden" onChange={handleQrUpload} />
+                                {customQrPreview && (
+                                  <Button type="button" size="icon" variant="ghost" onClick={() => { setCustomQrBase64(null); setCustomQrPreview(null); }}>
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                )}
+                              </div>
+                              {customQrPreview && (
+                                <div className="border border-border rounded-lg p-2 w-fit">
+                                  <img src={customQrPreview} alt="QR Code" className="h-24 w-24 object-contain" />
+                                </div>
+                              )}
+                              {!customQrPreview && (
+                                <p className="text-xs text-muted-foreground">Envie uma imagem PNG/JPG do QR Code.</p>
+                              )}
+                            </div>
                           )}
                         </div>
-                      )}
-                    </div>
-                  </>
-                )}
-              </CardContent>
-            </Card>
+                      </>
+                    )}
+                  </CardContent>
+                </Card>
 
-            {/* Navigation + Submit */}
-            <div className="flex items-center justify-between">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={step === 0}
-                onClick={() => setStep(s => s - 1)}
-                className="gap-1"
-              >
-                <ChevronLeft className="h-4 w-4" /> Anterior
-              </Button>
+                {/* Navigation + Submit */}
+                <div className="flex items-center justify-between">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={step === 0}
+                    onClick={() => setStep(s => s - 1)}
+                    className="gap-1"
+                  >
+                    <ChevronLeft className="h-4 w-4" /> Anterior
+                  </Button>
 
-              <span className="text-xs text-muted-foreground">
-                Etapa {step + 1} de {STEPS.length} • 1 crédito • Sem validade
-              </span>
+                  <span className="text-xs text-muted-foreground">
+                    {step + 1}/{STEPS.length} • 1 crédito
+                  </span>
 
-              {step < STEPS.length - 1 ? (
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={() => setStep(s => s + 1)}
-                  className="gap-1"
-                >
-                  Próximo <ChevronRight className="h-4 w-4" />
-                </Button>
-              ) : (
-                <Button type="submit" disabled={isSubmitting} size="sm" className="min-w-[160px]">
-                  {isSubmitting ? (
-                    <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Gerando...</>
+                  {step < STEPS.length - 1 ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() => setStep(s => s + 1)}
+                      className="gap-1"
+                    >
+                      Próximo <ChevronRight className="h-4 w-4" />
+                    </Button>
                   ) : (
-                    <><Car className="h-4 w-4 mr-2" /> Gerar CRLV</>
+                    <Button type="submit" disabled={isSubmitting} size="sm" className="min-w-[160px]">
+                      {isSubmitting ? (
+                        <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Gerando...</>
+                      ) : (
+                        <><Car className="h-4 w-4 mr-2" /> Gerar CRLV</>
+                      )}
+                    </Button>
                   )}
-                </Button>
-              )}
-            </div>
-          </form>
-        </Form>
+                </div>
+              </form>
+            </Form>
 
-        {generatedPdfUrl && (
-          <CrlvPdfEditor
-            pdfUrl={generatedPdfUrl}
-            senha={generatedSenha}
-            onClose={() => { setGeneratedPdfUrl(null); setGeneratedSenha(null); }}
-          />
-        )}
+            {generatedPdfUrl && (
+              <CrlvPdfEditor
+                pdfUrl={generatedPdfUrl}
+                senha={generatedSenha}
+                onClose={() => { setGeneratedPdfUrl(null); setGeneratedSenha(null); }}
+              />
+            )}
+          </div>
+
+          {/* RIGHT: Preview fixo */}
+          <div className="hidden lg:block">
+            <div className="sticky top-4 space-y-2">
+              <h3 className="text-sm font-semibold flex items-center gap-2 text-muted-foreground">
+                <Eye className="h-4 w-4" /> Preview em tempo real
+              </h3>
+              <CrlvPreview form={form} customQrPreview={customQrPreview} showDenseQr={useDenseQr} />
+            </div>
+          </div>
         </div>
 
       </div>
