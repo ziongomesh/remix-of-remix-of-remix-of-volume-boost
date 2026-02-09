@@ -334,7 +334,7 @@ router.post('/list', async (req, res) => {
       data_nascimento, naturalidade, genero, nacionalidade, validade, uf, 
       data_emissao, \`local\` AS local_emissao, orgao_expedidor, pai, mae, senha,
       foto AS foto_url, assinatura AS assinatura_url, qrcode AS qrcode_url,
-      created_at, updated_at, expires_at AS data_expiracao`;
+      created_at, expires_at AS data_expiracao`;
 
     let registros: any[];
     if (rank === 'dono') {
