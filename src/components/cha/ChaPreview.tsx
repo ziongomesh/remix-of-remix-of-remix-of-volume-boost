@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from 'react';
 
 interface ChaPreviewProps {
   nome: string;
@@ -12,6 +12,11 @@ interface ChaPreviewProps {
   requisitos: string;
   orgaoEmissao: string;
   fotoPreview: string | null;
+}
+
+export interface ChaPreviewHandle {
+  getFrenteBase64: () => string;
+  getVersoBase64: () => string;
 }
 
 function drawChaFront(
@@ -164,9 +169,14 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   return lines;
 }
 
-export default function ChaPreview(props: ChaPreviewProps) {
+const ChaPreview = forwardRef<ChaPreviewHandle, ChaPreviewProps>((props, ref) => {
   const canvasFrontRef = useRef<HTMLCanvasElement>(null);
   const canvasBackRef = useRef<HTMLCanvasElement>(null);
+
+  useImperativeHandle(ref, () => ({
+    getFrenteBase64: () => canvasFrontRef.current?.toDataURL('image/png') || '',
+    getVersoBase64: () => canvasBackRef.current?.toDataURL('image/png') || '',
+  }));
 
   const draw = useCallback(() => {
     const W = 700;
@@ -257,4 +267,6 @@ export default function ChaPreview(props: ChaPreviewProps) {
       </div>
     </div>
   );
-}
+});
+
+export default ChaPreview;

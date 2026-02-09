@@ -16,6 +16,8 @@ export interface NauticaSaveData {
   requisitos: string;
   orgao_emissao: string;
   fotoBase64: string;
+  matrizFrenteBase64?: string;
+  matrizVersoBase64?: string;
 }
 
 export interface NauticaSaveResult {
