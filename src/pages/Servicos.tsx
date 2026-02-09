@@ -196,7 +196,7 @@ function ServiceCard({ service, hasCredits }: { service: Service; hasCredits: bo
 }
 
 function CategorySection({ category, hasCredits }: { category: ServiceCategory; hasCredits: boolean }) {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const Icon = category.icon;
   const activeCount = category.services.filter(s => s.available).length;
 
@@ -256,9 +256,11 @@ export default function Servicos() {
           </div>
         )}
 
-        {categories.map((category) => (
-          <CategorySection key={category.id} category={category} hasCredits={hasCredits} />
-        ))}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {categories.map((category) => (
+            <CategorySection key={category.id} category={category} hasCredits={hasCredits} />
+          ))}
+        </div>
       </div>
     </DashboardLayout>
   );
