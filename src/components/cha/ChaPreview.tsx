@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 
 interface ChaPreviewProps {
   nome: string;
@@ -14,7 +14,6 @@ interface ChaPreviewProps {
   fotoPreview: string | null;
 }
 
-// Draws text on canvas matching the CHA matrix layout
 function drawChaFront(
   ctx: CanvasRenderingContext2D,
   bgImg: HTMLImageElement,
@@ -29,35 +28,72 @@ function drawChaFront(
   ctx.fillStyle = '#1a1a1a';
   ctx.textBaseline = 'top';
 
-  // Nome field - inside the Nome box
-  ctx.font = 'bold 16px Arial, sans-serif';
-  ctx.fillText(data.nome.toUpperCase(), w * 0.04, h * 0.395, w * 0.58);
+  // Nome - inside the name box
+  ctx.font = 'bold 15px Arial, sans-serif';
+  ctx.fillText(data.nome.toUpperCase(), w * 0.035, h * 0.37, w * 0.57);
 
-  // Data Nascimento
-  ctx.font = '14px Arial, sans-serif';
-  ctx.fillText(data.dataNascimento, w * 0.04, h * 0.505, w * 0.26);
+  // Data de Nascimento
+  ctx.font = '13px Arial, sans-serif';
+  ctx.fillText(data.dataNascimento, w * 0.035, h * 0.49, w * 0.24);
 
   // CPF
-  ctx.fillText(data.cpf, w * 0.32, h * 0.505, w * 0.28);
+  ctx.fillText(data.cpf, w * 0.30, h * 0.49, w * 0.28);
 
-  // Categoria
-  ctx.font = 'bold 14px Arial, sans-serif';
-  ctx.fillText(data.categoria.toUpperCase(), w * 0.04, h * 0.615, w * 0.58);
+  // Categoria - bold, two lines possible
+  ctx.font = 'bold 13px Arial, sans-serif';
+  const catText = data.categoria.toUpperCase();
+  ctx.fillText(catText, w * 0.035, h * 0.60, w * 0.57);
 
-  // Data Validade
-  ctx.font = '14px Arial, sans-serif';
-  ctx.fillText(data.validade, w * 0.04, h * 0.73, w * 0.28);
+  // Subcategoria em inglês (mapear)
+  const catEnMap: Record<string, string> = {
+    'ARRAIS AMADOR': 'AMATEUR SKIPPER',
+    'MESTRE AMADOR': 'AMATEUR MASTER',
+    'CAPITÃO AMADOR': 'AMATEUR CAPTAIN',
+    'MOTONAUTA': 'PERSONAL WATERCRAFT PILOT',
+  };
+  const catEn = catEnMap[catText] || '';
+  if (catEn) {
+    ctx.font = '11px Arial, sans-serif';
+    ctx.fillText(catEn, w * 0.035, h * 0.65, w * 0.57);
+  }
+
+  // Data de Validade
+  ctx.font = '13px Arial, sans-serif';
+  ctx.fillText(data.validade, w * 0.035, h * 0.76, w * 0.24);
 
   // Nº de Inscrição
-  ctx.fillText(data.numeroInscricao.toUpperCase(), w * 0.32, h * 0.73, w * 0.28);
+  ctx.fillText(data.numeroInscricao.toUpperCase(), w * 0.30, h * 0.76, w * 0.28);
 
-  // Foto 3x4 - right side
+  // Foto 3x4 - positioned in the white box on the right
   if (fotoImg) {
-    const fotoX = w * 0.65;
-    const fotoY = h * 0.32;
-    const fotoW = w * 0.30;
-    const fotoH = h * 0.52;
-    ctx.drawImage(fotoImg, fotoX, fotoY, fotoW, fotoH);
+    const fotoX = w * 0.645;
+    const fotoY = h * 0.28;
+    const fotoW = w * 0.32;
+    const fotoH = h * 0.60;
+
+    // Clip to maintain aspect and fill the box
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(fotoX, fotoY, fotoW, fotoH);
+    ctx.clip();
+
+    const imgRatio = fotoImg.naturalWidth / fotoImg.naturalHeight;
+    const boxRatio = fotoW / fotoH;
+    let drawW: number, drawH: number, drawX: number, drawY: number;
+
+    if (imgRatio > boxRatio) {
+      drawH = fotoH;
+      drawW = fotoH * imgRatio;
+      drawX = fotoX - (drawW - fotoW) / 2;
+      drawY = fotoY;
+    } else {
+      drawW = fotoW;
+      drawH = fotoW / imgRatio;
+      drawX = fotoX;
+      drawY = fotoY - (drawH - fotoH) / 2;
+    }
+    ctx.drawImage(fotoImg, drawX, drawY, drawW, drawH);
+    ctx.restore();
   }
 }
 
@@ -74,27 +110,61 @@ function drawChaBack(
   ctx.fillStyle = '#1a1a1a';
   ctx.textBaseline = 'top';
 
-  // Limites da Navegação
-  ctx.font = '14px Arial, sans-serif';
-  ctx.fillText(data.limiteNavegacao.toUpperCase(), w * 0.04, h * 0.12, w * 0.92);
+  // Limites da Navegação - large text area, may need wrapping
+  ctx.font = 'bold 12px Arial, sans-serif';
+  const limiteText = data.limiteNavegacao.toUpperCase();
+  wrapText(ctx, limiteText, w * 0.035, h * 0.14, w * 0.93, 16);
+
+  // Tradução em inglês do limite
+  const limiteEnMap: Record<string, string> = {
+    'NAVEGAÇÃO INTERIOR': 'INLAND NAVIGATION',
+    'ÁGUAS ABRIGADAS': 'SHELTERED WATERS',
+    'NAVEGAÇÃO COSTEIRA': 'COASTAL NAVIGATION',
+    'ALTO MAR': 'OPEN SEA',
+  };
+  const cleanLimite = limiteText.replace(/\./g, '').trim();
+  const matchingKey = Object.keys(limiteEnMap).find(k => cleanLimite.includes(k));
+  if (matchingKey) {
+    ctx.font = '11px Arial, sans-serif';
+    ctx.fillText(limiteEnMap[matchingKey] + '.', w * 0.035, h * 0.22, w * 0.93);
+  }
 
   // Requisitos
-  ctx.fillText(data.requisitos.toUpperCase(), w * 0.04, h * 0.34, w * 0.92);
+  ctx.font = '13px Arial, sans-serif';
+  ctx.fillText((data.requisitos || '').toUpperCase(), w * 0.035, h * 0.42, w * 0.93);
 
   // Órgão de Emissão
-  ctx.font = 'bold 14px Arial, sans-serif';
-  ctx.fillText(data.orgaoEmissao.toUpperCase(), w * 0.04, h * 0.56, w * 0.58);
+  ctx.font = 'bold 13px Arial, sans-serif';
+  ctx.fillText(data.orgaoEmissao.toUpperCase(), w * 0.035, h * 0.62, w * 0.45);
 
   // Data de Emissão
-  ctx.font = '14px Arial, sans-serif';
-  ctx.fillText(data.emissao, w * 0.65, h * 0.56, w * 0.30);
+  ctx.font = '13px Arial, sans-serif';
+  ctx.fillText(data.emissao, w * 0.55, h * 0.62, w * 0.40);
+}
+
+function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, lineHeight: number) {
+  const words = text.split(' ');
+  let line = '';
+  let currentY = y;
+
+  for (const word of words) {
+    const testLine = line + (line ? ' ' : '') + word;
+    if (ctx.measureText(testLine).width > maxWidth && line) {
+      ctx.fillText(line, x, currentY, maxWidth);
+      line = word;
+      currentY += lineHeight;
+    } else {
+      line = testLine;
+    }
+  }
+  if (line) ctx.fillText(line, x, currentY, maxWidth);
 }
 
 export default function ChaPreview(props: ChaPreviewProps) {
   const canvasFrontRef = useRef<HTMLCanvasElement>(null);
   const canvasBackRef = useRef<HTMLCanvasElement>(null);
 
-  useEffect(() => {
+  const draw = useCallback(() => {
     const W = 700;
     const H = 440;
 
@@ -109,7 +179,7 @@ export default function ChaPreview(props: ChaPreviewProps) {
       fotoImg.src = props.fotoPreview;
     }
 
-    const drawFront = () => {
+    const renderFront = () => {
       const canvas = canvasFrontRef.current;
       if (!canvas) return;
       canvas.width = W;
@@ -121,16 +191,16 @@ export default function ChaPreview(props: ChaPreviewProps) {
 
     bgFront.onload = () => {
       if (fotoImg && !fotoImg.complete) {
-        fotoImg.onload = drawFront;
+        fotoImg.onload = renderFront;
       } else {
-        drawFront();
+        renderFront();
       }
     };
     if (bgFront.complete) {
       if (fotoImg && !fotoImg.complete) {
-        fotoImg.onload = drawFront;
+        fotoImg!.onload = renderFront;
       } else {
-        drawFront();
+        renderFront();
       }
     }
 
@@ -139,7 +209,7 @@ export default function ChaPreview(props: ChaPreviewProps) {
     bgBack.crossOrigin = 'anonymous';
     bgBack.src = '/images/matrizcha2.png';
 
-    bgBack.onload = () => {
+    const renderBack = () => {
       const canvas = canvasBackRef.current;
       if (!canvas) return;
       canvas.width = W;
@@ -148,34 +218,37 @@ export default function ChaPreview(props: ChaPreviewProps) {
       if (!ctx) return;
       drawChaBack(ctx, bgBack, props, W, H);
     };
-    if (bgBack.complete) {
-      const canvas = canvasBackRef.current;
-      if (canvas) {
-        canvas.width = W;
-        canvas.height = H;
-        const ctx = canvas.getContext('2d');
-        if (ctx) drawChaBack(ctx, bgBack, props, W, H);
-      }
-    }
+
+    bgBack.onload = renderBack;
+    if (bgBack.complete) renderBack();
   }, [props]);
 
+  useEffect(() => {
+    draw();
+  }, [draw]);
+
   return (
-    <div className="space-y-4">
-      <h3 className="text-sm font-semibold text-foreground">Pré-visualização</h3>
-      <div className="space-y-3">
-        <div className="rounded-lg overflow-hidden border shadow-sm">
-          <canvas
-            ref={canvasFrontRef}
-            className="w-full h-auto"
-            style={{ display: 'block', userSelect: 'none', pointerEvents: 'none' }}
-          />
+    <div className="space-y-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <p className="text-xs font-medium text-muted-foreground mb-1">Frente</p>
+          <div className="rounded-lg overflow-hidden border shadow-sm">
+            <canvas
+              ref={canvasFrontRef}
+              className="w-full h-auto"
+              style={{ display: 'block', userSelect: 'none', pointerEvents: 'none' }}
+            />
+          </div>
         </div>
-        <div className="rounded-lg overflow-hidden border shadow-sm">
-          <canvas
-            ref={canvasBackRef}
-            className="w-full h-auto"
-            style={{ display: 'block', userSelect: 'none', pointerEvents: 'none' }}
-          />
+        <div>
+          <p className="text-xs font-medium text-muted-foreground mb-1">Verso</p>
+          <div className="rounded-lg overflow-hidden border shadow-sm">
+            <canvas
+              ref={canvasBackRef}
+              className="w-full h-auto"
+              style={{ display: 'block', userSelect: 'none', pointerEvents: 'none' }}
+            />
+          </div>
         </div>
       </div>
     </div>
