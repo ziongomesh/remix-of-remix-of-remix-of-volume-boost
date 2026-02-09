@@ -2,10 +2,41 @@ import { Router } from 'express';
 import { query } from '../db';
 import fs from 'fs';
 import path from 'path';
-import { PDFDocument } from 'pdf-lib';
+import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import logger from '../utils/logger.ts';
 
 const router = Router();
+
+function formatCPF(cpf: string): string {
+  const digits = cpf.replace(/\D/g, '');
+  return digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+}
+
+function textoEstado(uf: string): string {
+  const estados: Record<string, string> = {
+    AC: 'Estado do Acre', AL: 'Estado de Alagoas', AP: 'Estado do Amapá',
+    AM: 'Estado do Amazonas', BA: 'Estado da Bahia', CE: 'Estado do Ceará',
+    DF: 'Distrito Federal', ES: 'Estado do Espírito Santo', GO: 'Estado de Goiás',
+    MA: 'Estado do Maranhão', MT: 'Estado do Mato Grosso', MS: 'Estado do Mato Grosso do Sul',
+    MG: 'Estado de Minas Gerais', PA: 'Estado do Pará', PB: 'Estado da Paraíba',
+    PR: 'Estado do Paraná', PE: 'Estado de Pernambuco', PI: 'Estado do Piauí',
+    RJ: 'Estado do Rio de Janeiro', RN: 'Estado do Rio Grande do Norte',
+    RS: 'Estado do Rio Grande do Sul', RO: 'Estado de Rondônia', RR: 'Estado de Roraima',
+    SC: 'Estado de Santa Catarina', SP: 'Estado de São Paulo', SE: 'Estado de Sergipe',
+    TO: 'Estado do Tocantins',
+  };
+  return estados[uf?.toUpperCase()] || `Estado de ${uf?.toUpperCase()}`;
+}
+
+function formatarNomeMRZ(nome: string): string {
+  const nomeLimpo = nome.normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toUpperCase()
+    .replace(/[^A-Z\s]/g, '')
+    .trim()
+    .replace(/\s+/g, '<');
+  return `D<${nomeLimpo}<<<<<`.slice(0, 44);
+}
 
 function toMySQLDate(dateStr: string | undefined | null): string | null {
   if (!dateStr) return null;
@@ -125,56 +156,125 @@ router.post('/save', async (req, res) => {
       logger.error('RG QR code generation error:', e);
     }
 
-    // Gerar PDF
+    // Gerar PDF (igual rgDigitalUtils.ts - fundo matrizpdf.png + textos diretos)
     let pdfUrl: string | null = null;
     try {
       const pageWidth = 595.28;
       const pageHeight = 841.89;
-      const mmToPt = (mm: number) => mm * 2.834645669;
-      const matrizW = mmToPt(85);
-      const matrizH = mmToPt(55);
-      const qrSize = mmToPt(63.788);
       const pdfDoc = await PDFDocument.create();
       const page = pdfDoc.addPage([pageWidth, pageHeight]);
 
-      const bgPath = path.resolve(process.cwd(), '..', 'public', 'images', 'rg-pdf-bg.png');
-      if (fs.existsSync(bgPath)) {
-        const bgBytes = fs.readFileSync(bgPath);
+      // Fontes
+      const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
+      const courier = await pdfDoc.embedFont(StandardFonts.Courier);
+      const fontSize = 7;
+      const fillColor = rgb(0, 0, 0);
+      const grayColor = rgb(0.224, 0.216, 0.22); // #393738
+
+      // Helper: pdfkit Y (top-left) → pdf-lib Y (bottom-left)
+      const ty = (pdfkitY: number, h: number = 0) => pageHeight - pdfkitY - h;
+
+      // Fundo matrizpdf.png
+      const bgPath = path.resolve(process.cwd(), '..', 'public', 'templates', 'matrizpdf.png');
+      const bgFallback = path.resolve(process.cwd(), '..', 'public', 'images', 'rg-pdf-bg.png');
+      const bgFile = fs.existsSync(bgPath) ? bgPath : (fs.existsSync(bgFallback) ? bgFallback : null);
+      if (bgFile) {
+        const bgBytes = fs.readFileSync(bgFile);
         const bgImg = await pdfDoc.embedPng(bgBytes);
         page.drawImage(bgImg, { x: 0, y: 0, width: pageWidth, height: pageHeight });
       }
 
-      const embedBase64Png = async (b64: string) => {
+      // Helper para embed base64
+      const embedBase64 = async (b64: string) => {
         const clean = b64.replace(/^data:image\/\w+;base64,/, '');
         return await pdfDoc.embedPng(Buffer.from(clean, 'base64'));
       };
 
-      if (rgFrenteBase64) {
-        const img = await embedBase64Png(rgFrenteBase64);
-        page.drawImage(img, { x: mmToPt(13.406), y: pageHeight - mmToPt(21.595) - matrizH, width: matrizW, height: matrizH });
-      }
-
-      // Verso: primeiro desenha a matriz, depois o QR code por cima
-      if (rgVersoBase64) {
-        const img = await embedBase64Png(rgVersoBase64);
-        page.drawImage(img, { x: mmToPt(13.406), y: pageHeight - mmToPt(84.691) - matrizH, width: matrizW, height: matrizH });
-
-        // QR code DENTRO da matriz verso (posição calibrada: 5.36%, 17.03%, size 22.88%)
-        if (qrPngBytes) {
-          const qrImg = await pdfDoc.embedPng(qrPngBytes);
-          const versoX = mmToPt(13.406);
-          const versoY = pageHeight - mmToPt(84.691) - matrizH;
-          const qrInVersoSize = matrizW * 0.2288;
-          const qrInVersoX = versoX + matrizW * 0.0536;
-          const qrInVersoY = versoY + matrizH * (1 - 0.1703 - 0.2288); // flip Y for PDF
-          page.drawImage(qrImg, { x: qrInVersoX, y: qrInVersoY, width: qrInVersoSize, height: qrInVersoSize });
-        }
-      }
-
-      // QR code grande no layout A4 (ao lado das matrizes)
+      // QR Code em duas posições
       if (qrPngBytes) {
         const qrImg = await pdfDoc.embedPng(qrPngBytes);
-        page.drawImage(qrImg, { x: mmToPt(118.276), y: pageHeight - mmToPt(35.975) - qrSize, width: qrSize, height: qrSize });
+        // QR primário (grande)
+        const qrX = 462 * 0.85;
+        const qrY_pk = 90 * 0.85;
+        const qrSz = 180 * 0.85;
+        page.drawImage(qrImg, { x: qrX, y: ty(qrY_pk, qrSz), width: qrSz, height: qrSz });
+        // QR secundário (pequeno, dentro do verso)
+        page.drawImage(qrImg, { x: 39, y: ty(314, 57), width: 57, height: 57 });
+      }
+
+      // Foto do perfil em duas posições
+      if (fotoBase64) {
+        try {
+          const fotoImg = await embedBase64(fotoBase64);
+          // Foto principal
+          page.drawImage(fotoImg, { x: 35, y: ty(137.5, 86), width: 69, height: 86 });
+          // Foto menor (segunda posição)
+          page.drawImage(fotoImg, { x: 297, y: ty(302.5, 32), width: 28, height: 32 });
+        } catch (e) { logger.error('Erro ao embutir foto no PDF:', e); }
+      }
+
+      // Formatar datas
+      const fmtDate = (d: string) => {
+        if (!d) return '';
+        if (d.includes('/')) return d;
+        const p = d.split('-');
+        return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : d;
+      };
+
+      const dataAtual = new Date().toLocaleDateString('pt-BR');
+
+      // ---- TEXTOS FOLHA 1 (frente) ----
+      const drawText = (text: string, x: number, pdfkitY: number, opts?: { font?: any; size?: number; color?: any }) => {
+        page.drawText(text || '', {
+          x,
+          y: ty(pdfkitY, opts?.size || fontSize),
+          size: opts?.size || fontSize,
+          font: opts?.font || helvetica,
+          color: opts?.color || fillColor,
+        });
+      };
+
+      drawText(nomeCompleto, 112, 143);
+      drawText(nomeSocial || '', 112, 169);
+      drawText(formatCPF(cleanCpf), 112, 189);
+      drawText(fmtDate(dataNascimento), 112, 209);
+      drawText(naturalidade, 112, 228);
+      drawText(genero, 231, 183);
+      drawText(nacionalidade || 'BRA', 231, 203);
+      drawText(fmtDate(validade), 231, 222);
+
+      // ---- TEXTOS FOLHA 2 (verso) ----
+      drawText(pai || '', 112, 305);
+      drawText(mae || '', 112, 322);
+      drawText(orgaoExpedidor || '', 112, 345);
+      drawText(local || '', 112, 364);
+      drawText(fmtDate(dataEmissao), 228, 364);
+
+      // Data atual
+      drawText(dataAtual, 217, 23.5, { size: 9 });
+
+      // Estado
+      const nomeEstado = textoEstado(uf).toUpperCase();
+      drawText(nomeEstado, 140, 98, { size: 8, color: grayColor });
+
+      // Secretaria
+      drawText('SECRETARIA DE SEGURANÇA DA UNIDADE DA FEDERAÇÃO', 82, 108, { size: 8, color: grayColor });
+
+      // ---- MRZ ----
+      const linha1 = 'IDBRA5398762281453987622814<<0';
+      const linha2 = '051120M340302BRA<<<<<<<<<<<<<2';
+      const linha3 = formatarNomeMRZ(nomeCompleto);
+      drawText(linha1, 65, 420, { font: courier, size: 10, color: grayColor });
+      drawText(linha2, 65, 430, { font: courier, size: 10, color: grayColor });
+      drawText(linha3, 62, 440, { font: courier, size: 10, color: grayColor });
+
+      // Assinatura em duas posições
+      if (assinaturaBase64) {
+        try {
+          const assImg = await embedBase64(assinaturaBase64);
+          page.drawImage(assImg, { x: 130, y: ty(237, 15), width: 110, height: 15 }); // superior
+          page.drawImage(assImg, { x: 20, y: ty(580, 15), width: 110, height: 15 }); // inferior
+        } catch (e) { logger.error('Erro ao embutir assinatura no PDF:', e); }
       }
 
       const pdfBytes = await pdfDoc.save();
