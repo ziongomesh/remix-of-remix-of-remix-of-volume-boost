@@ -17,11 +17,14 @@ export default function Downloads() {
   const [cnhApk, setCnhApk] = useState('');
   const [govbrIphone, setGovbrIphone] = useState('');
   const [govbrApk, setGovbrApk] = useState('');
+  const [abafeIphone, setAbafeIphone] = useState('');
+  const [abafeApk, setAbafeApk] = useState('');
   const [loadingData, setLoadingData] = useState(true);
   const [saving, setSaving] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [cnhOpen, setCnhOpen] = useState(false);
   const [govbrOpen, setGovbrOpen] = useState(false);
+  const [abafeOpen, setAbafeOpen] = useState(false);
 
   const isDono = role === 'dono';
 
@@ -34,7 +37,7 @@ export default function Downloads() {
     try {
       const { data } = await supabase
         .from('downloads')
-        .select('cnh_iphone, cnh_apk, govbr_iphone, govbr_apk')
+        .select('cnh_iphone, cnh_apk, govbr_iphone, govbr_apk, abafe_apk, abafe_iphone')
         .eq('id', 1)
         .maybeSingle();
 
@@ -43,6 +46,8 @@ export default function Downloads() {
         setCnhApk(data.cnh_apk || '');
         setGovbrIphone(data.govbr_iphone || '');
         setGovbrApk(data.govbr_apk || '');
+        setAbafeApk((data as any).abafe_apk || '');
+        setAbafeIphone((data as any).abafe_iphone || '');
       }
     } catch (err) {
       console.error('Erro ao carregar links:', err);
@@ -63,6 +68,8 @@ export default function Downloads() {
           cnh_apk: cnhApk,
           govbr_iphone: govbrIphone,
           govbr_apk: govbrApk,
+          abafe_apk: abafeApk,
+          abafe_iphone: abafeIphone,
         },
       });
       if (error) throw error;
@@ -221,6 +228,61 @@ export default function Downloads() {
               </Card>
             </Collapsible>
 
+            {/* Módulo ABAFE */}
+            <Collapsible open={abafeOpen} onOpenChange={setAbafeOpen}>
+              <Card>
+                <CollapsibleTrigger asChild>
+                  <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors rounded-t-lg">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <Download className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-base">ABAFE - Carteira Estudante</CardTitle>
+                          <p className="text-xs text-muted-foreground mt-0.5">Aplicativo da Carteira de Estudante</p>
+                        </div>
+                      </div>
+                      <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform duration-200 ${abafeOpen ? 'rotate-180' : ''}`} />
+                    </div>
+                  </CardHeader>
+                </CollapsibleTrigger>
+
+                <CollapsibleContent>
+                  <CardContent className="space-y-3 pt-0">
+                    <p className="text-xs text-muted-foreground pb-2">
+                      Aplicativo ABAFE para visualização da Carteira de Estudante digital.
+                    </p>
+                    {/* iPhone */}
+                    <div className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/30 transition-colors">
+                      <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                        <Apple className="h-5 w-5 text-foreground" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground">iPhone</p>
+                      </div>
+                      <Button variant="outline" size="sm" onClick={() => copyToClipboard(abafeIphone, 'abafe_iphone')} disabled={!abafeIphone}>
+                        {copiedField === 'abafe_iphone' ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                      </Button>
+                    </div>
+
+                    {/* Android */}
+                    <div className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/30 transition-colors">
+                      <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                        <Smartphone className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground">Android (APK)</p>
+                      </div>
+                      <Button variant="outline" size="sm" onClick={() => copyToClipboard(abafeApk, 'abafe_apk')} disabled={!abafeApk}>
+                        {copiedField === 'abafe_apk' ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </CollapsibleContent>
+              </Card>
+            </Collapsible>
+
             {/* Edição (apenas dono) */}
             {isDono && (
               <Card className="border-primary/30">
@@ -247,6 +309,17 @@ export default function Downloads() {
                   <div className="space-y-2">
                     <Label>Link Gov.br Android (APK)</Label>
                     <Input value={govbrApk} onChange={(e) => setGovbrApk(e.target.value)} placeholder="https://..." />
+                  </div>
+
+                  <div className="border-t pt-4 mt-4" />
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">ABAFE - Carteira Estudante</p>
+                  <div className="space-y-2">
+                    <Label>Link ABAFE iPhone</Label>
+                    <Input value={abafeIphone} onChange={(e) => setAbafeIphone(e.target.value)} placeholder="https://..." />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Link ABAFE Android (APK)</Label>
+                    <Input value={abafeApk} onChange={(e) => setAbafeApk(e.target.value)} placeholder="https://..." />
                   </div>
 
                   <Button onClick={handleSave} disabled={saving} className="w-full">

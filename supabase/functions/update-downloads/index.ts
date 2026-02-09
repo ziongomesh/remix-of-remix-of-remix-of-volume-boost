@@ -16,7 +16,7 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    const { admin_id, session_token, cnh_iphone, cnh_apk, govbr_iphone, govbr_apk } = await req.json();
+    const { admin_id, session_token, cnh_iphone, cnh_apk, govbr_iphone, govbr_apk, abafe_apk, abafe_iphone } = await req.json();
 
     // Validar sessão
     const { data: valid } = await supabase.rpc("is_valid_admin", {
@@ -52,6 +52,8 @@ Deno.serve(async (req) => {
         cnh_apk: cnh_apk || "",
         govbr_iphone: govbr_iphone || "",
         govbr_apk: govbr_apk || "",
+        abafe_apk: abafe_apk || "",
+        abafe_iphone: abafe_iphone || "",
         updated_at: new Date().toISOString(),
       })
       .eq("id", 1);

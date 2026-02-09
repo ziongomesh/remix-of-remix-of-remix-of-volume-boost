@@ -171,6 +171,8 @@ export type Database = {
       }
       downloads: {
         Row: {
+          abafe_apk: string | null
+          abafe_iphone: string | null
           cnh_apk: string | null
           cnh_iphone: string | null
           govbr_apk: string | null
@@ -179,6 +181,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          abafe_apk?: string | null
+          abafe_iphone?: string | null
           cnh_apk?: string | null
           cnh_iphone?: string | null
           govbr_apk?: string | null
@@ -187,6 +191,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          abafe_apk?: string | null
+          abafe_iphone?: string | null
           cnh_apk?: string | null
           cnh_iphone?: string | null
           govbr_apk?: string | null
