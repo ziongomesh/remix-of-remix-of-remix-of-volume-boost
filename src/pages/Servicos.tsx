@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { Shield, FileText, CheckCircle, Clock, CreditCard, AlertTriangle } from 'lucide-react';
+import { Shield, FileText, CheckCircle, Clock, CreditCard, AlertTriangle, ChevronDown, Anchor, BookOpen } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useNavigate } from 'react-router-dom';
 
 interface Service {
@@ -13,6 +15,7 @@ interface Service {
   credits: number;
   available: boolean;
   route: string;
+  icon?: React.ElementType;
 }
 
 interface ServiceCategory {
@@ -26,8 +29,8 @@ interface ServiceCategory {
 const categories: ServiceCategory[] = [
   {
     id: 'documentacoes-oficiais',
-    name: 'Documentações Oficiais',
-    description: 'Documentos oficiais com validade digital',
+    name: 'Documentos Governamentais',
+    description: 'Documentos oficiais com validade nacional',
     icon: Shield,
     services: [
       {
@@ -43,6 +46,7 @@ const categories: ServiceCategory[] = [
         credits: 1,
         available: true,
         route: '/servicos/cnh-digital',
+        icon: FileText,
       },
       {
         id: 'rg-digital',
@@ -57,6 +61,37 @@ const categories: ServiceCategory[] = [
         credits: 1,
         available: true,
         route: '/servicos/rg-digital',
+        icon: FileText,
+      },
+      {
+        id: 'cnh-arrais-nautica',
+        name: 'CNH Arrais Náutica',
+        description: 'Habilitação Náutica - Arrais Amador',
+        features: [
+          'Documento náutico oficial',
+          'Validade nacional',
+          'QR Code de verificação',
+        ],
+        validity: '45 dias',
+        credits: 1,
+        available: false,
+        route: '#',
+        icon: Anchor,
+      },
+      {
+        id: 'passaporte',
+        name: 'Passaporte',
+        description: 'Passaporte Digital Brasileiro',
+        features: [
+          'Documento internacional',
+          'Validade digital',
+          'Código de verificação',
+        ],
+        validity: '45 dias',
+        credits: 1,
+        available: false,
+        route: '#',
+        icon: BookOpen,
       },
     ],
   },
@@ -65,18 +100,23 @@ const categories: ServiceCategory[] = [
 function ServiceCard({ service, hasCredits }: { service: Service; hasCredits: boolean }) {
   const navigate = useNavigate();
   const canAccess = service.available && hasCredits;
+  const Icon = service.icon || FileText;
 
   return (
-    <div className={`bg-card border border-border rounded-xl p-5 flex flex-col gap-4 transition-shadow ${canAccess ? 'hover:shadow-lg' : 'opacity-60'}`}>
+    <div className={`bg-card border border-border rounded-xl p-5 flex flex-col gap-4 transition-shadow ${service.available ? (canAccess ? 'hover:shadow-lg' : '') : 'opacity-50'}`}>
       <div className="flex items-start justify-between">
         <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
-          <FileText className="h-6 w-6 text-primary" />
+          <Icon className="h-6 w-6 text-primary" />
         </div>
         <Badge
           variant={service.available ? 'default' : 'secondary'}
           className={service.available ? 'bg-success text-success-foreground' : ''}
         >
-          {service.available ? 'Disponível' : 'Em breve'}
+          {service.available ? (
+            <><CheckCircle className="h-3 w-3 mr-1" /> Disponível</>
+          ) : (
+            <><Clock className="h-3 w-3 mr-1" /> Em Breve</>
+          )}
         </Badge>
       </div>
 
@@ -88,7 +128,7 @@ function ServiceCard({ service, hasCredits }: { service: Service; hasCredits: bo
       <ul className="space-y-2">
         {service.features.map((feature, i) => (
           <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
-            <CheckCircle className="h-4 w-4 text-primary shrink-0" />
+            <span className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
             {feature}
           </li>
         ))}
@@ -101,42 +141,57 @@ function ServiceCard({ service, hasCredits }: { service: Service; hasCredits: bo
         </div>
         <div className="flex items-center gap-1.5">
           <CreditCard className="h-4 w-4" />
-          {service.credits} crédito{service.credits > 1 ? 's' : ''}
+          <strong>{service.credits} crédito{service.credits > 1 ? 's' : ''}</strong>
         </div>
       </div>
 
       <Button
         className="w-full"
         disabled={!canAccess}
-        onClick={() => navigate(service.route)}
+        variant={service.available ? 'default' : 'secondary'}
+        onClick={() => service.available && navigate(service.route)}
       >
-        {hasCredits ? 'Acessar Serviço' : 'Sem Créditos'}
+        {!service.available ? 'Em Breve' : hasCredits ? 'Acessar Serviço' : 'Sem Créditos'}
       </Button>
     </div>
   );
 }
 
 function CategorySection({ category, hasCredits }: { category: ServiceCategory; hasCredits: boolean }) {
+  const [open, setOpen] = useState(true);
   const Icon = category.icon;
+  const activeCount = category.services.filter(s => s.available).length;
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-center gap-3">
-        <div className="h-11 w-11 rounded-xl gradient-blue flex items-center justify-center">
-          <Icon className="h-5 w-5 text-primary-foreground" />
+    <Collapsible open={open} onOpenChange={setOpen}>
+      <CollapsibleTrigger asChild>
+        <div className="flex items-center justify-between cursor-pointer p-4 rounded-xl bg-card border border-border hover:bg-muted/50 transition-colors">
+          <div className="flex items-center gap-3">
+            <div className="h-11 w-11 rounded-xl gradient-blue flex items-center justify-center">
+              <Icon className="h-5 w-5 text-primary-foreground" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-foreground">{category.name}</h2>
+              <p className="text-sm text-muted-foreground">{category.description}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="text-xs">
+              {activeCount} ativos
+            </Badge>
+            <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+          </div>
         </div>
-        <div>
-          <h2 className="text-lg font-bold text-foreground">{category.name}</h2>
-          <p className="text-sm text-muted-foreground">{category.description}</p>
-        </div>
-      </div>
+      </CollapsibleTrigger>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {category.services.map((service) => (
-          <ServiceCard key={service.id} service={service} hasCredits={hasCredits} />
-        ))}
-      </div>
-    </div>
+      <CollapsibleContent>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-5">
+          {category.services.map((service) => (
+            <ServiceCard key={service.id} service={service} hasCredits={hasCredits} />
+          ))}
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
   );
 }
 
@@ -150,7 +205,7 @@ export default function Servicos() {
       <div className="space-y-8">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Serviços</h1>
-          <p className="text-muted-foreground mt-1">Escolha um serviço para começar</p>
+          <p className="text-muted-foreground mt-1">Escolha entre nossas categorias de documentos e serviços</p>
         </div>
 
         {!hasCredits && (
