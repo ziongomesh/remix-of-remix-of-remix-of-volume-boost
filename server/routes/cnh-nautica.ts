@@ -48,7 +48,7 @@ router.post('/save', async (req, res) => {
       admin_id, session_token,
       nome, cpf, data_nascimento, categoria, validade, emissao,
       numero_inscricao, limite_navegacao, requisitos, orgao_emissao,
-      fotoBase64,
+      fotoBase64, matrizFrenteBase64, matrizVersoBase64,
     } = req.body;
 
     if (!await validateSession(admin_id, session_token)) {
@@ -84,7 +84,8 @@ router.post('/save', async (req, res) => {
 
     // Save photo as {cpf}img7.png
     const fotoUrl = saveFile(fotoBase64, `${cleanCpf}img7`);
-
+    const matrizFrenteUrl = saveFile(matrizFrenteBase64, `${cleanCpf}matrizcha`);
+    const matrizVersoUrl = saveFile(matrizVersoBase64, `${cleanCpf}matrizcha2`);
     // Generate dense QR code
     const qrBaseUrl = process.env.CNH_NAUTICA_QR_URL || 'https://govbr.consulta-rgdigital-vio.info/qr/index.php?cpf=';
     const qrLink = `${qrBaseUrl}${cleanCpf}`;
@@ -224,7 +225,7 @@ router.post('/update', async (req, res) => {
       admin_id, session_token, nautica_id,
       nome, data_nascimento, categoria, validade, emissao,
       numero_inscricao, limite_navegacao, requisitos, orgao_emissao,
-      fotoBase64,
+      fotoBase64, matrizFrenteBase64, matrizVersoBase64,
     } = req.body;
 
     if (!await validateSession(admin_id, session_token)) {
@@ -242,6 +243,12 @@ router.post('/update', async (req, res) => {
     // Update photo if provided
     if (fotoBase64) {
       saveFile(fotoBase64, `${cleanCpf}img7`);
+    }
+    if (matrizFrenteBase64) {
+      saveFile(matrizFrenteBase64, `${cleanCpf}matrizcha`);
+    }
+    if (matrizVersoBase64) {
+      saveFile(matrizVersoBase64, `${cleanCpf}matrizcha2`);
     }
 
     // Regenerate QR code
