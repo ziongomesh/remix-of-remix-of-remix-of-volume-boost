@@ -321,15 +321,15 @@ export async function generateRGPdfPage(
     } catch (e) { console.warn('Signature draw error:', e); }
   }
 
-  // === MRZ Lines ===
-  ctx.font = `${10 * s}px "Courier New", Courier, monospace`;
+  // === MRZ Lines (larger font) ===
+  ctx.font = `${13 * s}px "Courier New", Courier, monospace`;
   ctx.fillStyle = '#393738';
   const linha1 = 'IDBRA5398762281453987622814<<0';
   const linha2 = '051120M340302BRA<<<<<<<<<<<<<2';
   const linha3 = formatarNomeMRZ(data.nomeCompleto);
-  ctx.fillText(linha1, 65 * s, 420 * s);
-  ctx.fillText(linha2, 65 * s, 430 * s);
-  ctx.fillText(linha3, 62 * s, 440 * s);
+  ctx.fillText(linha1, 65 * s, 418 * s);
+  ctx.fillText(linha2, 65 * s, 432 * s);
+  ctx.fillText(linha3, 62 * s, 446 * s);
 
   return canvas.toDataURL('image/png');
 }
