@@ -63,15 +63,10 @@ export async function extractPdfData(file: File) {
     const bgCtx = bgCanvas.getContext('2d')!;
     bgCtx.drawImage(canvas, 0, 0);
 
-    // For each text field, sample the color just below the text area and fill over the text
+    // For each text field, fill white over the text area (minimal coverage)
     for (const f of pageFieldsTemp) {
-      // Sample color from a pixel at the left edge, slightly below the field
-      const sampleY = Math.min(f.y + f.height + 2, viewport.height - 1);
-      const sampleX = f.x;
-      const pixel = ctx.getImageData(sampleX, sampleY, 1, 1).data;
-      const bgColor = `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
-      bgCtx.fillStyle = bgColor;
-      bgCtx.fillRect(f.x - 1, f.y - 1, f.width + 4, f.height + 4);
+      bgCtx.fillStyle = '#FFFFFF';
+      bgCtx.fillRect(f.x, f.y, f.width, f.height);
     }
 
     pages.push({ width: viewport.width, height: viewport.height, canvas, bgCanvas });
