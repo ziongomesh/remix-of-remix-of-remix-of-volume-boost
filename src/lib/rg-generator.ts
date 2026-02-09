@@ -271,7 +271,7 @@ export async function generateRGPdfPage(
   ctx.fillStyle = '#000000';
   ctx.textAlign = 'left';
   ctx.textBaseline = 'alphabetic';
-  ctx.fillText(dateStr, 217 * s, 33 * s);
+  ctx.fillText(dateStr, 217 * s, 36 * s);
 
   // === State name ===
   const nomeEstadoPDF = textoEstado(data.uf).toUpperCase();
