@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import {
   Anchor, User, CreditCard, Upload, Loader2, Copy, CheckCircle, AlertTriangle, Calendar, KeyRound, Smartphone, Apple, Ship, Eye
 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { nauticaService } from '@/lib/cnh-nautica-service';
 import ChaPreview from '@/components/cha/ChaPreview';
 import { playSuccessSound } from '@/lib/success-sound';
@@ -239,9 +240,18 @@ export default function CnhNautica() {
                   <FormField control={form.control} name="categoria" render={({ field }) => (
                     <FormItem>
                       <FormLabel>Categoria</FormLabel>
-                      <FormControl>
-                        <Input placeholder="ARRAIS AMADOR" {...field} onChange={(e) => field.onChange(e.target.value.toUpperCase())} />
-                      </FormControl>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione a categoria" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="ARRAIS AMADOR">AR → Arrais Amador</SelectItem>
+                          <SelectItem value="MESTRE AMADOR">MS → Mestre Amador</SelectItem>
+                          <SelectItem value="CAPITÃO AMADOR">CP → Capitão Amador</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )} />
