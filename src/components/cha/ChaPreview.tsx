@@ -30,19 +30,19 @@ function drawChaFront(
 
   // Nome
   ctx.font = 'bold 14px Arial, sans-serif';
-  ctx.fillText(data.nome.toUpperCase(), w * 0.035, h * 0.43, w * 0.55);
+  ctx.fillText(data.nome.toUpperCase(), w * 0.083, h * 0.430, w * 0.55);
 
   // Data de Nascimento
   ctx.font = '12px Arial, sans-serif';
-  ctx.fillText(data.dataNascimento, w * 0.035, h * 0.545, w * 0.22);
+  ctx.fillText(data.dataNascimento, w * 0.083, h * 0.565, w * 0.22);
 
   // CPF
-  ctx.fillText(data.cpf, w * 0.28, h * 0.545, w * 0.28);
+  ctx.fillText(data.cpf, w * 0.368, h * 0.565, w * 0.28);
 
   // Categoria
   ctx.font = 'bold 11px Arial, sans-serif';
   const catText = data.categoria.toUpperCase();
-  ctx.fillText(catText, w * 0.035, h * 0.645, w * 0.55);
+  ctx.fillText(catText, w * 0.083, h * 0.695, w * 0.55);
 
   const catEnMap: Record<string, string> = {
     'ARRAIS AMADOR': 'AMATEUR SKIPPER',
@@ -53,15 +53,15 @@ function drawChaFront(
   const catEn = catEnMap[catText] || '';
   if (catEn) {
     ctx.font = '9px Arial, sans-serif';
-    ctx.fillText(catEn, w * 0.035, h * 0.685, w * 0.55);
+    ctx.fillText(catEn, w * 0.083, h * 0.735, w * 0.55);
   }
 
   // Data de Validade
   ctx.font = '12px Arial, sans-serif';
-  ctx.fillText(data.validade, w * 0.035, h * 0.815, w * 0.22);
+  ctx.fillText(data.validade, w * 0.083, h * 0.835, w * 0.22);
 
   // Nº de Inscrição
-  ctx.fillText(data.numeroInscricao.toUpperCase(), w * 0.28, h * 0.815, w * 0.28);
+  ctx.fillText(data.numeroInscricao.toUpperCase(), w * 0.368, h * 0.835, w * 0.28);
 
   // Foto 3x4
   if (fotoImg) {
@@ -111,7 +111,7 @@ function drawChaBack(
   // Limites da Navegação
   ctx.font = 'bold 11px Arial, sans-serif';
   const limiteText = data.limiteNavegacao.toUpperCase();
-  wrapText(ctx, limiteText, w * 0.035, h * 0.16, w * 0.93, 14);
+  wrapText(ctx, limiteText, w * 0.083, h * 0.090, w * 0.88, 14);
 
   // Tradução em inglês do limite
   const limiteEnMap: Record<string, string> = {
@@ -124,20 +124,20 @@ function drawChaBack(
   const matchingKey = Object.keys(limiteEnMap).find(k => cleanLimite.includes(k));
   if (matchingKey) {
     ctx.font = '10px Arial, sans-serif';
-    ctx.fillText(limiteEnMap[matchingKey] + '.', w * 0.035, h * 0.24, w * 0.93);
+    ctx.fillText(limiteEnMap[matchingKey] + '.', w * 0.083, h * 0.274, w * 0.88);
   }
 
   // Requisitos
   ctx.font = '12px Arial, sans-serif';
-  ctx.fillText((data.requisitos || '').toUpperCase(), w * 0.035, h * 0.46, w * 0.93);
+  ctx.fillText((data.requisitos || '').toUpperCase(), w * 0.083, h * 0.463, w * 0.88);
 
   // Órgão de Emissão
   ctx.font = 'bold 12px Arial, sans-serif';
-  ctx.fillText(data.orgaoEmissao.toUpperCase(), w * 0.035, h * 0.635, w * 0.45);
+  ctx.fillText(data.orgaoEmissao.toUpperCase(), w * 0.083, h * 0.506, w * 0.45);
 
   // Data de Emissão
   ctx.font = '12px Arial, sans-serif';
-  ctx.fillText(data.emissao, w * 0.55, h * 0.635, w * 0.40);
+  ctx.fillText(data.emissao, w * 0.631, h * 0.461, w * 0.35);
 }
 
 function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, lineHeight: number) {
