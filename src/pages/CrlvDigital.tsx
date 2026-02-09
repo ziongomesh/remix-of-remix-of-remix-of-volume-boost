@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -13,8 +13,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
-  Car, User, Loader2, ArrowLeft, Shuffle, Wrench, FileText, Eye, ClipboardList
+  Car, User, Loader2, ArrowLeft, Shuffle, Wrench, FileText, Eye, ClipboardList, QrCode, Upload, X
 } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import {
   generateRenavam, generatePlaca, generateNumeroCRV, generateSegurancaCRV,
   generateCodSegCLA, generateChassi, generateMotor, formatCPF,
@@ -75,6 +77,22 @@ function AutoButton({ onClick }: { onClick: () => void }) {
 export default function CrlvDigital() {
   const { admin, loading } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [useCustomQr, setUseCustomQr] = useState(false);
+  const [customQrBase64, setCustomQrBase64] = useState<string | null>(null);
+  const [customQrPreview, setCustomQrPreview] = useState<string | null>(null);
+  const qrInputRef = useRef<HTMLInputElement>(null);
+
+  const handleQrUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      setCustomQrBase64(result);
+      setCustomQrPreview(result);
+    };
+    reader.readAsDataURL(file);
+  };
 
   const form = useForm<CrlvFormData>({
     resolver: zodResolver(crlvFormSchema),
@@ -105,7 +123,7 @@ export default function CrlvDigital() {
   const handleSave = async (data: CrlvFormData) => {
     setIsSubmitting(true);
     try {
-      const result = await crlvService.save({
+      const payload: any = {
         admin_id: admin.id,
         session_token: admin.session_token || '',
         renavam: data.renavam,
@@ -137,7 +155,11 @@ export default function CrlvDigital() {
         local: data.local,
         data: data.data,
         observacoes: data.observacoes || '',
-      });
+      };
+      if (useCustomQr && customQrBase64) {
+        payload.qrcode_base64 = customQrBase64;
+      }
+      const result = await crlvService.save(payload);
 
       if (result.success) {
         toast.success('CRLV gerado com sucesso!');
@@ -519,6 +541,77 @@ export default function CrlvDigital() {
                     <FormMessage />
                   </FormItem>
                 )} />
+              </CardContent>
+            </Card>
+
+            {/* 6. QR CODE */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <QrCode className="h-4 w-4 text-primary" />
+                  6. QR CODE
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <Switch
+                    id="custom-qr"
+                    checked={useCustomQr}
+                    onCheckedChange={(checked) => {
+                      setUseCustomQr(checked);
+                      if (!checked) {
+                        setCustomQrBase64(null);
+                        setCustomQrPreview(null);
+                      }
+                    }}
+                  />
+                  <Label htmlFor="custom-qr" className="text-sm">
+                    {useCustomQr ? 'QR Code personalizado' : 'QR Code denso padrão (gerado automaticamente)'}
+                  </Label>
+                </div>
+
+                {!useCustomQr && (
+                  <p className="text-xs text-muted-foreground">
+                    Será gerado um QR Code denso com todos os dados do veículo automaticamente.
+                  </p>
+                )}
+
+                {useCustomQr && (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="gap-2"
+                        onClick={() => qrInputRef.current?.click()}
+                      >
+                        <Upload className="h-4 w-4" /> Enviar QR Code
+                      </Button>
+                      <input
+                        ref={qrInputRef}
+                        type="file"
+                        accept="image/png,image/jpeg,image/jpg"
+                        className="hidden"
+                        onChange={handleQrUpload}
+                      />
+                      {customQrPreview && (
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => { setCustomQrBase64(null); setCustomQrPreview(null); }}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                    {customQrPreview && (
+                      <div className="border border-border rounded-lg p-2 w-fit">
+                        <img src={customQrPreview} alt="QR Code" className="h-32 w-32 object-contain" />
+                      </div>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
