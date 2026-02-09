@@ -95,6 +95,22 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
     verso: usuario.cnh_verso_url || '',
   });
 
+  // Build signature preview URL
+  const assinaturaPreviewUrl = (() => {
+    const cleanCpf = usuario.cpf.replace(/\D/g, '');
+    const isMySQL = import.meta.env.VITE_USE_MYSQL === 'true';
+    if (isMySQL) {
+      const envUrl = import.meta.env.VITE_API_URL as string | undefined;
+      let baseUrl = 'http://localhost:4000';
+      if (envUrl) baseUrl = envUrl.replace(/\/api\/?$/, '');
+      else if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') baseUrl = window.location.origin;
+      return `${baseUrl}/uploads/${cleanCpf}assinatura.png`;
+    }
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    if (supabaseUrl) return `${supabaseUrl}/storage/v1/object/public/uploads/${cleanCpf}assinatura.png`;
+    return null;
+  })();
+
   // Track which matrices changed
   const [changedMatrices, setChangedMatrices] = useState<Set<'frente' | 'meio' | 'verso'>>(new Set());
 
@@ -505,6 +521,13 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
             <div>
               <Label className="text-xs">Assinatura Digital</Label>
               <div className="flex items-center gap-3 mt-1">
+                {(newAssinatura || assinaturaPreviewUrl) && (
+                  <img
+                    src={newAssinatura ? URL.createObjectURL(newAssinatura) : assinaturaPreviewUrl!}
+                    alt="Assinatura"
+                    className="h-12 w-24 object-contain border rounded"
+                  />
+                )}
                 <label className="flex items-center gap-2 px-3 py-2 border border-dashed rounded-lg cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors text-xs text-muted-foreground">
                   <Upload className="h-4 w-4" />
                   {newAssinatura ? newAssinatura.name : 'Trocar assinatura'}
