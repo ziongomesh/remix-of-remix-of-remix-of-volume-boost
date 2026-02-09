@@ -799,13 +799,13 @@ export default function Recarregar() {
 // ======== Reseller Recharge View ========
 function ResellerRechargeView({ adminId, sessionToken, credits }: { adminId: number; sessionToken: string; credits: number }) {
   const [creatorName, setCreatorName] = useState<string | null>(null);
+  const [creatorPhone, setCreatorPhone] = useState<string | null>(null);
   const [loadingCreator, setLoadingCreator] = useState(true);
 
   useEffect(() => {
     const fetchCreator = async () => {
       try {
         if (isUsingMySQL()) {
-          // Node.js API
           const envUrl = import.meta.env.VITE_API_URL as string | undefined;
           let apiBase = envUrl ? envUrl.replace(/\/+$/, '') : 'http://localhost:4000/api';
           if (!apiBase.endsWith('/api')) apiBase += '/api';
@@ -813,6 +813,7 @@ function ResellerRechargeView({ adminId, sessionToken, credits }: { adminId: num
           const data = await resp.json();
           if (data?.creator_name) {
             setCreatorName(data.creator_name);
+            setCreatorPhone(data.creator_telefone || null);
           }
         } else {
           const { data, error } = await supabase.rpc('get_creator_name', {
@@ -821,6 +822,7 @@ function ResellerRechargeView({ adminId, sessionToken, credits }: { adminId: num
           });
           if (!error && data && data.length > 0) {
             setCreatorName(data[0].creator_name);
+            setCreatorPhone(data[0].creator_telefone || null);
           }
         }
       } catch (err) {
@@ -874,14 +876,24 @@ function ResellerRechargeView({ adminId, sessionToken, credits }: { adminId: num
                   Buscando informações...
                 </div>
               ) : creatorName ? (
-                <div className="flex items-center gap-3 bg-card border border-border rounded-lg p-4">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <User className="h-5 w-5 text-primary" />
+                <div className="bg-card border border-border rounded-lg p-4 space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      <User className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Seu Master</p>
+                      <p className="font-semibold text-foreground">{creatorName}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Seu Master</p>
-                    <p className="font-semibold text-foreground">{creatorName}</p>
-                  </div>
+                  {creatorPhone && (
+                    <div className="flex items-center gap-2 pl-13 text-sm">
+                      <span className="text-muted-foreground">📞</span>
+                      <a href={`https://wa.me/55${creatorPhone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
+                        {creatorPhone}
+                      </a>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground italic">Não foi possível identificar o master responsável.</p>

@@ -15,7 +15,8 @@ import {
   FolderOpen,
   Wrench,
   Download,
-  ChevronDown
+  ChevronDown,
+  Settings
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link, useLocation } from 'react-router-dom';
@@ -46,6 +47,7 @@ const navItems: NavItem[] = [
   // Common
   { label: 'Ferramentas', icon: Wrench, href: '/ferramentas', roles: ['dono', 'master', 'revendedor'] },
   { label: 'Downloads', icon: Download, href: '/downloads', roles: ['dono', 'master', 'revendedor'] },
+  { label: 'Configurações', icon: Settings, href: '/configuracoes', roles: ['dono', 'master'] },
 ];
 
 const masterGroupHrefs = navItems.filter(i => i.group === 'master').map(i => i.href);
@@ -97,8 +99,9 @@ export function Sidebar() {
   );
 
   // Split top items: before ferramentas and ferramentas+downloads
-  const mainItems = topItems.filter(i => i.href !== '/ferramentas' && i.href !== '/downloads');
-  const bottomItems = topItems.filter(i => i.href === '/ferramentas' || i.href === '/downloads');
+  const bottomHrefs = ['/ferramentas', '/downloads', '/configuracoes'];
+  const mainItems = topItems.filter(i => !bottomHrefs.includes(i.href));
+  const bottomItems = topItems.filter(i => bottomHrefs.includes(i.href));
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 bg-card border-r border-border flex flex-col">

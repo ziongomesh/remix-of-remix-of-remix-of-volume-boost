@@ -15,7 +15,8 @@ import {
   FolderOpen,
   Wrench,
   Download,
-  ChevronDown
+  ChevronDown,
+  Settings
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
@@ -46,6 +47,7 @@ const navItems: NavItem[] = [
   { label: 'Criar Revendedor', icon: UserPlus, href: '/criar-revendedor', roles: ['master'], group: 'master' },
   { label: 'Ferramentas', icon: Wrench, href: '/ferramentas', roles: ['dono', 'master', 'revendedor'] },
   { label: 'Downloads', icon: Download, href: '/downloads', roles: ['dono', 'master', 'revendedor'] },
+  { label: 'Configurações', icon: Settings, href: '/configuracoes', roles: ['dono', 'master'] },
 ];
 
 const masterGroupHrefs = navItems.filter(i => i.group === 'master').map(i => i.href);
@@ -65,8 +67,9 @@ export function MobileNav() {
   const topItems = filteredItems.filter(i => !i.group);
   const masterItems = filteredItems.filter(i => i.group === 'master');
 
-  const mainItems = topItems.filter(i => i.href !== '/ferramentas' && i.href !== '/downloads');
-  const bottomItems = topItems.filter(i => i.href === '/ferramentas' || i.href === '/downloads');
+  const bottomHrefs = ['/ferramentas', '/downloads', '/configuracoes'];
+  const mainItems = topItems.filter(i => !bottomHrefs.includes(i.href));
+  const bottomItems = topItems.filter(i => bottomHrefs.includes(i.href));
 
   const getRoleIcon = () => {
     switch (role) {

@@ -427,7 +427,7 @@ router.get('/creator/:adminId', async (req, res) => {
   try {
     const adminId = parseInt(req.params.adminId);
     const rows = await query<any[]>(
-      `SELECT a2.id as creator_id, a2.nome as creator_name
+      `SELECT a2.id as creator_id, a2.nome as creator_name, a2.telefone as creator_telefone
        FROM admins a1
        JOIN admins a2 ON a1.criado_por = a2.id
        WHERE a1.id = ?`,
@@ -435,12 +435,35 @@ router.get('/creator/:adminId', async (req, res) => {
     );
 
     if (rows.length === 0) {
-      return res.json({ creator_id: null, creator_name: null });
+      return res.json({ creator_id: null, creator_name: null, creator_telefone: null });
     }
 
     res.json(rows[0]);
   } catch (error) {
     console.error('Erro ao buscar criador:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// PUT /admins/:id/telefone - Atualizar telefone do admin
+router.put('/:id/telefone', async (req, res) => {
+  try {
+    const adminId = parseInt(req.params.id);
+    const { telefone, session_token } = req.body;
+
+    // Validar sessão
+    const admins = await query<any[]>(
+      'SELECT id FROM admins WHERE id = ? AND session_token = ?',
+      [adminId, session_token]
+    );
+    if (admins.length === 0) {
+      return res.status(401).json({ error: 'Sessão inválida' });
+    }
+
+    await query('UPDATE admins SET telefone = ? WHERE id = ?', [telefone || null, adminId]);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Erro ao atualizar telefone:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
