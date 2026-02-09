@@ -41,15 +41,17 @@ export function PdfCanvas({ pageCanvas, fields, selectedId, onSelect, onUpdateFi
     // Draw clean background
     ctx.drawImage(clean, 0, 0);
 
-    // For each field: white-out original area, then draw current text
+    // Only white-out and redraw fields that were actually edited
     for (const field of pageFields) {
       if (!field.visible) continue;
+      const wasEdited = field.text !== field.originalText;
+      if (!wasEdited) continue;
 
       // White-out the original text area
       ctx.fillStyle = '#FFFFFF';
       ctx.fillRect(field.x - 1, field.y - 1, field.width + 4, field.height + 4);
 
-      // Draw the current text (original or edited)
+      // Draw the new text
       if (field.text.trim()) {
         ctx.fillStyle = field.color || '#000000';
         ctx.font = `${field.fontSize}px sans-serif`;
