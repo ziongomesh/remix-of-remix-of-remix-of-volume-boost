@@ -51,7 +51,7 @@ export default function CpfDuplicateModal({ open, onClose, result, serviceLabel 
         <AlertDialogFooter>
           <AlertDialogCancel onClick={onClose}>Fechar</AlertDialogCancel>
           {result.is_own && (
-            <AlertDialogAction onClick={() => navigate('/historico')}>
+            <AlertDialogAction onClick={() => navigate('/historico-servicos')}>
               Ir ao Histórico
             </AlertDialogAction>
           )}
