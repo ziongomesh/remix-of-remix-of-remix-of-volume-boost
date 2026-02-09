@@ -157,7 +157,7 @@ Deno.serve(async (req) => {
       const embedBase64 = async (b64: string) => {
         const clean = b64.replace(/^data:image\/\w+;base64,/, "");
         const bytes = Uint8Array.from(atob(clean), (c) => c.charCodeAt(0));
-        return await pdfDoc.embedPng(bytes);
+        try { return await pdfDoc.embedPng(bytes); } catch { return await pdfDoc.embedJpg(bytes); }
       };
 
       // Frente matrix
