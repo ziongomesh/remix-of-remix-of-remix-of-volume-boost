@@ -122,18 +122,24 @@ export type Database = {
         Row: {
           cnh_apk: string | null
           cnh_iphone: string | null
+          govbr_apk: string | null
+          govbr_iphone: string | null
           id: number
           updated_at: string
         }
         Insert: {
           cnh_apk?: string | null
           cnh_iphone?: string | null
+          govbr_apk?: string | null
+          govbr_iphone?: string | null
           id?: number
           updated_at?: string
         }
         Update: {
           cnh_apk?: string | null
           cnh_iphone?: string | null
+          govbr_apk?: string | null
+          govbr_iphone?: string | null
           id?: number
           updated_at?: string
         }
