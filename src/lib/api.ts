@@ -11,10 +11,8 @@ export type ApiClient = typeof mysqlApi | typeof supabaseApi;
 // Seleciona automaticamente qual cliente usar baseado na configuração
 function getApiClient(): ApiClient {
   if (isUsingMySQL()) {
-    console.log('🔧 Usando MySQL (Node.js Backend)');
     return mysqlApi;
   }
-  console.log('🔧 Usando PostgreSQL (Supabase/Cloud)');
   return supabaseApi;
 }
 
