@@ -74,8 +74,8 @@ const categories: ServiceCategory[] = [
         ],
         validity: '45 dias',
         credits: 1,
-        available: false,
-        route: '#',
+        available: true,
+        route: '/servicos/cnh-nautica',
         icon: Anchor,
       },
       {

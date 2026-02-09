@@ -9,6 +9,7 @@ import { Navigate } from 'react-router-dom';
 import { cnhService } from '@/lib/cnh-service';
 import { rgService, type RgRecord } from '@/lib/rg-service';
 import { estudanteService, type EstudanteRecord } from '@/lib/estudante-service';
+import { nauticaService, type NauticaRecord } from '@/lib/cnh-nautica-service';
 import { toast } from 'sonner';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -16,7 +17,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import {
-  History, Search, IdCard, Eye, Edit, Loader2, Clock, FileText, ChevronDown, ChevronUp, ExternalLink, Trash2, AlertTriangle, CreditCard, RefreshCw, Timer, GraduationCap, Copy, Check
+  History, Search, IdCard, Eye, Edit, Loader2, Clock, FileText, ChevronDown, ChevronUp, ExternalLink, Trash2, AlertTriangle, CreditCard, RefreshCw, Timer, GraduationCap, Copy, Check, Anchor
 } from 'lucide-react';
 import CnhEditView from '@/components/cnh/CnhEditView';
 import RgEditView from '@/components/rg/RgEditView';
@@ -95,6 +96,7 @@ export default function HistoricoServicos() {
   const [usuarios, setUsuarios] = useState<UsuarioRecord[]>([]);
   const [rgRegistros, setRgRegistros] = useState<RgRecord[]>([]);
   const [estudanteRegistros, setEstudanteRegistros] = useState<EstudanteRecord[]>([]);
+  const [nauticaRegistros, setNauticaRegistros] = useState<NauticaRecord[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedModule, setExpandedModule] = useState<string | null>('cnh');
@@ -138,6 +140,20 @@ export default function HistoricoServicos() {
     try {
       await estudanteService.delete(admin.id, admin.session_token, estudanteId);
       toast.success('Carteira de Estudante excluída com sucesso');
+      fetchData();
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao excluir');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handleDeleteNautica = async (nauticaId: number) => {
+    if (!admin) return;
+    setDeletingId(nauticaId);
+    try {
+      await nauticaService.delete(admin.id, admin.session_token, nauticaId);
+      toast.success('CNH Náutica excluída com sucesso');
       fetchData();
     } catch (err: any) {
       toast.error(err.message || 'Erro ao excluir');
@@ -194,18 +210,36 @@ export default function HistoricoServicos() {
     }
   };
 
+  const handleRenewNautica = async (recordId: number) => {
+    if (!admin) return;
+    const key = `nautica-${recordId}`;
+    setRenewingId(key);
+    try {
+      await nauticaService.renew(admin.id, admin.session_token, recordId);
+      toast.success('CNH Náutica renovada! +45 dias de validade');
+      await refreshCredits();
+      fetchData();
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao renovar');
+    } finally {
+      setRenewingId(null);
+    }
+  };
+
   const fetchData = async () => {
     if (!admin) return;
     setLoadingData(true);
     try {
-      const [cnhData, rgData, estudanteData] = await Promise.all([
+      const [cnhData, rgData, estudanteData, nauticaData] = await Promise.all([
         cnhService.list(admin.id, admin.session_token),
         rgService.list(admin.id, admin.session_token),
         estudanteService.list(admin.id, admin.session_token),
+        nauticaService.list(admin.id, admin.session_token),
       ]);
       setUsuarios(cnhData?.usuarios || []);
       setRgRegistros(rgData?.registros || []);
       setEstudanteRegistros(estudanteData?.registros || []);
+      setNauticaRegistros(nauticaData?.registros || []);
     } catch (err: any) {
       console.error('Erro ao carregar histórico:', err);
       toast.error('Erro ao carregar histórico');
@@ -295,7 +329,13 @@ export default function HistoricoServicos() {
     return e.nome.toLowerCase().includes(q) || e.cpf.includes(q);
   });
 
-  const totalRecords = filteredUsuarios.length + filteredRgs.length + filteredEstudantes.length;
+  const filteredNauticas = nauticaRegistros.filter(n => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    return n.nome.toLowerCase().includes(q) || n.cpf.includes(q);
+  });
+
+  const totalRecords = filteredUsuarios.length + filteredRgs.length + filteredEstudantes.length + filteredNauticas.length;
 
   // Records expiring within 5 days
   const expiringCnhs = usuarios.filter(u => {
@@ -310,13 +350,18 @@ export default function HistoricoServicos() {
     const days = daysUntilExpiration(e.data_expiracao || null);
     return days !== null && days >= 0 && days <= 5;
   });
-  const totalExpiring = expiringCnhs.length + expiringRgs.length + expiringEstudantes.length;
+  const expiringNauticas = nauticaRegistros.filter(n => {
+    const days = daysUntilExpiration(n.expires_at);
+    return days !== null && days >= 0 && days <= 5;
+  });
+  const totalExpiring = expiringCnhs.length + expiringRgs.length + expiringEstudantes.length + expiringNauticas.length;
 
   // Last created across all types
   const allRecords = [
     ...filteredUsuarios.map(u => ({ type: 'cnh' as const, data: u, created: u.created_at })),
     ...filteredRgs.map(r => ({ type: 'rg' as const, data: r, created: r.created_at })),
     ...filteredEstudantes.map(e => ({ type: 'estudante' as const, data: e, created: e.created_at })),
+    ...filteredNauticas.map(n => ({ type: 'nautica' as const, data: n, created: n.created_at })),
   ].sort((a, b) => {
     const da = a.created ? new Date(a.created).getTime() : 0;
     const db = b.created ? new Date(b.created).getTime() : 0;
@@ -598,6 +643,44 @@ export default function HistoricoServicos() {
                 )}
               </Card>
             )}
+
+            {/* Módulo CNH Náutica */}
+            {filteredNauticas.length > 0 && (
+              <Card>
+                <CardHeader
+                  className="cursor-pointer hover:bg-muted/30 transition-colors"
+                  onClick={() => setExpandedModule(expandedModule === 'nautica' ? null : 'nautica')}
+                >
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <Anchor className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <span className="text-base">CNH Náutica</span>
+                        <p className="text-sm text-muted-foreground font-normal">{filteredNauticas.length} registro{filteredNauticas.length !== 1 ? 's' : ''}</p>
+                      </div>
+                    </div>
+                    {expandedModule === 'nautica' ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                  </CardTitle>
+                </CardHeader>
+                {expandedModule === 'nautica' && (
+                  <CardContent className="space-y-3 pt-0">
+                    {filteredNauticas.map((n) => (
+                      <NauticaHistoryCard
+                        key={n.id}
+                        registro={n}
+                        formatCpf={formatCpf}
+                        formatDate={formatDateStr}
+                        onDelete={() => handleDeleteNautica(n.id)}
+                        onRenew={() => handleRenewNautica(n.id)}
+                        renewingId={renewingId}
+                      />
+                    ))}
+                  </CardContent>
+                )}
+              </Card>
+            )}
           </>
         )}
       </div>
@@ -635,8 +718,12 @@ function buildEstudanteCopyText(e: EstudanteRecord, formatCpf: (cpf: string) => 
   return `Olá! Segue os dados do seu acesso:\n\n📋 CPF: ${formatCpf(e.cpf)}\n🔑 Senha: ${e.senha || '—'}\n\n⚠️ O acesso é válido por 45 dias a partir da data de criação.`;
 }
 
+function buildNauticaCopyText(n: NauticaRecord, formatCpf: (cpf: string) => string) {
+  return `Olá! Segue os dados do seu acesso:\n\n📋 CPF: ${formatCpf(n.cpf)}\n🔑 Senha: ${n.senha || '—'}\n\n⚠️ O acesso é válido por 45 dias a partir da data de criação.`;
+}
+
 // ======== Renew Button (shared) ========
-function RenewButton({ id, type, onRenew, renewingId }: { id: number; type: 'cnh' | 'rg' | 'estudante'; onRenew: () => void; renewingId: string | null }) {
+function RenewButton({ id, type, onRenew, renewingId }: { id: number; type: 'cnh' | 'rg' | 'estudante' | 'nautica'; onRenew: () => void; renewingId: string | null }) {
   const key = `${type}-${id}`;
   const isRenewing = renewingId === key;
 
@@ -943,6 +1030,52 @@ function EstudanteHistoryCard({
           <Button variant="default" size="sm" onClick={onEdit}>
             <Edit className="h-4 w-4 sm:mr-1" /> <span className="hidden sm:inline">Editar</span>
           </Button>
+          <DeleteButton nome={registro.nome} onDelete={onDelete} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ======== Nautica Card ========
+function NauticaHistoryCard({
+  registro, formatCpf, formatDate, onDelete, onRenew, renewingId, highlight,
+}: {
+  registro: NauticaRecord;
+  formatCpf: (cpf: string) => string;
+  formatDate: (d: string | null) => string;
+  onDelete: () => void;
+  onRenew: () => void;
+  renewingId: string | null;
+  highlight?: boolean;
+}) {
+  return (
+    <div className={`border rounded-lg p-4 ${highlight ? 'border-primary/30' : 'border-border'} hover:bg-muted/20 transition-colors`}>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+          {registro.foto && (
+            <img src={registro.foto} alt="Foto" className="h-12 w-12 sm:h-16 sm:w-16 object-cover rounded-full border shrink-0" />
+          )}
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="font-semibold text-foreground text-sm sm:text-base truncate">{registro.nome}</h3>
+              <Badge variant="outline" className="text-[10px]">
+                <Anchor className="h-3 w-3 mr-1" /> Náutica
+              </Badge>
+              <ExpirationBadge dataExpiracao={registro.expires_at} />
+            </div>
+            <p className="text-xs sm:text-sm text-muted-foreground">CPF: {formatCpf(registro.cpf)}</p>
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-1 text-xs text-muted-foreground">
+              <span>Cat: {registro.categoria || '—'}</span>
+              <span>Inscrição: {registro.numero_inscricao || '—'}</span>
+              {registro.senha && <span>Senha: {registro.senha}</span>}
+              <span>Criado: {formatDate(registro.created_at)}</span>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0 self-end sm:self-center flex-wrap">
+          <CopyDataButton text={buildNauticaCopyText(registro, formatCpf)} />
+          <RenewButton id={registro.id} type="nautica" onRenew={onRenew} renewingId={renewingId} />
           <DeleteButton nome={registro.nome} onDelete={onDelete} />
         </div>
       </div>
