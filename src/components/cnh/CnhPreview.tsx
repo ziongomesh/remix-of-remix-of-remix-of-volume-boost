@@ -84,28 +84,7 @@ export default function CnhPreview({ cnhData, onClose, onSaveSuccess, onEdit }: 
     generatePreviews();
   }, [cnhData]);
 
-  const handleDownload = () => {
-    if (!canvasRef.current || !canvasMeioRef.current || !canvasVersoRef.current) return;
-
-    const link1 = document.createElement('a');
-    link1.download = 'cnh-frente.png';
-    link1.href = canvasRef.current.toDataURL('image/png');
-    link1.click();
-
-    setTimeout(() => {
-      const link2 = document.createElement('a');
-      link2.download = 'cnh-meio.png';
-      link2.href = canvasMeioRef.current!.toDataURL('image/png');
-      link2.click();
-    }, 100);
-
-    setTimeout(() => {
-      const link3 = document.createElement('a');
-      link3.download = 'cnh-verso.png';
-      link3.href = canvasVersoRef.current!.toDataURL('image/png');
-      link3.click();
-    }, 200);
-  };
+  // Download de PNGs removido por segurança
 
   const handleSaveToDatabase = async () => {
     if (isCreatingCnh) return;
