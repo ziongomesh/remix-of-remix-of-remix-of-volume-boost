@@ -25,17 +25,24 @@ async function getCroppedImg(imageSrc: string, crop: Area): Promise<string> {
   return canvas.toDataURL('image/png');
 }
 
-async function removeBgLocal(imageDataUrl: string): Promise<string> {
-  // Convert data URL to blob
+async function removeBgLocal(imageDataUrl: string, onProgress: (p: number) => void): Promise<string> {
   const res = await fetch(imageDataUrl);
   const blob = await res.blob();
 
-  // Remove background using local ONNX model (no API, no limits)
+  onProgress(10);
+
   const resultBlob = await removeBackground(blob, {
     output: { format: 'image/png' },
+    progress: (key: string, current: number, total: number) => {
+      if (total > 0) {
+        const pct = Math.round((current / total) * 80) + 10;
+        onProgress(Math.min(pct, 90));
+      }
+    },
   });
 
-  // Draw result on white background
+  onProgress(92);
+
   const img = new Image();
   const url = URL.createObjectURL(resultBlob);
   await new Promise<void>((resolve, reject) => {
@@ -53,6 +60,7 @@ async function removeBgLocal(imageDataUrl: string): Promise<string> {
   ctx.drawImage(img, 0, 0);
   URL.revokeObjectURL(url);
 
+  onProgress(100);
   return canvas.toDataURL('image/png');
 }
 
@@ -61,7 +69,7 @@ export default function RemoverFundo() {
   const [croppedImage, setCroppedImage] = useState<string | null>(null);
   const [resultImage, setResultImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [loadingMsg, setLoadingMsg] = useState('');
+  const [progress, setProgress] = useState(0);
   const [isCropping, setIsCropping] = useState(false);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
@@ -70,11 +78,10 @@ export default function RemoverFundo() {
 
   const processImage = async (dataUrl: string) => {
     setLoading(true);
-    setLoadingMsg('Carregando modelo...');
+    setProgress(0);
     setResultImage(null);
     try {
-      setLoadingMsg('Removendo fundo...');
-      const result = await removeBgLocal(dataUrl);
+      const result = await removeBgLocal(dataUrl, (p) => setProgress(p));
       setResultImage(result);
       toast.success('Fundo removido com sucesso!');
     } catch (err: any) {
@@ -82,7 +89,7 @@ export default function RemoverFundo() {
       toast.error('Erro ao remover fundo');
     } finally {
       setLoading(false);
-      setLoadingMsg('');
+      setProgress(0);
     }
   };
 
@@ -232,9 +239,20 @@ export default function RemoverFundo() {
                 </CardHeader>
                 <CardContent className="flex items-center justify-center p-4 min-h-[280px]">
                   {loading ? (
-                    <div className="flex flex-col items-center gap-3 text-muted-foreground">
+                    <div className="flex flex-col items-center gap-3 text-muted-foreground w-full px-6">
                       <Loader2 className="h-10 w-10 animate-spin text-primary" />
-                      <p className="text-sm">{loadingMsg || 'Processando...'}</p>
+                      <div className="w-full max-w-xs space-y-1">
+                        <div className="flex justify-between text-xs">
+                          <span>Removendo fundo...</span>
+                          <span className="font-mono">{progress}%</span>
+                        </div>
+                        <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-primary rounded-full transition-all duration-300"
+                            style={{ width: `${progress}%` }}
+                          />
+                        </div>
+                      </div>
                     </div>
                   ) : resultImage ? (
                     <img src={resultImage} alt="Fundo branco" className="max-h-80 rounded-lg object-contain" />
