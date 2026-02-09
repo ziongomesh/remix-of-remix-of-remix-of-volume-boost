@@ -80,6 +80,8 @@ export default function CrlvDigital() {
   const [useCustomQr, setUseCustomQr] = useState(false);
   const [customQrBase64, setCustomQrBase64] = useState<string | null>(null);
   const [customQrPreview, setCustomQrPreview] = useState<string | null>(null);
+  const [generatedPdfUrl, setGeneratedPdfUrl] = useState<string | null>(null);
+  const [generatedSenha, setGeneratedSenha] = useState<string | null>(null);
   const qrInputRef = useRef<HTMLInputElement>(null);
 
   const handleQrUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -163,7 +165,13 @@ export default function CrlvDigital() {
 
       if (result.success) {
         toast.success('CRLV gerado com sucesso!');
-        form.reset();
+        // Build full PDF URL for preview
+        const envUrl = import.meta.env.VITE_API_URL as string | undefined;
+        const baseUrl = envUrl || (window.location.hostname !== 'localhost'
+          ? window.location.origin
+          : 'http://localhost:4000');
+        setGeneratedPdfUrl(`${baseUrl}${result.pdf}`);
+        setGeneratedSenha(result.senha || null);
       }
     } catch (error: any) {
       toast.error(error.message || 'Erro ao gerar CRLV');
@@ -630,6 +638,45 @@ export default function CrlvDigital() {
             </div>
           </form>
         </Form>
+
+        {/* PDF PREVIEW */}
+        {generatedPdfUrl && (
+          <Card className="mt-6">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Eye className="h-4 w-4 text-primary" />
+                  Preview do CRLV Gerado
+                </CardTitle>
+                <div className="flex items-center gap-2">
+                  {generatedSenha && (
+                    <span className="text-xs text-muted-foreground">Senha: <strong>{generatedSenha}</strong></span>
+                  )}
+                  <a href={generatedPdfUrl} target="_blank" rel="noopener noreferrer">
+                    <Button variant="outline" size="sm" className="gap-1">
+                      <FileText className="h-3.5 w-3.5" /> Abrir PDF
+                    </Button>
+                  </a>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => { setGeneratedPdfUrl(null); setGeneratedSenha(null); }}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <iframe
+                src={generatedPdfUrl}
+                className="w-full rounded-lg border border-border"
+                style={{ height: '80vh' }}
+                title="Preview CRLV"
+              />
+            </CardContent>
+          </Card>
+        )}
 
       </div>
     </DashboardLayout>
