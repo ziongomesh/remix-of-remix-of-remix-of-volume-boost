@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { Download, Layers, PanelRightClose, Loader2, QrCode, Copy, Tag } from 'lucide-react';
+import { Download, Layers, PanelRightClose, Loader2, QrCode, Copy, Tag, ZoomIn, ZoomOut, Plus } from 'lucide-react';
 import { PdfTextField } from '@/components/pdf-editor/types';
 import { extractPdfData } from '@/components/pdf-editor/pdf-utils';
 import { PdfCanvas } from '@/components/pdf-editor/PdfCanvas';
@@ -52,7 +52,7 @@ export default function CrlvPositionTool() {
   const [showLayers, setShowLayers] = useState(true);
   const [currentPage, setCurrentPage] = useState(0);
   const [showQr, setShowQr] = useState(false);
-
+  const [zoom, setZoom] = useState(1);
   const selectedField = useMemo(() => fields.find(f => f.id === selectedId), [fields, selectedId]);
   const usedNames = useMemo(() => new Set(fields.map(f => f.inputName).filter(Boolean)), [fields]);
 
@@ -84,6 +84,26 @@ export default function CrlvPositionTool() {
     toast.success(`Mapeamento de ${mapped.length} campos copiado!`);
   }, [fields]);
 
+  const handleAddManualField = useCallback(() => {
+    const id = `field-manual-${Date.now()}`;
+    const newField: PdfTextField = {
+      id,
+      text: 'Novo campo',
+      x: 100,
+      y: 100,
+      width: 200,
+      height: 20,
+      fontSize: 14,
+      fontFamily: 'Helvetica',
+      color: '#000000',
+      pageIndex: currentPage,
+      originalText: '',
+      visible: true,
+    };
+    setFields(prev => [...prev, newField]);
+    setSelectedId(id);
+    toast.success('Campo manual adicionado! Clique nele para editar.');
+  }, [currentPage]);
   // ... keep existing code (loadTemplate, handleFileUpload, handleUpdateField, handleToggleVisibility, handleDelete, handleSave)
   const loadTemplate = useCallback(async () => {
     setLoading(true);
@@ -192,9 +212,26 @@ export default function CrlvPositionTool() {
               <Button onClick={handleSave} size="sm" className="gap-1">
                 <Download className="h-4 w-4" /> Salvar PDF
               </Button>
+              <Button onClick={handleAddManualField} variant="outline" size="sm" className="gap-1">
+                <Plus className="h-4 w-4" /> Campo Manual
+              </Button>
             </div>
           )}
         </div>
+
+        {/* Zoom controls */}
+        {loaded && (
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => setZoom(z => Math.max(0.3, z - 0.15))} className="gap-1">
+              <ZoomOut className="h-4 w-4" />
+            </Button>
+            <span className="text-sm font-mono w-16 text-center">{Math.round(zoom * 100)}%</span>
+            <Button variant="outline" size="sm" onClick={() => setZoom(z => Math.min(3, z + 0.15))} className="gap-1">
+              <ZoomIn className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => setZoom(1)} className="text-xs">Reset</Button>
+          </div>
+        )}
 
         {/* Load options */}
         {!loaded && !loading && (
@@ -267,7 +304,7 @@ export default function CrlvPositionTool() {
                 </div>
               )}
               <ScrollArea className="h-full">
-                <div className="p-4 flex justify-center">
+                <div className="p-4 flex justify-center" style={{ transform: `scale(${zoom})`, transformOrigin: 'top center' }}>
                   <div className="relative inline-block">
                     <PdfCanvas
                       pageCanvas={pages[currentPage]?.canvas || null}
