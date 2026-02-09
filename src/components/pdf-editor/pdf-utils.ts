@@ -57,11 +57,8 @@ export async function extractPdfData(file: File) {
       pageFieldsTemp.push(f);
     }
 
-    // White-out text areas on canvas so overlay fields don't double up
-    for (const f of pageFieldsTemp) {
-      ctx.fillStyle = '#FFFFFF';
-      ctx.fillRect(f.x - 1, f.y - 1, f.width + 2, f.height + 2);
-    }
+    // Don't white-out text areas - keep original background visible
+    // Fields overlay transparently and only show bg when editing
 
     pages.push({ width: viewport.width, height: viewport.height, canvas });
     fields.push(...pageFieldsTemp);

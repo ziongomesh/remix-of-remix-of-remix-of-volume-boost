@@ -65,8 +65,8 @@ export function PdfCanvas({ pageCanvas, fields, selectedId, onSelect, onUpdateFi
               minHeight: field.height,
               fontSize: field.fontSize,
               color: field.color,
-              backgroundColor: 'white',
-              zIndex: 10,
+              backgroundColor: isEditing ? 'rgba(255,255,255,0.95)' : 'transparent',
+              zIndex: isEditing ? 50 : 10,
               lineHeight: 1,
               padding: '1px 0',
             }}
@@ -83,7 +83,7 @@ export function PdfCanvas({ pageCanvas, fields, selectedId, onSelect, onUpdateFi
                 onClick={(e) => e.stopPropagation()}
               />
             ) : (
-              <span className="whitespace-nowrap leading-none select-none pointer-events-none">
+              <span className="whitespace-nowrap leading-none select-none pointer-events-none" style={{ opacity: 0 }}>
                 {field.text}
               </span>
             )}
