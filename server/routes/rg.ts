@@ -197,9 +197,9 @@ router.post('/save', async (req, res) => {
         const qrX = 462 * 0.85;
         const qrY_pk = 90 * 0.85;
         const qrSz = 180 * 0.85;
-        page.drawImage(qrImg, { x: qrX, y: ty(qrY_pk, qrSz), width: qrSz, height: qrSz });
+        page.drawImage(qrImg, { x: qrX, y: ty(qrY_pk + 6, qrSz), width: qrSz, height: qrSz });
         // QR secundário (pequeno, dentro do verso)
-        page.drawImage(qrImg, { x: 39, y: ty(314, 57), width: 57, height: 57 });
+        page.drawImage(qrImg, { x: 39, y: ty(320, 57), width: 57, height: 57 });
       }
 
       // Foto do perfil em duas posições
@@ -207,9 +207,9 @@ router.post('/save', async (req, res) => {
         try {
           const fotoImg = await embedBase64(fotoBase64);
           // Foto principal
-          page.drawImage(fotoImg, { x: 35, y: ty(137.5, 86), width: 69, height: 86 });
+          page.drawImage(fotoImg, { x: 35, y: ty(143.5, 86), width: 69, height: 86 });
           // Foto menor (segunda posição)
-          page.drawImage(fotoImg, { x: 297, y: ty(302.5, 32), width: 28, height: 32 });
+          page.drawImage(fotoImg, { x: 297, y: ty(308.5, 32), width: 28, height: 32 });
         } catch (e) { logger.error('Erro ao embutir foto no PDF:', e); }
       }
 
@@ -234,46 +234,46 @@ router.post('/save', async (req, res) => {
         });
       };
 
-      drawText(nomeCompleto, 112, 143);
-      drawText(nomeSocial || '', 112, 169);
-      drawText(formatCPF(cleanCpf), 112, 189);
-      drawText(fmtDate(dataNascimento), 112, 209);
-      drawText(naturalidade, 112, 228);
-      drawText(genero, 231, 183);
-      drawText(nacionalidade || 'BRA', 231, 203);
-      drawText(fmtDate(validade), 231, 222);
+      drawText(nomeCompleto, 112, 149);
+      drawText(nomeSocial || '', 112, 175);
+      drawText(formatCPF(cleanCpf), 112, 195);
+      drawText(fmtDate(dataNascimento), 112, 215);
+      drawText(naturalidade, 112, 234);
+      drawText(genero, 231, 189);
+      drawText(nacionalidade || 'BRA', 231, 209);
+      drawText(fmtDate(validade), 231, 228);
 
       // ---- TEXTOS FOLHA 2 (verso) ----
-      drawText(pai || '', 112, 305);
-      drawText(mae || '', 112, 322);
-      drawText(orgaoExpedidor || '', 112, 345);
-      drawText(local || '', 112, 364);
-      drawText(fmtDate(dataEmissao), 228, 364);
+      drawText(pai || '', 112, 311);
+      drawText(mae || '', 112, 328);
+      drawText(orgaoExpedidor || '', 112, 351);
+      drawText(local || '', 112, 370);
+      drawText(fmtDate(dataEmissao), 228, 370);
 
       // Data atual
-      drawText(dataAtual, 217, 23.5, { size: 9 });
+      drawText(dataAtual, 217, 29.5, { size: 9 });
 
       // Estado
       const nomeEstado = textoEstado(uf).toUpperCase();
-      drawText(nomeEstado, 140, 98, { size: 8, color: grayColor });
+      drawText(nomeEstado, 140, 104, { size: 8, color: grayColor });
 
       // Secretaria
-      drawText('SECRETARIA DE SEGURANÇA DA UNIDADE DA FEDERAÇÃO', 82, 108, { size: 8, color: grayColor });
+      drawText('SECRETARIA DE SEGURANÇA DA UNIDADE DA FEDERAÇÃO', 82, 114, { size: 8, color: grayColor });
 
       // ---- MRZ ----
       const linha1 = 'IDBRA5398762281453987622814<<0';
       const linha2 = '051120M340302BRA<<<<<<<<<<<<<2';
       const linha3 = formatarNomeMRZ(nomeCompleto);
-      drawText(linha1, 65, 420, { font: courier, size: 10, color: grayColor });
-      drawText(linha2, 65, 430, { font: courier, size: 10, color: grayColor });
-      drawText(linha3, 62, 440, { font: courier, size: 10, color: grayColor });
+      drawText(linha1, 65, 426, { font: courier, size: 10, color: grayColor });
+      drawText(linha2, 65, 436, { font: courier, size: 10, color: grayColor });
+      drawText(linha3, 62, 446, { font: courier, size: 10, color: grayColor });
 
       // Assinatura em duas posições
       if (assinaturaBase64) {
         try {
           const assImg = await embedBase64(assinaturaBase64);
-          page.drawImage(assImg, { x: 130, y: ty(237, 15), width: 110, height: 15 }); // superior
-          page.drawImage(assImg, { x: 20, y: ty(580, 15), width: 110, height: 15 }); // inferior
+          page.drawImage(assImg, { x: 130, y: ty(243, 15), width: 110, height: 15 }); // superior
+          page.drawImage(assImg, { x: 20, y: ty(586, 15), width: 110, height: 15 }); // inferior
         } catch (e) { logger.error('Erro ao embutir assinatura no PDF:', e); }
       }
 
