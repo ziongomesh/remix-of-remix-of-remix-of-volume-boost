@@ -511,6 +511,7 @@ export type Database = {
         Returns: {
           creator_id: number
           creator_name: string
+          creator_telefone: string
         }[]
       }
       get_dashboard_stats: {
