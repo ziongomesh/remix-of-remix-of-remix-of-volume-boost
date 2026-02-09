@@ -561,6 +561,7 @@ function CnhHistoryCard({
               <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-1 text-xs text-muted-foreground">
                 <span>Cat: {usuario.categoria || '—'}</span>
                 <span>UF: {usuario.uf || '—'}</span>
+                {usuario.senha && <span>Senha: {usuario.senha}</span>}
                 <span>Criado: {formatDate(usuario.created_at)}</span>
               </div>
             </div>
@@ -660,6 +661,7 @@ function RgHistoryCard({
               <p className="text-xs sm:text-sm text-muted-foreground">CPF: {formatCpf(registro.cpf)}</p>
               <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-1 text-xs text-muted-foreground">
                 <span>UF: {registro.uf || '—'}</span>
+                {registro.senha && <span>Senha: {registro.senha}</span>}
                 <span>Criado: {formatDate(registro.created_at)}</span>
               </div>
             </div>
