@@ -153,6 +153,10 @@ app.use(
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
+// Serve static uploads from public/uploads
+const uploadsPath = path.resolve(process.cwd(), '..', 'public', 'uploads');
+app.use('/uploads', express.static(uploadsPath));
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/admins', adminRoutes);
