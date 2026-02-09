@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
   IdCard, User, Shield, CreditCard, Upload, Camera, Loader2, Calendar, ArrowLeft, Copy, Smartphone, FileText, Eye
@@ -70,6 +70,7 @@ const toUpper = (v: string) => v.toUpperCase();
 
 export default function RgDigital() {
   const { admin, loading } = useAuth();
+  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fotoPerfil, setFotoPerfil] = useState<File | null>(null);
   const [fotoPreview, setFotoPreview] = useState<string | null>(null);
@@ -266,7 +267,24 @@ export default function RgDigital() {
       setShowPreview(false);
     } catch (err: any) {
       console.error('Erro ao salvar RG:', err);
-      toast.error(err.message || 'Erro ao salvar RG Digital');
+      if (err.status === 409 && err.details) {
+        const details = err.details;
+        if (details.is_own) {
+          toast.error(`Este CPF já possui um RG cadastrado por você. Vá ao Histórico para excluí-lo antes de criar novamente.`, {
+            duration: 8000,
+            action: {
+              label: 'Ir ao Histórico',
+              onClick: () => navigate('/historico'),
+            },
+          });
+        } else {
+          toast.error(`Este CPF já possui um RG cadastrado por ${details.creator_name || 'outro usuário'}. Não é possível criar duplicado.`, {
+            duration: 8000,
+          });
+        }
+      } else {
+        toast.error(err.message || 'Erro ao salvar RG Digital');
+      }
     } finally {
       setIsSubmitting(false);
     }

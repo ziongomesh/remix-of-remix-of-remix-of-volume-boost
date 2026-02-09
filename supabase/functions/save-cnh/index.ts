@@ -84,15 +84,29 @@ Deno.serve(async (req) => {
     const cleanCpf = cpf.replace(/\D/g, "");
     const { data: existingCnh } = await supabase
       .from("usuarios")
-      .select("id, nome")
+      .select("id, nome, admin_id")
       .eq("cpf", cleanCpf)
       .maybeSingle();
 
     if (existingCnh) {
+      // Buscar nome do admin que criou
+      let creatorName = "Desconhecido";
+      const { data: creatorAdmin } = await supabase
+        .from("admins")
+        .select("nome")
+        .eq("id", existingCnh.admin_id)
+        .single();
+      if (creatorAdmin) creatorName = creatorAdmin.nome;
+
       return new Response(
         JSON.stringify({
           error: "CPF já cadastrado",
-          details: { existingCnh },
+          details: {
+            existingCnh,
+            creator_admin_id: existingCnh.admin_id,
+            creator_name: creatorName,
+            is_own: existingCnh.admin_id === admin_id,
+          },
         }),
         { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
