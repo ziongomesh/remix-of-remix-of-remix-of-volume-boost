@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { cnhService } from '@/lib/cnh-service';
 import { rgService, type RgRecord } from '@/lib/rg-service';
+import { estudanteService, type EstudanteRecord } from '@/lib/estudante-service';
 import { toast } from 'sonner';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -15,10 +16,11 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import {
-  History, Search, IdCard, Eye, Edit, Loader2, Clock, FileText, ChevronDown, ChevronUp, ExternalLink, Trash2, AlertTriangle, CreditCard, RefreshCw, Timer
+  History, Search, IdCard, Eye, Edit, Loader2, Clock, FileText, ChevronDown, ChevronUp, ExternalLink, Trash2, AlertTriangle, CreditCard, RefreshCw, Timer, GraduationCap
 } from 'lucide-react';
 import CnhEditView from '@/components/cnh/CnhEditView';
 import RgEditView from '@/components/rg/RgEditView';
+import EstudanteEditView from '@/components/estudante/EstudanteEditView';
 
 interface UsuarioRecord {
   id: number;
@@ -92,11 +94,13 @@ export default function HistoricoServicos() {
   const { admin, loading, refreshCredits } = useAuth();
   const [usuarios, setUsuarios] = useState<UsuarioRecord[]>([]);
   const [rgRegistros, setRgRegistros] = useState<RgRecord[]>([]);
+  const [estudanteRegistros, setEstudanteRegistros] = useState<EstudanteRecord[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedModule, setExpandedModule] = useState<string | null>('cnh');
   const [editingUsuario, setEditingUsuario] = useState<UsuarioRecord | null>(null);
   const [editingRg, setEditingRg] = useState<RgRecord | null>(null);
+  const [editingEstudante, setEditingEstudante] = useState<EstudanteRecord | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [renewingId, setRenewingId] = useState<string | null>(null);
 
@@ -128,12 +132,26 @@ export default function HistoricoServicos() {
     }
   };
 
+  const handleDeleteEstudante = async (estudanteId: number) => {
+    if (!admin) return;
+    setDeletingId(estudanteId);
+    try {
+      await estudanteService.delete(admin.id, admin.session_token, estudanteId);
+      toast.success('Carteira de Estudante excluída com sucesso');
+      fetchData();
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao excluir');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   const handleRenewCnh = async (recordId: number) => {
     if (!admin) return;
     const key = `cnh-${recordId}`;
     setRenewingId(key);
     try {
-      const result = await cnhService.renew(admin.id, admin.session_token, recordId);
+      await cnhService.renew(admin.id, admin.session_token, recordId);
       toast.success('CNH renovada! +45 dias de validade');
       await refreshCredits();
       fetchData();
@@ -149,8 +167,24 @@ export default function HistoricoServicos() {
     const key = `rg-${recordId}`;
     setRenewingId(key);
     try {
-      const result = await rgService.renew(admin.id, admin.session_token, recordId);
+      await rgService.renew(admin.id, admin.session_token, recordId);
       toast.success('RG renovado! +45 dias de validade');
+      await refreshCredits();
+      fetchData();
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao renovar');
+    } finally {
+      setRenewingId(null);
+    }
+  };
+
+  const handleRenewEstudante = async (recordId: number) => {
+    if (!admin) return;
+    const key = `estudante-${recordId}`;
+    setRenewingId(key);
+    try {
+      await estudanteService.renew(admin.id, admin.session_token, recordId);
+      toast.success('Carteira renovada! +45 dias de validade');
       await refreshCredits();
       fetchData();
     } catch (err: any) {
@@ -164,12 +198,14 @@ export default function HistoricoServicos() {
     if (!admin) return;
     setLoadingData(true);
     try {
-      const [cnhData, rgData] = await Promise.all([
+      const [cnhData, rgData, estudanteData] = await Promise.all([
         cnhService.list(admin.id, admin.session_token),
         rgService.list(admin.id, admin.session_token),
+        estudanteService.list(admin.id, admin.session_token),
       ]);
       setUsuarios(cnhData?.usuarios || []);
       setRgRegistros(rgData?.registros || []);
+      setEstudanteRegistros(estudanteData?.registros || []);
     } catch (err: any) {
       console.error('Erro ao carregar histórico:', err);
       toast.error('Erro ao carregar histórico');
@@ -224,6 +260,22 @@ export default function HistoricoServicos() {
     );
   }
 
+  if (editingEstudante) {
+    return (
+      <DashboardLayout>
+        <EstudanteEditView
+          registro={editingEstudante}
+          onClose={() => setEditingEstudante(null)}
+          onSaved={() => {
+            setEditingEstudante(null);
+            fetchData();
+            toast.success('Carteira de Estudante atualizada!');
+          }}
+        />
+      </DashboardLayout>
+    );
+  }
+
   const filteredUsuarios = usuarios.filter(u => {
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase();
@@ -237,7 +289,13 @@ export default function HistoricoServicos() {
     return nome.toLowerCase().includes(q) || r.cpf.includes(q);
   });
 
-  const totalRecords = filteredUsuarios.length + filteredRgs.length;
+  const filteredEstudantes = estudanteRegistros.filter(e => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    return e.nome.toLowerCase().includes(q) || e.cpf.includes(q);
+  });
+
+  const totalRecords = filteredUsuarios.length + filteredRgs.length + filteredEstudantes.length;
 
   // Records expiring within 5 days
   const expiringCnhs = usuarios.filter(u => {
@@ -248,12 +306,17 @@ export default function HistoricoServicos() {
     const days = daysUntilExpiration(r.data_expiracao);
     return days !== null && days >= 0 && days <= 5;
   });
-  const totalExpiring = expiringCnhs.length + expiringRgs.length;
+  const expiringEstudantes = estudanteRegistros.filter(e => {
+    const days = daysUntilExpiration(e.data_expiracao || null);
+    return days !== null && days >= 0 && days <= 5;
+  });
+  const totalExpiring = expiringCnhs.length + expiringRgs.length + expiringEstudantes.length;
 
-  // Last created across both types
+  // Last created across all types
   const allRecords = [
     ...filteredUsuarios.map(u => ({ type: 'cnh' as const, data: u, created: u.created_at })),
     ...filteredRgs.map(r => ({ type: 'rg' as const, data: r, created: r.created_at })),
+    ...filteredEstudantes.map(e => ({ type: 'estudante' as const, data: e, created: e.created_at })),
   ].sort((a, b) => {
     const da = a.created ? new Date(a.created).getTime() : 0;
     const db = b.created ? new Date(b.created).getTime() : 0;
@@ -355,6 +418,19 @@ export default function HistoricoServicos() {
                       showExpiring
                     />
                   ))}
+                  {expiringEstudantes.map(e => (
+                    <EstudanteHistoryCard
+                      key={`exp-est-${e.id}`}
+                      registro={e}
+                      formatCpf={formatCpf}
+                      formatDate={formatDateStr}
+                      onEdit={() => setEditingEstudante(e)}
+                      onDelete={() => handleDeleteEstudante(e.id)}
+                      onRenew={() => handleRenewEstudante(e.id)}
+                      renewingId={renewingId}
+                      highlight
+                    />
+                  ))}
                 </CardContent>
               </Card>
             )}
@@ -364,7 +440,7 @@ export default function HistoricoServicos() {
               <Card className="border-primary/30 bg-primary/5">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm text-primary flex items-center gap-2">
-                    <Clock className="h-4 w-4" /> Último Serviço Criado ({lastCreated.type === 'cnh' ? 'CNH' : 'RG'})
+                    <Clock className="h-4 w-4" /> Último Serviço Criado ({lastCreated.type === 'cnh' ? 'CNH' : lastCreated.type === 'rg' ? 'RG' : 'Estudante'})
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -379,7 +455,7 @@ export default function HistoricoServicos() {
                       renewingId={renewingId}
                       highlight
                     />
-                  ) : (
+                  ) : lastCreated.type === 'rg' ? (
                     <RgHistoryCard
                       registro={lastCreated.data as RgRecord}
                       formatCpf={formatCpf}
@@ -387,6 +463,17 @@ export default function HistoricoServicos() {
                       onEdit={() => setEditingRg(lastCreated.data as RgRecord)}
                       onDelete={() => handleDeleteRg((lastCreated.data as RgRecord).id)}
                       onRenew={() => handleRenewRg((lastCreated.data as RgRecord).id)}
+                      renewingId={renewingId}
+                      highlight
+                    />
+                  ) : (
+                    <EstudanteHistoryCard
+                      registro={lastCreated.data as EstudanteRecord}
+                      formatCpf={formatCpf}
+                      formatDate={formatDateStr}
+                      onEdit={() => setEditingEstudante(lastCreated.data as EstudanteRecord)}
+                      onDelete={() => handleDeleteEstudante((lastCreated.data as EstudanteRecord).id)}
+                      onRenew={() => handleRenewEstudante((lastCreated.data as EstudanteRecord).id)}
                       renewingId={renewingId}
                       highlight
                     />
@@ -472,6 +559,45 @@ export default function HistoricoServicos() {
                 )}
               </Card>
             )}
+
+            {/* Módulo Carteira Estudante */}
+            {filteredEstudantes.length > 0 && (
+              <Card>
+                <CardHeader
+                  className="cursor-pointer hover:bg-muted/30 transition-colors"
+                  onClick={() => setExpandedModule(expandedModule === 'estudante' ? null : 'estudante')}
+                >
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <GraduationCap className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <span className="text-base">Carteira Estudante</span>
+                        <p className="text-sm text-muted-foreground font-normal">{filteredEstudantes.length} registro{filteredEstudantes.length !== 1 ? 's' : ''}</p>
+                      </div>
+                    </div>
+                    {expandedModule === 'estudante' ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                  </CardTitle>
+                </CardHeader>
+                {expandedModule === 'estudante' && (
+                  <CardContent className="space-y-3 pt-0">
+                    {filteredEstudantes.map((e) => (
+                      <EstudanteHistoryCard
+                        key={e.id}
+                        registro={e}
+                        formatCpf={formatCpf}
+                        formatDate={formatDateStr}
+                        onEdit={() => setEditingEstudante(e)}
+                        onDelete={() => handleDeleteEstudante(e.id)}
+                        onRenew={() => handleRenewEstudante(e.id)}
+                        renewingId={renewingId}
+                      />
+                    ))}
+                  </CardContent>
+                )}
+              </Card>
+            )}
           </>
         )}
       </div>
@@ -480,7 +606,7 @@ export default function HistoricoServicos() {
 }
 
 // ======== Renew Button (shared) ========
-function RenewButton({ id, type, onRenew, renewingId }: { id: number; type: 'cnh' | 'rg'; onRenew: () => void; renewingId: string | null }) {
+function RenewButton({ id, type, onRenew, renewingId }: { id: number; type: 'cnh' | 'rg' | 'estudante'; onRenew: () => void; renewingId: string | null }) {
   const key = `${type}-${id}`;
   const isRenewing = renewingId === key;
 
@@ -739,5 +865,54 @@ function DeleteButton({ nome, onDelete }: { nome: string; onDelete: () => void }
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+  );
+}
+
+// ======== Estudante Card ========
+function EstudanteHistoryCard({
+  registro, formatCpf, formatDate, onEdit, onDelete, onRenew, renewingId, highlight,
+}: {
+  registro: EstudanteRecord;
+  formatCpf: (cpf: string) => string;
+  formatDate: (d: string | null) => string;
+  onEdit: () => void;
+  onDelete: () => void;
+  onRenew: () => void;
+  renewingId: string | null;
+  highlight?: boolean;
+}) {
+  return (
+    <div className={`border rounded-lg p-4 ${highlight ? 'border-primary/30' : 'border-border'} hover:bg-muted/20 transition-colors`}>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+          {registro.perfil_imagem && (
+            <img src={registro.perfil_imagem} alt="Foto" className="h-12 w-12 sm:h-16 sm:w-16 object-cover rounded-full border shrink-0" />
+          )}
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="font-semibold text-foreground text-sm sm:text-base truncate">{registro.nome}</h3>
+              <Badge variant="outline" className="text-[10px]">
+                <GraduationCap className="h-3 w-3 mr-1" /> Estudante
+              </Badge>
+              <ExpirationBadge dataExpiracao={registro.data_expiracao || null} />
+            </div>
+            <p className="text-xs sm:text-sm text-muted-foreground">CPF: {formatCpf(registro.cpf)}</p>
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-1 text-xs text-muted-foreground">
+              <span>Faculdade: {registro.faculdade || '—'}</span>
+              <span>Curso: {registro.graduacao || '—'}</span>
+              {registro.senha && <span>Senha: {registro.senha}</span>}
+              <span>Criado: {formatDate(registro.created_at)}</span>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+          <RenewButton id={registro.id} type="estudante" onRenew={onRenew} renewingId={renewingId} />
+          <Button variant="default" size="sm" onClick={onEdit}>
+            <Edit className="h-4 w-4 sm:mr-1" /> <span className="hidden sm:inline">Editar</span>
+          </Button>
+          <DeleteButton nome={registro.nome} onDelete={onDelete} />
+        </div>
+      </div>
+    </div>
   );
 }
