@@ -264,62 +264,45 @@ export async function generateRGPdfPage(
     } catch (e) { console.warn('Photo draw error:', e); }
   }
 
-  // === Date (top) - shifted down ===
+  // === Date (top) ===
   const today = new Date();
   const dateStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
   ctx.font = `${9 * s}px ${fontFamily}`;
   ctx.fillStyle = '#000000';
   ctx.textAlign = 'left';
   ctx.textBaseline = 'alphabetic';
-  ctx.fillText(dateStr, 217 * s, 28.5 * s);
+  ctx.fillText(dateStr, 217 * s, 33 * s);
 
-  // === State name - shifted down ===
+  // === State name ===
   const nomeEstadoPDF = textoEstado(data.uf).toUpperCase();
   ctx.font = `${8 * s}px ${fontFamily}`;
   ctx.fillStyle = '#393738';
-  ctx.fillText(nomeEstadoPDF, 140 * s, 103 * s);
+  ctx.fillText(nomeEstadoPDF, 140 * s, 108 * s);
 
-  // === Secretaria - shifted down ===
-  ctx.fillText('SECRETARIA DE SEGURANÇA DA UNIDADE DA FEDERAÇÃO', 82 * s, 113 * s);
+  // === Secretaria ===
+  ctx.fillText('SECRETARIA DE SEGURANÇA DA UNIDADE DA FEDERAÇÃO', 82 * s, 118 * s);
 
-  // === Data fields (fontSize 7) - shifted down ===
+  // === Data fields (fontSize 7) ===
   ctx.font = `${7 * s}px ${fontFamily}`;
   ctx.fillStyle = '#000000';
 
   // FOLHA 1 - Frente
-  ctx.fillText(data.nomeCompleto, 112 * s, 148 * s);
-  ctx.fillText(data.nomeSocial || '', 112 * s, 174 * s);
-  ctx.fillText(formatCPFDisplay(data.cpf), 112 * s, 194 * s);
-  ctx.fillText(formatDateBR(data.dataNascimento), 112 * s, 214 * s);
-  ctx.fillText(data.naturalidade, 112 * s, 233 * s);
+  ctx.fillText(data.nomeCompleto, 112 * s, 153 * s);
+  ctx.fillText(data.nomeSocial || '', 112 * s, 179 * s);
+  ctx.fillText(formatCPFDisplay(data.cpf), 112 * s, 199 * s);
+  ctx.fillText(formatDateBR(data.dataNascimento), 112 * s, 219 * s);
+  ctx.fillText(data.naturalidade, 112 * s, 238 * s);
 
-  ctx.fillText(data.genero, 231 * s, 188 * s);
-  ctx.fillText(data.nacionalidade || 'BRA', 231 * s, 208 * s);
-  ctx.fillText(formatDateBR(data.validade), 231 * s, 227 * s);
+  ctx.fillText(data.genero, 231 * s, 193 * s);
+  ctx.fillText(data.nacionalidade || 'BRA', 231 * s, 213 * s);
+  ctx.fillText(formatDateBR(data.validade), 231 * s, 232 * s);
 
   // FOLHA 2 - Verso
-  ctx.fillText(data.pai || '', 112 * s, 310 * s);
-  ctx.fillText(data.mae || '', 112 * s, 327 * s);
-  ctx.fillText(data.orgaoExpedidor || '', 112 * s, 350 * s);
-  ctx.fillText(data.local || '', 112 * s, 369 * s);
-  ctx.fillText(formatDateBR(data.dataEmissao), 228 * s, 369 * s);
-
-  // === Signature ===
-  if (data.assinatura) {
-    try {
-      let assSrc: string;
-      if (data.assinatura instanceof File) {
-        assSrc = await readFileAsDataURL(data.assinatura);
-      } else {
-        assSrc = data.assinatura;
-      }
-      const assImg = await loadImage(assSrc);
-      // Reference: doc.image(assinatura, 130, 237, { width: 110, height: 15 }) - upper
-      ctx.drawImage(assImg, 130 * s, 237 * s, 110 * s, 15 * s);
-      // Reference: doc.image(assinatura, 20, 580, { width: 110, height: 15 }) - lower
-      ctx.drawImage(assImg, 20 * s, 580 * s, 110 * s, 15 * s);
-    } catch (e) { console.warn('Signature draw error:', e); }
-  }
+  ctx.fillText(data.pai || '', 112 * s, 315 * s);
+  ctx.fillText(data.mae || '', 112 * s, 332 * s);
+  ctx.fillText(data.orgaoExpedidor || '', 112 * s, 355 * s);
+  ctx.fillText(data.local || '', 112 * s, 374 * s);
+  ctx.fillText(formatDateBR(data.dataEmissao), 228 * s, 374 * s);
 
   // === MRZ Lines (larger font) ===
   ctx.font = `${13 * s}px "Courier New", Courier, monospace`;
@@ -327,9 +310,9 @@ export async function generateRGPdfPage(
   const linha1 = 'IDBRA5398762281453987622814<<0';
   const linha2 = '051120M340302BRA<<<<<<<<<<<<<2';
   const linha3 = formatarNomeMRZ(data.nomeCompleto);
-  ctx.fillText(linha1, 65 * s, 418 * s);
-  ctx.fillText(linha2, 65 * s, 432 * s);
-  ctx.fillText(linha3, 62 * s, 446 * s);
+  ctx.fillText(linha1, 65 * s, 423 * s);
+  ctx.fillText(linha2, 65 * s, 437 * s);
+  ctx.fillText(linha3, 62 * s, 451 * s);
 
   return canvas.toDataURL('image/png');
 }
