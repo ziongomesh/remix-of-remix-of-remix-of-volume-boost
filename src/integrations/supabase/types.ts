@@ -29,6 +29,7 @@ export type Database = {
           profile_photo: string | null
           rank: string | null
           session_token: string | null
+          telefone: string | null
         }
         Insert: {
           created_at?: string | null
@@ -44,6 +45,7 @@ export type Database = {
           profile_photo?: string | null
           rank?: string | null
           session_token?: string | null
+          telefone?: string | null
         }
         Update: {
           created_at?: string | null
@@ -59,6 +61,7 @@ export type Database = {
           profile_photo?: string | null
           rank?: string | null
           session_token?: string | null
+          telefone?: string | null
         }
         Relationships: [
           {
