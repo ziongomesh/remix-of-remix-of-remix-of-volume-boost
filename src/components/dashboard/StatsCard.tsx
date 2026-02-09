@@ -20,7 +20,7 @@ export function StatsCard({
 }: StatsCardProps) {
   const variants = {
     green: 'gradient-green text-success-foreground',
-    pink: 'gradient-pink text-accent-foreground',
+    pink: 'gradient-pink text-white',
     blue: 'gradient-blue text-primary-foreground',
     default: 'bg-card text-card-foreground border border-border'
   };
