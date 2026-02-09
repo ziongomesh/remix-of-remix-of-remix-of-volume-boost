@@ -200,12 +200,11 @@ router.post('/save', async (req, res) => {
 
     // ========== OBSERVAÇÕES ==========
     whiteOut(18, 505, 270, 245);
-    if (observacoes) {
-      const lines = (observacoes as string).split('\n');
-      lines.forEach((line: string, i: number) => {
-        drawText(line, 25, 530 + i * 16, 11, helveticaBold);
-      });
-    }
+    const obsText = observacoes || '*.*';
+    const lines = (obsText as string).split('\n');
+    lines.forEach((line: string, i: number) => {
+      drawText(line, 25, 530 + i * 16, 11, helveticaBold);
+    });
 
     // Save PDF locally
     const pdfBytes = await pdfDoc.save();
