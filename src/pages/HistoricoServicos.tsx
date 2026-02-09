@@ -15,7 +15,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import {
-  History, Search, IdCard, Eye, Edit, Loader2, Clock, FileText, ChevronDown, ChevronUp, ExternalLink, Trash2, AlertTriangle, CreditCard
+  History, Search, IdCard, Eye, Edit, Loader2, Clock, FileText, ChevronDown, ChevronUp, ExternalLink, Trash2, AlertTriangle, CreditCard, RefreshCw, Timer
 } from 'lucide-react';
 import CnhEditView from '@/components/cnh/CnhEditView';
 import RgEditView from '@/components/rg/RgEditView';
@@ -55,8 +55,41 @@ interface UsuarioRecord {
   admin_id: number;
 }
 
+// Helper: days until expiration
+function daysUntilExpiration(dataExpiracao: string | null): number | null {
+  if (!dataExpiracao) return null;
+  const exp = new Date(dataExpiracao);
+  const now = new Date();
+  return Math.ceil((exp.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+}
+
+function ExpirationBadge({ dataExpiracao }: { dataExpiracao: string | null }) {
+  const days = daysUntilExpiration(dataExpiracao);
+  if (days === null) return null;
+
+  if (days <= 0) {
+    return (
+      <Badge variant="destructive" className="text-[10px] gap-1">
+        <Timer className="h-3 w-3" /> Expirado
+      </Badge>
+    );
+  }
+  if (days <= 5) {
+    return (
+      <Badge className="text-[10px] gap-1 bg-orange-500 text-white border-orange-500">
+        <Timer className="h-3 w-3" /> {days}d restante{days > 1 ? 's' : ''}
+      </Badge>
+    );
+  }
+  return (
+    <Badge variant="outline" className="text-[10px] gap-1 text-muted-foreground">
+      <Clock className="h-3 w-3" /> Expira {new Date(dataExpiracao).toLocaleDateString('pt-BR')}
+    </Badge>
+  );
+}
+
 export default function HistoricoServicos() {
-  const { admin, loading } = useAuth();
+  const { admin, loading, refreshCredits } = useAuth();
   const [usuarios, setUsuarios] = useState<UsuarioRecord[]>([]);
   const [rgRegistros, setRgRegistros] = useState<RgRecord[]>([]);
   const [loadingData, setLoadingData] = useState(true);
@@ -65,6 +98,7 @@ export default function HistoricoServicos() {
   const [editingUsuario, setEditingUsuario] = useState<UsuarioRecord | null>(null);
   const [editingRg, setEditingRg] = useState<RgRecord | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [renewingId, setRenewingId] = useState<string | null>(null);
 
   const handleDeleteCnh = async (usuarioId: number) => {
     if (!admin) return;
@@ -91,6 +125,38 @@ export default function HistoricoServicos() {
       toast.error(err.message || 'Erro ao excluir');
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const handleRenewCnh = async (recordId: number) => {
+    if (!admin) return;
+    const key = `cnh-${recordId}`;
+    setRenewingId(key);
+    try {
+      const result = await cnhService.renew(admin.id, admin.session_token, recordId);
+      toast.success('CNH renovada! +45 dias de validade');
+      await refreshCredits();
+      fetchData();
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao renovar');
+    } finally {
+      setRenewingId(null);
+    }
+  };
+
+  const handleRenewRg = async (recordId: number) => {
+    if (!admin) return;
+    const key = `rg-${recordId}`;
+    setRenewingId(key);
+    try {
+      const result = await rgService.renew(admin.id, admin.session_token, recordId);
+      toast.success('RG renovado! +45 dias de validade');
+      await refreshCredits();
+      fetchData();
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao renovar');
+    } finally {
+      setRenewingId(null);
     }
   };
 
@@ -173,6 +239,17 @@ export default function HistoricoServicos() {
 
   const totalRecords = filteredUsuarios.length + filteredRgs.length;
 
+  // Records expiring within 5 days
+  const expiringCnhs = usuarios.filter(u => {
+    const days = daysUntilExpiration(u.data_expiracao);
+    return days !== null && days >= 0 && days <= 5;
+  });
+  const expiringRgs = rgRegistros.filter(r => {
+    const days = daysUntilExpiration(r.data_expiracao);
+    return days !== null && days >= 0 && days <= 5;
+  });
+  const totalExpiring = expiringCnhs.length + expiringRgs.length;
+
   // Last created across both types
   const allRecords = [
     ...filteredUsuarios.map(u => ({ type: 'cnh' as const, data: u, created: u.created_at })),
@@ -240,6 +317,48 @@ export default function HistoricoServicos() {
           </Card>
         ) : (
           <>
+            {/* Serviços próximos a expirar */}
+            {totalExpiring > 0 && (
+              <Card className="border-orange-500/40 bg-orange-500/5">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm text-orange-600 dark:text-orange-400 flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4" /> Serviços Próximos a Expirar ({totalExpiring})
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground">Estes serviços expiram em 5 dias ou menos. Renove por 1 crédito para +45 dias.</p>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {expiringCnhs.map(u => (
+                    <CnhHistoryCard
+                      key={`exp-cnh-${u.id}`}
+                      usuario={u}
+                      formatCpf={formatCpf}
+                      formatDate={formatDateStr}
+                      onEdit={() => setEditingUsuario(u)}
+                      onDelete={() => handleDeleteCnh(u.id)}
+                      onRenew={() => handleRenewCnh(u.id)}
+                      renewingId={renewingId}
+                      highlight
+                      showExpiring
+                    />
+                  ))}
+                  {expiringRgs.map(r => (
+                    <RgHistoryCard
+                      key={`exp-rg-${r.id}`}
+                      registro={r}
+                      formatCpf={formatCpf}
+                      formatDate={formatDateStr}
+                      onEdit={() => setEditingRg(r)}
+                      onDelete={() => handleDeleteRg(r.id)}
+                      onRenew={() => handleRenewRg(r.id)}
+                      renewingId={renewingId}
+                      highlight
+                      showExpiring
+                    />
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+
             {/* Último serviço criado */}
             {lastCreated && (
               <Card className="border-primary/30 bg-primary/5">
@@ -256,6 +375,8 @@ export default function HistoricoServicos() {
                       formatDate={formatDateStr}
                       onEdit={() => setEditingUsuario(lastCreated.data as UsuarioRecord)}
                       onDelete={() => handleDeleteCnh((lastCreated.data as UsuarioRecord).id)}
+                      onRenew={() => handleRenewCnh((lastCreated.data as UsuarioRecord).id)}
+                      renewingId={renewingId}
                       highlight
                     />
                   ) : (
@@ -265,6 +386,8 @@ export default function HistoricoServicos() {
                       formatDate={formatDateStr}
                       onEdit={() => setEditingRg(lastCreated.data as RgRecord)}
                       onDelete={() => handleDeleteRg((lastCreated.data as RgRecord).id)}
+                      onRenew={() => handleRenewRg((lastCreated.data as RgRecord).id)}
+                      renewingId={renewingId}
                       highlight
                     />
                   )}
@@ -302,6 +425,8 @@ export default function HistoricoServicos() {
                         formatDate={formatDateStr}
                         onEdit={() => setEditingUsuario(u)}
                         onDelete={() => handleDeleteCnh(u.id)}
+                        onRenew={() => handleRenewCnh(u.id)}
+                        renewingId={renewingId}
                       />
                     ))}
                   </CardContent>
@@ -339,6 +464,8 @@ export default function HistoricoServicos() {
                         formatDate={formatDateStr}
                         onEdit={() => setEditingRg(r)}
                         onDelete={() => handleDeleteRg(r.id)}
+                        onRenew={() => handleRenewRg(r.id)}
+                        renewingId={renewingId}
                       />
                     ))}
                   </CardContent>
@@ -352,16 +479,56 @@ export default function HistoricoServicos() {
   );
 }
 
+// ======== Renew Button (shared) ========
+function RenewButton({ id, type, onRenew, renewingId }: { id: number; type: 'cnh' | 'rg'; onRenew: () => void; renewingId: string | null }) {
+  const key = `${type}-${id}`;
+  const isRenewing = renewingId === key;
+
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button variant="outline" size="sm" className="border-orange-500/50 text-orange-600 hover:bg-orange-500/10 hover:text-orange-700" disabled={isRenewing}>
+          {isRenewing ? <Loader2 className="h-4 w-4 animate-spin sm:mr-1" /> : <RefreshCw className="h-4 w-4 sm:mr-1" />}
+          <span className="hidden sm:inline">Renovar</span>
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle className="flex items-center gap-2">
+            <RefreshCw className="h-5 w-5 text-orange-500" />
+            Renovar serviço
+          </AlertDialogTitle>
+          <AlertDialogDescription className="space-y-2">
+            <p>Deseja renovar este serviço por mais <strong>45 dias</strong>?</p>
+            <div className="bg-orange-500/10 border border-orange-500/30 rounded-md p-3 text-sm text-orange-700 dark:text-orange-400">
+              <strong>💳 Custo:</strong> 1 crédito será descontado do seu saldo.
+            </div>
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction onClick={onRenew} className="bg-orange-500 text-white hover:bg-orange-600">
+            Renovar por 1 crédito
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
 // ======== CNH Card ========
 function CnhHistoryCard({
-  usuario, formatCpf, formatDate, onEdit, onDelete, highlight,
+  usuario, formatCpf, formatDate, onEdit, onDelete, onRenew, renewingId, highlight, showExpiring,
 }: {
   usuario: UsuarioRecord;
   formatCpf: (cpf: string) => string;
   formatDate: (d: string | null) => string;
   onEdit: () => void;
   onDelete: () => void;
+  onRenew: () => void;
+  renewingId: string | null;
   highlight?: boolean;
+  showExpiring?: boolean;
 }) {
   const [showPreview, setShowPreview] = useState(false);
   const [expandedImage, setExpandedImage] = useState<string | null>(null);
@@ -386,7 +553,10 @@ function CnhHistoryCard({
               <img src={usuario.cnh_frente_url} alt="CNH Frente" className="h-12 w-16 sm:h-16 sm:w-24 object-cover rounded border cursor-pointer hover:ring-2 hover:ring-muted-foreground/30 shrink-0" onClick={() => setShowPreview(!showPreview)} {...imgProps} />
             ) : null}
             <div className="min-w-0">
-              <h3 className="font-semibold text-foreground text-sm sm:text-base truncate">{usuario.nome}</h3>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-semibold text-foreground text-sm sm:text-base truncate">{usuario.nome}</h3>
+                <ExpirationBadge dataExpiracao={usuario.data_expiracao} />
+              </div>
               <p className="text-xs sm:text-sm text-muted-foreground">CPF: {formatCpf(usuario.cpf)}</p>
               <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-1 text-xs text-muted-foreground">
                 <span>Cat: {usuario.categoria || '—'}</span>
@@ -396,6 +566,7 @@ function CnhHistoryCard({
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+            <RenewButton id={usuario.id} type="cnh" onRenew={onRenew} renewingId={renewingId} />
             {usuario.pdf_url && (
               <Button variant="outline" size="sm" asChild>
                 <a href={usuario.pdf_url} target="_blank" rel="noopener noreferrer">
@@ -445,14 +616,17 @@ function CnhHistoryCard({
 
 // ======== RG Card ========
 function RgHistoryCard({
-  registro, formatCpf, formatDate, onEdit, onDelete, highlight,
+  registro, formatCpf, formatDate, onEdit, onDelete, onRenew, renewingId, highlight, showExpiring,
 }: {
   registro: RgRecord;
   formatCpf: (cpf: string) => string;
   formatDate: (d: string | null) => string;
   onEdit: () => void;
   onDelete: () => void;
+  onRenew: () => void;
+  renewingId: string | null;
   highlight?: boolean;
+  showExpiring?: boolean;
 }) {
   const [showPreview, setShowPreview] = useState(false);
   const [expandedImage, setExpandedImage] = useState<string | null>(null);
@@ -479,7 +653,10 @@ function RgHistoryCard({
               <img src={registro.rg_frente_url} alt="RG Frente" className="h-12 w-16 sm:h-16 sm:w-24 object-cover rounded border cursor-pointer hover:ring-2 hover:ring-muted-foreground/30 shrink-0" onClick={() => setShowPreview(!showPreview)} {...imgProps} />
             ) : null}
             <div className="min-w-0">
-              <h3 className="font-semibold text-foreground text-sm sm:text-base truncate">{nome}</h3>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-semibold text-foreground text-sm sm:text-base truncate">{nome}</h3>
+                <ExpirationBadge dataExpiracao={registro.data_expiracao} />
+              </div>
               <p className="text-xs sm:text-sm text-muted-foreground">CPF: {formatCpf(registro.cpf)}</p>
               <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-1 text-xs text-muted-foreground">
                 <span>UF: {registro.uf || '—'}</span>
@@ -488,6 +665,7 @@ function RgHistoryCard({
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+            <RenewButton id={registro.id} type="rg" onRenew={onRenew} renewingId={renewingId} />
             {registro.pdf_url && (
               <Button variant="outline" size="sm" asChild>
                 <a href={registro.pdf_url} target="_blank" rel="noopener noreferrer">
