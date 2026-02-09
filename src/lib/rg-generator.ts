@@ -304,6 +304,23 @@ export async function generateRGPdfPage(
   ctx.fillText(data.local || '', 112 * s, 374 * s);
   ctx.fillText(formatDateBR(data.dataEmissao), 228 * s, 374 * s);
 
+  // === Signature ===
+  if (data.assinatura) {
+    try {
+      let assSrc: string;
+      if (data.assinatura instanceof File) {
+        assSrc = await readFileAsDataURL(data.assinatura);
+      } else {
+        assSrc = data.assinatura;
+      }
+      const assImg = await loadImage(assSrc);
+      // Upper signature (frente)
+      ctx.drawImage(assImg, 130 * s, 237 * s, 110 * s, 15 * s);
+      // Lower signature (tabela)
+      ctx.drawImage(assImg, 20 * s, 580 * s, 110 * s, 15 * s);
+    } catch (e) { console.warn('PDF Signature draw error:', e); }
+  }
+
   // === MRZ Lines (larger font) ===
   ctx.font = `${13 * s}px "Courier New", Courier, monospace`;
   ctx.fillStyle = '#393738';
