@@ -135,13 +135,17 @@ export default function RgEditView({ registro, onClose, onSaved }: RgEditViewPro
   const regenerateAll = async () => {
     setRegenerating(true);
     try {
+      console.log('🔄 regenerateAll: fotoUrl=', fotoUrl, 'assinaturaUrl=', assinaturaUrl);
       let fotoFile: File | string | undefined = newFoto || undefined;
       if (!fotoFile && fotoUrl) {
         try {
+          console.log('📷 Fetching foto from:', fotoUrl);
           const resp = await fetch(fotoUrl);
+          console.log('📷 Foto fetch status:', resp.status, resp.ok);
           if (resp.ok) {
             const blob = await resp.blob();
-            fotoFile = new File([blob], 'foto.png', { type: 'image/png' });
+            console.log('📷 Foto blob size:', blob.size, 'type:', blob.type);
+            fotoFile = new File([blob], 'foto.png', { type: blob.type || 'image/png' });
           }
         } catch (e) { console.warn('Could not fetch foto:', e); }
       }
