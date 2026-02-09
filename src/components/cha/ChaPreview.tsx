@@ -65,10 +65,10 @@ function drawChaFront(
 
   // Foto 3x4
   if (fotoImg) {
-    const fotoX = w * 0.64;
-    const fotoY = h * 0.32;
-    const fotoW = w * 0.325;
-    const fotoH = h * 0.56;
+    const fotoX = w * 0.642;
+    const fotoY = h * 0.412;
+    const fotoW = w * 0.286;
+    const fotoH = h * 0.521;
 
     ctx.save();
     ctx.beginPath();
