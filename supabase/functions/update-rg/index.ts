@@ -80,8 +80,9 @@ Deno.serve(async (req) => {
     if (fotoBase64) {
       fotoUrl = await uploadFile(fotoBase64, `rg_${cleanCpf}_foto.png`);
     }
+    let assinaturaUploadUrl = existing.assinatura_url;
     if (assinaturaBase64) {
-      await uploadFile(assinaturaBase64, `rg_${cleanCpf}_assinatura.png`);
+      assinaturaUploadUrl = await uploadFile(assinaturaBase64, `rg_${cleanCpf}_assinatura.png`);
     }
 
     // Regenerate PDF
@@ -133,15 +134,15 @@ Deno.serve(async (req) => {
         x: mmToPt(13), y: pageHeight - mmToPt(10), size: 14, font: fontBold, color: rgb(0.15, 0.15, 0.15),
       });
       page.drawText(`Compartilhado pelo aplicativo `, {
-        x: mmToPt(13), y: pageHeight - mmToPt(15), size: 8, font: fontRegular, color: rgb(0.4, 0.4, 0.4),
+        x: mmToPt(13), y: pageHeight - mmToPt(16.5), size: 8, font: fontRegular, color: rgb(0.4, 0.4, 0.4),
       });
       page.drawText("gov.br", {
         x: mmToPt(13) + fontRegular.widthOfTextAtSize("Compartilhado pelo aplicativo ", 8),
-        y: pageHeight - mmToPt(15), size: 8, font: fontBold, color: rgb(0.15, 0.15, 0.15),
+        y: pageHeight - mmToPt(16.5), size: 8, font: fontBold, color: rgb(0.15, 0.15, 0.15),
       });
       const afterGovbr = mmToPt(13) + fontRegular.widthOfTextAtSize("Compartilhado pelo aplicativo ", 8) + fontBold.widthOfTextAtSize("gov.br", 8);
       page.drawText(` em ${dateStr}`, {
-        x: afterGovbr, y: pageHeight - mmToPt(15), size: 8, font: fontRegular, color: rgb(0.4, 0.4, 0.4),
+        x: afterGovbr, y: pageHeight - mmToPt(16.5), size: 8, font: fontRegular, color: rgb(0.4, 0.4, 0.4),
       });
       page.drawText("gov.br", {
         x: pageWidth - mmToPt(20), y: pageHeight - mmToPt(12), size: 10, font: fontBold, color: rgb(0.2, 0.5, 0.2),
@@ -289,6 +290,7 @@ Deno.serve(async (req) => {
         rg_frente_url: frenteUrl,
         rg_verso_url: versoUrl,
         foto_url: fotoUrl,
+        assinatura_url: assinaturaUploadUrl,
         qrcode_url: qrcodeUrl,
         pdf_url: pdfUrl,
         updated_at: new Date().toISOString(),

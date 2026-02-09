@@ -103,7 +103,7 @@ export async function generateRGFrente(
   ctx.font = '21px "Noto Sans", Tahoma, Arial, sans-serif';
   ctx.fillStyle = '#4A4A4D';
   ctx.textAlign = 'center';
-  ctx.fillText(textoEstado(data.uf), canvas.width / 2 + 15, 150);
+  ctx.fillText(textoEstado(data.uf), canvas.width / 2 + 20, 150);
   ctx.fillText('Secretaria de Segurança Pública da Unidade de Federação', canvas.width / 2, 175);
 
   // Foto
