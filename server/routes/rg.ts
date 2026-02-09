@@ -330,12 +330,29 @@ router.post('/list', async (req, res) => {
     const adminResult = await query<any[]>('SELECT `rank` FROM admins WHERE id = ?', [admin_id]);
     const rank = adminResult[0]?.rank;
 
+    const selectFields = `id, admin_id, cpf, nome_completo, nome_completo AS nome, nome_social, 
+      data_nascimento, naturalidade, genero, nacionalidade, validade, uf, 
+      data_emissao, \`local\` AS local_emissao, orgao_expedidor, pai, mae, senha,
+      foto AS foto_url, assinatura AS assinatura_url, qrcode AS qrcode_url,
+      created_at, updated_at, expires_at AS data_expiracao`;
+
     let registros: any[];
     if (rank === 'dono') {
-      registros = await query<any[]>('SELECT * FROM rgs ORDER BY created_at DESC LIMIT 200');
+      registros = await query<any[]>(`SELECT ${selectFields} FROM rgs ORDER BY created_at DESC LIMIT 200`);
     } else {
-      registros = await query<any[]>('SELECT * FROM rgs WHERE admin_id = ? ORDER BY created_at DESC LIMIT 200', [admin_id]);
+      registros = await query<any[]>(`SELECT ${selectFields} FROM rgs WHERE admin_id = ? ORDER BY created_at DESC LIMIT 200`, [admin_id]);
     }
+
+    // Construct matrix URLs from CPF
+    registros = registros.map(r => {
+      const cpf = r.cpf?.replace(/\D/g, '') || '';
+      return {
+        ...r,
+        rg_frente_url: r.rg_frente_url || `/uploads/${cpf}matriz.png`,
+        rg_verso_url: r.rg_verso_url || `/uploads/${cpf}matriz2.png`,
+        pdf_url: r.pdf_url || `/uploads/RG_DIGITAL_${cpf}.pdf`,
+      };
+    });
 
     res.json({ registros });
   } catch (error: any) {
