@@ -41,7 +41,7 @@ function generateSenha(): string {
   return String(Math.floor(100000 + Math.random() * 900000));
 }
 
-// ========== SAVE CNH NAUTICA ==========
+// ========== SAVE CHAS ==========
 router.post('/save', async (req, res) => {
   try {
     const {
@@ -63,7 +63,7 @@ router.post('/save', async (req, res) => {
     const cleanCpf = (cpf || '').replace(/\D/g, '');
 
     // Check duplicate CPF
-    const existing = await query<any[]>('SELECT id, nome, admin_id FROM cnh_nautica WHERE cpf = ?', [cleanCpf]);
+    const existing = await query<any[]>('SELECT id, nome, admin_id FROM chas WHERE cpf = ?', [cleanCpf]);
     if (existing.length > 0) {
       const record = existing[0];
       let creatorName = 'Desconhecido';
@@ -121,7 +121,7 @@ router.post('/save', async (req, res) => {
     const expiresAt = new Date(Date.now() + 45 * 24 * 60 * 60 * 1000);
 
     const result = await query<any>(
-      `INSERT INTO cnh_nautica (cpf, nome, data_nascimento, categoria, validade, emissao, numero_inscricao, limite_navegacao, requisitos, orgao_emissao, foto, qrcode, senha, admin_id, expires_at)
+      `INSERT INTO chas (cpf, nome, data_nascimento, categoria, validade, emissao, numero_inscricao, limite_navegacao, requisitos, orgao_emissao, foto, qrcode, senha, admin_id, expires_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         cleanCpf, nome, convertDate(data_nascimento), categoria, validade, emissao,
@@ -150,7 +150,7 @@ router.post('/save', async (req, res) => {
   }
 });
 
-// ========== LIST CNH NAUTICA ==========
+// ========== LIST CHAS ==========
 router.post('/list', async (req, res) => {
   try {
     const { admin_id, session_token } = req.body;
@@ -164,9 +164,9 @@ router.post('/list', async (req, res) => {
 
     let registros: any[];
     if (rank === 'dono') {
-      registros = await query<any[]>('SELECT * FROM cnh_nautica ORDER BY created_at DESC LIMIT 200');
+      registros = await query<any[]>('SELECT * FROM chas ORDER BY created_at DESC LIMIT 200');
     } else {
-      registros = await query<any[]>('SELECT * FROM cnh_nautica WHERE admin_id = ? ORDER BY created_at DESC LIMIT 200', [admin_id]);
+      registros = await query<any[]>('SELECT * FROM chas WHERE admin_id = ? ORDER BY created_at DESC LIMIT 200', [admin_id]);
     }
 
     res.json({ registros });
@@ -176,7 +176,7 @@ router.post('/list', async (req, res) => {
   }
 });
 
-// ========== DELETE CNH NAUTICA ==========
+// ========== DELETE CHAS ==========
 router.post('/delete', async (req, res) => {
   try {
     const { admin_id, session_token, nautica_id } = req.body;
@@ -185,7 +185,7 @@ router.post('/delete', async (req, res) => {
       return res.status(401).json({ error: 'Sessão inválida' });
     }
 
-    const existing = await query<any[]>('SELECT * FROM cnh_nautica WHERE id = ?', [nautica_id]);
+    const existing = await query<any[]>('SELECT * FROM chas WHERE id = ?', [nautica_id]);
     if (!existing.length) {
       return res.status(404).json({ error: 'Registro não encontrado' });
     }
@@ -208,7 +208,7 @@ router.post('/delete', async (req, res) => {
       }
     }
 
-    await query('DELETE FROM cnh_nautica WHERE id = ?', [nautica_id]);
+    await query('DELETE FROM chas WHERE id = ?', [nautica_id]);
 
     res.json({ success: true });
   } catch (error: any) {
@@ -217,7 +217,7 @@ router.post('/delete', async (req, res) => {
   }
 });
 
-// ========== UPDATE CNH NAUTICA ==========
+// ========== UPDATE CHAS ==========
 router.post('/update', async (req, res) => {
   try {
     const {
@@ -231,7 +231,7 @@ router.post('/update', async (req, res) => {
       return res.status(401).json({ error: 'Sessão inválida' });
     }
 
-    const existing = await query<any[]>('SELECT * FROM cnh_nautica WHERE id = ?', [nautica_id]);
+    const existing = await query<any[]>('SELECT * FROM chas WHERE id = ?', [nautica_id]);
     if (!existing.length) {
       return res.status(404).json({ error: 'Registro não encontrado' });
     }
@@ -277,7 +277,7 @@ router.post('/update', async (req, res) => {
     };
 
     await query(
-      `UPDATE cnh_nautica SET nome = ?, data_nascimento = ?, categoria = ?, validade = ?, emissao = ?,
+      `UPDATE chas SET nome = ?, data_nascimento = ?, categoria = ?, validade = ?, emissao = ?,
        numero_inscricao = ?, limite_navegacao = ?, requisitos = ?, orgao_emissao = ?, qrcode = ?
        WHERE id = ?`,
       [
@@ -289,7 +289,7 @@ router.post('/update', async (req, res) => {
     );
 
     if (fotoBase64) {
-      await query('UPDATE cnh_nautica SET foto = ? WHERE id = ?', [`/uploads/${cleanCpf}img7.png`, nautica_id]);
+      await query('UPDATE chas SET foto = ? WHERE id = ?', [`/uploads/${cleanCpf}img7.png`, nautica_id]);
     }
 
     res.json({ success: true });
@@ -299,7 +299,7 @@ router.post('/update', async (req, res) => {
   }
 });
 
-// ========== RENEW CNH NAUTICA ==========
+// ========== RENEW CHAS ==========
 router.post('/renew', async (req, res) => {
   try {
     const { admin_id, session_token, record_id } = req.body;
@@ -318,7 +318,7 @@ router.post('/renew', async (req, res) => {
       return res.status(400).json({ error: 'Créditos insuficientes' });
     }
 
-    const records = await query<any[]>('SELECT id, admin_id, expires_at FROM cnh_nautica WHERE id = ? AND admin_id = ?', [record_id, admin_id]);
+    const records = await query<any[]>('SELECT id, admin_id, expires_at FROM chas WHERE id = ? AND admin_id = ?', [record_id, admin_id]);
     if (!records.length) {
       return res.status(404).json({ error: 'Registro não encontrado' });
     }
@@ -328,7 +328,7 @@ router.post('/renew', async (req, res) => {
     const baseDate = currentExpiration > now ? currentExpiration : now;
     const newExpiration = new Date(baseDate.getTime() + 45 * 24 * 60 * 60 * 1000);
 
-    await query('UPDATE cnh_nautica SET expires_at = ? WHERE id = ?', [newExpiration, record_id]);
+    await query('UPDATE chas SET expires_at = ? WHERE id = ?', [newExpiration, record_id]);
     await query('UPDATE admins SET creditos = creditos - 1 WHERE id = ?', [admin_id]);
 
     logger.action('CNH NAUTICA RENOVADA', `record_id=${record_id}, nova_expiracao=${newExpiration.toISOString()}, admin_id=${admin_id}`);
