@@ -9,98 +9,28 @@ import { LayersPanel } from '@/components/pdf-editor/LayersPanel';
 import { savePdf } from '@/components/pdf-editor/pdf-save';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-// QR code overlay component for position calibration
-function QrCodeOverlay({ pageCanvas }: { pageCanvas: HTMLCanvasElement | null }) {
-  const [pos, setPos] = useState({ x: 280, y: 80 });
-  const [size, setSize] = useState(130);
-  const [dragging, setDragging] = useState(false);
-  const [resizing, setResizing] = useState(false);
-  const dragOffset = useRef({ x: 0, y: 0 });
-  const resizeStart = useRef({ size: 0, y: 0 });
-
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    dragOffset.current = { x: e.clientX - pos.x, y: e.clientY - pos.y };
-    setDragging(true);
-  }, [pos]);
-
-  const handleResizeDown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    resizeStart.current = { size, y: e.clientY };
-    setResizing(true);
-  }, [size]);
-
-  useEffect(() => {
-    if (!dragging && !resizing) return;
-    const handleMove = (e: MouseEvent) => {
-      if (dragging) {
-        setPos({ x: e.clientX - dragOffset.current.x, y: e.clientY - dragOffset.current.y });
-      }
-      if (resizing) {
-        const delta = e.clientY - resizeStart.current.y;
-        setSize(Math.max(40, resizeStart.current.size + delta));
-      }
-    };
-    const handleUp = () => { setDragging(false); setResizing(false); };
-    window.addEventListener('mousemove', handleMove);
-    window.addEventListener('mouseup', handleUp);
-    return () => { window.removeEventListener('mousemove', handleMove); window.removeEventListener('mouseup', handleUp); };
-  }, [dragging, resizing]);
-
-  // Calculate position in PDF points (1pt = 1/72 inch)
-  // The canvas is rendered at scale 1.5, and displayed at 1:1 pixel ratio
+// QR code fixed overlay - just shows/hides at calibrated position
+function QrCodeOverlay() {
+  // Calibrated position: x=120pt, y=64pt, size=84pt at scale 1.5
   const scale = 1.5;
-  const pdfX = pos.x / scale;
-  const pdfY = pos.y / scale;
-  const pdfW = size / scale;
-  // Convert to mm (1pt = 0.3528mm)
-  const mmX = (pdfX * 72 / 96 * 0.3528).toFixed(1);
-  const mmY = (pdfY * 72 / 96 * 0.3528).toFixed(1);
-  const mmW = (pdfW * 72 / 96 * 0.3528).toFixed(1);
-  // In points for pdf-lib
-  const ptX = (pdfX * 72 / 96).toFixed(1);
-  const ptY = (pdfY * 72 / 96).toFixed(1);
-  const ptW = (pdfW * 72 / 96).toFixed(1);
-
-  const coordText = `QR: x=${ptX}pt, y=${ptY}pt, size=${ptW}pt (${mmX}mm, ${mmY}mm, ${mmW}mm)`;
-
-  const copyCoords = () => {
-    navigator.clipboard.writeText(coordText);
-    toast.success('Coordenadas copiadas!');
-  };
+  const x = 120.0 * 96 / 72 * scale;
+  const y = 64.0 * 96 / 72 * scale;
+  const size = 84.0 * 96 / 72 * scale;
 
   return (
-    <>
-      <div
-        className="absolute border-2 border-red-500 cursor-move z-40 bg-white/10"
-        style={{ left: pos.x, top: pos.y, width: size, height: size }}
-        onMouseDown={handleMouseDown}
-      >
-        <img
-          src="/images/qrcode-sample-crlv.png"
-          alt="QR Code"
-          className="w-full h-full object-contain pointer-events-none"
-          draggable={false}
-        />
-        {/* Resize handle */}
-        <div
-          className="absolute bottom-0 right-0 w-4 h-4 bg-red-500 cursor-se-resize"
-          onMouseDown={handleResizeDown}
-        />
-      </div>
-      {/* Coordinates bar */}
-      <div className="absolute bottom-2 left-2 right-2 bg-black/80 text-white text-xs px-3 py-2 rounded flex items-center justify-between z-50">
-        <span className="font-mono">{coordText}</span>
-        <button onClick={copyCoords} className="ml-2 hover:text-primary transition-colors">
-          <Copy className="h-3.5 w-3.5" />
-        </button>
-      </div>
-    </>
+    <div
+      className="absolute pointer-events-none z-40"
+      style={{ left: x, top: y, width: size, height: size }}
+    >
+      <img
+        src="/images/qrcode-sample-crlv.png"
+        alt="QR Code"
+        className="w-full h-full object-contain"
+        draggable={false}
+      />
+    </div>
   );
 }
-
 export default function CrlvPositionTool() {
   const [fields, setFields] = useState<PdfTextField[]>([]);
   const [pages, setPages] = useState<{ width: number; height: number; canvas: HTMLCanvasElement; bgCanvas: HTMLCanvasElement }[]>([]);
@@ -271,7 +201,7 @@ export default function CrlvPositionTool() {
                       pageIndex={currentPage}
                     />
                     {showQr && (
-                      <QrCodeOverlay pageCanvas={pages[currentPage]?.canvas || null} />
+                      <QrCodeOverlay />
                     )}
                   </div>
                 </div>
