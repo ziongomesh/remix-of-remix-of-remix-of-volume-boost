@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { Shield, FileText, CheckCircle, Clock, CreditCard, AlertTriangle, ChevronDown, Anchor, BookOpen } from 'lucide-react';
+import { Shield, FileText, CheckCircle, Clock, CreditCard, AlertTriangle, ChevronDown, Anchor, BookOpen, GraduationCap, IdCard, Wallet } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -92,6 +92,44 @@ const categories: ServiceCategory[] = [
         available: false,
         route: '#',
         icon: BookOpen,
+      },
+    ],
+  },
+  {
+    id: 'documentos-estudantis',
+    name: 'Documentos Estudantis',
+    description: 'Carteiras estudantis digitais',
+    icon: GraduationCap,
+    services: [
+      {
+        id: 'carteira-dne',
+        name: 'Carteira DNE',
+        description: 'Documento Nacional do Estudante',
+        features: [
+          'Validade estudantil',
+          'Dados personalizáveis',
+          'QR Code',
+        ],
+        validity: '45 dias',
+        credits: 1,
+        available: false,
+        route: '#',
+        icon: IdCard,
+      },
+      {
+        id: 'pagmeia',
+        name: 'PAGMEIA',
+        description: 'Carteira de meia-entrada digital',
+        features: [
+          'Meia-entrada nacional',
+          'Dados personalizáveis',
+          'QR Code de verificação',
+        ],
+        validity: '45 dias',
+        credits: 1,
+        available: false,
+        route: '#',
+        icon: Wallet,
       },
     ],
   },
