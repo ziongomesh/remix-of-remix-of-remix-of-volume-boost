@@ -206,7 +206,7 @@ export default function CnhNautica() {
 
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Left column - Form */}
-          <div className="flex-1 min-w-0">
+          <div className="lg:w-[380px] flex-shrink-0 min-w-0">
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
@@ -405,7 +405,7 @@ export default function CnhNautica() {
         </div>
 
           {/* Right column - Preview */}
-          <div className="lg:w-[420px] flex-shrink-0">
+          <div className="flex-1 min-w-0">
             <div className="lg:sticky lg:top-6">
               <Card>
                 <CardHeader>
