@@ -223,13 +223,15 @@ function drawChaBack(
   for (const f of backFields) {
     const pos = positions[f.key] || DEFAULT_BACK_POSITIONS[f.key];
     if (!pos) continue;
-    if (highlightField === f.key) {
-      ctx.fillStyle = '#0066ff';
-      ctx.fillText(f.text, w * pos.x, h * pos.y);
-      ctx.fillStyle = '#1a1a1a';
+    if (highlightField === f.key) ctx.fillStyle = '#0066ff';
+    if (f.key === 'requisitos') {
+      ctx.font = 'bold 13px Arial, sans-serif';
+      wrapText(ctx, f.text, w * pos.x, h * pos.y, w * 0.82, 16);
+      ctx.font = 'bold 18px Arial, sans-serif';
     } else {
       ctx.fillText(f.text, w * pos.x, h * pos.y);
     }
+    if (highlightField === f.key) ctx.fillStyle = '#1a1a1a';
   }
 }
 
