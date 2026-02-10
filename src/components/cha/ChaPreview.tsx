@@ -28,22 +28,22 @@ export interface ChaPreviewHandle {
 interface FieldPos { x: number; y: number }
 
 const DEFAULT_FRONT_POSITIONS: Record<string, FieldPos> = {
-  nome:            { x: 0.083, y: 0.430 },
-  dataNascimento:  { x: 0.083, y: 0.565 },
-  cpf:             { x: 0.368, y: 0.565 },
-  categoriaPt:     { x: 0.083, y: 0.695 },
-  categoriaEn:     { x: 0.083, y: 0.735 },
-  validade:        { x: 0.083, y: 0.835 },
-  numeroInscricao: { x: 0.368, y: 0.835 },
+  nome:            { x: 0.083, y: 0.438 },
+  dataNascimento:  { x: 0.083, y: 0.573 },
+  cpf:             { x: 0.368, y: 0.573 },
+  categoriaPt:     { x: 0.083, y: 0.705 },
+  categoriaEn:     { x: 0.083, y: 0.745 },
+  validade:        { x: 0.085, y: 0.839 },
+  numeroInscricao: { x: 0.368, y: 0.839 },
   foto:            { x: 0.642, y: 0.412 },
 };
 
 const DEFAULT_BACK_POSITIONS: Record<string, FieldPos> = {
-  limiteNavegacao:   { x: 0.083, y: 0.090 },
+  limiteNavegacao:   { x: 0.087, y: 0.092 },
   limiteNavegacaoEn: { x: 0.083, y: 0.274 },
-  requisitos:        { x: 0.083, y: 0.463 },
-  orgaoEmissao:      { x: 0.083, y: 0.506 },
-  emissao:           { x: 0.631, y: 0.461 },
+  requisitos:        { x: 0.089, y: 0.283 },
+  orgaoEmissao:      { x: 0.087, y: 0.474 },
+  emissao:           { x: 0.633, y: 0.475 },
 };
 
 const catDisplayMap: Record<string, { pt: string; en: string }> = {
