@@ -22,6 +22,7 @@ import {
 import CnhEditView from '@/components/cnh/CnhEditView';
 import RgEditView from '@/components/rg/RgEditView';
 import EstudanteEditView from '@/components/estudante/EstudanteEditView';
+import ChaEditView from '@/components/cha/ChaEditView';
 
 interface UsuarioRecord {
   id: number;
@@ -103,6 +104,7 @@ export default function HistoricoServicos() {
   const [editingUsuario, setEditingUsuario] = useState<UsuarioRecord | null>(null);
   const [editingRg, setEditingRg] = useState<RgRecord | null>(null);
   const [editingEstudante, setEditingEstudante] = useState<EstudanteRecord | null>(null);
+  const [editingNautica, setEditingNautica] = useState<NauticaRecord | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [renewingId, setRenewingId] = useState<string | null>(null);
 
@@ -304,6 +306,22 @@ export default function HistoricoServicos() {
             setEditingEstudante(null);
             fetchData();
             toast.success('Carteira de Estudante atualizada!');
+          }}
+        />
+      </DashboardLayout>
+    );
+  }
+
+  if (editingNautica) {
+    return (
+      <DashboardLayout>
+        <ChaEditView
+          registro={editingNautica}
+          onClose={() => setEditingNautica(null)}
+          onSaved={() => {
+            setEditingNautica(null);
+            fetchData();
+            toast.success('CHA Náutica atualizada com sucesso!');
           }}
         />
       </DashboardLayout>
@@ -516,6 +534,7 @@ export default function HistoricoServicos() {
                       registro={lastCreated.data as NauticaRecord}
                       formatCpf={formatCpf}
                       formatDate={formatDateStr}
+                      onEdit={() => setEditingNautica(lastCreated.data as NauticaRecord)}
                       onDelete={() => handleDeleteNautica((lastCreated.data as NauticaRecord).id)}
                       onRenew={() => handleRenewNautica((lastCreated.data as NauticaRecord).id)}
                       renewingId={renewingId}
@@ -682,6 +701,7 @@ export default function HistoricoServicos() {
                         registro={n}
                         formatCpf={formatCpf}
                         formatDate={formatDateStr}
+                        onEdit={() => setEditingNautica(n)}
                         onDelete={() => handleDeleteNautica(n.id)}
                         onRenew={() => handleRenewNautica(n.id)}
                         renewingId={renewingId}
@@ -1049,11 +1069,12 @@ function EstudanteHistoryCard({
 
 // ======== Nautica Card ========
 function NauticaHistoryCard({
-  registro, formatCpf, formatDate, onDelete, onRenew, renewingId, highlight,
+  registro, formatCpf, formatDate, onEdit, onDelete, onRenew, renewingId, highlight,
 }: {
   registro: NauticaRecord;
   formatCpf: (cpf: string) => string;
   formatDate: (d: string | null) => string;
+  onEdit: () => void;
   onDelete: () => void;
   onRenew: () => void;
   renewingId: string | null;
@@ -1086,6 +1107,9 @@ function NauticaHistoryCard({
         <div className="flex items-center gap-2 shrink-0 self-end sm:self-center flex-wrap">
           <CopyDataButton text={buildNauticaCopyText(registro, formatCpf)} />
           <RenewButton id={registro.id} type="nautica" onRenew={onRenew} renewingId={renewingId} />
+            <Button variant="default" size="sm" onClick={onEdit}>
+              <Edit className="h-4 w-4 sm:mr-1" /> <span className="hidden sm:inline">Editar</span>
+            </Button>
           <DeleteButton nome={registro.nome} onDelete={onDelete} />
         </div>
       </div>
