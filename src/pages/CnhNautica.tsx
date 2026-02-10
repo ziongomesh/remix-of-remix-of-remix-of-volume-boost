@@ -86,12 +86,25 @@ export default function CnhNautica() {
     fetchLinks();
   });
 
+  // Auto-fill limite de navegação based on categories
+  const getNavLimit = (cat1: string, cat2: string) => {
+    const cats = [cat1, cat2].filter(c => c && c !== 'NENHUMA');
+    const hasMotonauta = cats.includes('MOTONAUTA');
+    const hasCapitao = cats.includes('CAPITÃO-AMADOR');
+    const hasMestre = cats.includes('MESTRE-AMADOR');
+
+    if (hasCapitao) return 'NAVEGAÇÃO OCEÂNICA';
+    if (hasMestre) return 'NAVEGAÇÃO COSTEIRA';
+    if (hasMotonauta) return 'NAVEGAÇÃO INTERIOR. QUANDO PILOTANDO MOTO AQUÁTICA, INTERIOR.';
+    return 'NAVEGAÇÃO INTERIOR';
+  };
+
   const form = useForm<NauticaFormData>({
     resolver: zodResolver(nauticaSchema),
     mode: 'onChange',
     defaultValues: {
       nome: '', cpf: '', dataNascimento: '', categoria: 'ARRAIS-AMADOR', categoria2: 'NENHUMA',
-      validade: '', emissao: '', numeroInscricao: '', limiteNavegacao: '',
+      validade: '', emissao: '', numeroInscricao: '', limiteNavegacao: 'NAVEGAÇÃO INTERIOR',
       requisitos: '******** / ********', orgaoEmissao: 'CPSP (SP)',
     },
   });
@@ -250,10 +263,8 @@ export default function CnhNautica() {
                       <FormLabel>Categoria</FormLabel>
                       <Select onValueChange={(val) => {
                         field.onChange(val);
-                        // Auto-fill limite de navegação para Arrais Amador
-                        if (val === 'ARRAIS AMADOR') {
-                          form.setValue('limiteNavegacao', 'NAVEGAÇÃO INTERIOR. QUANDO PILOTANDO MOTO AQUÁTICA, INTERIOR.');
-                        }
+                        const cat2 = form.getValues('categoria2') || 'NENHUMA';
+                        form.setValue('limiteNavegacao', getNavLimit(val, cat2));
                       }} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
@@ -276,7 +287,11 @@ export default function CnhNautica() {
                   <FormField control={form.control} name="categoria2" render={({ field }) => (
                     <FormItem>
                       <FormLabel>Categoria 2</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select onValueChange={(val) => {
+                        field.onChange(val);
+                        const cat1 = form.getValues('categoria');
+                        form.setValue('limiteNavegacao', getNavLimit(cat1, val));
+                      }} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Selecione" />
