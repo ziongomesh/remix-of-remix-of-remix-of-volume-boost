@@ -455,6 +455,28 @@ export const supabaseApi = {
     },
   },
 
+  owner: {
+    getOverview: async () => fetchNodeAPI('/owner/overview'),
+    getAllAdmins: async () => fetchNodeAPI('/owner/all-admins'),
+    getAuditLog: async (adminId?: number) => {
+      const params = adminId ? `?adminId=${adminId}` : '';
+      return fetchNodeAPI(`/owner/audit-log${params}`);
+    },
+    changePassword: async (adminId: number, newPassword: string) => {
+      return fetchNodeAPI(`/owner/change-password/${adminId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ newPassword })
+      });
+    },
+    transferCredits: async (toAdminId: number, amount: number) => {
+      return fetchNodeAPI('/owner/transfer-credits', {
+        method: 'POST',
+        body: JSON.stringify({ toAdminId, amount })
+      });
+    },
+    getTopResellers: async () => fetchNodeAPI('/owner/top-resellers'),
+  },
+
   health: async () => {
     return { status: 'ok', timestamp: new Date().toISOString() };
   },
