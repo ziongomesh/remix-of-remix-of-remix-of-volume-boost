@@ -35,7 +35,8 @@ interface DocumentStats {
 }
 
 export default function Dashboard() {
-  const { admin, role, credits, loading } = useAuth();
+  const { admin, role: rawRole, credits, loading } = useAuth();
+  const role = rawRole as string;
   const [topResellers, setTopResellers] = useState<TopReseller[]>([]);
   const [recentResellers, setRecentResellers] = useState<RecentReseller[]>([]);
   const [topCreditResellers, setTopCreditResellers] = useState<{id: number; nome: string; creditos: number}[]>([]);
@@ -126,6 +127,10 @@ export default function Dashboard() {
 
   if (!admin) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (role === 'dono') {
+    return <Navigate to="/dashboard-dono" replace />;
   }
 
   const getRoleBadge = () => {

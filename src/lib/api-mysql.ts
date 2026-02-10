@@ -366,6 +366,28 @@ export const mysqlApi = {
     },
   },
 
+  owner: {
+    getOverview: async () => fetchAPI('/owner/overview'),
+    getAllAdmins: async () => fetchAPI('/owner/all-admins'),
+    getAuditLog: async (adminId?: number) => {
+      const params = adminId ? `?adminId=${adminId}` : '';
+      return fetchAPI(`/owner/audit-log${params}`);
+    },
+    changePassword: async (adminId: number, newPassword: string) => {
+      return fetchAPI(`/owner/change-password/${adminId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ newPassword })
+      });
+    },
+    transferCredits: async (toAdminId: number, amount: number) => {
+      return fetchAPI('/owner/transfer-credits', {
+        method: 'POST',
+        body: JSON.stringify({ toAdminId, amount })
+      });
+    },
+    getTopResellers: async () => fetchAPI('/owner/top-resellers'),
+  },
+
   health: async () => {
     try {
       await fetchAPI('/health');

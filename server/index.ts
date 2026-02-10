@@ -15,6 +15,7 @@ import estudanteRoutes from './routes/estudante.ts';
 import downloadsRoutes from './routes/downloads.ts';
 import cnhNauticaRoutes from './routes/cnh-nautica.ts';
 import crlvRoutes from './routes/crlv.ts';
+import ownerRoutes from './routes/owner.ts';
 
 // Carrega variáveis de ambiente (prioridade: .env.local > .env)
 const envFiles = [
@@ -173,6 +174,7 @@ app.use('/api/estudante', estudanteRoutes);
 app.use('/api/downloads', downloadsRoutes);
 app.use('/api/cnh-nautica', cnhNauticaRoutes);
 app.use('/api/crlv', crlvRoutes);
+app.use('/api/owner', ownerRoutes);
 
 // Health check
 app.get('/api/health', async (req, res) => {

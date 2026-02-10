@@ -10,6 +10,7 @@ import { Loader2 } from "lucide-react";
 // Eagerly loaded (lightweight pages)
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import DashboardDono from "./pages/DashboardDono";
 import NotFound from "./pages/NotFound";
 
 // Lazy loaded (heavy pages with template assets)
@@ -64,6 +65,7 @@ const App = () => (
                 <Route path="/" element={<Navigate to="/login" replace />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/dashboard-dono" element={<DashboardDono />} />
                 <Route path="/recarregar" element={<Recarregar />} />
                 <Route path="/criar-master" element={<CriarMaster />} />
                 <Route path="/criar-revendedor" element={<CriarRevendedor />} />
