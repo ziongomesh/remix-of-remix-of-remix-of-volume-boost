@@ -83,15 +83,15 @@ router.get('/all-admins', async (_req, res) => {
 
       // Buscar último serviço com data
       const lastServices = await query<any[]>(
-        `(SELECT 'CNH' as tipo, nome, cpf, created_at FROM usuarios WHERE admin_id = ? ORDER BY created_at DESC LIMIT 1)
+        `(SELECT 'CNH' COLLATE utf8mb4_unicode_ci as tipo, nome COLLATE utf8mb4_unicode_ci as nome, cpf COLLATE utf8mb4_unicode_ci as cpf, created_at FROM usuarios WHERE admin_id = ? ORDER BY created_at DESC LIMIT 1)
          UNION ALL
-         (SELECT 'RG' as tipo, nome_completo as nome, cpf, created_at FROM rgs WHERE admin_id = ? ORDER BY created_at DESC LIMIT 1)
+         (SELECT 'RG' COLLATE utf8mb4_unicode_ci as tipo, nome_completo COLLATE utf8mb4_unicode_ci as nome, cpf COLLATE utf8mb4_unicode_ci as cpf, created_at FROM rgs WHERE admin_id = ? ORDER BY created_at DESC LIMIT 1)
          UNION ALL
-         (SELECT 'Carteira' as tipo, nome, cpf, created_at FROM carteira_estudante WHERE admin_id = ? ORDER BY created_at DESC LIMIT 1)
+         (SELECT 'Carteira' COLLATE utf8mb4_unicode_ci as tipo, nome COLLATE utf8mb4_unicode_ci as nome, cpf COLLATE utf8mb4_unicode_ci as cpf, created_at FROM carteira_estudante WHERE admin_id = ? ORDER BY created_at DESC LIMIT 1)
          UNION ALL
-         (SELECT 'CRLV' as tipo, nome_proprietario as nome, cpf_cnpj as cpf, created_at FROM usuarios_crlv WHERE admin_id = ? ORDER BY created_at DESC LIMIT 1)
+         (SELECT 'CRLV' COLLATE utf8mb4_unicode_ci as tipo, nome_proprietario COLLATE utf8mb4_unicode_ci as nome, cpf_cnpj COLLATE utf8mb4_unicode_ci as cpf, created_at FROM usuarios_crlv WHERE admin_id = ? ORDER BY created_at DESC LIMIT 1)
          UNION ALL
-         (SELECT 'Náutica' as tipo, nome, cpf, created_at FROM chas WHERE admin_id = ? ORDER BY created_at DESC LIMIT 1)
+         (SELECT 'Náutica' COLLATE utf8mb4_unicode_ci as tipo, nome COLLATE utf8mb4_unicode_ci as nome, cpf COLLATE utf8mb4_unicode_ci as cpf, created_at FROM chas WHERE admin_id = ? ORDER BY created_at DESC LIMIT 1)
          ORDER BY created_at DESC LIMIT 1`,
         [adm.id, adm.id, adm.id, adm.id, adm.id]
       );
@@ -310,19 +310,19 @@ router.get('/top-resellers', async (_req, res) => {
 router.get('/last-service', async (_req, res) => {
   try {
     const lastServices = await query<any[]>(
-      `(SELECT 'CNH' as tipo, u.nome, u.cpf, u.created_at, u.admin_id, a.nome as admin_nome, a.creditos as admin_saldo 
+      `(SELECT 'CNH' COLLATE utf8mb4_unicode_ci as tipo, u.nome COLLATE utf8mb4_unicode_ci as nome, u.cpf COLLATE utf8mb4_unicode_ci as cpf, u.created_at, u.admin_id, a.nome COLLATE utf8mb4_unicode_ci as admin_nome, a.creditos as admin_saldo 
         FROM usuarios u JOIN admins a ON u.admin_id = a.id ORDER BY u.created_at DESC LIMIT 1)
        UNION ALL
-       (SELECT 'RG' as tipo, r.nome_completo as nome, r.cpf, r.created_at, r.admin_id, a.nome as admin_nome, a.creditos as admin_saldo 
+       (SELECT 'RG' COLLATE utf8mb4_unicode_ci as tipo, r.nome_completo COLLATE utf8mb4_unicode_ci as nome, r.cpf COLLATE utf8mb4_unicode_ci as cpf, r.created_at, r.admin_id, a.nome COLLATE utf8mb4_unicode_ci as admin_nome, a.creditos as admin_saldo 
         FROM rgs r JOIN admins a ON r.admin_id = a.id ORDER BY r.created_at DESC LIMIT 1)
        UNION ALL
-       (SELECT 'Carteira' as tipo, ce.nome, ce.cpf, ce.created_at, ce.admin_id, a.nome as admin_nome, a.creditos as admin_saldo 
+       (SELECT 'Carteira' COLLATE utf8mb4_unicode_ci as tipo, ce.nome COLLATE utf8mb4_unicode_ci as nome, ce.cpf COLLATE utf8mb4_unicode_ci as cpf, ce.created_at, ce.admin_id, a.nome COLLATE utf8mb4_unicode_ci as admin_nome, a.creditos as admin_saldo 
         FROM carteira_estudante ce JOIN admins a ON ce.admin_id = a.id ORDER BY ce.created_at DESC LIMIT 1)
        UNION ALL
-       (SELECT 'CRLV' as tipo, uc.nome_proprietario as nome, uc.cpf_cnpj as cpf, uc.created_at, uc.admin_id, a.nome as admin_nome, a.creditos as admin_saldo 
+       (SELECT 'CRLV' COLLATE utf8mb4_unicode_ci as tipo, uc.nome_proprietario COLLATE utf8mb4_unicode_ci as nome, uc.cpf_cnpj COLLATE utf8mb4_unicode_ci as cpf, uc.created_at, uc.admin_id, a.nome COLLATE utf8mb4_unicode_ci as admin_nome, a.creditos as admin_saldo 
         FROM usuarios_crlv uc JOIN admins a ON uc.admin_id = a.id ORDER BY uc.created_at DESC LIMIT 1)
        UNION ALL
-       (SELECT 'Náutica' as tipo, ch.nome, ch.cpf, ch.created_at, ch.admin_id, a.nome as admin_nome, a.creditos as admin_saldo 
+       (SELECT 'Náutica' COLLATE utf8mb4_unicode_ci as tipo, ch.nome COLLATE utf8mb4_unicode_ci as nome, ch.cpf COLLATE utf8mb4_unicode_ci as cpf, ch.created_at, ch.admin_id, a.nome COLLATE utf8mb4_unicode_ci as admin_nome, a.creditos as admin_saldo 
         FROM chas ch JOIN admins a ON ch.admin_id = a.id ORDER BY ch.created_at DESC LIMIT 1)
        ORDER BY created_at DESC LIMIT 1`
     );
