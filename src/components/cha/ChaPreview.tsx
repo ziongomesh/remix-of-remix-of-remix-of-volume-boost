@@ -193,24 +193,13 @@ function drawChaBack(
   ctx.textBaseline = 'top';
   ctx.font = 'bold 18px Arial, sans-serif';
 
-  // Limites da Navegação PT
+  // Limites da Navegação (PT + EN in same field value)
   const limPos = positions.limiteNavegacao || DEFAULT_BACK_POSITIONS.limiteNavegacao;
   const limiteText = data.limiteNavegacao.toUpperCase();
   ctx.font = 'bold 13px Arial, sans-serif';
   if (highlightField === 'limiteNavegacao') ctx.fillStyle = '#0066ff';
-  const ptLines = wrapText(ctx, limiteText, w * limPos.x, h * limPos.y, w * 0.82, 16);
+  wrapText(ctx, limiteText, w * limPos.x, h * limPos.y, w * 0.82, 16);
   ctx.fillStyle = '#1a1a1a';
-
-  // Limites EN — render right after PT text
-  const cleanLimite = limiteText.replace(/\./g, '').replace(/,/g, '').trim();
-  const matchingKey = Object.keys(limiteEnFullMap).find(k => cleanLimite.includes(k.replace(/\./g, '').replace(/,/g, '')));
-  if (matchingKey) {
-    const enY = h * limPos.y + ptLines * 16 + 4;
-    ctx.font = 'bold 13px Arial, sans-serif';
-    if (highlightField === 'limiteNavegacaoEn') ctx.fillStyle = '#0066ff';
-    wrapText(ctx, limiteEnFullMap[matchingKey], w * limPos.x, enY, w * 0.82, 16);
-    ctx.fillStyle = '#1a1a1a';
-  }
 
 
   ctx.font = 'bold 18px Arial, sans-serif';
