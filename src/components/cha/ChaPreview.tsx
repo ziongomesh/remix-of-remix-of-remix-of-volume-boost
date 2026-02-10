@@ -185,7 +185,7 @@ function drawChaBack(
 
   const backFields: { key: string; text: string }[] = [
     { key: 'requisitos', text: (data.requisitos || '').trim() ? data.requisitos.toUpperCase() : '******** / ********' },
-    { key: 'orgaoEmissao', text: data.orgaoEmissao.toUpperCase() },
+    { key: 'orgaoEmissao', text: data.orgaoEmissao.replace(/\s*\(.*\)/, '').toUpperCase() },
     { key: 'emissao', text: data.emissao },
   ];
 
