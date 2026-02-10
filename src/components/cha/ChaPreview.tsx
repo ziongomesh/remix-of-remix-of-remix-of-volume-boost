@@ -139,8 +139,8 @@ function drawChaFront(
   for (const f of fields) {
     const pos = positions[f.key] || DEFAULT_FRONT_POSITIONS[f.key];
     if (!pos) continue;
-    // categoriaEn 2px menor
-    if (f.key === 'categoriaEn') ctx.font = 'bold 13px Arial, sans-serif';
+    // categoriaEn smaller font
+    if (f.key === 'categoriaEn') ctx.font = 'bold 11px Arial, sans-serif';
     if (highlightField === f.key) {
       ctx.fillStyle = '#0066ff';
       ctx.fillText(f.text, w * pos.x, h * pos.y);
