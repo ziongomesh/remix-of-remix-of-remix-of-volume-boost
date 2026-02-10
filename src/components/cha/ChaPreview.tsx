@@ -52,7 +52,7 @@ const catDisplayMap: Record<string, { pt: string; en: string }> = {
   'MOTONAUTA': { pt: 'MOTONAUTA', en: 'PERSONAL WATERCRAFT PILOT' },
   'MESTRE-AMADOR': { pt: 'MESTRE-AMADOR', en: 'AMATEUR MASTER' },
   'CAPITÃO-AMADOR': { pt: 'CAPITÃO-AMADOR', en: 'AMATEUR CAPTAIN' },
-  'VELEIRO': { pt: 'VELEIRO', en: 'SAILING BOAT' },
+  'VELEIRO': { pt: 'VELEIRO', en: 'SAILBOAT SKIPPER' },
 };
 
 const limiteEnFullMap: Record<string, string> = {
