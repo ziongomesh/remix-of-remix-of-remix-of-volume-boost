@@ -41,8 +41,8 @@ const DEFAULT_FRONT_POSITIONS: Record<string, FieldPos> = {
 
 const DEFAULT_BACK_POSITIONS: Record<string, FieldPos> = {
   limiteNavegacao:   { x: 0.087, y: 0.092 },
-  limiteNavegacaoEn: { x: 0.083, y: 0.200 },
-  requisitos:        { x: 0.089, y: 0.350 },
+  limiteNavegacaoEn: { x: 0.083, y: 0.170 },
+  requisitos:        { x: 0.089, y: 0.400 },
   orgaoEmissao:      { x: 0.087, y: 0.474 },
   emissao:           { x: 0.633, y: 0.475 },
 };
