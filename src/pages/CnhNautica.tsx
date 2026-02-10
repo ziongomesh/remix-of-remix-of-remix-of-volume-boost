@@ -330,9 +330,17 @@ export default function CnhNautica() {
                   <FormField control={form.control} name="numeroInscricao" render={({ field }) => (
                     <FormItem>
                       <FormLabel>Número de Inscrição</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Número" {...field} onChange={(e) => field.onChange(e.target.value.toUpperCase())} />
-                      </FormControl>
+                      <div className="flex gap-2">
+                        <FormControl>
+                          <Input placeholder="381P2026XXXXXXX" {...field} onChange={(e) => field.onChange(e.target.value.toUpperCase())} />
+                        </FormControl>
+                        <Button type="button" variant="outline" size="sm" className="shrink-0" onClick={() => {
+                          const random = Array.from({ length: 7 }, () => Math.floor(Math.random() * 10)).join('');
+                          field.onChange(`381P2026${random}`);
+                        }}>
+                          Gerar
+                        </Button>
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )} />
