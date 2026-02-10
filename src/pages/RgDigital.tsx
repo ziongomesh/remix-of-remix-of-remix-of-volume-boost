@@ -677,7 +677,7 @@ export default function RgDigital() {
                   <div className="flex justify-between"><span className="font-medium">Senha:</span><span className="font-mono text-green-600 font-bold">{rgInfo.senha}</span></div>
                 </div>
                 {rgInfo.pdf && (
-                  <Button variant="default" className="w-full" onClick={() => window.open(rgInfo.pdf!, '_blank')}>
+                  <Button variant="default" className="w-full" onClick={() => window.open(`${rgInfo.pdf!}?t=${Date.now()}`, '_blank')}>
                     <FileText className="h-4 w-4 mr-2" /> Baixar PDF
                   </Button>
                 )}
