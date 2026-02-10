@@ -129,27 +129,36 @@ function drawChaFront(
     ? [catDisplay.en, cat2Display.en].filter(Boolean).join(' AND ')
     : catDisplay.en;
   
-  fields.push({ key: 'categoriaPt', text: ptText });
-  if (enText) {
-    fields.push({ key: 'categoriaEn', text: enText });
-  }
+  // Combine PT + EN into single categoria field
+  const categoriaFullText = enText ? `${ptText}\n${enText}` : ptText;
+  fields.push({ key: 'categoriaPt', text: categoriaFullText });
   fields.push({ key: 'validade', text: data.validade });
   fields.push({ key: 'numeroInscricao', text: data.numeroInscricao.toUpperCase() });
 
   for (const f of fields) {
     const pos = positions[f.key] || DEFAULT_FRONT_POSITIONS[f.key];
     if (!pos) continue;
-    // categoria fonts without bold
-    if (f.key === 'categoriaPt') ctx.font = '12px Arial, sans-serif';
-    if (f.key === 'categoriaEn') ctx.font = '11px Arial, sans-serif';
-    if (highlightField === f.key) {
-      ctx.fillStyle = '#0066ff';
-      ctx.fillText(f.text, w * pos.x, h * pos.y);
-      ctx.fillStyle = '#1a1a1a';
+    if (highlightField === f.key) ctx.fillStyle = '#0066ff';
+    if (f.key === 'categoriaPt') {
+      // Render PT line at 12px, then EN line at 11px via wrapText with newlines
+      ctx.font = '12px Arial, sans-serif';
+      const lines = f.text.split('\n');
+      let curY = h * pos.y;
+      // First line (PT) at 12px
+      ctx.fillText(lines[0], w * pos.x, curY);
+      // Remaining lines (EN) at 11px
+      if (lines.length > 1) {
+        ctx.font = '11px Arial, sans-serif';
+        for (let i = 1; i < lines.length; i++) {
+          curY += 14;
+          ctx.fillText(lines[i], w * pos.x, curY);
+        }
+      }
+      ctx.font = '13px Arial, sans-serif';
     } else {
       ctx.fillText(f.text, w * pos.x, h * pos.y);
     }
-    if (f.key === 'categoriaPt' || f.key === 'categoriaEn') ctx.font = '13px Arial, sans-serif';
+    if (highlightField === f.key) ctx.fillStyle = '#1a1a1a';
   }
 
   // Foto
