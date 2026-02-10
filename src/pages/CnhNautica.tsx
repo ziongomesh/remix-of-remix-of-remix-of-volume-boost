@@ -89,7 +89,7 @@ export default function CnhNautica() {
     resolver: zodResolver(nauticaSchema),
     mode: 'onChange',
     defaultValues: {
-      nome: '', cpf: '', dataNascimento: '', categoria: 'ARRAIS AMADOR',
+      nome: '', cpf: '', dataNascimento: '', categoria: 'ARRAIS-AMADOR',
       validade: '', emissao: '', numeroInscricao: '', limiteNavegacao: '',
       requisitos: '******** / ********', orgaoEmissao: 'CPSP (SP)',
     },
@@ -260,9 +260,11 @@ export default function CnhNautica() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="ARRAIS AMADOR">AR → Arrais Amador</SelectItem>
-                          <SelectItem value="MESTRE AMADOR">MS → Mestre Amador</SelectItem>
-                          <SelectItem value="CAPITÃO AMADOR">CP → Capitão Amador</SelectItem>
+                          <SelectItem value="ARRAIS-AMADOR">ARRAIS-AMADOR</SelectItem>
+                          <SelectItem value="MOTONAUTA">MOTONAUTA</SelectItem>
+                          <SelectItem value="MESTRE-AMADOR">MESTRE-AMADOR</SelectItem>
+                          <SelectItem value="CAPITÃO-AMADOR">CAPITÃO-AMADOR</SelectItem>
+                          <SelectItem value="VELEIRO">VELEIRO</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />

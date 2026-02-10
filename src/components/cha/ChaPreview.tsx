@@ -47,9 +47,11 @@ const DEFAULT_BACK_POSITIONS: Record<string, FieldPos> = {
 };
 
 const catDisplayMap: Record<string, { pt: string; en: string }> = {
-  'ARRAIS AMADOR': { pt: 'ARRAIS AMADOR', en: 'AMATEUR SKIPPER' },
-  'MESTRE AMADOR': { pt: 'MESTRE AMADOR', en: 'AMATEUR MASTER' },
-  'CAPITÃO AMADOR': { pt: 'CAPITÃO AMADOR', en: 'AMATEUR CAPTAIN' },
+  'ARRAIS-AMADOR': { pt: 'ARRAIS-AMADOR', en: 'AMATEUR SKIPPER' },
+  'MOTONAUTA': { pt: 'MOTONAUTA', en: 'PERSONAL WATERCRAFT PILOT' },
+  'MESTRE-AMADOR': { pt: 'MESTRE-AMADOR', en: 'AMATEUR MASTER' },
+  'CAPITÃO-AMADOR': { pt: 'CAPITÃO-AMADOR', en: 'AMATEUR CAPTAIN' },
+  'VELEIRO': { pt: 'VELEIRO', en: 'SAILING BOAT' },
 };
 
 const limiteEnFullMap: Record<string, string> = {
