@@ -36,7 +36,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: 'Início', icon: Home, href: '/dashboard-dono', roles: ['dono'] },
   { label: 'Início', icon: Home, href: '/dashboard', roles: ['master', 'revendedor'] },
-  { label: 'Serviços', icon: FolderOpen, href: '/servicos', roles: ['master', 'revendedor'] },
+  { label: 'Serviços', icon: FolderOpen, href: '/servicos', roles: ['dono', 'master', 'revendedor'] },
   { label: 'Histórico Serviços', icon: History, href: '/historico-servicos', roles: ['dono', 'master', 'revendedor'] },
   { label: 'Estatísticas', icon: BarChart3, href: '/estatisticas', roles: ['dono'] },
   { label: 'Criar Master', icon: UserPlus, href: '/criar-master', roles: ['dono'] },
