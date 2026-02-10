@@ -844,7 +844,7 @@ function CnhHistoryCard({
             <RenewButton id={usuario.id} type="cnh" onRenew={onRenew} renewingId={renewingId} />
             {usuario.pdf_url && (
               <Button variant="outline" size="sm" asChild>
-                <a href={usuario.pdf_url} target="_blank" rel="noopener noreferrer">
+                <a href={`${usuario.pdf_url}?t=${Date.now()}`} target="_blank" rel="noopener noreferrer">
                   <FileText className="h-4 w-4 sm:mr-1" /> <span className="hidden sm:inline">PDF</span>
                 </a>
               </Button>
@@ -945,7 +945,7 @@ function RgHistoryCard({
             <RenewButton id={registro.id} type="rg" onRenew={onRenew} renewingId={renewingId} />
             {registro.pdf_url && (
               <Button variant="outline" size="sm" asChild>
-                <a href={registro.pdf_url} target="_blank" rel="noopener noreferrer">
+                <a href={`${registro.pdf_url}?t=${Date.now()}`} target="_blank" rel="noopener noreferrer">
                   <FileText className="h-4 w-4 sm:mr-1" /> <span className="hidden sm:inline">PDF</span>
                 </a>
               </Button>
