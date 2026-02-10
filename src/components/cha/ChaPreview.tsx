@@ -118,9 +118,9 @@ function drawChaFront(
   const catText = data.categoria.toUpperCase();
   const catDisplay = catDisplayMap[catText] || { pt: catText, en: '' };
   
-  // If categoria2 is set, not NENHUMA, and different from cat1, combine both
+  // If categoria2 is set and not NENHUMA, combine both (even if same)
   const cat2Text = data.categoria2 ? data.categoria2.toUpperCase().trim() : '';
-  const cat2Display = cat2Text && cat2Text !== 'NENHUMA' && cat2Text !== catText
+  const cat2Display = cat2Text && cat2Text !== 'NENHUMA'
     ? (catDisplayMap[cat2Text] || { pt: cat2Text, en: '' })
     : null;
   
