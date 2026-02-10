@@ -199,17 +199,17 @@ function drawChaBack(
   const limiteText = data.limiteNavegacao.toUpperCase();
   ctx.font = 'bold 13px Arial, sans-serif';
   if (highlightField === 'limiteNavegacao') ctx.fillStyle = '#0066ff';
-  wrapText(ctx, limiteText, w * limPos.x, h * limPos.y, w * 0.82, 16);
+  const ptLines = wrapText(ctx, limiteText, w * limPos.x, h * limPos.y, w * 0.82, 16);
   ctx.fillStyle = '#1a1a1a';
 
-  // Limites EN
+  // Limites EN — render right after PT text
   const cleanLimite = limiteText.replace(/\./g, '').replace(/,/g, '').trim();
   const matchingKey = Object.keys(limiteEnFullMap).find(k => cleanLimite.includes(k.replace(/\./g, '').replace(/,/g, '')));
   if (matchingKey) {
-    const enPos = positions.limiteNavegacaoEn || DEFAULT_BACK_POSITIONS.limiteNavegacaoEn;
+    const enY = h * limPos.y + ptLines * 16 + 4;
     ctx.font = 'bold 13px Arial, sans-serif';
     if (highlightField === 'limiteNavegacaoEn') ctx.fillStyle = '#0066ff';
-    wrapText(ctx, limiteEnFullMap[matchingKey], w * enPos.x, h * enPos.y, w * 0.82, 16);
+    wrapText(ctx, limiteEnFullMap[matchingKey], w * limPos.x, enY, w * 0.82, 16);
     ctx.fillStyle = '#1a1a1a';
   }
 
