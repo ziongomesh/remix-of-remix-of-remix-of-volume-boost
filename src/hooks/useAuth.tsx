@@ -1,5 +1,7 @@
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import api from '@/lib/api';
+import { toast } from 'sonner';
+import { playSuccessSound } from '@/lib/success-sound';
 
 type AppRole = 'dono' | 'master' | 'revendedor' | null;
 
@@ -118,6 +120,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setCredits(adminData.creditos);
       localStorage.setItem('admin', JSON.stringify(adminData));
 
+      playSuccessSound();
+      toast.success(`Bem-vindo, ${adminData.nome}!`, { description: 'Login realizado com sucesso' });
+
       return { error: null, admin: adminData };
     } catch (e: any) {
       return { error: new Error(e.message || 'Erro ao fazer login') };
@@ -125,6 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
+    const nome = admin?.nome;
     if (admin) {
       try {
         await api.auth.logout(admin.id);
@@ -137,6 +143,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setRole(null);
     setCredits(0);
     localStorage.removeItem('admin');
+    toast.info(`Até logo, ${nome || 'usuário'}!`, { description: 'Sessão encerrada' });
   };
 
   const updateAdmin = (updatedAdmin: Admin) => {
