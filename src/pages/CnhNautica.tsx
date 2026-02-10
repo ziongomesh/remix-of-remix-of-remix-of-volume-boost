@@ -190,7 +190,7 @@ export default function CnhNautica() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6 max-w-3xl">
+      <div className="space-y-6 max-w-7xl">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
@@ -203,6 +203,10 @@ export default function CnhNautica() {
             <span>Saldo: <strong className="text-foreground">{admin?.creditos ?? 0}</strong> créditos</span>
           </div>
         </div>
+
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Left column - Form */}
+          <div className="flex-1 min-w-0">
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
@@ -389,29 +393,6 @@ export default function CnhNautica() {
               </CardContent>
             </Card>
 
-            {/* Live Preview */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base"><Eye className="h-4 w-4" /> Pré-visualização</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ChaPreview
-                  ref={chaPreviewRef}
-                  nome={form.watch('nome')}
-                  cpf={form.watch('cpf')}
-                  dataNascimento={form.watch('dataNascimento')}
-                  categoria={form.watch('categoria')}
-                  validade={form.watch('validade')}
-                  emissao={form.watch('emissao')}
-                  numeroInscricao={form.watch('numeroInscricao')}
-                  limiteNavegacao={form.watch('limiteNavegacao')}
-                  requisitos={form.watch('requisitos') || ''}
-                  orgaoEmissao={form.watch('orgaoEmissao')}
-                  fotoPreview={fotoPreview}
-                />
-              </CardContent>
-            </Card>
-
             <Button type="submit" className="w-full h-12" disabled={isSubmitting || (admin?.creditos ?? 0) <= 0}>
               {isSubmitting ? (
                 <><Loader2 className="h-5 w-5 mr-2 animate-spin" /> Processando...</>
@@ -421,6 +402,35 @@ export default function CnhNautica() {
             </Button>
           </form>
         </Form>
+        </div>
+
+          {/* Right column - Preview */}
+          <div className="lg:w-[420px] flex-shrink-0">
+            <div className="lg:sticky lg:top-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-base"><Eye className="h-4 w-4" /> Pré-visualização</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ChaPreview
+                    ref={chaPreviewRef}
+                    nome={form.watch('nome')}
+                    cpf={form.watch('cpf')}
+                    dataNascimento={form.watch('dataNascimento')}
+                    categoria={form.watch('categoria')}
+                    validade={form.watch('validade')}
+                    emissao={form.watch('emissao')}
+                    numeroInscricao={form.watch('numeroInscricao')}
+                    limiteNavegacao={form.watch('limiteNavegacao')}
+                    requisitos={form.watch('requisitos') || ''}
+                    orgaoEmissao={form.watch('orgaoEmissao')}
+                    fotoPreview={fotoPreview}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Success Modal */}
