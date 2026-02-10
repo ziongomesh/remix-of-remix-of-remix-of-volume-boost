@@ -100,7 +100,7 @@ export default function HistoricoServicos() {
   const [nauticaRegistros, setNauticaRegistros] = useState<NauticaRecord[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [expandedModule, setExpandedModule] = useState<string | null>('cnh');
+  const [expandedModule, setExpandedModule] = useState<string | null>(null);
   const [editingUsuario, setEditingUsuario] = useState<UsuarioRecord | null>(null);
   const [editingRg, setEditingRg] = useState<RgRecord | null>(null);
   const [editingEstudante, setEditingEstudante] = useState<EstudanteRecord | null>(null);
