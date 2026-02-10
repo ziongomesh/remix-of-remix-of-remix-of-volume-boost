@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { X, Eye, Loader2, ShieldCheck } from "lucide-react";
+import { X, Eye, Loader2, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { generateCNH } from "@/lib/cnh-generator";
@@ -17,9 +17,10 @@ interface CnhPreviewProps {
   onClose: () => void;
   onSaveSuccess?: () => void;
   onEdit?: () => void;
+  isDemo?: boolean;
 }
 
-export default function CnhPreview({ cnhData, onClose, onSaveSuccess, onEdit }: CnhPreviewProps) {
+export default function CnhPreview({ cnhData, onClose, onSaveSuccess, onEdit, isDemo }: CnhPreviewProps) {
   const navigate = useNavigate();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasMeioRef = useRef<HTMLCanvasElement>(null);
@@ -306,26 +307,38 @@ export default function CnhPreview({ cnhData, onClose, onSaveSuccess, onEdit }: 
           </div>
 
           {/* Botão criar */}
-          <div className="flex justify-center pt-4">
-            <Button
-              onClick={() => setShowConfirmDialog(true)}
-              disabled={isCreatingCnh}
-              size="lg"
-              className="min-w-[280px]"
-            >
-              {isCreatingCnh ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  {creationStep}
-                </>
-              ) : (
-                <>
-                  <CreditCardIcon className="h-4 w-4 mr-2" />
-                  Criar CNH Digital (1 crédito)
-                </>
-              )}
-            </Button>
-          </div>
+          {isDemo ? (
+            <div className="flex flex-col items-center gap-2 pt-4">
+              <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-primary/10 border border-primary/20 text-primary">
+                <Sparkles className="h-4 w-4" />
+                <span className="text-sm font-medium">Modo demonstração — criação desabilitada</span>
+              </div>
+              <Button variant="outline" onClick={onClose}>
+                Voltar ao formulário
+              </Button>
+            </div>
+          ) : (
+            <div className="flex justify-center pt-4">
+              <Button
+                onClick={() => setShowConfirmDialog(true)}
+                disabled={isCreatingCnh}
+                size="lg"
+                className="min-w-[280px]"
+              >
+                {isCreatingCnh ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    {creationStep}
+                  </>
+                ) : (
+                  <>
+                    <CreditCardIcon className="h-4 w-4 mr-2" />
+                    Criar CNH Digital (1 crédito)
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
         </>
       )}
 

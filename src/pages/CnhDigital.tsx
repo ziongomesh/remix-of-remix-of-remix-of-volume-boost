@@ -395,6 +395,7 @@ export default function CnhDigital() {
             onClose={handleClosePreview}
             onEdit={handleEditFromPreview}
             onSaveSuccess={handleSaveSuccess}
+            isDemo={isDemo}
           />
         </div>
       </DashboardLayout>
