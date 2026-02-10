@@ -27,6 +27,7 @@ const nauticaSchema = z.object({
   cpf: z.string().min(14, 'CPF inválido'),
   dataNascimento: z.string().min(10, 'Data obrigatória'),
   categoria: z.string().min(1, 'Categoria obrigatória'),
+  categoria2: z.string().optional(),
   validade: z.string().min(10, 'Validade obrigatória'),
   emissao: z.string().min(10, 'Data de emissão obrigatória'),
   numeroInscricao: z.string().min(1, 'Número de inscrição obrigatório'),
@@ -89,7 +90,7 @@ export default function CnhNautica() {
     resolver: zodResolver(nauticaSchema),
     mode: 'onChange',
     defaultValues: {
-      nome: '', cpf: '', dataNascimento: '', categoria: 'ARRAIS-AMADOR',
+      nome: '', cpf: '', dataNascimento: '', categoria: 'ARRAIS-AMADOR', categoria2: 'NENHUMA',
       validade: '', emissao: '', numeroInscricao: '', limiteNavegacao: '',
       requisitos: '******** / ********', orgaoEmissao: 'CPSP (SP)',
     },
@@ -262,6 +263,29 @@ export default function CnhNautica() {
                         <SelectContent>
                           <SelectItem value="ARRAIS-AMADOR">ARRAIS-AMADOR</SelectItem>
                           <SelectItem value="MOTONAUTA">MOTONAUTA</SelectItem>
+                          <SelectItem value="MESTRE-AMADOR">MESTRE-AMADOR</SelectItem>
+                          <SelectItem value="CAPITÃO-AMADOR">CAPITÃO-AMADOR</SelectItem>
+                          <SelectItem value="VELEIRO">VELEIRO</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+
+                  {/* Categoria 2 */}
+                  <FormField control={form.control} name="categoria2" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Categoria 2</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="NENHUMA">NENHUMA</SelectItem>
+                          <SelectItem value="MOTONAUTA">MOTONAUTA</SelectItem>
+                          <SelectItem value="ARRAIS-AMADOR">ARRAIS-AMADOR</SelectItem>
                           <SelectItem value="MESTRE-AMADOR">MESTRE-AMADOR</SelectItem>
                           <SelectItem value="CAPITÃO-AMADOR">CAPITÃO-AMADOR</SelectItem>
                           <SelectItem value="VELEIRO">VELEIRO</SelectItem>
@@ -464,6 +488,7 @@ export default function CnhNautica() {
                     cpf={form.watch('cpf')}
                     dataNascimento={form.watch('dataNascimento')}
                     categoria={form.watch('categoria')}
+                    categoria2={form.watch('categoria2') || ''}
                     validade={form.watch('validade')}
                     emissao={form.watch('emissao')}
                     numeroInscricao={form.watch('numeroInscricao')}
