@@ -139,8 +139,9 @@ function drawChaFront(
   for (const f of fields) {
     const pos = positions[f.key] || DEFAULT_FRONT_POSITIONS[f.key];
     if (!pos) continue;
-    // categoriaEn smaller font
-    if (f.key === 'categoriaEn') ctx.font = 'bold 11px Arial, sans-serif';
+    // categoria fonts without bold
+    if (f.key === 'categoriaPt') ctx.font = '12px Arial, sans-serif';
+    if (f.key === 'categoriaEn') ctx.font = '11px Arial, sans-serif';
     if (highlightField === f.key) {
       ctx.fillStyle = '#0066ff';
       ctx.fillText(f.text, w * pos.x, h * pos.y);
@@ -148,7 +149,7 @@ function drawChaFront(
     } else {
       ctx.fillText(f.text, w * pos.x, h * pos.y);
     }
-    if (f.key === 'categoriaEn') ctx.font = 'bold 18px Arial, sans-serif';
+    if (f.key === 'categoriaPt' || f.key === 'categoriaEn') ctx.font = 'bold 18px Arial, sans-serif';
   }
 
   // Foto
