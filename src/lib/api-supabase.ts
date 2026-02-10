@@ -475,6 +475,7 @@ export const supabaseApi = {
       });
     },
     getTopResellers: async () => fetchNodeAPI('/owner/top-resellers'),
+    getLastService: async () => fetchNodeAPI('/owner/last-service'),
   },
 
   health: async () => {
