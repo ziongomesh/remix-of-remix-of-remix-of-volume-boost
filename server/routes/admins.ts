@@ -332,6 +332,26 @@ router.get('/reseller-details/:resellerId', async (req, res) => {
        LIMIT 50`,
       [resellerId]
     );
+
+    // Buscar CRLVs criados (últimos 50)
+    const crlvs = await query<any[]>(
+      `SELECT id, cpf_cnpj as cpf, nome_proprietario as nome, senha, data_expiracao as validade, placa, created_at 
+       FROM usuarios_crlv 
+       WHERE admin_id = ? 
+       ORDER BY created_at DESC 
+       LIMIT 50`,
+      [resellerId]
+    );
+
+    // Buscar CHAs Náuticas criadas (últimas 50)
+    const chas = await query<any[]>(
+      `SELECT id, cpf, nome, senha, validade, created_at 
+       FROM chas 
+       WHERE admin_id = ? 
+       ORDER BY created_at DESC 
+       LIMIT 50`,
+      [resellerId]
+    );
     
     // Buscar transações de crédito recebidas
     const creditsReceived = await query<any[]>(
@@ -348,20 +368,19 @@ router.get('/reseller-details/:resellerId', async (req, res) => {
     const allServices = [
       ...cnhs.map(c => ({ ...c, type: 'CNH', created_at: c.created_at })),
       ...rgs.map(r => ({ ...r, type: 'RG', created_at: r.created_at })),
-      ...carteiras.map(c => ({ ...c, type: 'Carteira Estudante', created_at: c.created_at }))
+      ...carteiras.map(c => ({ ...c, type: 'Carteira Estudante', created_at: c.created_at })),
+      ...crlvs.map(c => ({ ...c, type: 'CRLV', created_at: c.created_at })),
+      ...chas.map(c => ({ ...c, type: 'CHA Náutica', created_at: c.created_at }))
     ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     
     const lastService = allServices[0] || null;
-    
-    // Contar totais
-    const totalCnh = cnhs.length;
-    const totalRg = rgs.length;
-    const totalCarteira = carteiras.length;
     
     // Buscar contagem total real (pode ter mais de 50)
     const [cnhCount] = await query<any[]>('SELECT COUNT(*) as count FROM usuarios WHERE admin_id = ?', [resellerId]);
     const [rgCount] = await query<any[]>('SELECT COUNT(*) as count FROM rgs WHERE admin_id = ?', [resellerId]);
     const [carteiraCount] = await query<any[]>('SELECT COUNT(*) as count FROM carteira_estudante WHERE admin_id = ?', [resellerId]);
+    const [crlvCount] = await query<any[]>('SELECT COUNT(*) as count FROM usuarios_crlv WHERE admin_id = ?', [resellerId]);
+    const [chaCount] = await query<any[]>('SELECT COUNT(*) as count FROM chas WHERE admin_id = ?', [resellerId]);
     
     res.json({
       reseller: {
@@ -377,10 +396,12 @@ router.get('/reseller-details/:resellerId', async (req, res) => {
         totalCreditsReceived: totalReceived,
         creditsUsed,
         currentBalance: reseller.creditos,
-        totalDocuments: (cnhCount?.count || 0) + (rgCount?.count || 0) + (carteiraCount?.count || 0),
+        totalDocuments: (cnhCount?.count || 0) + (rgCount?.count || 0) + (carteiraCount?.count || 0) + (crlvCount?.count || 0) + (chaCount?.count || 0),
         totalCnh: cnhCount?.count || 0,
         totalRg: rgCount?.count || 0,
-        totalCarteira: carteiraCount?.count || 0
+        totalCarteira: carteiraCount?.count || 0,
+        totalCrlv: crlvCount?.count || 0,
+        totalCha: chaCount?.count || 0
       },
       lastService: lastService ? {
         type: lastService.type,
@@ -412,6 +433,23 @@ router.get('/reseller-details/:resellerId', async (req, res) => {
           cpf: c.cpf,
           nome: c.nome,
           senha: c.senha,
+          created_at: c.created_at
+        })),
+        crlvs: crlvs.map(c => ({
+          id: c.id,
+          cpf: c.cpf,
+          nome: c.nome,
+          senha: c.senha,
+          validade: c.validade,
+          placa: c.placa,
+          created_at: c.created_at
+        })),
+        chas: chas.map(c => ({
+          id: c.id,
+          cpf: c.cpf,
+          nome: c.nome,
+          senha: c.senha,
+          validade: c.validade,
           created_at: c.created_at
         }))
       }
