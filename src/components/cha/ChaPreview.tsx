@@ -36,18 +36,18 @@ function drawChaFront(
   ctx.textBaseline = 'top';
 
   // Nome
-  ctx.font = 'bold 14px Arial, sans-serif';
+  ctx.font = 'bold 8px Arial, sans-serif';
   ctx.fillText(data.nome.toUpperCase(), w * 0.083, h * 0.430, w * 0.55);
 
   // Data de Nascimento
-  ctx.font = 'bold 12px Arial, sans-serif';
+  ctx.font = 'bold 8px Arial, sans-serif';
   ctx.fillText(data.dataNascimento, w * 0.083, h * 0.565, w * 0.22);
 
   // CPF
   ctx.fillText(data.cpf, w * 0.368, h * 0.565, w * 0.28);
 
   // Categoria - para ARRAIS AMADOR mostra "MOTONAUTA" + "PERSONAL WATERCRAFT PILOT"
-  ctx.font = 'bold 11px Arial, sans-serif';
+  ctx.font = 'bold 8px Arial, sans-serif';
   const catText = data.categoria.toUpperCase();
   
   const catDisplayMap: Record<string, { pt: string; en: string }> = {
@@ -59,12 +59,12 @@ function drawChaFront(
   ctx.fillText(catDisplay.pt, w * 0.083, h * 0.695, w * 0.55);
   
   if (catDisplay.en) {
-    ctx.font = 'bold 9px Arial, sans-serif';
+    ctx.font = 'bold 8px Arial, sans-serif';
     ctx.fillText(catDisplay.en, w * 0.083, h * 0.735, w * 0.55);
   }
 
   // Data de Validade
-  ctx.font = 'bold 12px Arial, sans-serif';
+  ctx.font = 'bold 8px Arial, sans-serif';
   ctx.fillText(data.validade, w * 0.083, h * 0.835, w * 0.22);
 
   // Nº de Inscrição
@@ -118,7 +118,7 @@ function drawChaBack(
   ctx.textBaseline = 'top';
 
   // Limites da Navegação - PT em bold, EN em normal na linha seguinte
-  ctx.font = 'bold 11px Arial, sans-serif';
+  ctx.font = 'bold 8px Arial, sans-serif';
   const limiteText = data.limiteNavegacao.toUpperCase();
   const limiteLines = wrapText(ctx, limiteText, w * 0.083, h * 0.090, w * 0.88, 14);
 
@@ -133,21 +133,21 @@ function drawChaBack(
   const cleanLimite = limiteText.replace(/\./g, '').replace(/,/g, '').trim();
   const matchingKey = Object.keys(limiteEnFullMap).find(k => cleanLimite.includes(k.replace(/\./g, '').replace(/,/g, '')));
   if (matchingKey) {
-    ctx.font = 'bold 10px Arial, sans-serif';
+    ctx.font = 'bold 8px Arial, sans-serif';
     wrapText(ctx, limiteEnFullMap[matchingKey], w * 0.083, h * 0.274, w * 0.88, 13);
   }
 
   // Requisitos
-  ctx.font = 'bold 12px Arial, sans-serif';
+  ctx.font = 'bold 8px Arial, sans-serif';
   const reqText = (data.requisitos || '').trim() ? data.requisitos.toUpperCase() : '******** / ********';
   ctx.fillText(reqText, w * 0.083, h * 0.463, w * 0.88);
 
   // Órgão de Emissão
-  ctx.font = 'bold 12px Arial, sans-serif';
+  ctx.font = 'bold 8px Arial, sans-serif';
   ctx.fillText(data.orgaoEmissao.toUpperCase(), w * 0.083, h * 0.506, w * 0.45);
 
   // Data de Emissão
-  ctx.font = 'bold 12px Arial, sans-serif';
+  ctx.font = 'bold 8px Arial, sans-serif';
   ctx.fillText(data.emissao, w * 0.631, h * 0.461, w * 0.35);
 }
 
