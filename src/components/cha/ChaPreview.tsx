@@ -427,65 +427,8 @@ const ChaPreview = forwardRef<ChaPreviewHandle, ChaPreviewProps>((props, ref) =>
       tabIndex={0}
       onKeyDown={handleKeyDown}
     >
-      {/* Edit mode toggle */}
-      <div className="flex items-center justify-between gap-2 p-2 rounded-lg border bg-muted/50">
-        <div className="flex items-center gap-2">
-          <Switch checked={editMode} onCheckedChange={setEditMode} />
-          <span className="text-xs font-medium">Modo Posicionamento</span>
-        </div>
-        {editMode && (
-          <div className="flex gap-2">
-            <Button size="sm" variant="outline" onClick={handleReset}>Resetar</Button>
-            <Button size="sm" onClick={handleSave}>Salvar Posições</Button>
-          </div>
-        )}
-      </div>
 
-      {editMode && (
-        <div className="space-y-2">
-          <p className="text-xs text-muted-foreground">Clique no campo ou botão para selecionar, use <strong>↑ ↓ ← →</strong> para mover.</p>
 
-          <div className="space-y-1">
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase">Frente</p>
-            <div className="flex flex-wrap gap-1">
-              {frontFieldKeys.map(key => (
-                <Button
-                  key={key}
-                  size="sm"
-                  variant={selectedField?.canvas === 'front' && selectedField?.field === key ? 'default' : 'outline'}
-                  className="text-[10px] h-6 px-2"
-                  onClick={() => setSelectedField({ canvas: 'front', field: key })}
-                >
-                  {FIELD_LABELS[key] || key}
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase">Verso</p>
-            <div className="flex flex-wrap gap-1">
-              {backFieldKeys.map(key => (
-                <Button
-                  key={key}
-                  size="sm"
-                  variant={selectedField?.canvas === 'back' && selectedField?.field === key ? 'default' : 'outline'}
-                  className="text-[10px] h-6 px-2"
-                  onClick={() => setSelectedField({ canvas: 'back', field: key })}
-                >
-                  {FIELD_LABELS[key] || key}
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          {selectedField && (
-            <p className="text-xs font-medium text-primary">
-              Selecionado: <strong>{FIELD_LABELS[selectedField.field] || selectedField.field}</strong> ({selectedField.canvas === 'front' ? 'Frente' : 'Verso'})
-            </p>
-          )}
-        </div>
-      )}
 
       <div className="grid grid-cols-1 gap-3">
         <div>
