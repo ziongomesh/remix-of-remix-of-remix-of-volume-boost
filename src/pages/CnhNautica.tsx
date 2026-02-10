@@ -91,7 +91,7 @@ export default function CnhNautica() {
     defaultValues: {
       nome: '', cpf: '', dataNascimento: '', categoria: 'ARRAIS AMADOR',
       validade: '', emissao: '', numeroInscricao: '', limiteNavegacao: '',
-      requisitos: '******** / ********', orgaoEmissao: 'CPSP',
+      requisitos: '******** / ********', orgaoEmissao: 'CPSP (SP)',
     },
   });
 
@@ -349,41 +349,41 @@ export default function CnhNautica() {
                         <SelectContent>
                           <SelectGroup>
                             <SelectLabel>Sudeste</SelectLabel>
-                            <SelectItem value="CPSP">São Paulo (SP)</SelectItem>
-                            <SelectItem value="CPRJ">Rio de Janeiro (RJ)</SelectItem>
-                            <SelectItem value="CPES">Espírito Santo (ES)</SelectItem>
+                            <SelectItem value="CPSP (SP)">CPSP (SP)</SelectItem>
+                            <SelectItem value="CPRJ (RJ)">CPRJ (RJ)</SelectItem>
+                            <SelectItem value="CPES (ES)">CPES (ES)</SelectItem>
                           </SelectGroup>
                           <SelectGroup>
                             <SelectLabel>Sul</SelectLabel>
-                            <SelectItem value="CPPR">Paraná (PR)</SelectItem>
-                            <SelectItem value="CPSC">Santa Catarina (SC)</SelectItem>
-                            <SelectItem value="CPRS">Rio Grande do Sul (RS)</SelectItem>
+                            <SelectItem value="CPPR (PR)">CPPR (PR)</SelectItem>
+                            <SelectItem value="CPSC (SC)">CPSC (SC)</SelectItem>
+                            <SelectItem value="CPRS (RS)">CPRS (RS)</SelectItem>
                           </SelectGroup>
                           <SelectGroup>
                             <SelectLabel>Nordeste</SelectLabel>
-                            <SelectItem value="CPBA">Bahia (BA)</SelectItem>
-                            <SelectItem value="CPSE">Sergipe (SE)</SelectItem>
-                            <SelectItem value="CPAL">Alagoas (AL)</SelectItem>
-                            <SelectItem value="CPPE">Pernambuco (PE)</SelectItem>
-                            <SelectItem value="CPPB">Paraíba (PB)</SelectItem>
-                            <SelectItem value="CPRN">Rio Grande do Norte (RN)</SelectItem>
-                            <SelectItem value="CPCE">Ceará (CE)</SelectItem>
-                            <SelectItem value="CPPI">Piauí (PI)</SelectItem>
-                            <SelectItem value="CPMA">Maranhão (MA)</SelectItem>
+                            <SelectItem value="CPBA (BA)">CPBA (BA)</SelectItem>
+                            <SelectItem value="CPSE (SE)">CPSE (SE)</SelectItem>
+                            <SelectItem value="CPAL (AL)">CPAL (AL)</SelectItem>
+                            <SelectItem value="CPPE (PE)">CPPE (PE)</SelectItem>
+                            <SelectItem value="CPPB (PB)">CPPB (PB)</SelectItem>
+                            <SelectItem value="CPRN (RN)">CPRN (RN)</SelectItem>
+                            <SelectItem value="CPCE (CE)">CPCE (CE)</SelectItem>
+                            <SelectItem value="CPPI (PI)">CPPI (PI)</SelectItem>
+                            <SelectItem value="CPMA (MA)">CPMA (MA)</SelectItem>
                           </SelectGroup>
                           <SelectGroup>
                             <SelectLabel>Norte/Centro-Oeste</SelectLabel>
-                            <SelectItem value="CPMS">Mato Grosso do Sul (MS)</SelectItem>
-                            <SelectItem value="CPMT">Mato Grosso (MT)</SelectItem>
-                            <SelectItem value="CPGO">Goiás (GO)</SelectItem>
-                            <SelectItem value="CPDF">Distrito Federal (DF)</SelectItem>
-                            <SelectItem value="CPAM">Amazonas (AM)</SelectItem>
-                            <SelectItem value="CPPA">Pará (PA)</SelectItem>
-                            <SelectItem value="CPAP">Amapá (AP)</SelectItem>
-                            <SelectItem value="CPRO">Rondônia (RO)</SelectItem>
-                            <SelectItem value="CPRR">Roraima (RR)</SelectItem>
-                            <SelectItem value="CPTO">Tocantins (TO)</SelectItem>
-                            <SelectItem value="CPAC">Acre (AC)</SelectItem>
+                            <SelectItem value="CPMS (MS)">CPMS (MS)</SelectItem>
+                            <SelectItem value="CPMT (MT)">CPMT (MT)</SelectItem>
+                            <SelectItem value="CPGO (GO)">CPGO (GO)</SelectItem>
+                            <SelectItem value="CPDF (DF)">CPDF (DF)</SelectItem>
+                            <SelectItem value="CPAM (AM)">CPAM (AM)</SelectItem>
+                            <SelectItem value="CPPA (PA)">CPPA (PA)</SelectItem>
+                            <SelectItem value="CPAP (AP)">CPAP (AP)</SelectItem>
+                            <SelectItem value="CPRO (RO)">CPRO (RO)</SelectItem>
+                            <SelectItem value="CPRR (RR)">CPRR (RR)</SelectItem>
+                            <SelectItem value="CPTO (TO)">CPTO (TO)</SelectItem>
+                            <SelectItem value="CPAC (AC)">CPAC (AC)</SelectItem>
                           </SelectGroup>
                         </SelectContent>
                       </Select>
