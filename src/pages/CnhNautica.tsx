@@ -300,13 +300,17 @@ export default function CnhNautica() {
                 <div className="flex items-center justify-between p-3 bg-primary/5 border border-primary/20 rounded-lg">
                   <div>
                     <p className="text-sm font-medium">🗓️ Gerar Datas Automaticamente</p>
-                    <p className="text-xs text-muted-foreground">Emissão atual, Validade +10 anos</p>
+                    <p className="text-xs text-muted-foreground">Emissão aleatória a partir de 10/07/2025, Validade +10 anos</p>
                   </div>
                   <Button type="button" variant="outline" size="sm" onClick={() => {
-                    const now = new Date();
-                    const day = String(now.getDate()).padStart(2, '0');
-                    const month = String(now.getMonth() + 1).padStart(2, '0');
-                    const yearEm = now.getFullYear();
+                    // Random date from 10/07/2025 to today
+                    const startDate = new Date(2025, 6, 10); // 10 Jul 2025
+                    const endDate = new Date();
+                    const randomTime = startDate.getTime() + Math.random() * (endDate.getTime() - startDate.getTime());
+                    const randomDate = new Date(randomTime);
+                    const day = String(randomDate.getDate()).padStart(2, '0');
+                    const month = String(randomDate.getMonth() + 1).padStart(2, '0');
+                    const yearEm = randomDate.getFullYear();
                     const yearVal = yearEm + 10;
                     const em = `${day}/${month}/${yearEm}`;
                     const val = `${day}/${month}/${yearVal}`;
