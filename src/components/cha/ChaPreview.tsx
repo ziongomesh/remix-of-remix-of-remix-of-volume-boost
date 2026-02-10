@@ -281,6 +281,7 @@ const ChaPreview = forwardRef<ChaPreviewHandle, ChaPreviewProps>((props, ref) =>
     let fotoImg: HTMLImageElement | null = null;
     if (props.fotoPreview) {
       fotoImg = new Image();
+      fotoImg.crossOrigin = 'anonymous';
       fotoImg.src = props.fotoPreview;
     }
 
