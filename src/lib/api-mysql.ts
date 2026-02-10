@@ -386,6 +386,7 @@ export const mysqlApi = {
       });
     },
     getTopResellers: async () => fetchAPI('/owner/top-resellers'),
+    getLastService: async () => fetchAPI('/owner/last-service'),
   },
 
   health: async () => {
