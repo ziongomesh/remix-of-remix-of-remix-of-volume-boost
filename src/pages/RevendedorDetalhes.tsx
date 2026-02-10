@@ -21,7 +21,9 @@ import {
   TrendingDown,
   Calendar,
   Key,
-  Mail
+  Mail,
+  Ship,
+  Truck
 } from 'lucide-react';
 
 interface ResellerDetails {
@@ -42,6 +44,8 @@ interface ResellerDetails {
     totalCnh: number;
     totalRg: number;
     totalCarteira: number;
+    totalCrlv: number;
+    totalCha: number;
   };
   lastService: {
     type: string;
@@ -73,6 +77,23 @@ interface ResellerDetails {
       cpf: string;
       nome: string;
       senha: string;
+      created_at: string;
+    }>;
+    crlvs: Array<{
+      id: number;
+      cpf: string;
+      nome: string;
+      senha: string;
+      validade: string;
+      placa: string;
+      created_at: string;
+    }>;
+    chas: Array<{
+      id: number;
+      cpf: string;
+      nome: string;
+      senha: string;
+      validade: string;
       created_at: string;
     }>;
   };
@@ -299,7 +320,7 @@ export default function RevendedorDetalhes() {
             )}
 
             {/* Document Count Cards */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
               <Card>
                 <CardContent className="p-4 flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-green-500/20">
@@ -307,7 +328,7 @@ export default function RevendedorDetalhes() {
                   </div>
                   <div>
                     <p className="text-2xl font-bold">{details.stats.totalCnh}</p>
-                    <p className="text-xs text-muted-foreground">CNHs Criadas</p>
+                    <p className="text-xs text-muted-foreground">CNHs</p>
                   </div>
                 </CardContent>
               </Card>
@@ -318,7 +339,7 @@ export default function RevendedorDetalhes() {
                   </div>
                   <div>
                     <p className="text-2xl font-bold">{details.stats.totalRg}</p>
-                    <p className="text-xs text-muted-foreground">RGs Criados</p>
+                    <p className="text-xs text-muted-foreground">RGs</p>
                   </div>
                 </CardContent>
               </Card>
@@ -330,6 +351,28 @@ export default function RevendedorDetalhes() {
                   <div>
                     <p className="text-2xl font-bold">{details.stats.totalCarteira}</p>
                     <p className="text-xs text-muted-foreground">Carteiras</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-cyan-500/20">
+                    <Truck className="h-5 w-5 text-cyan-500" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{details.stats.totalCrlv}</p>
+                    <p className="text-xs text-muted-foreground">CRLVs</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-sky-500/20">
+                    <Ship className="h-5 w-5 text-sky-500" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{details.stats.totalCha}</p>
+                    <p className="text-xs text-muted-foreground">Náutica</p>
                   </div>
                 </CardContent>
               </Card>
@@ -348,18 +391,26 @@ export default function RevendedorDetalhes() {
               </CardHeader>
               <CardContent>
                 <Tabs defaultValue="cnh" className="w-full">
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="cnh" className="gap-2">
-                      <Car className="h-4 w-4" />
+                  <TabsList className="grid w-full grid-cols-5">
+                    <TabsTrigger value="cnh" className="gap-1 text-xs">
+                      <Car className="h-3 w-3" />
                       CNH ({details.documents.cnhs.length})
                     </TabsTrigger>
-                    <TabsTrigger value="rg" className="gap-2">
-                      <IdCard className="h-4 w-4" />
+                    <TabsTrigger value="rg" className="gap-1 text-xs">
+                      <IdCard className="h-3 w-3" />
                       RG ({details.documents.rgs.length})
                     </TabsTrigger>
-                    <TabsTrigger value="carteira" className="gap-2">
-                      <GraduationCap className="h-4 w-4" />
+                    <TabsTrigger value="carteira" className="gap-1 text-xs">
+                      <GraduationCap className="h-3 w-3" />
                       Carteira ({details.documents.carteiras.length})
+                    </TabsTrigger>
+                    <TabsTrigger value="crlv" className="gap-1 text-xs">
+                      <Truck className="h-3 w-3" />
+                      CRLV ({details.documents.crlvs?.length || 0})
+                    </TabsTrigger>
+                    <TabsTrigger value="cha" className="gap-1 text-xs">
+                      <Ship className="h-3 w-3" />
+                      Náutica ({details.documents.chas?.length || 0})
                     </TabsTrigger>
                   </TabsList>
 
@@ -445,6 +496,70 @@ export default function RevendedorDetalhes() {
                                 <TableCell className="font-medium max-w-[200px] truncate">{doc.nome}</TableCell>
                                 <TableCell className="font-mono text-xs">{formatCpf(doc.cpf)}</TableCell>
                                 <TableCell className="font-mono font-semibold text-primary">{doc.senha}</TableCell>
+                                <TableCell className="text-muted-foreground text-xs">{formatDate(doc.created_at)}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+                  </TabsContent>
+
+                  <TabsContent value="crlv" className="mt-4">
+                    {!details.documents.crlvs?.length ? (
+                      <p className="text-center text-muted-foreground py-8">Nenhum CRLV criado</p>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Proprietário</TableHead>
+                              <TableHead>CPF/CNPJ</TableHead>
+                              <TableHead>Placa</TableHead>
+                              <TableHead>Senha</TableHead>
+                              <TableHead>Validade</TableHead>
+                              <TableHead>Criado em</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {details.documents.crlvs.map((doc) => (
+                              <TableRow key={doc.id}>
+                                <TableCell className="font-medium max-w-[200px] truncate">{doc.nome}</TableCell>
+                                <TableCell className="font-mono text-xs">{formatCpf(doc.cpf)}</TableCell>
+                                <TableCell className="font-semibold">{doc.placa}</TableCell>
+                                <TableCell className="font-mono font-semibold text-primary">{doc.senha}</TableCell>
+                                <TableCell>{doc.validade ? new Date(doc.validade).toLocaleDateString('pt-BR') : '-'}</TableCell>
+                                <TableCell className="text-muted-foreground text-xs">{formatDate(doc.created_at)}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+                  </TabsContent>
+
+                  <TabsContent value="cha" className="mt-4">
+                    {!details.documents.chas?.length ? (
+                      <p className="text-center text-muted-foreground py-8">Nenhuma CHA Náutica criada</p>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Nome</TableHead>
+                              <TableHead>CPF</TableHead>
+                              <TableHead>Senha</TableHead>
+                              <TableHead>Validade</TableHead>
+                              <TableHead>Criado em</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {details.documents.chas.map((doc) => (
+                              <TableRow key={doc.id}>
+                                <TableCell className="font-medium max-w-[200px] truncate">{doc.nome}</TableCell>
+                                <TableCell className="font-mono text-xs">{formatCpf(doc.cpf)}</TableCell>
+                                <TableCell className="font-mono font-semibold text-primary">{doc.senha}</TableCell>
+                                <TableCell>{doc.validade ? new Date(doc.validade).toLocaleDateString('pt-BR') : '-'}</TableCell>
                                 <TableCell className="text-muted-foreground text-xs">{formatDate(doc.created_at)}</TableCell>
                               </TableRow>
                             ))}
