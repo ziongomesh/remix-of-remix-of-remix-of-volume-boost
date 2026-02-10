@@ -48,7 +48,8 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (admin && !loading) {
-      const tutorialDone = localStorage.getItem('tutorial_completed');
+      const tutorialKey = `tutorial_completed_${admin.id}`;
+      const tutorialDone = localStorage.getItem(tutorialKey);
       if (!tutorialDone && admin.rank === 'revendedor') {
         setShowOnboarding(true);
       }
@@ -175,6 +176,7 @@ export default function Dashboard() {
       {showOnboarding && admin && (
         <OnboardingWizard
           userName={admin.nome?.split(' ')[0] || 'Usuário'}
+          adminId={admin.id}
           onClose={() => setShowOnboarding(false)}
         />
       )}

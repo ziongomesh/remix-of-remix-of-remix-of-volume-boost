@@ -9,6 +9,7 @@ import {
 
 interface OnboardingWizardProps {
   userName: string;
+  adminId: number;
   onClose: () => void;
 }
 
@@ -98,17 +99,17 @@ const DEMO_SERVICES = [
 
 type Step = 'welcome' | 'sections' | 'choose';
 
-export default function OnboardingWizard({ userName, onClose }: OnboardingWizardProps) {
+export default function OnboardingWizard({ userName, adminId, onClose }: OnboardingWizardProps) {
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>('welcome');
 
   const handleSkip = () => {
-    localStorage.setItem('tutorial_completed', 'true');
+    localStorage.setItem(`tutorial_completed_${adminId}`, 'true');
     onClose();
   };
 
   const handleChooseService = (route: string) => {
-    localStorage.setItem('tutorial_completed', 'true');
+    localStorage.setItem(`tutorial_completed_${adminId}`, 'true');
     navigate(route);
   };
 
