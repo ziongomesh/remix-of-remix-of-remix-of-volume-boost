@@ -17,7 +17,7 @@ import { toast } from 'sonner';
 import { useCpfCheck } from '@/hooks/useCpfCheck';
 import CpfDuplicateModal from '@/components/CpfDuplicateModal';
 import {
-  IdCard, User, ClipboardList, CreditCard, Upload, Shuffle, Loader2, HelpCircle, Eye, ArrowLeft, Sparkles
+  IdCard, User, ClipboardList, CreditCard, Upload, Shuffle, Loader2, HelpCircle, Eye, ArrowLeft, Sparkles, CalendarCheck
 } from 'lucide-react';
 import {
   BRAZILIAN_STATES, CNH_CATEGORIES, CNH_OBSERVACOES,
@@ -228,6 +228,95 @@ export default function CnhDigital() {
     });
     return () => sub.unsubscribe();
   }, [form]);
+
+  // ===== Auto-cálculo de datas CNH baseado na data de nascimento =====
+  const [autoDatesSuggestion, setAutoDatesSuggestion] = useState<{
+    hab: string; dataEmissao: string; dataValidade: string; cnhDefinitiva: string; idade: number; validadeAnos: number;
+  } | null>(null);
+
+  useEffect(() => {
+    const sub = form.watch((value, { name }) => {
+      if (name !== 'dataNascimento') return;
+      const raw = value.dataNascimento || '';
+      const dateMatch = raw.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+      if (!dateMatch) {
+        setAutoDatesSuggestion(null);
+        return;
+      }
+
+      const day = parseInt(dateMatch[1]);
+      const month = parseInt(dateMatch[2]) - 1;
+      const year = parseInt(dateMatch[3]);
+      const birthDate = new Date(year, month, day);
+
+      if (isNaN(birthDate.getTime()) || year < 1930 || year > 2010) return;
+
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      if (today.getMonth() < birthDate.getMonth() || (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+
+      if (age < 18) return;
+
+      // 1ª habilitação = 20 anos + random 2-6 meses
+      const habMonthsExtra = Math.floor(Math.random() * 5) + 2;
+      const habDate = new Date(year + 20, month + habMonthsExtra, day);
+
+      // CNH definitiva = 1ª hab + 1 ano (provisória dura 1 ano)
+      const definitivaDate = new Date(habDate.getFullYear() + 1, habDate.getMonth(), habDate.getDate());
+
+      // Validade: <50 anos = 10 anos, >=50 = 5 anos
+      const validadeAnos = age < 50 ? 10 : 5;
+
+      // Calcular a última renovação antes de hoje
+      let lastEmissao = new Date(definitivaDate);
+      while (true) {
+        const nextRenewal = new Date(lastEmissao.getFullYear() + validadeAnos, lastEmissao.getMonth(), lastEmissao.getDate());
+        if (nextRenewal > today) break;
+        lastEmissao = nextRenewal;
+      }
+
+      const validadeDate = new Date(lastEmissao.getFullYear() + validadeAnos, lastEmissao.getMonth(), lastEmissao.getDate());
+
+      const fmt = (d: Date) => `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+
+      setAutoDatesSuggestion({
+        hab: fmt(habDate),
+        dataEmissao: fmt(lastEmissao),
+        dataValidade: fmt(validadeDate),
+        cnhDefinitiva: 'sim',
+        idade: age,
+        validadeAnos,
+      });
+
+      // Som de notificação
+      try {
+        const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(1200, audioCtx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+        osc.start(audioCtx.currentTime);
+        osc.stop(audioCtx.currentTime + 0.3);
+      } catch {}
+    });
+    return () => sub.unsubscribe();
+  }, [form]);
+
+  const applyAutoDatesSuggestion = () => {
+    if (!autoDatesSuggestion) return;
+    form.setValue('hab', autoDatesSuggestion.hab, { shouldValidate: true });
+    form.setValue('dataEmissao', autoDatesSuggestion.dataEmissao, { shouldValidate: true });
+    form.setValue('dataValidade', autoDatesSuggestion.dataValidade, { shouldValidate: true });
+    form.setValue('cnhDefinitiva', autoDatesSuggestion.cnhDefinitiva, { shouldValidate: true });
+    toast.success('Datas aplicadas com sucesso!');
+    setAutoDatesSuggestion(null);
+  };
 
   const handleObsToggle = (obs: string) => {
     const newObs = selectedObs.includes(obs)
@@ -473,6 +562,41 @@ export default function CnhDigital() {
                       <FormMessage />
                     </FormItem>
                   )} />
+
+                  {/* Banner de sugestão automática de datas */}
+                  {autoDatesSuggestion && (
+                    <div className="bg-primary/10 border border-primary/30 rounded-lg p-3 space-y-2 animate-in fade-in slide-in-from-top-2">
+                      <div className="flex items-center gap-2">
+                        <CalendarCheck className="h-4 w-4 text-primary" />
+                        <p className="text-sm font-semibold text-foreground">Validade detectada automaticamente</p>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Idade: <strong>{autoDatesSuggestion.idade} anos</strong> → Validade: <strong>{autoDatesSuggestion.validadeAnos} anos</strong>
+                      </p>
+                      <div className="grid grid-cols-3 gap-2 text-xs">
+                        <div className="bg-background rounded p-1.5 text-center">
+                          <span className="text-muted-foreground block">1ª Hab</span>
+                          <strong>{autoDatesSuggestion.hab}</strong>
+                        </div>
+                        <div className="bg-background rounded p-1.5 text-center">
+                          <span className="text-muted-foreground block">Emissão</span>
+                          <strong>{autoDatesSuggestion.dataEmissao}</strong>
+                        </div>
+                        <div className="bg-background rounded p-1.5 text-center">
+                          <span className="text-muted-foreground block">Validade</span>
+                          <strong>{autoDatesSuggestion.dataValidade}</strong>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 pt-1">
+                        <Button type="button" size="sm" variant="ghost" onClick={() => setAutoDatesSuggestion(null)} className="flex-1 text-xs h-7">
+                          Ignorar
+                        </Button>
+                        <Button type="button" size="sm" onClick={applyAutoDatesSuggestion} className="flex-1 text-xs h-7 gap-1">
+                          <CalendarCheck className="h-3 w-3" /> Aplicar datas
+                        </Button>
+                      </div>
+                    </div>
+                  )}
 
                   <FileUploadField label="Foto de Perfil *" value={fotoPerfil} onChange={setFotoPerfil} />
                   <FileUploadField label="Assinatura Digital *" value={assinatura} onChange={setAssinatura} />
