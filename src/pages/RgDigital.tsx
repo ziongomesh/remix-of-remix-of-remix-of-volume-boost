@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -13,7 +14,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
-  IdCard, User, Shield, CreditCard, Upload, Camera, Loader2, Calendar, ArrowLeft, Copy, Smartphone, FileText, Eye
+  IdCard, User, Shield, CreditCard, Upload, Camera, Loader2, Calendar, ArrowLeft, Copy, Smartphone, FileText, Eye, Sparkles
 } from 'lucide-react';
 import { generateRGFrente, generateRGVerso, generateRGPdfPage, type RgData } from '@/lib/rg-generator';
 import { rgService } from '@/lib/rg-service';
@@ -73,6 +74,9 @@ const toUpper = (v: string) => v.toUpperCase();
 export default function RgDigital() {
   const { admin, loading } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const isDemo = searchParams.get('demo') === 'true';
+  const [showDemoBanner, setShowDemoBanner] = useState(isDemo);
   const cpfCheck = useCpfCheck({
     admin_id: admin?.id || 0,
     session_token: admin?.session_token || '',
@@ -88,6 +92,7 @@ export default function RgDigital() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [rgInfo, setRgInfo] = useState<{ cpf: string; senha: string; pdf: string | null } | null>(null);
   const [downloadLinks, setDownloadLinks] = useState<{ govbr_iphone: string; govbr_apk: string }>({ govbr_iphone: '', govbr_apk: '' });
+  const [demoFilling, setDemoFilling] = useState(false);
 
   useEffect(() => {
     supabase.from('downloads').select('govbr_iphone, govbr_apk').eq('id', 1).maybeSingle().then(({ data }) => {
@@ -107,6 +112,59 @@ export default function RgDigital() {
       uf: '', dataEmissao: '', local: '', orgaoExpedidor: '', pai: '', mae: '',
     },
   });
+
+  // Demo auto-fill for RG
+  useEffect(() => {
+    if (!isDemo || demoFilling) return;
+    setDemoFilling(true);
+
+    const demoFields: [string, string][] = [
+      ['cpf', '529.982.247-25'],
+      ['nomeCompleto', 'EDUARDO GOMES DIAS'],
+      ['dataNascimento', '15/03/1990'],
+      ['naturalidade', 'RIO DE JANEIRO'],
+      ['genero', 'MASCULINO'],
+      ['uf', 'RJ'],
+      ['dataEmissao', '15/01/2025'],
+      ['validade', '15/01/2035'],
+      ['orgaoExpedidor', 'DETRAN'],
+      ['pai', 'CARLOS EDUARDO DIAS'],
+      ['mae', 'MARIA HELENA GOMES DIAS'],
+    ];
+
+    let i = 0;
+    const fillNext = () => {
+      if (i >= demoFields.length) {
+        // Load demo photo and signature
+        loadDemoFilesRg();
+        return;
+      }
+      const [key, val] = demoFields[i];
+      form.setValue(key as any, val, { shouldValidate: true });
+      i++;
+      setTimeout(fillNext, 120);
+    };
+    setTimeout(fillNext, 500);
+  }, [isDemo]);
+
+  const loadDemoFilesRg = async () => {
+    try {
+      const [fotoRes, assRes] = await Promise.all([
+        fetch('/images/tutorial-foto-demo.png'),
+        fetch('/images/tutorial-assinatura-demo.png'),
+      ]);
+      const fotoBlob = await fotoRes.blob();
+      const assBlob = await assRes.blob();
+      const fotoFile = new File([fotoBlob], 'foto-demo.png', { type: 'image/png' });
+      const assFile = new File([assBlob], 'assinatura-demo.png', { type: 'image/png' });
+      setFotoPerfil(fotoFile);
+      setFotoPreview(URL.createObjectURL(fotoBlob));
+      setAssinatura(assFile);
+      setAssPreview(URL.createObjectURL(assBlob));
+    } catch (e) {
+      console.warn('Erro ao carregar arquivos demo:', e);
+    }
+  };
 
   const selectedUf = form.watch('uf');
   useEffect(() => {
@@ -354,6 +412,20 @@ export default function RgDigital() {
   return (
     <DashboardLayout>
       <div className="space-y-6 max-w-6xl">
+        {/* Demo banner */}
+        {showDemoBanner && (
+          <div className="flex items-center gap-3 bg-primary/10 border border-primary/30 rounded-xl p-4 animate-in fade-in">
+            <Sparkles className="h-5 w-5 text-primary shrink-0" />
+            <div className="flex-1">
+              <p className="font-semibold text-foreground text-sm">🎓 Modo Tutorial</p>
+              <p className="text-xs text-muted-foreground">Os campos estão sendo preenchidos automaticamente com dados de exemplo. A mesma foto e assinatura da CNH podem ser usadas aqui!</p>
+            </div>
+            <Button variant="ghost" size="sm" onClick={() => { setShowDemoBanner(false); searchParams.delete('demo'); setSearchParams(searchParams); }}>
+              Fechar
+            </Button>
+          </div>
+        )}
+
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-foreground">RG Digital</h1>

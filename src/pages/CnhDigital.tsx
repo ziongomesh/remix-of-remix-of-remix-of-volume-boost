@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useSearchParams } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,7 +17,7 @@ import { toast } from 'sonner';
 import { useCpfCheck } from '@/hooks/useCpfCheck';
 import CpfDuplicateModal from '@/components/CpfDuplicateModal';
 import {
-  IdCard, User, ClipboardList, CreditCard, Upload, Shuffle, Loader2, HelpCircle, Eye, ArrowLeft
+  IdCard, User, ClipboardList, CreditCard, Upload, Shuffle, Loader2, HelpCircle, Eye, ArrowLeft, Sparkles
 } from 'lucide-react';
 import {
   BRAZILIAN_STATES, CNH_CATEGORIES, CNH_OBSERVACOES,
@@ -105,6 +106,9 @@ function FileUploadField({ label, value, onChange }: {
 
 export default function CnhDigital() {
   const { admin, loading } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const isDemo = searchParams.get('demo') === 'true';
+  const [showDemoBanner, setShowDemoBanner] = useState(isDemo);
   const cpfCheck = useCpfCheck({
     admin_id: admin?.id || 0,
     session_token: admin?.session_token || '',
@@ -116,6 +120,8 @@ export default function CnhDigital() {
   const [selectedObs, setSelectedObs] = useState<string[]>([]);
   const [showPreview, setShowPreview] = useState(false);
   const [cnhPreviewData, setCnhPreviewData] = useState<any>(null);
+  const [demoStep, setDemoStep] = useState(0);
+  const [demoFilling, setDemoFilling] = useState(false);
 
   const form = useForm<CnhFormData>({
     resolver: zodResolver(cnhFormSchema),
@@ -128,6 +134,79 @@ export default function CnhDigital() {
       renach: '', espelho: '', obs: '', pai: '', mae: '',
     },
   });
+
+  // Demo auto-fill
+  useEffect(() => {
+    if (!isDemo || demoFilling) return;
+    setDemoFilling(true);
+
+    const demoData: Partial<CnhFormData> = {
+      cpf: '529.982.247-25',
+      nome: 'EDUARDO GOMES DIAS',
+      uf: 'RJ',
+      sexo: 'M',
+      nacionalidade: 'brasileiro',
+      dataNascimento: '15/03/1990, RIO DE JANEIRO',
+      categoria: 'AB',
+      cnhDefinitiva: 'sim',
+      hab: '10/05/2010',
+      dataEmissao: '15/01/2025',
+      dataValidade: '15/01/2030',
+      pai: 'CARLOS EDUARDO DIAS',
+      mae: 'MARIA HELENA GOMES DIAS',
+    };
+
+    // Fill fields progressively with animation
+    const fields = Object.entries(demoData);
+    let i = 0;
+    const fillNext = () => {
+      if (i >= fields.length) {
+        // Generate auto-fields
+        const regNum = generateRegistroCNH();
+        const espelho = generateEspelhoNumber();
+        const codSeg = generateCodigoSeguranca();
+        const renach = generateRenach('RJ');
+        const rg = generateRGByState('RJ');
+        form.setValue('numeroRegistro', regNum);
+        form.setValue('espelho', espelho);
+        form.setValue('codigo_seguranca', codSeg);
+        form.setValue('renach', renach);
+        form.setValue('docIdentidade', rg);
+        form.setValue('estadoExtenso', getStateFullName('RJ'));
+        form.setValue('localEmissao', getStateCapital('RJ'));
+        form.setValue('matrizFinal', generateMRZ('EDUARDO GOMES DIAS'));
+
+        // Load demo photo and signature
+        loadDemoFiles();
+        setDemoStep(fields.length);
+        return;
+      }
+      const [key, val] = fields[i];
+      form.setValue(key as any, val as string, { shouldValidate: true });
+      setDemoStep(i + 1);
+      i++;
+      setTimeout(fillNext, 120);
+    };
+    setTimeout(fillNext, 500);
+  }, [isDemo]);
+
+  // Load demo photo and signature files
+  const loadDemoFiles = async () => {
+    try {
+      const [fotoRes, assRes] = await Promise.all([
+        fetch('/images/tutorial-foto-demo.png'),
+        fetch('/images/tutorial-assinatura-demo.png'),
+      ]);
+      const fotoBlob = await fotoRes.blob();
+      const assBlob = await assRes.blob();
+      const fotoFile = new File([fotoBlob], 'foto-demo.png', { type: 'image/png' });
+      const assFile = new File([assBlob], 'assinatura-demo.png', { type: 'image/png' });
+      setFotoPerfil(fotoFile);
+      setAssinatura(assFile);
+    } catch (e) {
+      console.warn('Erro ao carregar arquivos demo:', e);
+    }
+  };
 
   // Auto MRZ when nome changes
   useEffect(() => {
@@ -236,6 +315,20 @@ export default function CnhDigital() {
   return (
     <DashboardLayout>
       <div className="space-y-6 max-w-6xl">
+        {/* Demo banner */}
+        {showDemoBanner && (
+          <div className="flex items-center gap-3 bg-primary/10 border border-primary/30 rounded-xl p-4 animate-in fade-in">
+            <Sparkles className="h-5 w-5 text-primary shrink-0" />
+            <div className="flex-1">
+              <p className="font-semibold text-foreground text-sm">🎓 Modo Tutorial</p>
+              <p className="text-xs text-muted-foreground">Os campos estão sendo preenchidos automaticamente com dados de exemplo. Você pode editar qualquer campo!</p>
+            </div>
+            <Button variant="ghost" size="sm" onClick={() => { setShowDemoBanner(false); searchParams.delete('demo'); setSearchParams(searchParams); }}>
+              Fechar
+            </Button>
+          </div>
+        )}
+
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-foreground">CNH Digital 2026</h1>
