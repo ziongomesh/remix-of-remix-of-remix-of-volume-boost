@@ -94,10 +94,10 @@ export default function CnhNautica() {
     const hasCapitao = cats.includes('CAPITÃO-AMADOR');
     const hasMestre = cats.includes('MESTRE-AMADOR');
 
-    if (hasCapitao) return 'NAVEGAÇÃO OCEÂNICA';
-    if (hasMestre) return 'NAVEGAÇÃO COSTEIRA';
-    if (hasMotonauta) return 'NAVEGAÇÃO INTERIOR. QUANDO PILOTANDO MOTO AQUÁTICA, INTERIOR.';
-    return 'NAVEGAÇÃO INTERIOR';
+    if (hasCapitao) return 'NAVEGAÇÃO OCEÂNICA\nOCEAN NAVIGATION';
+    if (hasMestre) return 'NAVEGAÇÃO COSTEIRA\nCOASTAL NAVIGATION';
+    if (hasMotonauta) return 'NAVEGAÇÃO INTERIOR. QUANDO PILOTANDO MOTO AQUÁTICA, INTERIOR.\nINLAND NAVIGATION. WHEN PILOTING PERSONAL WATERCRAFT, INLAND WATERS.';
+    return 'NAVEGAÇÃO INTERIOR\nINLAND NAVIGATION.';
   };
 
   const form = useForm<NauticaFormData>({
@@ -105,7 +105,7 @@ export default function CnhNautica() {
     mode: 'onChange',
     defaultValues: {
       nome: '', cpf: '', dataNascimento: '', categoria: 'ARRAIS-AMADOR', categoria2: 'NENHUMA',
-      validade: '', emissao: '', numeroInscricao: '', limiteNavegacao: 'NAVEGAÇÃO INTERIOR',
+      validade: '', emissao: '', numeroInscricao: '', limiteNavegacao: 'NAVEGAÇÃO INTERIOR\nINLAND NAVIGATION.',
       requisitos: '******** / ********', orgaoEmissao: 'CPSP (SP)',
     },
   });
