@@ -109,13 +109,15 @@ function drawChaFront(
   const catText = data.categoria.toUpperCase();
   const catDisplay = catDisplayMap[catText] || { pt: catText, en: '' };
   
-  // If categoria2 is set and not NENHUMA, combine both
+  // If categoria2 is set, not NENHUMA, and different from cat1, combine both
   const cat2Text = data.categoria2 ? data.categoria2.toUpperCase() : '';
-  const cat2Display = cat2Text && cat2Text !== 'NENHUMA' ? (catDisplayMap[cat2Text] || { pt: cat2Text, en: '' }) : null;
+  const cat2Display = cat2Text && cat2Text !== 'NENHUMA' && cat2Text !== catText
+    ? (catDisplayMap[cat2Text] || { pt: cat2Text, en: '' })
+    : null;
   
-  const ptText = cat2Display ? `${catDisplay.pt} / ${cat2Display.pt}` : catDisplay.pt;
+  const ptText = cat2Display ? `${catDisplay.pt} E ${cat2Display.pt}` : catDisplay.pt;
   const enText = cat2Display 
-    ? [catDisplay.en, cat2Display.en].filter(Boolean).join(' / ')
+    ? [catDisplay.en, cat2Display.en].filter(Boolean).join(' AND ')
     : catDisplay.en;
   
   fields.push({ key: 'categoriaPt', text: ptText });
