@@ -64,23 +64,31 @@ const limiteEnFullMap: Record<string, string> = {
 };
 
 function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, lineHeight: number): number {
-  const words = text.split(' ');
-  let line = '';
+  // Split by explicit newlines first
+  const paragraphs = text.split('\n');
   let currentY = y;
-  let lines = 1;
-  for (const word of words) {
-    const testLine = line + (line ? ' ' : '') + word;
-    if (ctx.measureText(testLine).width > maxWidth && line) {
+  let totalLines = 0;
+  for (const paragraph of paragraphs) {
+    const words = paragraph.split(' ');
+    let line = '';
+    for (const word of words) {
+      const testLine = line + (line ? ' ' : '') + word;
+      if (ctx.measureText(testLine).width > maxWidth && line) {
+        ctx.fillText(line, x, currentY, maxWidth);
+        line = word;
+        currentY += lineHeight;
+        totalLines++;
+      } else {
+        line = testLine;
+      }
+    }
+    if (line) {
       ctx.fillText(line, x, currentY, maxWidth);
-      line = word;
       currentY += lineHeight;
-      lines++;
-    } else {
-      line = testLine;
+      totalLines++;
     }
   }
-  if (line) ctx.fillText(line, x, currentY, maxWidth);
-  return lines;
+  return totalLines;
 }
 
 function drawChaFront(
