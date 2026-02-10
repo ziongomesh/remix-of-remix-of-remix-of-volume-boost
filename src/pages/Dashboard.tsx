@@ -7,6 +7,7 @@ import { CreditCard, Crown, Sparkles, TrendingUp, Users, Clock, FileText, IdCard
 import { Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import api from '@/lib/api';
+import OnboardingWizard from '@/components/tutorial/OnboardingWizard';
 interface TopReseller {
   id: number;
   nome: string;
@@ -43,6 +44,16 @@ export default function Dashboard() {
   const [totalResellers, setTotalResellers] = useState(0);
   const [documentStats, setDocumentStats] = useState<DocumentStats | null>(null);
   const [loadingStats, setLoadingStats] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  useEffect(() => {
+    if (admin && !loading) {
+      const tutorialDone = localStorage.getItem('tutorial_completed');
+      if (!tutorialDone && admin.rank === 'revendedor') {
+        setShowOnboarding(true);
+      }
+    }
+  }, [admin, loading]);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -161,6 +172,12 @@ export default function Dashboard() {
 
   return (
     <DashboardLayout>
+      {showOnboarding && admin && (
+        <OnboardingWizard
+          userName={admin.nome?.split(' ')[0] || 'Usuário'}
+          onClose={() => setShowOnboarding(false)}
+        />
+      )}
       <div className="space-y-6 sm:space-y-8 animate-fade-in">
         {/* Header */}
         <div>

@@ -4,7 +4,6 @@ import { FileText, CheckCircle, Clock, CreditCard, AlertTriangle, Anchor, IdCard
 import { Badge } from '@/components/ui/badge';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import OnboardingWizard from '@/components/tutorial/OnboardingWizard';
 
 interface Service {
   id: string;
@@ -106,28 +105,12 @@ function ServiceCard({ service, hasCredits }: { service: Service; hasCredits: bo
 export default function Servicos() {
   const { admin, credits, loading } = useAuth();
   const hasCredits = credits > 0;
-  const [showOnboarding, setShowOnboarding] = useState(false);
-
-  useEffect(() => {
-    if (admin && !loading) {
-      const tutorialDone = localStorage.getItem('tutorial_completed');
-      if (!tutorialDone && admin.rank === 'revendedor') {
-        setShowOnboarding(true);
-      }
-    }
-  }, [admin, loading]);
 
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-background"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
   if (!admin) return <Navigate to="/login" replace />;
 
   return (
     <DashboardLayout>
-      {showOnboarding && (
-        <OnboardingWizard
-          userName={admin.nome?.split(' ')[0] || 'Usuário'}
-          onClose={() => setShowOnboarding(false)}
-        />
-      )}
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Serviços</h1>
