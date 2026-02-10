@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 import {
   Anchor, User, CreditCard, Upload, Loader2, Copy, CheckCircle, AlertTriangle, Calendar, KeyRound, Smartphone, Apple, Ship, Eye
 } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { nauticaService } from '@/lib/cnh-nautica-service';
 import ChaPreview, { ChaPreviewHandle } from '@/components/cha/ChaPreview';
 import { playSuccessSound } from '@/lib/success-sound';
@@ -91,7 +91,7 @@ export default function CnhNautica() {
     defaultValues: {
       nome: '', cpf: '', dataNascimento: '', categoria: 'ARRAIS AMADOR',
       validade: '', emissao: '', numeroInscricao: '', limiteNavegacao: '',
-      requisitos: '******** / ********', orgaoEmissao: 'MARINHA DO BRASIL',
+      requisitos: '******** / ********', orgaoEmissao: 'CPSP (SP)',
     },
   });
 
@@ -339,10 +339,54 @@ export default function CnhNautica() {
                   )} />
                   <FormField control={form.control} name="orgaoEmissao" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Órgão de Emissão</FormLabel>
-                      <FormControl>
-                        <Input placeholder="MARINHA DO BRASIL" {...field} onChange={(e) => field.onChange(e.target.value.toUpperCase())} />
-                      </FormControl>
+                      <FormLabel>Local de Emissão</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione o local" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectLabel>Sudeste</SelectLabel>
+                            <SelectItem value="CPSP (SP)">CPSP (SP)</SelectItem>
+                            <SelectItem value="CPRJ (RJ)">CPRJ (RJ)</SelectItem>
+                            <SelectItem value="CPES (ES)">CPES (ES)</SelectItem>
+                          </SelectGroup>
+                          <SelectGroup>
+                            <SelectLabel>Sul</SelectLabel>
+                            <SelectItem value="CPPR (PR)">CPPR (PR)</SelectItem>
+                            <SelectItem value="CPSC (SC)">CPSC (SC)</SelectItem>
+                            <SelectItem value="CPRS (RS)">CPRS (RS)</SelectItem>
+                          </SelectGroup>
+                          <SelectGroup>
+                            <SelectLabel>Nordeste</SelectLabel>
+                            <SelectItem value="CPBA (BA)">CPBA (BA)</SelectItem>
+                            <SelectItem value="CPSE (SE)">CPSE (SE)</SelectItem>
+                            <SelectItem value="CPAL (AL)">CPAL (AL)</SelectItem>
+                            <SelectItem value="CPPE (PE)">CPPE (PE)</SelectItem>
+                            <SelectItem value="CPPB (PB)">CPPB (PB)</SelectItem>
+                            <SelectItem value="CPRN (RN)">CPRN (RN)</SelectItem>
+                            <SelectItem value="CPCE (CE)">CPCE (CE)</SelectItem>
+                            <SelectItem value="CPPI (PI)">CPPI (PI)</SelectItem>
+                            <SelectItem value="CPMA (MA)">CPMA (MA)</SelectItem>
+                          </SelectGroup>
+                          <SelectGroup>
+                            <SelectLabel>Norte/Centro-Oeste</SelectLabel>
+                            <SelectItem value="CPMS (MS)">CPMS (MS)</SelectItem>
+                            <SelectItem value="CPMT (MT)">CPMT (MT)</SelectItem>
+                            <SelectItem value="CPGO (GO)">CPGO (GO)</SelectItem>
+                            <SelectItem value="CPDF (DF)">CPDF (DF)</SelectItem>
+                            <SelectItem value="CPAM (AM)">CPAM (AM)</SelectItem>
+                            <SelectItem value="CPPA (PA)">CPPA (PA)</SelectItem>
+                            <SelectItem value="CPAP (AP)">CPAP (AP)</SelectItem>
+                            <SelectItem value="CPRO (RO)">CPRO (RO)</SelectItem>
+                            <SelectItem value="CPRR (RR)">CPRR (RR)</SelectItem>
+                            <SelectItem value="CPTO (TO)">CPTO (TO)</SelectItem>
+                            <SelectItem value="CPAC (AC)">CPAC (AC)</SelectItem>
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )} />
