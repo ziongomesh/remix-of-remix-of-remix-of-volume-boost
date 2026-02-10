@@ -107,7 +107,7 @@ function drawChaFront(
 
   ctx.fillStyle = '#1a1a1a';
   ctx.textBaseline = 'top';
-  ctx.font = 'bold 18px Arial, sans-serif';
+  ctx.font = '13px Arial, sans-serif';
 
   const fields: { key: string; text: string }[] = [
     { key: 'nome', text: data.nome.toUpperCase() },
@@ -149,7 +149,7 @@ function drawChaFront(
     } else {
       ctx.fillText(f.text, w * pos.x, h * pos.y);
     }
-    if (f.key === 'categoriaPt' || f.key === 'categoriaEn') ctx.font = 'bold 18px Arial, sans-serif';
+    if (f.key === 'categoriaPt' || f.key === 'categoriaEn') ctx.font = '13px Arial, sans-serif';
   }
 
   // Foto
@@ -192,18 +192,18 @@ function drawChaBack(
 
   ctx.fillStyle = '#1a1a1a';
   ctx.textBaseline = 'top';
-  ctx.font = 'bold 18px Arial, sans-serif';
+  ctx.font = '13px Arial, sans-serif';
 
   // Limites da Navegação (PT + EN in same field value)
   const limPos = positions.limiteNavegacao || DEFAULT_BACK_POSITIONS.limiteNavegacao;
   const limiteText = data.limiteNavegacao.toUpperCase();
-  ctx.font = 'bold 13px Arial, sans-serif';
+  ctx.font = '13px Arial, sans-serif';
   if (highlightField === 'limiteNavegacao') ctx.fillStyle = '#0066ff';
   wrapText(ctx, limiteText, w * limPos.x, h * limPos.y, w * 0.82, 16);
   ctx.fillStyle = '#1a1a1a';
 
 
-  ctx.font = 'bold 18px Arial, sans-serif';
+  ctx.font = '13px Arial, sans-serif';
   const backFields: { key: string; text: string }[] = [
     { key: 'requisitos', text: (data.requisitos || '').trim() ? data.requisitos.toUpperCase() : '******** / ********' },
     { key: 'orgaoEmissao', text: data.orgaoEmissao.replace(/\s*\(.*\)/, '').toUpperCase() },
@@ -215,9 +215,7 @@ function drawChaBack(
     if (!pos) continue;
     if (highlightField === f.key) ctx.fillStyle = '#0066ff';
     if (f.key === 'requisitos') {
-      ctx.font = 'bold 13px Arial, sans-serif';
       wrapText(ctx, f.text, w * pos.x, h * pos.y, w * 0.82, 16);
-      ctx.font = 'bold 18px Arial, sans-serif';
     } else {
       ctx.fillText(f.text, w * pos.x, h * pos.y);
     }
