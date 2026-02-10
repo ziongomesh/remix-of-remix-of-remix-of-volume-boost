@@ -202,17 +202,34 @@ function drawChaBack(
   }
 }
 
+const FIELD_LABELS: Record<string, string> = {
+  nome: 'Nome',
+  dataNascimento: 'Data Nasc.',
+  cpf: 'CPF',
+  categoriaPt: 'Categoria PT',
+  categoriaEn: 'Categoria EN',
+  validade: 'Validade',
+  numeroInscricao: 'Nº Inscrição',
+  foto: 'Foto',
+  limiteNavegacao: 'Limite Nav. PT',
+  limiteNavegacaoEn: 'Limite Nav. EN',
+  requisitos: 'Requisitos',
+  orgaoEmissao: 'Órgão Emissão',
+  emissao: 'Data Emissão',
+};
+
 const ChaPreview = forwardRef<ChaPreviewHandle, ChaPreviewProps>((props, ref) => {
   const canvasFrontRef = useRef<HTMLCanvasElement>(null);
   const canvasBackRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [editMode, setEditMode] = useState(false);
   const [frontPositions, setFrontPositions] = useState<Record<string, FieldPos>>({ ...DEFAULT_FRONT_POSITIONS });
   const [backPositions, setBackPositions] = useState<Record<string, FieldPos>>({ ...DEFAULT_BACK_POSITIONS });
-  const [dragging, setDragging] = useState<{ canvas: 'front' | 'back'; field: string } | null>(null);
-  const [highlightField, setHighlightField] = useState<string | null>(null);
+  const [selectedField, setSelectedField] = useState<{ canvas: 'front' | 'back'; field: string } | null>(null);
 
   const W = 700;
   const H = 440;
+  const STEP = 0.002; // Arrow key step size in fraction
 
   useImperativeHandle(ref, () => ({
     getFrenteBase64: () => canvasFrontRef.current?.toDataURL('image/png') || '',
@@ -263,12 +280,21 @@ const ChaPreview = forwardRef<ChaPreviewHandle, ChaPreviewProps>((props, ref) =>
     if (bgBack.complete) render();
   }, [props, backPositions]);
 
-  useEffect(() => {
-    drawFront(highlightField);
-    drawBack(highlightField);
-  }, [drawFront, drawBack, highlightField]);
+  const highlightKey = selectedField?.field || null;
 
-  // Get mouse position relative to canvas in fraction coordinates
+  useEffect(() => {
+    drawFront(highlightKey);
+    drawBack(highlightKey);
+  }, [drawFront, drawBack, highlightKey]);
+
+  // Focus container when edit mode is on
+  useEffect(() => {
+    if (editMode && containerRef.current) {
+      containerRef.current.focus();
+    }
+  }, [editMode, selectedField]);
+
+  // Click to select nearest field
   const getCanvasPos = (e: React.MouseEvent<HTMLCanvasElement>, canvas: HTMLCanvasElement): FieldPos => {
     const rect = canvas.getBoundingClientRect();
     const scaleX = W / rect.width;
@@ -279,8 +305,7 @@ const ChaPreview = forwardRef<ChaPreviewHandle, ChaPreviewProps>((props, ref) =>
     };
   };
 
-  // Find nearest field to click
-  const findNearestField = (pos: FieldPos, positions: Record<string, FieldPos>, threshold = 0.08): string | null => {
+  const findNearestField = (pos: FieldPos, positions: Record<string, FieldPos>, threshold = 0.12): string | null => {
     let nearest: string | null = null;
     let minDist = Infinity;
     for (const [key, fpos] of Object.entries(positions)) {
@@ -293,7 +318,7 @@ const ChaPreview = forwardRef<ChaPreviewHandle, ChaPreviewProps>((props, ref) =>
     return nearest;
   };
 
-  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>, side: 'front' | 'back') => {
+  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>, side: 'front' | 'back') => {
     if (!editMode) return;
     const canvas = side === 'front' ? canvasFrontRef.current : canvasBackRef.current;
     if (!canvas) return;
@@ -301,26 +326,36 @@ const ChaPreview = forwardRef<ChaPreviewHandle, ChaPreviewProps>((props, ref) =>
     const positions = side === 'front' ? frontPositions : backPositions;
     const field = findNearestField(pos, positions);
     if (field) {
-      setDragging({ canvas: side, field });
-      setHighlightField(field);
+      setSelectedField({ canvas: side, field });
     }
   };
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>, side: 'front' | 'back') => {
-    if (!editMode || !dragging || dragging.canvas !== side) return;
-    const canvas = side === 'front' ? canvasFrontRef.current : canvasBackRef.current;
-    if (!canvas) return;
-    const pos = getCanvasPos(e, canvas);
+  // Arrow keys to move selected field
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (!editMode || !selectedField) return;
+    const { canvas, field } = selectedField;
 
-    if (side === 'front') {
-      setFrontPositions(prev => ({ ...prev, [dragging.field]: pos }));
+    let dx = 0, dy = 0;
+    switch (e.key) {
+      case 'ArrowUp':    dy = -STEP; break;
+      case 'ArrowDown':  dy = STEP; break;
+      case 'ArrowLeft':  dx = -STEP; break;
+      case 'ArrowRight': dx = STEP; break;
+      default: return;
+    }
+    e.preventDefault();
+
+    if (canvas === 'front') {
+      setFrontPositions(prev => {
+        const cur = prev[field] || DEFAULT_FRONT_POSITIONS[field];
+        return { ...prev, [field]: { x: cur.x + dx, y: cur.y + dy } };
+      });
     } else {
-      setBackPositions(prev => ({ ...prev, [dragging.field]: pos }));
+      setBackPositions(prev => {
+        const cur = prev[field] || DEFAULT_BACK_POSITIONS[field];
+        return { ...prev, [field]: { x: cur.x + dx, y: cur.y + dy } };
+      });
     }
-  };
-
-  const handleMouseUp = () => {
-    setDragging(null);
   };
 
   const handleSave = () => {
@@ -336,7 +371,6 @@ const ChaPreview = forwardRef<ChaPreviewHandle, ChaPreviewProps>((props, ref) =>
     console.log(JSON.stringify(output, null, 2));
     console.log('=== END CHA POSITIONS ===');
 
-    // Copy to clipboard
     navigator.clipboard.writeText(JSON.stringify(output, null, 2)).then(() => {
       toast.success('Posições copiadas para a área de transferência! Cole no chat.');
     }).catch(() => {
@@ -347,16 +381,21 @@ const ChaPreview = forwardRef<ChaPreviewHandle, ChaPreviewProps>((props, ref) =>
   const handleReset = () => {
     setFrontPositions({ ...DEFAULT_FRONT_POSITIONS });
     setBackPositions({ ...DEFAULT_BACK_POSITIONS });
-    setHighlightField(null);
+    setSelectedField(null);
     toast.info('Posições resetadas para o padrão.');
   };
 
-  const canvasStyle = editMode
-    ? { display: 'block' as const, userSelect: 'none' as const, cursor: 'crosshair' }
-    : { display: 'block' as const, userSelect: 'none' as const, pointerEvents: 'none' as const };
+  // List of fields for selection buttons
+  const frontFieldKeys = Object.keys(frontPositions);
+  const backFieldKeys = Object.keys(backPositions);
 
   return (
-    <div className="space-y-3">
+    <div
+      ref={containerRef}
+      className="space-y-3 outline-none"
+      tabIndex={0}
+      onKeyDown={handleKeyDown}
+    >
       {/* Edit mode toggle */}
       <div className="flex items-center justify-between gap-2 p-2 rounded-lg border bg-muted/50">
         <div className="flex items-center gap-2">
@@ -371,8 +410,50 @@ const ChaPreview = forwardRef<ChaPreviewHandle, ChaPreviewProps>((props, ref) =>
         )}
       </div>
 
-      {editMode && highlightField && (
-        <p className="text-xs text-blue-500 font-medium">Arrastando: <strong>{highlightField}</strong></p>
+      {editMode && (
+        <div className="space-y-2">
+          <p className="text-xs text-muted-foreground">Clique no campo ou botão para selecionar, use <strong>↑ ↓ ← →</strong> para mover.</p>
+
+          <div className="space-y-1">
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase">Frente</p>
+            <div className="flex flex-wrap gap-1">
+              {frontFieldKeys.map(key => (
+                <Button
+                  key={key}
+                  size="sm"
+                  variant={selectedField?.canvas === 'front' && selectedField?.field === key ? 'default' : 'outline'}
+                  className="text-[10px] h-6 px-2"
+                  onClick={() => setSelectedField({ canvas: 'front', field: key })}
+                >
+                  {FIELD_LABELS[key] || key}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase">Verso</p>
+            <div className="flex flex-wrap gap-1">
+              {backFieldKeys.map(key => (
+                <Button
+                  key={key}
+                  size="sm"
+                  variant={selectedField?.canvas === 'back' && selectedField?.field === key ? 'default' : 'outline'}
+                  className="text-[10px] h-6 px-2"
+                  onClick={() => setSelectedField({ canvas: 'back', field: key })}
+                >
+                  {FIELD_LABELS[key] || key}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          {selectedField && (
+            <p className="text-xs font-medium text-primary">
+              Selecionado: <strong>{FIELD_LABELS[selectedField.field] || selectedField.field}</strong> ({selectedField.canvas === 'front' ? 'Frente' : 'Verso'})
+            </p>
+          )}
+        </div>
       )}
 
       <div className="grid grid-cols-1 gap-3">
@@ -382,11 +463,8 @@ const ChaPreview = forwardRef<ChaPreviewHandle, ChaPreviewProps>((props, ref) =>
             <canvas
               ref={canvasFrontRef}
               className="w-full h-auto"
-              style={canvasStyle}
-              onMouseDown={e => handleMouseDown(e, 'front')}
-              onMouseMove={e => handleMouseMove(e, 'front')}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseUp}
+              style={{ display: 'block', userSelect: 'none', cursor: editMode ? 'crosshair' : 'default' }}
+              onClick={e => handleCanvasClick(e, 'front')}
             />
           </div>
         </div>
@@ -396,11 +474,8 @@ const ChaPreview = forwardRef<ChaPreviewHandle, ChaPreviewProps>((props, ref) =>
             <canvas
               ref={canvasBackRef}
               className="w-full h-auto"
-              style={canvasStyle}
-              onMouseDown={e => handleMouseDown(e, 'back')}
-              onMouseMove={e => handleMouseMove(e, 'back')}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseUp}
+              style={{ display: 'block', userSelect: 'none', cursor: editMode ? 'crosshair' : 'default' }}
+              onClick={e => handleCanvasClick(e, 'back')}
             />
           </div>
         </div>
