@@ -6,6 +6,7 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
@@ -367,7 +368,7 @@ export default function CnhNautica() {
                     <FormItem>
                       <FormLabel>Limite de Navegação</FormLabel>
                       <FormControl>
-                        <Input placeholder="Ex: ÁGUAS ABRIGADAS" {...field} onChange={(e) => field.onChange(e.target.value.toUpperCase())} />
+                        <Textarea placeholder="Ex: ÁGUAS ABRIGADAS" className="min-h-[80px] resize-none" {...field} onChange={(e) => field.onChange(e.target.value.toUpperCase())} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -447,7 +448,7 @@ export default function CnhNautica() {
                     <FormItem>
                       <FormLabel>Requisitos (opcional)</FormLabel>
                       <FormControl>
-                        <Input placeholder="Requisitos" {...field} onChange={(e) => field.onChange(e.target.value.toUpperCase())} />
+                        <Textarea placeholder="Requisitos" className="min-h-[80px] resize-none" {...field} onChange={(e) => field.onChange(e.target.value.toUpperCase())} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
