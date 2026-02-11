@@ -2,8 +2,8 @@ import { PDFDocument } from 'pdf-lib';
 
 // Coordenadas calibradas (% do PDF) - da ferramenta /teste6
 const POSITIONS = {
-  matrizFrente: { x: 3.0, y: 5.0, w: 42.0, h: 35.0 },
-  matrizVerso:  { x: 3.0, y: 42.0, w: 42.0, h: 45.0 },
+  matrizFrente: { x: 4.7, y: 1.2, w: 52.0, h: 38.3 },
+  matrizVerso:  { x: 4.4, y: 29.2, w: 52.4, h: 32.7 },
   qrcode:       { x: 67.0, y: 9.7, w: 21.1, h: 18.0 },
 };
 
