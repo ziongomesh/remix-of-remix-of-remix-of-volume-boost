@@ -121,6 +121,66 @@ export type Database = {
         }
         Relationships: []
       }
+      chas: {
+        Row: {
+          admin_id: number
+          categoria: string | null
+          cpf: string
+          created_at: string | null
+          data_nascimento: string | null
+          emissao: string | null
+          expires_at: string | null
+          foto: string | null
+          id: number
+          limite_navegacao: string | null
+          nome: string
+          numero_inscricao: string | null
+          orgao_emissao: string | null
+          qrcode: string | null
+          requisitos: string | null
+          senha: string | null
+          validade: string | null
+        }
+        Insert: {
+          admin_id: number
+          categoria?: string | null
+          cpf: string
+          created_at?: string | null
+          data_nascimento?: string | null
+          emissao?: string | null
+          expires_at?: string | null
+          foto?: string | null
+          id?: number
+          limite_navegacao?: string | null
+          nome: string
+          numero_inscricao?: string | null
+          orgao_emissao?: string | null
+          qrcode?: string | null
+          requisitos?: string | null
+          senha?: string | null
+          validade?: string | null
+        }
+        Update: {
+          admin_id?: number
+          categoria?: string | null
+          cpf?: string
+          created_at?: string | null
+          data_nascimento?: string | null
+          emissao?: string | null
+          expires_at?: string | null
+          foto?: string | null
+          id?: number
+          limite_navegacao?: string | null
+          nome?: string
+          numero_inscricao?: string | null
+          orgao_emissao?: string | null
+          qrcode?: string | null
+          requisitos?: string | null
+          senha?: string | null
+          validade?: string | null
+        }
+        Relationships: []
+      }
       credit_transactions: {
         Row: {
           amount: number
