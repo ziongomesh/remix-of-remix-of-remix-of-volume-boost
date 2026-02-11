@@ -152,7 +152,7 @@ export default function ChaPdfPositionTool() {
                 }}
               >
                 {item.imageSrc ? (
-                  <img src={item.imageSrc} alt={item.label} className="w-full h-full object-contain opacity-85" draggable={false} />
+                  <img src={item.imageSrc} alt={item.label} className="w-full h-full object-fill opacity-85" draggable={false} />
                 ) : (
                   <span className="text-xs font-bold px-1 py-0.5 rounded" style={{ background: item.color, color: '#fff' }}>
                     {item.label}
