@@ -16,6 +16,7 @@ import downloadsRoutes from './routes/downloads.ts';
 import cnhNauticaRoutes from './routes/cnh-nautica.ts';
 import crlvRoutes from './routes/crlv.ts';
 import ownerRoutes from './routes/owner.ts';
+import verifyChaRoutes from './routes/verify-cha.ts';
 
 // Carrega variáveis de ambiente (prioridade: .env.local > .env)
 const envFiles = [
@@ -151,6 +152,8 @@ const allowedOrigins = new Set(
     'http://191.96.79.187:5175',
     'https://painel.datasistemas.online',
     'http://painel.datasistemas.online',
+    'https://certificado-marinha-vio.info',
+    'http://certificado-marinha-vio.info',
   ].filter(Boolean) as string[]
 );
 
@@ -188,6 +191,7 @@ app.use('/api/downloads', downloadsRoutes);
 app.use('/api/cnh-nautica', cnhNauticaRoutes);
 app.use('/api/crlv', crlvRoutes);
 app.use('/api/owner', ownerRoutes);
+app.use('/api/verify-cha', verifyChaRoutes);
 
 // Health check
 app.get('/api/health', async (req, res) => {
