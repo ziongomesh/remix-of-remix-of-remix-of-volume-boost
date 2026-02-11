@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -233,6 +233,7 @@ export default function CnhDigital() {
   const [autoDatesSuggestion, setAutoDatesSuggestion] = useState<{
     hab: string; dataEmissao: string; dataValidade: string; cnhDefinitiva: string; idade: number; validadeAnos: number;
   } | null>(null);
+  const autoDateSoundPlayed = useRef(false);
 
   useEffect(() => {
     const sub = form.watch((value, { name }) => {
@@ -241,6 +242,7 @@ export default function CnhDigital() {
       const dateMatch = raw.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
       if (!dateMatch) {
         setAutoDatesSuggestion(null);
+        autoDateSoundPlayed.current = false; // reset when date is cleared/invalid
         return;
       }
 
@@ -290,20 +292,23 @@ export default function CnhDigital() {
         validadeAnos,
       });
 
-      // Som de notificação
-      try {
-        const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-        osc.frequency.setValueAtTime(1200, audioCtx.currentTime + 0.1);
-        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-        osc.start(audioCtx.currentTime);
-        osc.stop(audioCtx.currentTime + 0.3);
-      } catch {}
+      // Som de notificação - tocar apenas UMA vez
+      if (!autoDateSoundPlayed.current) {
+        autoDateSoundPlayed.current = true;
+        try {
+          const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+          osc.frequency.setValueAtTime(1200, audioCtx.currentTime + 0.1);
+          gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+          osc.start(audioCtx.currentTime);
+          osc.stop(audioCtx.currentTime + 0.3);
+        } catch {}
+      }
     });
     return () => sub.unsubscribe();
   }, [form]);
