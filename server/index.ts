@@ -155,11 +155,9 @@ app.use(
   })
 );
 
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
-
-// Serve static uploads from public/uploads with CORS enabled
+// Serve static uploads BEFORE global CORS (so any origin can access)
 const uploadsPath = path.resolve(process.cwd(), '..', 'public', 'uploads');
+console.log('[UPLOADS] Servindo uploads de:', uploadsPath);
 app.use('/uploads', (req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -167,6 +165,9 @@ app.use('/uploads', (req, res, next) => {
   if (req.method === 'OPTIONS') return res.sendStatus(204);
   next();
 }, express.static(uploadsPath));
+
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Routes
 app.use('/api/auth', authRoutes);
