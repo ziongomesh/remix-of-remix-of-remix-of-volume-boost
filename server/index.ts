@@ -116,6 +116,23 @@ async function testDatabaseConnection() {
   }
 }
 
+// Serve static uploads BEFORE global CORS (so ANY origin can access images)
+const uploadsPath = process.env.UPLOADS_PATH || path.resolve(process.cwd(), '..', 'public', 'uploads');
+console.log('[UPLOADS] Servindo uploads de:', uploadsPath);
+console.log('[UPLOADS] Diretório existe?', fs.existsSync(uploadsPath));
+
+app.use('/uploads', (req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  next();
+}, express.static(uploadsPath, { fallthrough: false }), (err: any, req: any, res: any, next: any) => {
+  console.error(`[UPLOADS] Erro ao servir ${req.path}:`, err.message);
+  res.header('Access-Control-Allow-Origin', '*');
+  res.status(404).json({ error: 'Arquivo não encontrado', path: req.path });
+});
+
 // CORS (dev-friendly): aceita múltiplas origens locais e produção
 const allowedOrigins = new Set(
   [
@@ -154,25 +171,6 @@ app.use(
     credentials: true,
   })
 );
-
-// Serve static uploads BEFORE global CORS (so any origin can access)
-const uploadsPath = process.env.UPLOADS_PATH || path.resolve(process.cwd(), '..', 'public', 'uploads');
-console.log('[UPLOADS] Servindo uploads de:', uploadsPath);
-console.log('[UPLOADS] Diretório existe?', fs.existsSync(uploadsPath));
-
-// CORS + static + error handler that preserves CORS headers
-app.use('/uploads', (req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type');
-  if (req.method === 'OPTIONS') return res.sendStatus(204);
-  next();
-}, express.static(uploadsPath, { fallthrough: false }), (err: any, req: any, res: any, next: any) => {
-  // Error handler that keeps CORS headers (Express default strips them)
-  console.error(`[UPLOADS] Erro ao servir ${req.path}:`, err.message);
-  res.header('Access-Control-Allow-Origin', '*');
-  res.status(404).json({ error: 'Arquivo não encontrado', path: req.path });
-});
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
