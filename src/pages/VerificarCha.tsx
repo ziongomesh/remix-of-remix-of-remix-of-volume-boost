@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Info, CheckCircle2, Loader2 } from 'lucide-react';
-import { isUsingMySQL } from '@/lib/db-config';
-import { supabase } from '@/integrations/supabase/client';
+// API local Node.js/MySQL
 
 interface ChaData {
   nome: string;
@@ -36,28 +35,13 @@ export default function VerificarCha() {
     const fetchData = async () => {
       try {
         const cleanCpf = cpf.replace(/\D/g, '');
-        let result: any = null;
-
-        if (isUsingMySQL()) {
-          // Usa API local Node.js
-          const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
-          const response = await fetch(`${apiUrl}/verify-cha?cpf=${cleanCpf}`);
-          if (!response.ok) {
-            setError('Usuário não encontrado.');
-            return;
-          }
-          result = await response.json();
-        } else {
-          // Usa Supabase edge function
-          const { data: fnResult, error: fnError } = await supabase.functions.invoke('verify-cha', {
-            body: { cpf: cleanCpf },
-          });
-          if (fnError || fnResult?.error) {
-            setError('Usuário não encontrado.');
-            return;
-          }
-          result = fnResult;
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+        const response = await fetch(`${apiUrl}/verify-cha?cpf=${cleanCpf}`);
+        if (!response.ok) {
+          setError('Usuário não encontrado.');
+          return;
         }
+        const result = await response.json();
 
         setData(result);
         const now = new Date();
