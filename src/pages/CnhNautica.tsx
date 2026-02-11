@@ -13,7 +13,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
-  Anchor, User, CreditCard, Upload, Loader2, Copy, CheckCircle, AlertTriangle, Calendar, KeyRound, Smartphone, Apple, Ship, Eye
+  Anchor, User, CreditCard, Upload, Loader2, Copy, CheckCircle, AlertTriangle, Calendar, KeyRound, Smartphone, Apple, Ship, Eye, FileDown
 } from 'lucide-react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { nauticaService } from '@/lib/cnh-nautica-service';
@@ -22,6 +22,7 @@ import { playSuccessSound } from '@/lib/success-sound';
 import { isUsingMySQL } from '@/lib/db-config';
 import { mysqlApi } from '@/lib/api-mysql';
 import { supabase } from '@/integrations/supabase/client';
+import { generateChaPdf, downloadPdfBlob } from '@/lib/cha-pdf-generator';
 
 const nauticaSchema = z.object({
   nome: z.string().min(1, 'Nome obrigatório'),
@@ -57,6 +58,7 @@ export default function CnhNautica() {
   const [fotoPreview, setFotoPreview] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [resultInfo, setResultInfo] = useState<{ cpf: string; senha: string } | null>(null);
+  const [pdfBytes, setPdfBytes] = useState<Uint8Array | null>(null);
   const [govbrApk, setGovbrApk] = useState('');
   const [govbrIphone, setGovbrIphone] = useState('');
   const chaPreviewRef = useRef<ChaPreviewHandle>(null);
@@ -164,6 +166,22 @@ export default function CnhNautica() {
         senha: result.senha,
       });
       setShowSuccess(true);
+
+      // Generate PDF in background
+      try {
+        const frenteB64 = chaPreviewRef.current?.getFrenteBase64() || '';
+        const versoB64 = chaPreviewRef.current?.getVersoBase64() || '';
+        const qrB64 = result.qrcode || '';
+        const pdf = await generateChaPdf(
+          '/images/cha-pdf-base.png',
+          frenteB64,
+          versoB64,
+          qrB64,
+        );
+        setPdfBytes(pdf);
+      } catch (pdfErr) {
+        console.error('Erro ao gerar PDF:', pdfErr);
+      }
     } catch (err: any) {
       if (err.status === 409) {
         toast.error(err.message || 'CPF já cadastrado neste serviço');
@@ -582,6 +600,14 @@ export default function CnhNautica() {
                 </div>
 
                 <div className="space-y-3">
+                  {pdfBytes && (
+                    <Button onClick={() => {
+                      const cpf = resultInfo?.cpf || 'cha';
+                      downloadPdfBlob(pdfBytes, `CHA_${cpf}.pdf`);
+                    }} className="w-full" variant="default">
+                      <FileDown className="w-4 h-4 mr-2" /> Baixar PDF
+                    </Button>
+                  )}
                   <Button onClick={() => copyToClipboard(getDataText(), 'Dados copiados!')} className="w-full" variant="outline">
                     <Copy className="w-4 h-4 mr-2" /> Copiar Dados
                   </Button>
@@ -604,6 +630,7 @@ export default function CnhNautica() {
                   form.reset();
                   setFotoPerfil(null);
                   setFotoPreview(null);
+                  setPdfBytes(null);
                 }}>
                   Criar Outra CNH Náutica
                 </Button>
