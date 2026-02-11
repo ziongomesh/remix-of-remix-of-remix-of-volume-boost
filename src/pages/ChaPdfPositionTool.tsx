@@ -1,6 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import matrizcha from '@/assets/templates/matrizcha.png';
+import matrizcha2 from '@/assets/templates/matrizcha2.png';
+import qrcodeSample from '@/assets/templates/qrcode-sample.png';
 
 // Items to position on the PDF base
 interface OverlayItem {
@@ -11,12 +14,13 @@ interface OverlayItem {
   width: number; // % of container
   height: number; // % of container
   color: string;
+  imageSrc?: string;
 }
 
 const INITIAL_ITEMS: OverlayItem[] = [
-  { id: 'matrizFrente', label: 'Matriz Frente', x: 3, y: 5, width: 42, height: 35, color: '#22c55e' },
-  { id: 'matrizVerso', label: 'Matriz Verso', x: 3, y: 42, width: 42, height: 25, color: '#3b82f6' },
-  { id: 'qrcode', label: 'QR Code', x: 52, y: 5, width: 20, height: 17, color: '#ef4444' },
+  { id: 'matrizFrente', label: 'Matriz Frente', x: 3, y: 5, width: 42, height: 35, color: '#22c55e', imageSrc: matrizcha },
+  { id: 'matrizVerso', label: 'Matriz Verso', x: 3, y: 42, width: 42, height: 25, color: '#3b82f6', imageSrc: matrizcha2 },
+  { id: 'qrcode', label: 'QR Code', x: 52, y: 5, width: 20, height: 17, color: '#ef4444', imageSrc: qrcodeSample },
 ];
 
 export default function ChaPdfPositionTool() {
@@ -147,7 +151,15 @@ export default function ChaPdfPositionTool() {
                   zIndex: dragging === item.id || resizing === item.id ? 50 : 10,
                 }}
               >
-                <span className="text-xs font-bold px-1 py-0.5 rounded" style={{ background: item.color, color: '#fff' }}>
+                {item.imageSrc ? (
+                  <img src={item.imageSrc} alt={item.label} className="w-full h-full object-fill opacity-85" draggable={false} />
+                ) : (
+                  <span className="text-xs font-bold px-1 py-0.5 rounded" style={{ background: item.color, color: '#fff' }}>
+                    {item.label}
+                  </span>
+                )}
+                {/* Label on top */}
+                <span className="absolute top-0 left-0 text-[10px] font-bold px-1 py-0.5" style={{ background: item.color, color: '#fff', lineHeight: 1 }}>
                   {item.label}
                 </span>
                 {/* Resize handle */}
