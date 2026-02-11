@@ -2,9 +2,9 @@ import { PDFDocument } from 'pdf-lib';
 
 // Coordenadas calibradas (% do PDF) - da ferramenta /teste6
 const POSITIONS = {
-  matrizFrente: { x: 3.5, y: 6.5, w: 45.5, h: 30.5 },
-  matrizVerso:  { x: 3.5, y: 38.5, w: 45.5, h: 25.5 },
-  qrcode:       { x: 66.7, y: 10.5, w: 22.7, h: 16.5 },
+  matrizFrente: { x: 3.0, y: 5.0, w: 42.0, h: 35.0 },
+  matrizVerso:  { x: 3.0, y: 42.0, w: 42.0, h: 45.0 },
+  qrcode:       { x: 67.0, y: 9.7, w: 21.1, h: 18.0 },
 };
 
 // A4 dimensions in points
