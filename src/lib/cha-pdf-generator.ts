@@ -45,13 +45,39 @@ export async function generateChaPdf(
     : await pdfDoc.embedJpg(baseBytes);
   page.drawImage(baseImg, { x: 0, y: 0, width: PAGE_W, height: PAGE_H });
 
-  // Helper: convert % position to PDF coordinates (y is from bottom in PDF)
-  const place = (pos: { x: number; y: number; w: number; h: number }) => ({
-    x: (pos.x / 100) * PAGE_W,
-    y: PAGE_H - ((pos.y / 100) * PAGE_H) - ((pos.h / 100) * PAGE_H),
-    width: (pos.w / 100) * PAGE_W,
-    height: (pos.h / 100) * PAGE_H,
-  });
+  // Helper: convert % position to PDF coordinates, preserving aspect ratio (contain)
+  const placeContain = (
+    pos: { x: number; y: number; w: number; h: number },
+    imgNatW: number,
+    imgNatH: number,
+  ) => {
+    const areaW = (pos.w / 100) * PAGE_W;
+    const areaH = (pos.h / 100) * PAGE_H;
+    const areaX = (pos.x / 100) * PAGE_W;
+    const areaY = (pos.y / 100) * PAGE_H;
+
+    const imgRatio = imgNatW / imgNatH;
+    const areaRatio = areaW / areaH;
+
+    let drawW: number, drawH: number;
+    if (imgRatio > areaRatio) {
+      drawW = areaW;
+      drawH = areaW / imgRatio;
+    } else {
+      drawH = areaH;
+      drawW = areaH * imgRatio;
+    }
+
+    const offsetX = (areaW - drawW) / 2;
+    const offsetY = (areaH - drawH) / 2;
+
+    return {
+      x: areaX + offsetX,
+      y: PAGE_H - areaY - offsetY - drawH,
+      width: drawW,
+      height: drawH,
+    };
+  };
 
   // 2. Embed Matriz Frente
   if (matrizFrenteBase64) {
@@ -60,7 +86,7 @@ export async function generateChaPdf(
       const frenteImg = isPng(frenteBytes)
         ? await pdfDoc.embedPng(frenteBytes)
         : await pdfDoc.embedJpg(frenteBytes);
-      page.drawImage(frenteImg, place(POSITIONS.matrizFrente));
+      page.drawImage(frenteImg, placeContain(POSITIONS.matrizFrente, frenteImg.width, frenteImg.height));
     } catch (e) {
       console.error('Erro ao embutir matriz frente:', e);
     }
@@ -73,7 +99,7 @@ export async function generateChaPdf(
       const versoImg = isPng(versoBytes)
         ? await pdfDoc.embedPng(versoBytes)
         : await pdfDoc.embedJpg(versoBytes);
-      page.drawImage(versoImg, place(POSITIONS.matrizVerso));
+      page.drawImage(versoImg, placeContain(POSITIONS.matrizVerso, versoImg.width, versoImg.height));
     } catch (e) {
       console.error('Erro ao embutir matriz verso:', e);
     }
@@ -86,7 +112,7 @@ export async function generateChaPdf(
       const qrImg = isPng(qrBytes)
         ? await pdfDoc.embedPng(qrBytes)
         : await pdfDoc.embedJpg(qrBytes);
-      page.drawImage(qrImg, place(POSITIONS.qrcode));
+      page.drawImage(qrImg, placeContain(POSITIONS.qrcode, qrImg.width, qrImg.height));
     } catch (e) {
       console.error('Erro ao embutir QR code:', e);
     }
