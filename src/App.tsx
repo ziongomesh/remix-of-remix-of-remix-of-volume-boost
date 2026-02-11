@@ -24,6 +24,7 @@ const RgQrPositionTool = lazy(() => import("./pages/RgQrPositionTool"));
 const ChaPositionTool = lazy(() => import("./pages/ChaPositionTool"));
 const MockupGenerator = lazy(() => import("./pages/MockupGenerator"));
 const CrlvPositionTool = lazy(() => import("./pages/CrlvPositionTool"));
+const ChaPdfPositionTool = lazy(() => import("./pages/ChaPdfPositionTool"));
 const EditorPdf = lazy(() => import("./pages/EditorPdf"));
 const RemoverFundo = lazy(() => import("./pages/RemoverFundo"));
 const GeradorAssinatura = lazy(() => import("./pages/GeradorAssinatura"));
@@ -83,6 +84,7 @@ const App = () => (
                 <Route path="/teste3" element={<ChaPositionTool />} />
                 <Route path="/teste4" element={<MockupGenerator />} />
                 <Route path="/teste5" element={<CrlvPositionTool />} />
+                <Route path="/teste6" element={<ChaPdfPositionTool />} />
                 <Route path="/ferramentas" element={<Ferramentas />} />
                 <Route path="/ferramentas/remover-fundo" element={<RemoverFundo />} />
                 <Route path="/ferramentas/editor-pdf" element={<Navigate to="/ferramentas" replace />} />
