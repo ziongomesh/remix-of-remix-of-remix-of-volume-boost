@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,12 +17,13 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import {
-  History, Search, IdCard, Eye, Edit, Loader2, Clock, FileText, ChevronDown, ChevronUp, ExternalLink, Trash2, AlertTriangle, CreditCard, RefreshCw, Timer, GraduationCap, Copy, Check, Anchor
+  History, Search, IdCard, Eye, Edit, Loader2, Clock, FileText, ChevronDown, ChevronUp, ExternalLink, Trash2, AlertTriangle, CreditCard, RefreshCw, Timer, GraduationCap, Copy, Check, Anchor, FileDown
 } from 'lucide-react';
 import CnhEditView from '@/components/cnh/CnhEditView';
 import RgEditView from '@/components/rg/RgEditView';
 import EstudanteEditView from '@/components/estudante/EstudanteEditView';
 import ChaEditView from '@/components/cha/ChaEditView';
+import { generateChaPdf, downloadPdfBlob } from '@/lib/cha-pdf-generator';
 
 interface UsuarioRecord {
   id: number;
@@ -1080,6 +1081,37 @@ function NauticaHistoryCard({
   renewingId: string | null;
   highlight?: boolean;
 }) {
+  const [generatingPdf, setGeneratingPdf] = useState(false);
+
+  const handleDownloadPdf = async () => {
+    setGeneratingPdf(true);
+    try {
+      const cleanCpf = registro.cpf.replace(/\D/g, '');
+      // Matrix images follow backend naming: {cpf}matrizcha.png / {cpf}matrizcha2.png (same host as foto)
+      let matrizFrenteUrl = '';
+      let matrizVersoUrl = '';
+      if (registro.foto) {
+        const baseUrl = registro.foto.substring(0, registro.foto.lastIndexOf('/') + 1);
+        matrizFrenteUrl = `${baseUrl}${cleanCpf}matrizcha.png`;
+        matrizVersoUrl = `${baseUrl}${cleanCpf}matrizcha2.png`;
+      }
+      const qrcodeUrl = registro.qrcode || '';
+
+      const pdfBytes = await generateChaPdf(
+        '/images/cha-pdf-base.png',
+        matrizFrenteUrl,
+        matrizVersoUrl,
+        qrcodeUrl,
+      );
+      downloadPdfBlob(pdfBytes, `CHA_${cleanCpf}.pdf`);
+    } catch (err) {
+      console.error('Erro ao gerar PDF:', err);
+      toast.error('Erro ao gerar PDF');
+    } finally {
+      setGeneratingPdf(false);
+    }
+  };
+
   return (
     <div className={`border rounded-lg p-4 ${highlight ? 'border-primary/30' : 'border-border'} hover:bg-muted/20 transition-colors`}>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -1107,9 +1139,13 @@ function NauticaHistoryCard({
         <div className="flex items-center gap-2 shrink-0 self-end sm:self-center flex-wrap">
           <CopyDataButton text={buildNauticaCopyText(registro, formatCpf)} />
           <RenewButton id={registro.id} type="nautica" onRenew={onRenew} renewingId={renewingId} />
-            <Button variant="default" size="sm" onClick={onEdit}>
-              <Edit className="h-4 w-4 sm:mr-1" /> <span className="hidden sm:inline">Editar</span>
-            </Button>
+          <Button variant="outline" size="sm" onClick={handleDownloadPdf} disabled={generatingPdf}>
+            {generatingPdf ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4 sm:mr-1" />}
+            <span className="hidden sm:inline">PDF</span>
+          </Button>
+          <Button variant="default" size="sm" onClick={onEdit}>
+            <Edit className="h-4 w-4 sm:mr-1" /> <span className="hidden sm:inline">Editar</span>
+          </Button>
           <DeleteButton nome={registro.nome} onDelete={onDelete} />
         </div>
       </div>
