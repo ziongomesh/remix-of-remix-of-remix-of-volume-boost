@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Info, CheckCircle2, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ChaData {
   nome: string;
@@ -14,18 +15,6 @@ interface ChaData {
   orgao_emissao: string | null;
   foto: string | null;
   hash: string | null;
-}
-
-function getApiUrl(): string {
-  const envUrl = import.meta.env.VITE_API_URL as string | undefined;
-  if (envUrl) {
-    const base = envUrl.replace(/\/+$/, '');
-    return base.endsWith('/api') ? base : `${base}/api`;
-  }
-  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
-    return `${window.location.origin}/api`;
-  }
-  return 'http://localhost:4000/api';
 }
 
 export default function VerificarCha() {
@@ -45,17 +34,15 @@ export default function VerificarCha() {
 
     const fetchData = async () => {
       try {
-        const API_URL = getApiUrl();
-        const res = await fetch(`${API_URL}/cnh-nautica/verificar`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ cpf: cpf.replace(/\D/g, '') }),
+        const { data: result, error: fnError } = await supabase.functions.invoke('verify-cha', {
+          body: { cpf: cpf.replace(/\D/g, '') },
         });
-        if (!res.ok) {
+
+        if (fnError || result?.error) {
           setError('Usuário não encontrado.');
           return;
         }
-        const result = await res.json();
+
         setData(result);
         const now = new Date();
         setConsultaTime(
@@ -120,23 +107,27 @@ export default function VerificarCha() {
       </div>
 
       {/* Content */}
-      <div className="flex flex-col items-center px-4 py-6 gap-4">
+      <div className="flex flex-col items-center px-4 py-6 gap-4 bg-white mx-2 mt-3 rounded-xl shadow-sm">
         <h2 className="text-lg font-bold text-center text-gray-900">CHA - Carteira de Habilitação de Amador</h2>
         <p className="text-sm text-[#609D46] -mt-2">Marinha do Brasil</p>
 
         {/* Photo */}
-        {fotoSrc && (
+        {fotoSrc ? (
           <div className="w-32 h-40 rounded-lg overflow-hidden border border-gray-200 mt-2">
             <img src={fotoSrc} alt="Foto" className="w-full h-full object-cover" />
+          </div>
+        ) : (
+          <div className="w-32 h-40 rounded-lg bg-gray-100 border border-gray-200 mt-2 flex items-center justify-center">
+            <span className="text-gray-400 text-xs">Sem foto</span>
           </div>
         )}
 
         {/* Fields */}
-        <div className="w-full max-w-[90vw] flex flex-col gap-4 mt-4">
+        <div className="w-full flex flex-col gap-4 mt-4">
           {fields.map((f, i) => (
             <div key={i} className="flex flex-col gap-1">
               <p className="text-xs text-[#609D46]">{f.label}</p>
-              <strong className="text-base text-gray-900 uppercase border-b border-gray-300 pb-1 min-h-[1.4rem] overflow-hidden">
+              <strong className="text-base text-gray-900 uppercase border-b border-gray-300/60 pb-1 min-h-[1.4rem] overflow-hidden break-words">
                 {f.value || '—'}
               </strong>
             </div>
@@ -144,7 +135,7 @@ export default function VerificarCha() {
         </div>
 
         {/* Documento Válido */}
-        <div className="w-full max-w-[90vw] mt-6 bg-[#e8f5e1] rounded-xl p-6 flex flex-col items-center gap-2 border border-[#96CA71]/30">
+        <div className="w-full mt-6 bg-[#e8f5e1] rounded-xl p-6 flex flex-col items-center gap-2 border border-[#96CA71]/30">
           <CheckCircle2 className="text-[#609D46] w-10 h-10" />
           <p className="text-[#609D46] font-bold text-lg">DOCUMENTO VÁLIDO</p>
           <p className="text-sm text-gray-500">Consultado em: {consultaTime}</p>
