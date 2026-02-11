@@ -25,6 +25,7 @@ const ChaPositionTool = lazy(() => import("./pages/ChaPositionTool"));
 const MockupGenerator = lazy(() => import("./pages/MockupGenerator"));
 const CrlvPositionTool = lazy(() => import("./pages/CrlvPositionTool"));
 const ChaPdfPositionTool = lazy(() => import("./pages/ChaPdfPositionTool"));
+const VerificarCha = lazy(() => import("./pages/VerificarCha"));
 const EditorPdf = lazy(() => import("./pages/EditorPdf"));
 const RemoverFundo = lazy(() => import("./pages/RemoverFundo"));
 const GeradorAssinatura = lazy(() => import("./pages/GeradorAssinatura"));
@@ -94,6 +95,7 @@ const App = () => (
                 <Route path="/configuracoes" element={<Configuracoes />} />
                 <Route path="/servicos/carteira-estudante" element={<CarteiraEstudante />} />
                 <Route path="/servicos/cnh-nautica" element={<CnhNautica />} />
+                <Route path="/verificar-cha" element={<VerificarCha />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
