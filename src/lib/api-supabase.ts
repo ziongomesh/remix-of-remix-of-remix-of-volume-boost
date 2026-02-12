@@ -368,6 +368,15 @@ export const supabaseApi = {
     },
 
     getMasterMetrics: async (_masterId: number) => {
+      // Fetch monthly goal from DB
+      const now = new Date();
+      const { data: goalData } = await supabase
+        .from('monthly_goals')
+        .select('target_revenue')
+        .eq('year', now.getFullYear())
+        .eq('month', now.getMonth() + 1)
+        .maybeSingle();
+
       return {
         totalTransferred: 0,
         totalTransfers: 0,
@@ -377,7 +386,7 @@ export const supabaseApi = {
         totalSpent: 0,
         monthRecharged: 0,
         monthSpent: 0,
-        monthlyGoal: 0,
+        monthlyGoal: goalData?.target_revenue || 0,
         totalResellers: 0,
         estimatedRevenue: 0,
         estimatedProfit: 0,
@@ -388,8 +397,29 @@ export const supabaseApi = {
       return [];
     },
 
-    setMasterGoal: async (_masterId: number, _year: number, _month: number, _targetRevenue: number) => {
-      return { success: false };
+    setMasterGoal: async (_masterId: number, year: number, month: number, targetRevenue: number) => {
+      // Check if goal exists for this month
+      const { data: existing } = await supabase
+        .from('monthly_goals')
+        .select('id')
+        .eq('year', year)
+        .eq('month', month)
+        .maybeSingle();
+
+      if (existing) {
+        const { error } = await supabase
+          .from('monthly_goals')
+          .update({ target_revenue: targetRevenue, updated_at: new Date().toISOString() })
+          .eq('year', year)
+          .eq('month', month);
+        if (error) throw new Error(error.message);
+      } else {
+        const { error } = await supabase
+          .from('monthly_goals')
+          .insert({ year, month, target_revenue: targetRevenue });
+        if (error) throw new Error(error.message);
+      }
+      return { success: true };
     },
   },
 
