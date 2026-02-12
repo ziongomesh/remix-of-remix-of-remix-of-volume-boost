@@ -352,26 +352,26 @@ export default function HistoricoServicos() {
   const filteredUsuarios = usuarios.filter(u => {
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase();
-    return u.nome.toLowerCase().includes(q) || u.cpf.includes(q);
+    return (u.nome || '').toLowerCase().includes(q) || (u.cpf || '').includes(q);
   });
 
   const filteredRgs = rgRegistros.filter(r => {
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase();
     const nome = r.nome_completo || r.nome || '';
-    return nome.toLowerCase().includes(q) || r.cpf.includes(q);
+    return nome.toLowerCase().includes(q) || (r.cpf || '').includes(q);
   });
 
   const filteredEstudantes = estudanteRegistros.filter(e => {
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase();
-    return e.nome.toLowerCase().includes(q) || e.cpf.includes(q);
+    return (e.nome || '').toLowerCase().includes(q) || (e.cpf || '').includes(q);
   });
 
   const filteredNauticas = nauticaRegistros.filter(n => {
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase();
-    return n.nome.toLowerCase().includes(q) || n.cpf.includes(q);
+    return (n.nome || '').toLowerCase().includes(q) || (n.cpf || '').includes(q);
   });
 
   const filteredCrlvs = crlvRegistros.filter(c => {
@@ -423,7 +423,8 @@ export default function HistoricoServicos() {
 
   const lastCreated = allRecords.length > 0 ? allRecords[0] : null;
 
-  const formatCpf = (cpf: string) => {
+  const formatCpf = (cpf: string | null | undefined) => {
+    if (!cpf) return '—';
     const c = cpf.replace(/\D/g, '');
     return c.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
   };
