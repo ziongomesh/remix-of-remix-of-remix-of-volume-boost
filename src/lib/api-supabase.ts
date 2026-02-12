@@ -276,25 +276,16 @@ export const supabaseApi = {
     },
 
     getResellerDetails: async (_resellerId: number) => {
-      // Supabase não tem as tabelas de documentos, retorna estrutura vazia
       return {
         reseller: null,
-        stats: {
-          totalCreditsReceived: 0,
-          creditsUsed: 0,
-          currentBalance: 0,
-          totalDocuments: 0,
-          totalCnh: 0,
-          totalRg: 0,
-          totalCarteira: 0
-        },
+        stats: { totalCreditsReceived: 0, creditsUsed: 0, currentBalance: 0, totalDocuments: 0, totalCnh: 0, totalRg: 0, totalCarteira: 0 },
         lastService: null,
-        documents: {
-          cnhs: [],
-          rgs: [],
-          carteiras: []
-        }
+        documents: { cnhs: [], rgs: [], carteiras: [] }
       };
+    },
+
+    getMyDocumentStats: async (_adminId: number) => {
+      return { today: 0, week: 0, month: 0 };
     },
   },
 
@@ -506,6 +497,25 @@ export const supabaseApi = {
     },
     getTopResellers: async () => fetchNodeAPI('/owner/top-resellers'),
     getLastService: async () => fetchNodeAPI('/owner/last-service'),
+  },
+
+  noticias: {
+    list: async () => fetchNodeAPI('/noticias'),
+    create: async (titulo: string, informacao: string) => {
+      return fetchNodeAPI('/noticias', {
+        method: 'POST',
+        body: JSON.stringify({ titulo, informacao }),
+      });
+    },
+    update: async (id: number, titulo: string, informacao: string) => {
+      return fetchNodeAPI(`/noticias/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ titulo, informacao }),
+      });
+    },
+    delete: async (id: number) => {
+      return fetchNodeAPI(`/noticias/${id}`, { method: 'DELETE' });
+    },
   },
 
   health: async () => {

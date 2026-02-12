@@ -1,9 +1,10 @@
 import { useAuth } from '@/hooks/useAuth';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { StatsCard } from '@/components/dashboard/StatsCard';
+import ResellerGoals from '@/components/dashboard/ResellerGoals';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CreditCard, Crown, Sparkles, TrendingUp, Users, Clock, FileText, IdCard, GraduationCap, Car, Trophy, Medal, Award, Wallet, BarChart3 } from 'lucide-react';
+import { CreditCard, Crown, Sparkles, TrendingUp, Users, Clock, FileText, IdCard, GraduationCap, Car, Trophy, Medal, Award, Wallet, BarChart3, Megaphone } from 'lucide-react';
 import { Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import api from '@/lib/api';
@@ -35,6 +36,13 @@ interface DocumentStats {
   }>;
 }
 
+interface Noticia {
+  id: number;
+  titulo: string;
+  informacao: string;
+  data_post: string;
+}
+
 export default function Dashboard() {
   const { admin, role: rawRole, credits, loading } = useAuth();
   const role = rawRole as string;
@@ -45,6 +53,8 @@ export default function Dashboard() {
   const [documentStats, setDocumentStats] = useState<DocumentStats | null>(null);
   const [loadingStats, setLoadingStats] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [noticias, setNoticias] = useState<Noticia[]>([]);
+  const [myDocStats, setMyDocStats] = useState<{ today: number; week: number; month: number }>({ today: 0, week: 0, month: 0 });
 
   useEffect(() => {
     if (admin && !loading) {
@@ -55,6 +65,24 @@ export default function Dashboard() {
       }
     }
   }, [admin, loading]);
+
+  // Fetch noticias and own document stats for all roles
+  useEffect(() => {
+    const fetchCommon = async () => {
+      if (!admin) return;
+      try {
+        const [news, docStats] = await Promise.all([
+          api.noticias.list().catch(() => []),
+          api.admins.getMyDocumentStats(admin.id).catch(() => ({ today: 0, week: 0, month: 0 })),
+        ]);
+        setNoticias(news);
+        setMyDocStats(docStats);
+      } catch (e) {
+        console.error('Error fetching common data:', e);
+      }
+    };
+    fetchCommon();
+  }, [admin]);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -581,26 +609,47 @@ export default function Dashboard() {
           </div>
         )}
 
+        {/* Metas de Serviços */}
+        {admin && (
+          <ResellerGoals
+            adminId={admin.id}
+            totalDocumentsToday={myDocStats.today}
+            totalDocumentsWeek={myDocStats.week}
+            totalDocumentsMonth={myDocStats.month}
+          />
+        )}
+
+        {/* Notícias / Comunicados */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
-              Últimas Atualizações
+              <Megaphone className="h-5 w-5 text-primary" />
+              Comunicados
             </CardTitle>
             <p className="text-sm text-muted-foreground">
               Fique por dentro das novidades do sistema
             </p>
           </CardHeader>
           <CardContent>
-            <div className="border-l-4 border-primary pl-4 py-2">
-              <h4 className="font-medium">Sistema de créditos ativo!</h4>
-              <p className="text-sm text-muted-foreground">
-                O novo sistema de créditos está funcionando. Masters podem recarregar e transferir para seus revendedores.
+            {noticias.length > 0 ? (
+              <div className="space-y-4">
+                {noticias.slice(0, 5).map((noticia) => (
+                  <div key={noticia.id} className="border-l-4 border-primary pl-4 py-2">
+                    <h4 className="font-medium">{noticia.titulo}</h4>
+                    <p className="text-sm text-muted-foreground whitespace-pre-line">
+                      {noticia.informacao}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      📅 {new Date(noticia.data_post).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-muted-foreground py-4 text-sm">
+                Nenhum comunicado disponível
               </p>
-              <p className="text-xs text-muted-foreground mt-2">
-                📅 02/01/2026
-              </p>
-            </div>
+            )}
           </CardContent>
         </Card>
       </div>
