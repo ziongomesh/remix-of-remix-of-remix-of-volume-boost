@@ -26,8 +26,7 @@ export default function Transferir() {
   const [loadingResellers, setLoadingResellers] = useState(true);
   const [transferCount, setTransferCount] = useState(0);
 
-  // Mínimo: 2 créditos nas primeiras 20 transferências, depois 3
-  const minTransfer = transferCount >= 20 ? 3 : 2;
+  const minTransfer = 3;
 
   useEffect(() => {
     if (admin && role === 'master') {
@@ -182,10 +181,7 @@ export default function Transferir() {
                     placeholder="0"
                   />
                   <p className="text-xs text-muted-foreground">
-                    * Quantidade mínima: {minTransfer} créditos
-                    {transferCount < 20 && (
-                      <span className="ml-1">(após {20 - transferCount} transferência{20 - transferCount !== 1 ? 's' : ''}, mínimo será 3)</span>
-                    )}
+                    * Quantidade mínima: 3 créditos
                   </p>
                 </div>
 
