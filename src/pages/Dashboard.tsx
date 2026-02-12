@@ -9,6 +9,7 @@ import { Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import api from '@/lib/api';
 import OnboardingWizard from '@/components/tutorial/OnboardingWizard';
+import MasterOnboardingWizard from '@/components/tutorial/MasterOnboardingWizard';
 interface TopReseller {
   id: number;
   nome: string;
@@ -53,15 +54,22 @@ export default function Dashboard() {
   const [documentStats, setDocumentStats] = useState<DocumentStats | null>(null);
   const [loadingStats, setLoadingStats] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showMasterOnboarding, setShowMasterOnboarding] = useState(false);
   const [noticias, setNoticias] = useState<Noticia[]>([]);
   const [myDocStats, setMyDocStats] = useState<{ today: number; week: number; month: number }>({ today: 0, week: 0, month: 0 });
 
   useEffect(() => {
     if (admin && !loading) {
-      const tutorialKey = `tutorial_completed_${admin.id}`;
-      const tutorialDone = localStorage.getItem(tutorialKey);
-      if (!tutorialDone && admin.rank === 'revendedor') {
-        setShowOnboarding(true);
+      if (admin.rank === 'revendedor') {
+        const tutorialKey = `tutorial_completed_${admin.id}`;
+        if (!localStorage.getItem(tutorialKey)) {
+          setShowOnboarding(true);
+        }
+      } else if (admin.rank === 'master') {
+        const masterKey = `master_tutorial_completed_${admin.id}`;
+        if (!localStorage.getItem(masterKey)) {
+          setShowMasterOnboarding(true);
+        }
       }
     }
   }, [admin, loading]);
@@ -206,6 +214,13 @@ export default function Dashboard() {
           userName={admin.nome?.split(' ')[0] || 'Usuário'}
           adminId={admin.id}
           onClose={() => setShowOnboarding(false)}
+        />
+      )}
+      {showMasterOnboarding && admin && (
+        <MasterOnboardingWizard
+          userName={admin.nome?.split(' ')[0] || 'Usuário'}
+          adminId={admin.id}
+          onClose={() => setShowMasterOnboarding(false)}
         />
       )}
       <div className="space-y-6 sm:space-y-8 animate-fade-in">
