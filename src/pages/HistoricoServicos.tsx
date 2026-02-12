@@ -10,6 +10,7 @@ import { cnhService } from '@/lib/cnh-service';
 import { rgService, type RgRecord } from '@/lib/rg-service';
 import { estudanteService, type EstudanteRecord } from '@/lib/estudante-service';
 import { nauticaService, type NauticaRecord } from '@/lib/cnh-nautica-service';
+import { crlvService, type CrlvRecord } from '@/lib/crlv-service';
 import { toast } from 'sonner';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -17,7 +18,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import {
-  History, Search, IdCard, Eye, Edit, Loader2, Clock, FileText, ChevronDown, ChevronUp, ExternalLink, Trash2, AlertTriangle, CreditCard, RefreshCw, Timer, GraduationCap, Copy, Check, Anchor, FileDown
+  History, Search, IdCard, Eye, Edit, Loader2, Clock, FileText, ChevronDown, ChevronUp, ExternalLink, Trash2, AlertTriangle, CreditCard, RefreshCw, Timer, GraduationCap, Copy, Check, Anchor, FileDown, Truck
 } from 'lucide-react';
 import CnhEditView from '@/components/cnh/CnhEditView';
 import RgEditView from '@/components/rg/RgEditView';
@@ -99,6 +100,7 @@ export default function HistoricoServicos() {
   const [rgRegistros, setRgRegistros] = useState<RgRecord[]>([]);
   const [estudanteRegistros, setEstudanteRegistros] = useState<EstudanteRecord[]>([]);
   const [nauticaRegistros, setNauticaRegistros] = useState<NauticaRecord[]>([]);
+  const [crlvRegistros, setCrlvRegistros] = useState<CrlvRecord[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedModule, setExpandedModule] = useState<string | null>(null);
@@ -157,6 +159,20 @@ export default function HistoricoServicos() {
     try {
       await nauticaService.delete(admin.id, admin.session_token, nauticaId);
       toast.success('CNH Náutica excluída com sucesso');
+      fetchData();
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao excluir');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handleDeleteCrlv = async (crlvId: number) => {
+    if (!admin) return;
+    setDeletingId(crlvId);
+    try {
+      await crlvService.delete(admin.id, admin.session_token, crlvId);
+      toast.success('CRLV excluído com sucesso');
       fetchData();
     } catch (err: any) {
       toast.error(err.message || 'Erro ao excluir');
@@ -233,16 +249,18 @@ export default function HistoricoServicos() {
     if (!admin) return;
     setLoadingData(true);
     try {
-      const [cnhData, rgData, estudanteData, nauticaData] = await Promise.all([
+      const [cnhData, rgData, estudanteData, nauticaData, crlvData] = await Promise.all([
         cnhService.list(admin.id, admin.session_token),
         rgService.list(admin.id, admin.session_token),
         estudanteService.list(admin.id, admin.session_token),
         nauticaService.list(admin.id, admin.session_token),
+        crlvService.list(admin.id, admin.session_token),
       ]);
       setUsuarios(cnhData?.usuarios || []);
       setRgRegistros(rgData?.registros || []);
       setEstudanteRegistros(estudanteData?.registros || []);
       setNauticaRegistros(nauticaData?.registros || []);
+      setCrlvRegistros(crlvData || []);
     } catch (err: any) {
       console.error('Erro ao carregar histórico:', err);
       toast.error('Erro ao carregar histórico');
@@ -250,6 +268,8 @@ export default function HistoricoServicos() {
       setLoadingData(false);
     }
   };
+
+
 
   useEffect(() => {
     fetchData();
@@ -354,7 +374,16 @@ export default function HistoricoServicos() {
     return n.nome.toLowerCase().includes(q) || n.cpf.includes(q);
   });
 
-  const totalRecords = filteredUsuarios.length + filteredRgs.length + filteredEstudantes.length + filteredNauticas.length;
+  const filteredCrlvs = crlvRegistros.filter(c => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    return (c.nome_proprietario || '').toLowerCase().includes(q) || (c.cpf_cnpj || '').includes(q) || (c.placa || '').toLowerCase().includes(q);
+  });
+
+  const totalRecords = filteredUsuarios.length + filteredRgs.length + filteredEstudantes.length + filteredNauticas.length + filteredCrlvs.length;
+
+  // When searching, auto-expand modules with results
+  const hasSearch = searchQuery.trim().length > 0;
 
   // Records expiring within 5 days
   const expiringCnhs = usuarios.filter(u => {
@@ -373,7 +402,11 @@ export default function HistoricoServicos() {
     const days = daysUntilExpiration(n.expires_at);
     return days !== null && days >= 0 && days <= 5;
   });
-  const totalExpiring = expiringCnhs.length + expiringRgs.length + expiringEstudantes.length + expiringNauticas.length;
+  const expiringCrlvs = crlvRegistros.filter(c => {
+    const days = daysUntilExpiration(c.expires_at);
+    return days !== null && days >= 0 && days <= 5;
+  });
+  const totalExpiring = expiringCnhs.length + expiringRgs.length + expiringEstudantes.length + expiringNauticas.length + expiringCrlvs.length;
 
   // Last created across all types
   const allRecords = [
@@ -381,6 +414,7 @@ export default function HistoricoServicos() {
     ...filteredRgs.map(r => ({ type: 'rg' as const, data: r, created: r.created_at })),
     ...filteredEstudantes.map(e => ({ type: 'estudante' as const, data: e, created: e.created_at })),
     ...filteredNauticas.map(n => ({ type: 'nautica' as const, data: n, created: n.created_at })),
+    ...filteredCrlvs.map(c => ({ type: 'crlv' as const, data: c, created: c.created_at })),
   ].sort((a, b) => {
     const da = a.created ? new Date(a.created).getTime() : 0;
     const db = b.created ? new Date(b.created).getTime() : 0;
@@ -504,7 +538,7 @@ export default function HistoricoServicos() {
               <Card className="border-primary/30 bg-primary/5">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm text-primary flex items-center gap-2">
-                    <Clock className="h-4 w-4" /> Último Serviço Criado ({lastCreated.type === 'cnh' ? 'CNH' : lastCreated.type === 'rg' ? 'RG' : lastCreated.type === 'nautica' ? 'CHA Náutica' : 'Estudante'})
+                    <Clock className="h-4 w-4" /> Último Serviço Criado ({lastCreated.type === 'cnh' ? 'CNH' : lastCreated.type === 'rg' ? 'RG' : lastCreated.type === 'nautica' ? 'CHA Náutica' : lastCreated.type === 'crlv' ? 'CRLV' : 'Estudante'})
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -541,6 +575,13 @@ export default function HistoricoServicos() {
                       renewingId={renewingId}
                       highlight
                     />
+                  ) : lastCreated.type === 'crlv' ? (
+                    <CrlvHistoryCard
+                      registro={lastCreated.data as CrlvRecord}
+                      formatCpf={formatCpf}
+                      formatDate={formatDateStr}
+                      onDelete={() => handleDeleteCrlv((lastCreated.data as CrlvRecord).id)}
+                    />
                   ) : (
                     <EstudanteHistoryCard
                       registro={lastCreated.data as EstudanteRecord}
@@ -574,10 +615,10 @@ export default function HistoricoServicos() {
                         <p className="text-sm text-muted-foreground font-normal">{filteredUsuarios.length} registro{filteredUsuarios.length !== 1 ? 's' : ''}</p>
                       </div>
                     </div>
-                    {expandedModule === 'cnh' ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                    {(expandedModule === 'cnh' || (hasSearch && filteredUsuarios.length > 0)) ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
                   </CardTitle>
                 </CardHeader>
-                {expandedModule === 'cnh' && (
+                {(expandedModule === 'cnh' || (hasSearch && filteredUsuarios.length > 0)) && (
                   <CardContent className="space-y-3 pt-0">
                     {filteredUsuarios.map((u) => (
                       <CnhHistoryCard
@@ -613,10 +654,10 @@ export default function HistoricoServicos() {
                         <p className="text-sm text-muted-foreground font-normal">{filteredRgs.length} registro{filteredRgs.length !== 1 ? 's' : ''}</p>
                       </div>
                     </div>
-                    {expandedModule === 'rg' ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                    {(expandedModule === 'rg' || (hasSearch && filteredRgs.length > 0)) ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
                   </CardTitle>
                 </CardHeader>
-                {expandedModule === 'rg' && (
+                {(expandedModule === 'rg' || (hasSearch && filteredRgs.length > 0)) && (
                   <CardContent className="space-y-3 pt-0">
                     {filteredRgs.map((r) => (
                       <RgHistoryCard
@@ -652,10 +693,10 @@ export default function HistoricoServicos() {
                         <p className="text-sm text-muted-foreground font-normal">{filteredEstudantes.length} registro{filteredEstudantes.length !== 1 ? 's' : ''}</p>
                       </div>
                     </div>
-                    {expandedModule === 'estudante' ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                    {(expandedModule === 'estudante' || (hasSearch && filteredEstudantes.length > 0)) ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
                   </CardTitle>
                 </CardHeader>
-                {expandedModule === 'estudante' && (
+                {(expandedModule === 'estudante' || (hasSearch && filteredEstudantes.length > 0)) && (
                   <CardContent className="space-y-3 pt-0">
                     {filteredEstudantes.map((e) => (
                       <EstudanteHistoryCard
@@ -667,6 +708,42 @@ export default function HistoricoServicos() {
                         onDelete={() => handleDeleteEstudante(e.id)}
                         onRenew={() => handleRenewEstudante(e.id)}
                         renewingId={renewingId}
+                      />
+                    ))}
+                  </CardContent>
+                )}
+              </Card>
+            )}
+
+            {/* Módulo CRLV Digital */}
+            {filteredCrlvs.length > 0 && (
+              <Card>
+                <CardHeader
+                  className="cursor-pointer hover:bg-muted/30 transition-colors"
+                  onClick={() => setExpandedModule(expandedModule === 'crlv' ? null : 'crlv')}
+                >
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-lg bg-cyan-500/10 flex items-center justify-center">
+                        <Truck className="h-5 w-5 text-cyan-500" />
+                      </div>
+                      <div>
+                        <span className="text-base">CRLV Digital</span>
+                        <p className="text-sm text-muted-foreground font-normal">{filteredCrlvs.length} registro{filteredCrlvs.length !== 1 ? 's' : ''}</p>
+                      </div>
+                    </div>
+                    {(expandedModule === 'crlv' || (hasSearch && filteredCrlvs.length > 0)) ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                  </CardTitle>
+                </CardHeader>
+                {(expandedModule === 'crlv' || (hasSearch && filteredCrlvs.length > 0)) && (
+                  <CardContent className="space-y-3 pt-0">
+                    {filteredCrlvs.map((c) => (
+                      <CrlvHistoryCard
+                        key={c.id}
+                        registro={c}
+                        formatCpf={formatCpf}
+                        formatDate={formatDateStr}
+                        onDelete={() => handleDeleteCrlv(c.id)}
                       />
                     ))}
                   </CardContent>
@@ -691,10 +768,10 @@ export default function HistoricoServicos() {
                         <p className="text-sm text-muted-foreground font-normal">{filteredNauticas.length} registro{filteredNauticas.length !== 1 ? 's' : ''}</p>
                       </div>
                     </div>
-                    {expandedModule === 'nautica' ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                    {(expandedModule === 'nautica' || (hasSearch && filteredNauticas.length > 0)) ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
                   </CardTitle>
                 </CardHeader>
-                {expandedModule === 'nautica' && (
+                {(expandedModule === 'nautica' || (hasSearch && filteredNauticas.length > 0)) && (
                   <CardContent className="space-y-3 pt-0">
                     {filteredNauticas.map((n) => (
                       <NauticaHistoryCard
@@ -1147,6 +1224,51 @@ function NauticaHistoryCard({
             <Edit className="h-4 w-4 sm:mr-1" /> <span className="hidden sm:inline">Editar</span>
           </Button>
           <DeleteButton nome={registro.nome} onDelete={onDelete} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ======== CRLV Card ========
+function CrlvHistoryCard({
+  registro, formatCpf, formatDate, onDelete,
+}: {
+  registro: CrlvRecord;
+  formatCpf: (cpf: string) => string;
+  formatDate: (d: string | null) => string;
+  onDelete: () => void;
+}) {
+  return (
+    <div className="border rounded-lg p-4 border-border hover:bg-muted/20 transition-colors">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h3 className="font-semibold text-foreground text-sm sm:text-base truncate">{registro.nome_proprietario}</h3>
+            <Badge variant="outline" className="text-[10px]">
+              <Truck className="h-3 w-3 mr-1" /> CRLV
+            </Badge>
+            <ExpirationBadge dataExpiracao={registro.expires_at} />
+          </div>
+          <p className="text-xs sm:text-sm text-muted-foreground">CPF/CNPJ: {formatCpf(registro.cpf_cnpj)}</p>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-1 text-xs text-muted-foreground">
+            <span>Placa: {registro.placa || '—'}</span>
+            <span>Modelo: {registro.marca_modelo || '—'}</span>
+            <span>Renavam: {registro.renavam || '—'}</span>
+            <span>Criado: {formatDate(registro.created_at)}</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0 self-end sm:self-center flex-wrap">
+          <CopyDataButton text={`Olá! Segue os dados do CRLV:\n\n🚗 Placa: ${registro.placa}\n📋 Proprietário: ${registro.nome_proprietario}\n📄 Renavam: ${registro.renavam}\n\n⚠️ O acesso é válido por 45 dias.`} />
+          {registro.pdf_url && (
+            <Button variant="outline" size="sm" asChild>
+              <a href={registro.pdf_url} target="_blank" rel="noopener noreferrer">
+                <FileDown className="h-4 w-4 sm:mr-1" />
+                <span className="hidden sm:inline">PDF</span>
+              </a>
+            </Button>
+          )}
+          <DeleteButton nome={registro.nome_proprietario} onDelete={onDelete} />
         </div>
       </div>
     </div>
