@@ -78,7 +78,7 @@ export default function HistoricoTransferencias() {
       ]);
       setTransfers(transfersData || []);
       setMetrics(metricsData);
-      setNewGoal((metricsData?.monthlyGoal || 0).toString());
+      setNewGoal((metricsData?.monthlyGoal || 0).toFixed(2).replace('.', ','));
     } catch (error) {
       console.error('Erro ao buscar dados:', error);
       toast.error('Erro ao carregar dados');
@@ -87,9 +87,29 @@ export default function HistoricoTransferencias() {
     }
   };
 
+  const parseLocalizedNumber = (val: string): number => {
+    let str = val.trim().replace(/[R$\s]/g, '');
+    // Brazilian format: 1.234,56
+    const lastComma = str.lastIndexOf(',');
+    const lastDot = str.lastIndexOf('.');
+    if (lastComma > lastDot) {
+      str = str.replace(/\./g, '').replace(',', '.');
+    } else {
+      str = str.replace(/,/g, '');
+    }
+    const parsed = parseFloat(str);
+    return isNaN(parsed) ? 0 : parsed;
+  };
+
+  const formatGoalInput = (val: string): string => {
+    // Allow typing freely, just prefix with R$
+    const clean = val.replace(/^R\$\s*/, '');
+    return clean;
+  };
+
   const handleSaveGoal = async () => {
-    const value = parseFloat(newGoal);
-    if (isNaN(value) || value <= 0) {
+    const value = parseLocalizedNumber(newGoal);
+    if (value <= 0) {
       toast.error('Digite um valor válido');
       return;
     }
@@ -243,13 +263,16 @@ export default function HistoricoTransferencias() {
                 <CardContent className="space-y-4">
                   {editingGoal ? (
                     <div className="flex items-center gap-2">
-                      <Input
-                        type="number"
-                        placeholder="Meta em créditos"
-                        value={newGoal}
-                        onChange={(e) => setNewGoal(e.target.value)}
-                        className="flex-1"
-                      />
+                      <div className="relative flex-1">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">R$</span>
+                        <Input
+                          type="text"
+                          placeholder="0,00"
+                          value={newGoal}
+                          onChange={(e) => setNewGoal(e.target.value)}
+                          className="pl-10"
+                        />
+                      </div>
                       <Button size="icon" variant="ghost" onClick={handleSaveGoal}>
                         <Check className="h-4 w-4 text-success" />
                       </Button>
@@ -277,7 +300,7 @@ export default function HistoricoTransferencias() {
                         <div className="space-y-1">
                           <p className="text-sm text-muted-foreground">Meta</p>
                           <p className="text-xl font-bold text-primary">
-                            {metrics?.monthlyGoal.toLocaleString('pt-BR')}
+                            {formatCurrency(metrics?.monthlyGoal || 0)}
                           </p>
                         </div>
                       </div>
