@@ -119,6 +119,11 @@ export default function DashboardDono() {
   const [newPassword, setNewPassword] = useState('');
   const [transferAmount, setTransferAmount] = useState('');
 
+  // Detail dialog state
+  const [detailDialog, setDetailDialog] = useState<{ open: boolean; admin: AdminItem | null }>({ open: false, admin: null });
+  const [detailData, setDetailData] = useState<any>(null);
+  const [loadingDetail, setLoadingDetail] = useState(false);
+
   // Gerenciar tab state
   const [cnhIphone, setCnhIphone] = useState('');
   const [cnhApk, setCnhApk] = useState('');
@@ -312,6 +317,21 @@ export default function DashboardDono() {
       const data = await (api as any).owner.getAuditLog(adminId);
       setAuditLog(data);
     } catch (error) { console.error('Erro:', error); }
+  };
+
+  const openDetailDialog = async (adm: AdminItem) => {
+    setDetailDialog({ open: true, admin: adm });
+    setDetailData(null);
+    setLoadingDetail(true);
+    try {
+      const data = await (api as any).owner.getAdminDocuments(adm.id);
+      setDetailData(data);
+    } catch (error) {
+      console.error('Erro ao buscar documentos:', error);
+      toast.error('Erro ao carregar documentos');
+    } finally {
+      setLoadingDetail(false);
+    }
   };
 
   if (loading) {
@@ -990,6 +1010,88 @@ export default function DashboardDono() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Admin Documents Detail Dialog */}
+      <Dialog open={detailDialog.open} onOpenChange={(o) => setDetailDialog({ open: o, admin: o ? detailDialog.admin : null })}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Eye className="h-5 w-5" />
+              Documentos de {detailDialog.admin?.nome}
+            </DialogTitle>
+            <DialogDescription>
+              {detailDialog.admin?.email} — Saldo: {detailDialog.admin?.creditos.toLocaleString('pt-BR')} créditos
+            </DialogDescription>
+          </DialogHeader>
+
+          {loadingDetail ? (
+            <div className="flex justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+            </div>
+          ) : detailData ? (
+            <Tabs defaultValue="cnh" className="w-full">
+              <TabsList className="grid w-full grid-cols-5">
+                <TabsTrigger value="cnh" className="gap-1 text-xs">
+                  <Car className="h-3 w-3" />CNH ({detailData.documents.cnhs?.length || 0})
+                </TabsTrigger>
+                <TabsTrigger value="rg" className="gap-1 text-xs">
+                  <IdCard className="h-3 w-3" />RG ({detailData.documents.rgs?.length || 0})
+                </TabsTrigger>
+                <TabsTrigger value="carteira" className="gap-1 text-xs">
+                  <GraduationCap className="h-3 w-3" />Estudante ({detailData.documents.carteiras?.length || 0})
+                </TabsTrigger>
+                <TabsTrigger value="crlv" className="gap-1 text-xs">
+                  <Truck className="h-3 w-3" />CRLV ({detailData.documents.crlvs?.length || 0})
+                </TabsTrigger>
+                <TabsTrigger value="cha" className="gap-1 text-xs">
+                  <Ship className="h-3 w-3" />Náutica ({detailData.documents.chas?.length || 0})
+                </TabsTrigger>
+              </TabsList>
+
+              {['cnh', 'rg', 'carteira', 'crlv', 'cha'].map((type) => {
+                const key = type === 'cnh' ? 'cnhs' : type === 'rg' ? 'rgs' : type === 'carteira' ? 'carteiras' : type === 'crlv' ? 'crlvs' : 'chas';
+                const docs = detailData.documents[key] || [];
+                return (
+                  <TabsContent key={type} value={type} className="mt-4">
+                    {docs.length === 0 ? (
+                      <p className="text-center text-muted-foreground py-8">Nenhum documento</p>
+                    ) : (
+                      <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Nome</TableHead>
+                              <TableHead>CPF</TableHead>
+                              <TableHead>Senha</TableHead>
+                              {type === 'crlv' && <TableHead>Placa</TableHead>}
+                              {type !== 'carteira' && <TableHead>Validade</TableHead>}
+                              <TableHead>Criado em</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {docs.map((doc: any) => (
+                              <TableRow key={doc.id}>
+                                <TableCell className="font-medium max-w-[200px] truncate">{doc.nome}</TableCell>
+                                <TableCell className="font-mono text-xs">{doc.cpf?.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')}</TableCell>
+                                <TableCell className="font-mono font-semibold text-primary">{doc.senha}</TableCell>
+                                {type === 'crlv' && <TableCell className="font-mono text-xs">{doc.placa}</TableCell>}
+                                {type !== 'carteira' && <TableCell className="text-xs">{doc.validade ? new Date(doc.validade).toLocaleDateString('pt-BR') : '-'}</TableCell>}
+                                <TableCell className="text-xs text-muted-foreground">{formatDate(doc.created_at)}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+                  </TabsContent>
+                );
+              })}
+            </Tabs>
+          ) : (
+            <p className="text-center text-muted-foreground py-8">Erro ao carregar dados</p>
+          )}
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 
@@ -1068,7 +1170,7 @@ export default function DashboardDono() {
                     <TableCell className="text-xs text-muted-foreground">{adm.criado_por_nome || '-'}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center gap-1 justify-end">
-                        <Button variant="ghost" size="sm" onClick={() => { setAuditFilter(String(adm.id)); handleFilterAudit(adm.id); setActiveTab('audit'); }} title="Ver histórico"><Eye className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="sm" onClick={() => openDetailDialog(adm)} title="Ver documentos"><Eye className="h-4 w-4" /></Button>
                         <Button variant="ghost" size="sm" onClick={() => { setPasswordDialog({ open: true, admin: adm }); setNewPassword(''); }} title="Alterar senha"><KeyRound className="h-4 w-4" /></Button>
                         <Button variant="ghost" size="sm" onClick={() => { setTransferDialog({ open: true, admin: adm }); setTransferAmount(''); }} title="Transferir créditos"><Send className="h-4 w-4" /></Button>
                       </div>

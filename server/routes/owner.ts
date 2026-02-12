@@ -377,4 +377,46 @@ router.get('/last-service', async (_req, res) => {
   }
 });
 
+// GET /owner/admin-documents/:adminId - Todos os documentos ativos de um admin por categoria
+router.get('/admin-documents/:adminId', async (req, res) => {
+  try {
+    const adminId = parseInt(req.params.adminId);
+
+    const [adminData] = await query<any[]>(
+      'SELECT id, nome, email, creditos, `rank`, created_at, last_active FROM admins WHERE id = ?',
+      [adminId]
+    );
+    if (!adminData) return res.status(404).json({ error: 'Admin não encontrado' });
+
+    const cnhs = await query<any[]>(
+      'SELECT id, cpf, nome, senha, data_validade as validade, created_at FROM usuarios WHERE admin_id = ? ORDER BY created_at DESC',
+      [adminId]
+    );
+    const rgs = await query<any[]>(
+      'SELECT id, cpf, nome_completo as nome, senha, validade, created_at FROM rgs WHERE admin_id = ? ORDER BY created_at DESC',
+      [adminId]
+    );
+    const carteiras = await query<any[]>(
+      'SELECT id, cpf, nome, senha, created_at FROM carteira_estudante WHERE admin_id = ? ORDER BY created_at DESC',
+      [adminId]
+    );
+    const crlvs = await query<any[]>(
+      'SELECT id, cpf_cnpj as cpf, nome_proprietario as nome, senha, placa, created_at FROM usuarios_crlv WHERE admin_id = ? ORDER BY created_at DESC',
+      [adminId]
+    );
+    const chas = await query<any[]>(
+      'SELECT id, cpf, nome, senha, validade, created_at FROM chas WHERE admin_id = ? ORDER BY created_at DESC',
+      [adminId]
+    );
+
+    res.json({
+      admin: adminData,
+      documents: { cnhs, rgs, carteiras, crlvs, chas }
+    });
+  } catch (error) {
+    console.error('Erro ao buscar documentos do admin:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
 export default router;
