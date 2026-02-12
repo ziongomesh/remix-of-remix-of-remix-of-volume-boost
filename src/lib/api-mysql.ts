@@ -389,6 +389,25 @@ export const mysqlApi = {
     getLastService: async () => fetchAPI('/owner/last-service'),
   },
 
+  noticias: {
+    list: async () => fetchAPI('/noticias'),
+    create: async (titulo: string, informacao: string) => {
+      return fetchAPI('/noticias', {
+        method: 'POST',
+        body: JSON.stringify({ titulo, informacao }),
+      });
+    },
+    update: async (id: number, titulo: string, informacao: string) => {
+      return fetchAPI(`/noticias/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ titulo, informacao }),
+      });
+    },
+    delete: async (id: number) => {
+      return fetchAPI(`/noticias/${id}`, { method: 'DELETE' });
+    },
+  },
+
   health: async () => {
     try {
       await fetchAPI('/health');
