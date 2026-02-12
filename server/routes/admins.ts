@@ -483,6 +483,75 @@ router.get('/creator/:adminId', async (req, res) => {
   }
 });
 
+// GET /admins/stats/my-documents/:adminId - Contar documentos por período (dia/semana/mês) para o próprio admin
+router.get('/stats/my-documents/:adminId', async (req, res) => {
+  try {
+    const adminId = parseInt(req.params.adminId);
+    
+    // Today
+    const [cnhToday] = await query<any[]>(
+      'SELECT COUNT(*) as count FROM usuarios WHERE admin_id = ? AND DATE(created_at) = CURDATE()', [adminId]
+    );
+    const [rgToday] = await query<any[]>(
+      'SELECT COUNT(*) as count FROM rgs WHERE admin_id = ? AND DATE(created_at) = CURDATE()', [adminId]
+    );
+    const [carteiraToday] = await query<any[]>(
+      'SELECT COUNT(*) as count FROM carteira_estudante WHERE admin_id = ? AND DATE(created_at) = CURDATE()', [adminId]
+    );
+    const [crlvToday] = await query<any[]>(
+      'SELECT COUNT(*) as count FROM usuarios_crlv WHERE admin_id = ? AND DATE(created_at) = CURDATE()', [adminId]
+    );
+    const [chaToday] = await query<any[]>(
+      'SELECT COUNT(*) as count FROM chas WHERE admin_id = ? AND DATE(created_at) = CURDATE()', [adminId]
+    );
+    
+    const today = (cnhToday?.count || 0) + (rgToday?.count || 0) + (carteiraToday?.count || 0) + (crlvToday?.count || 0) + (chaToday?.count || 0);
+    
+    // This week
+    const [cnhWeek] = await query<any[]>(
+      'SELECT COUNT(*) as count FROM usuarios WHERE admin_id = ? AND YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1)', [adminId]
+    );
+    const [rgWeek] = await query<any[]>(
+      'SELECT COUNT(*) as count FROM rgs WHERE admin_id = ? AND YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1)', [adminId]
+    );
+    const [carteiraWeek] = await query<any[]>(
+      'SELECT COUNT(*) as count FROM carteira_estudante WHERE admin_id = ? AND YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1)', [adminId]
+    );
+    const [crlvWeek] = await query<any[]>(
+      'SELECT COUNT(*) as count FROM usuarios_crlv WHERE admin_id = ? AND YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1)', [adminId]
+    );
+    const [chaWeek] = await query<any[]>(
+      'SELECT COUNT(*) as count FROM chas WHERE admin_id = ? AND YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1)', [adminId]
+    );
+    
+    const week = (cnhWeek?.count || 0) + (rgWeek?.count || 0) + (carteiraWeek?.count || 0) + (crlvWeek?.count || 0) + (chaWeek?.count || 0);
+    
+    // This month
+    const [cnhMonth] = await query<any[]>(
+      'SELECT COUNT(*) as count FROM usuarios WHERE admin_id = ? AND YEAR(created_at) = YEAR(CURDATE()) AND MONTH(created_at) = MONTH(CURDATE())', [adminId]
+    );
+    const [rgMonth] = await query<any[]>(
+      'SELECT COUNT(*) as count FROM rgs WHERE admin_id = ? AND YEAR(created_at) = YEAR(CURDATE()) AND MONTH(created_at) = MONTH(CURDATE())', [adminId]
+    );
+    const [carteiraMonth] = await query<any[]>(
+      'SELECT COUNT(*) as count FROM carteira_estudante WHERE admin_id = ? AND YEAR(created_at) = YEAR(CURDATE()) AND MONTH(created_at) = MONTH(CURDATE())', [adminId]
+    );
+    const [crlvMonth] = await query<any[]>(
+      'SELECT COUNT(*) as count FROM usuarios_crlv WHERE admin_id = ? AND YEAR(created_at) = YEAR(CURDATE()) AND MONTH(created_at) = MONTH(CURDATE())', [adminId]
+    );
+    const [chaMonth] = await query<any[]>(
+      'SELECT COUNT(*) as count FROM chas WHERE admin_id = ? AND YEAR(created_at) = YEAR(CURDATE()) AND MONTH(created_at) = MONTH(CURDATE())', [adminId]
+    );
+    
+    const month = (cnhMonth?.count || 0) + (rgMonth?.count || 0) + (carteiraMonth?.count || 0) + (crlvMonth?.count || 0) + (chaMonth?.count || 0);
+    
+    res.json({ today, week, month });
+  } catch (error) {
+    console.error('Erro ao buscar stats de documentos:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
 // PUT /admins/:id/telefone - Atualizar telefone do admin
 router.put('/:id/telefone', async (req, res) => {
   try {
