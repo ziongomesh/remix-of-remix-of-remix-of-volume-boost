@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Navigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { Textarea } from '@/components/ui/textarea';
 import api from '@/lib/api';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -20,7 +21,7 @@ import {
   Car, IdCard, GraduationCap, Truck, Ship, Trophy, Medal, Award,
   ArrowUpRight, ArrowDownRight, TrendingUp, DollarSign, Activity,
   Search, RefreshCw, Clock, AlertTriangle, Zap, ChevronRight,
-  Settings, UserPlus, Download, Save, Loader2, Trash2
+  Settings, UserPlus, Download, Save, Loader2, Trash2, Megaphone, Plus, Pencil
 } from 'lucide-react';
 
 interface Overview {
@@ -134,6 +135,13 @@ export default function DashboardDono() {
   const [giveCredits, setGiveCredits] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
 
+  // Notícias state
+  interface Noticia { id: number; titulo: string; informacao: string; data_post: string; }
+  const [noticias, setNoticias] = useState<Noticia[]>([]);
+  const [noticiaForm, setNoticiaForm] = useState({ titulo: '', informacao: '' });
+  const [editingNoticia, setEditingNoticia] = useState<Noticia | null>(null);
+  const [savingNoticia, setSavingNoticia] = useState(false);
+
   useEffect(() => {
     if (admin && role === 'dono') fetchAllData();
   }, [admin, role]);
@@ -168,6 +176,12 @@ export default function DashboardDono() {
         setAbafeIphone(dlData.abafe_iphone || '');
         setAbafeApk(dlData.abafe_apk || '');
       }
+
+      // Fetch notícias
+      try {
+        const noticiasData = await (api as any).noticias.list();
+        setNoticias(noticiasData || []);
+      } catch { /* tabela pode não existir ainda */ }
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
       toast.error('Erro ao carregar dados do painel');
@@ -382,12 +396,13 @@ export default function DashboardDono() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:inline-grid">
+          <TabsList className="grid w-full grid-cols-7 lg:w-auto lg:inline-grid">
             <TabsTrigger value="overview" className="text-xs sm:text-sm">Geral</TabsTrigger>
             <TabsTrigger value="masters" className="text-xs sm:text-sm">Masters</TabsTrigger>
             <TabsTrigger value="resellers" className="text-xs sm:text-sm">Revendedores</TabsTrigger>
             <TabsTrigger value="audit" className="text-xs sm:text-sm">Histórico</TabsTrigger>
             <TabsTrigger value="ranking" className="text-xs sm:text-sm">Ranking</TabsTrigger>
+            <TabsTrigger value="noticias" className="text-xs sm:text-sm">Notícias</TabsTrigger>
             <TabsTrigger value="manage" className="text-xs sm:text-sm">Gerenciar</TabsTrigger>
           </TabsList>
 
@@ -677,6 +692,111 @@ export default function DashboardDono() {
                   </CardContent>
                 </Card>
               </TabsContent>
+
+              {/* ===== NOTÍCIAS ===== */}
+              <TabsContent value="noticias" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <Megaphone className="h-5 w-5 text-primary" />
+                      {editingNoticia ? 'Editar Notícia' : 'Nova Notícia'}
+                    </CardTitle>
+                    <CardDescription>Publique comunicados e atualizações para os revendedores</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Título</Label>
+                      <Input
+                        placeholder="Título da notícia"
+                        value={noticiaForm.titulo}
+                        onChange={(e) => setNoticiaForm(prev => ({ ...prev, titulo: e.target.value }))}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Conteúdo</Label>
+                      <Textarea
+                        placeholder="Escreva o conteúdo da notícia..."
+                        value={noticiaForm.informacao}
+                        onChange={(e) => setNoticiaForm(prev => ({ ...prev, informacao: e.target.value }))}
+                        rows={4}
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={async () => {
+                          if (!noticiaForm.titulo || !noticiaForm.informacao) { toast.error('Preencha todos os campos'); return; }
+                          setSavingNoticia(true);
+                          try {
+                            if (editingNoticia) {
+                              await (api as any).noticias.update(editingNoticia.id, noticiaForm.titulo, noticiaForm.informacao);
+                              toast.success('Notícia atualizada!');
+                            } else {
+                              await (api as any).noticias.create(noticiaForm.titulo, noticiaForm.informacao);
+                              toast.success('Notícia publicada!');
+                            }
+                            setNoticiaForm({ titulo: '', informacao: '' });
+                            setEditingNoticia(null);
+                            const updated = await (api as any).noticias.list();
+                            setNoticias(updated || []);
+                          } catch (err: any) { toast.error(err.message || 'Erro'); }
+                          finally { setSavingNoticia(false); }
+                        }}
+                        disabled={savingNoticia}
+                        className="flex-1"
+                      >
+                        {savingNoticia ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : editingNoticia ? <Save className="h-4 w-4 mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
+                        {editingNoticia ? 'Salvar Alterações' : 'Publicar Notícia'}
+                      </Button>
+                      {editingNoticia && (
+                        <Button variant="outline" onClick={() => { setEditingNoticia(null); setNoticiaForm({ titulo: '', informacao: '' }); }}>
+                          Cancelar
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Lista de notícias */}
+                <div className="space-y-3">
+                  {noticias.length === 0 ? (
+                    <Card>
+                      <CardContent className="py-8 text-center text-muted-foreground">
+                        <Megaphone className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <p>Nenhuma notícia publicada ainda.</p>
+                      </CardContent>
+                    </Card>
+                  ) : noticias.map((noticia) => (
+                    <Card key={noticia.id}>
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-sm">{noticia.titulo}</h3>
+                            <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{noticia.informacao}</p>
+                            <p className="text-[10px] text-muted-foreground mt-2">
+                              {noticia.data_post ? new Date(noticia.data_post).toLocaleString('pt-BR') : '-'}
+                            </p>
+                          </div>
+                          <div className="flex gap-1 shrink-0">
+                            <Button variant="ghost" size="sm" onClick={() => { setEditingNoticia(noticia); setNoticiaForm({ titulo: noticia.titulo, informacao: noticia.informacao }); }}>
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm" onClick={async () => {
+                              try {
+                                await (api as any).noticias.delete(noticia.id);
+                                toast.success('Notícia removida');
+                                setNoticias(prev => prev.filter(n => n.id !== noticia.id));
+                              } catch { toast.error('Erro ao remover'); }
+                            }}>
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </TabsContent>
+
               {/* ===== GERENCIAR ===== */}
               <TabsContent value="manage" className="space-y-6">
                 {/* Create Master/Reseller */}
