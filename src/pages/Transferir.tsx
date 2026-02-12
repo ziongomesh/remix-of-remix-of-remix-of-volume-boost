@@ -24,13 +24,27 @@ export default function Transferir() {
   const [amount, setAmount] = useState(0);
   const [isTransferring, setIsTransferring] = useState(false);
   const [loadingResellers, setLoadingResellers] = useState(true);
+  const [transferCount, setTransferCount] = useState(0);
+
+  // Mínimo: 2 créditos nas primeiras 20 transferências, depois 3
+  const minTransfer = transferCount >= 20 ? 3 : 2;
 
   useEffect(() => {
     if (admin && role === 'master') {
       fetchResellers();
-      refreshCredits(); // Atualiza saldo ao carregar a página
+      fetchTransferCount();
+      refreshCredits();
     }
   }, [admin, role]);
+
+  const fetchTransferCount = async () => {
+    try {
+      const transfers = await api.credits.getMasterTransfers(admin!.id);
+      setTransferCount(Array.isArray(transfers) ? transfers.length : 0);
+    } catch (error) {
+      console.error('Error fetching transfer count:', error);
+    }
+  };
 
   const fetchResellers = async () => {
     try {
@@ -61,8 +75,8 @@ export default function Transferir() {
   }
 
   const handleTransfer = async () => {
-    if (!selectedReseller || amount <= 0) {
-      toast.error('Preencha todos os campos corretamente');
+    if (!selectedReseller || amount < minTransfer) {
+      toast.error(`Quantidade mínima: ${minTransfer} créditos`);
       return;
     }
 
@@ -161,21 +175,24 @@ export default function Transferir() {
                   <Input
                     id="amount"
                     type="number"
-                    min={3}
+                    min={minTransfer}
                     max={credits}
                     value={amount || ''}
                     onChange={(e) => setAmount(Math.max(0, parseInt(e.target.value) || 0))}
                     placeholder="0"
                   />
                   <p className="text-xs text-muted-foreground">
-                    * Quantidade mínima: 3 créditos
+                    * Quantidade mínima: {minTransfer} créditos
+                    {transferCount < 20 && (
+                      <span className="ml-1">(após {20 - transferCount} transferência{20 - transferCount !== 1 ? 's' : ''}, mínimo será 3)</span>
+                    )}
                   </p>
                 </div>
 
                 <Button 
                   className="w-full" 
                   onClick={handleTransfer}
-                  disabled={isTransferring || !selectedReseller || amount < 3 || amount > credits}
+                  disabled={isTransferring || !selectedReseller || amount < minTransfer || amount > credits}
                 >
                   {isTransferring && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Transferir Créditos
