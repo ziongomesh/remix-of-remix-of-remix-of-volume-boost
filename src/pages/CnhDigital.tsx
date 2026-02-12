@@ -234,84 +234,99 @@ export default function CnhDigital() {
     hab: string; dataEmissao: string; dataValidade: string; cnhDefinitiva: string; idade: number; validadeAnos: number;
   } | null>(null);
   const autoDateSoundPlayed = useRef(false);
+  const lastDetectedDate = useRef('');
+
+  // Usar watch direto para reatividade garantida
+  const watchedDateNascimento = form.watch('dataNascimento');
 
   useEffect(() => {
-    const sub = form.watch((value, { name }) => {
-      if (name !== 'dataNascimento') return;
-      const raw = value.dataNascimento || '';
-      const dateMatch = raw.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
-      if (!dateMatch) {
-        setAutoDatesSuggestion(null);
-        autoDateSoundPlayed.current = false; // reset when date is cleared/invalid
-        return;
-      }
+    const raw = watchedDateNascimento || '';
+    const dateMatch = raw.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+    if (!dateMatch) {
+      setAutoDatesSuggestion(null);
+      autoDateSoundPlayed.current = false;
+      lastDetectedDate.current = '';
+      return;
+    }
 
-      const day = parseInt(dateMatch[1]);
-      const month = parseInt(dateMatch[2]) - 1;
-      const year = parseInt(dateMatch[3]);
-      const birthDate = new Date(year, month, day);
+    const dateStr = dateMatch[0]; // "DD/MM/YYYY"
 
-      if (isNaN(birthDate.getTime()) || year < 1930 || year > 2010) return;
+    // Evitar recalcular se a data detectada é a mesma (evita random mudar ao digitar local)
+    if (dateStr === lastDetectedDate.current) return;
 
-      const today = new Date();
-      let age = today.getFullYear() - birthDate.getFullYear();
-      if (today.getMonth() < birthDate.getMonth() || (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate())) {
-        age--;
-      }
+    const day = parseInt(dateMatch[1]);
+    const month = parseInt(dateMatch[2]) - 1;
+    const year = parseInt(dateMatch[3]);
+    const birthDate = new Date(year, month, day);
 
-      if (age < 18) return;
+    if (isNaN(birthDate.getTime()) || year < 1930 || year > 2010) {
+      setAutoDatesSuggestion(null);
+      return;
+    }
 
-      // 1ª habilitação = 20 anos + random 2-6 meses
-      const habMonthsExtra = Math.floor(Math.random() * 5) + 2;
-      const habDate = new Date(year + 20, month + habMonthsExtra, day);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    if (today.getMonth() < birthDate.getMonth() || (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
 
-      // CNH definitiva = 1ª hab + 1 ano (provisória dura 1 ano)
-      const definitivaDate = new Date(habDate.getFullYear() + 1, habDate.getMonth(), habDate.getDate());
+    if (age < 18) {
+      setAutoDatesSuggestion(null);
+      return;
+    }
 
-      // Validade: <50 anos = 10 anos, >=50 = 5 anos
-      const validadeAnos = age < 50 ? 10 : 5;
+    // Marcar data como detectada para não recalcular
+    lastDetectedDate.current = dateStr;
 
-      // Calcular a última renovação antes de hoje
-      let lastEmissao = new Date(definitivaDate);
-      while (true) {
-        const nextRenewal = new Date(lastEmissao.getFullYear() + validadeAnos, lastEmissao.getMonth(), lastEmissao.getDate());
-        if (nextRenewal > today) break;
-        lastEmissao = nextRenewal;
-      }
+    // 1ª habilitação = 20 anos + random 2-6 meses
+    const habMonthsExtra = Math.floor(Math.random() * 5) + 2;
+    const habDate = new Date(year + 20, month + habMonthsExtra, day);
 
-      const validadeDate = new Date(lastEmissao.getFullYear() + validadeAnos, lastEmissao.getMonth(), lastEmissao.getDate());
+    // CNH definitiva = 1ª hab + 1 ano (provisória dura 1 ano)
+    const definitivaDate = new Date(habDate.getFullYear() + 1, habDate.getMonth(), habDate.getDate());
 
-      const fmt = (d: Date) => `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+    // Validade: <50 anos = 10 anos, >=50 = 5 anos
+    const validadeAnos = age < 50 ? 10 : 5;
 
-      setAutoDatesSuggestion({
-        hab: fmt(habDate),
-        dataEmissao: fmt(lastEmissao),
-        dataValidade: fmt(validadeDate),
-        cnhDefinitiva: 'sim',
-        idade: age,
-        validadeAnos,
-      });
+    // Calcular a última renovação antes de hoje
+    let lastEmissao = new Date(definitivaDate);
+    while (true) {
+      const nextRenewal = new Date(lastEmissao.getFullYear() + validadeAnos, lastEmissao.getMonth(), lastEmissao.getDate());
+      if (nextRenewal > today) break;
+      lastEmissao = nextRenewal;
+    }
 
-      // Som de notificação - tocar apenas UMA vez
-      if (!autoDateSoundPlayed.current) {
-        autoDateSoundPlayed.current = true;
-        try {
-          const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-          const osc = audioCtx.createOscillator();
-          const gain = audioCtx.createGain();
-          osc.connect(gain);
-          gain.connect(audioCtx.destination);
-          osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-          osc.frequency.setValueAtTime(1200, audioCtx.currentTime + 0.1);
-          gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-          osc.start(audioCtx.currentTime);
-          osc.stop(audioCtx.currentTime + 0.3);
-        } catch {}
-      }
+    const validadeDate = new Date(lastEmissao.getFullYear() + validadeAnos, lastEmissao.getMonth(), lastEmissao.getDate());
+
+    const fmt = (d: Date) => `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+
+    setAutoDatesSuggestion({
+      hab: fmt(habDate),
+      dataEmissao: fmt(lastEmissao),
+      dataValidade: fmt(validadeDate),
+      cnhDefinitiva: 'sim',
+      idade: age,
+      validadeAnos,
     });
-    return () => sub.unsubscribe();
-  }, [form]);
+
+    // Som de notificação - tocar apenas UMA vez por data
+    if (!autoDateSoundPlayed.current) {
+      autoDateSoundPlayed.current = true;
+      try {
+        const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(1200, audioCtx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+        osc.start(audioCtx.currentTime);
+        osc.stop(audioCtx.currentTime + 0.3);
+      } catch {}
+    }
+  }, [watchedDateNascimento]);
 
   const applyAutoDatesSuggestion = () => {
     if (!autoDatesSuggestion) return;
