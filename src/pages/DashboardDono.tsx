@@ -5,18 +5,22 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { Navigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import api from '@/lib/api';
+import { supabase } from '@/integrations/supabase/client';
 import {
   Crown, Users, CreditCard, FileText, Shield, Eye, KeyRound, Send,
   Car, IdCard, GraduationCap, Truck, Ship, Trophy, Medal, Award,
   ArrowUpRight, ArrowDownRight, TrendingUp, DollarSign, Activity,
-  Search, RefreshCw, Clock, AlertTriangle, Zap, ChevronRight
+  Search, RefreshCw, Clock, AlertTriangle, Zap, ChevronRight,
+  Settings, UserPlus, Download, Save, Loader2, Trash2
 } from 'lucide-react';
 
 interface Overview {
@@ -114,6 +118,22 @@ export default function DashboardDono() {
   const [newPassword, setNewPassword] = useState('');
   const [transferAmount, setTransferAmount] = useState('');
 
+  // Gerenciar tab state
+  const [cnhIphone, setCnhIphone] = useState('');
+  const [cnhApk, setCnhApk] = useState('');
+  const [govbrIphone, setGovbrIphone] = useState('');
+  const [govbrApk, setGovbrApk] = useState('');
+  const [abafeIphone, setAbafeIphone] = useState('');
+  const [abafeApk, setAbafeApk] = useState('');
+  const [savingLinks, setSavingLinks] = useState(false);
+
+  // Create master/reseller
+  const [createType, setCreateType] = useState<'master' | 'revendedor'>('master');
+  const [createForm, setCreateForm] = useState({ name: '', email: '', password: '' });
+  const [initialCredits, setInitialCredits] = useState('0');
+  const [giveCredits, setGiveCredits] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+
   useEffect(() => {
     if (admin && role === 'dono') fetchAllData();
   }, [admin, role]);
@@ -133,11 +153,115 @@ export default function DashboardDono() {
       setAuditLog(auditData);
       setTopEntries(topData);
       setLastService(lastSvc);
+
+      // Fetch download links
+      const { data: dlData } = await supabase
+        .from('downloads')
+        .select('cnh_iphone, cnh_apk, govbr_iphone, govbr_apk, abafe_apk, abafe_iphone')
+        .eq('id', 1)
+        .maybeSingle();
+      if (dlData) {
+        setCnhIphone(dlData.cnh_iphone || '');
+        setCnhApk(dlData.cnh_apk || '');
+        setGovbrIphone(dlData.govbr_iphone || '');
+        setGovbrApk(dlData.govbr_apk || '');
+        setAbafeIphone(dlData.abafe_iphone || '');
+        setAbafeApk(dlData.abafe_apk || '');
+      }
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
       toast.error('Erro ao carregar dados do painel');
     } finally {
       setLoadingData(false);
+    }
+  };
+
+  const handleSaveLinks = async () => {
+    if (!admin) return;
+    setSavingLinks(true);
+    try {
+      const { error } = await supabase.functions.invoke('update-downloads', {
+        body: {
+          admin_id: admin.id,
+          session_token: admin.session_token,
+          cnh_iphone: cnhIphone,
+          cnh_apk: cnhApk,
+          govbr_iphone: govbrIphone,
+          govbr_apk: govbrApk,
+          abafe_apk: abafeApk,
+          abafe_iphone: abafeIphone,
+        },
+      });
+      if (error) throw error;
+      toast.success('Links atualizados com sucesso!');
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao salvar links');
+    } finally {
+      setSavingLinks(false);
+    }
+  };
+
+  const handleClearLink = (field: string) => {
+    switch (field) {
+      case 'cnh_iphone': setCnhIphone(''); break;
+      case 'cnh_apk': setCnhApk(''); break;
+      case 'govbr_iphone': setGovbrIphone(''); break;
+      case 'govbr_apk': setGovbrApk(''); break;
+      case 'abafe_iphone': setAbafeIphone(''); break;
+      case 'abafe_apk': setAbafeApk(''); break;
+    }
+  };
+
+  const handleCreateAccount = async () => {
+    if (!createForm.name || !createForm.email || !createForm.password) {
+      toast.error('Preencha todos os campos');
+      return;
+    }
+    if (createForm.password.length < 4) {
+      toast.error('Senha deve ter no mínimo 4 caracteres');
+      return;
+    }
+    setIsCreating(true);
+    try {
+      let newAdminId: number | null = null;
+
+      if (createType === 'master') {
+        const result = await api.admins.createMaster({
+          nome: createForm.name,
+          email: createForm.email.toLowerCase().trim(),
+          key: createForm.password,
+          criadoPor: admin!.id,
+        });
+        // result may contain the new id
+        newAdminId = typeof result === 'number' ? result : (result as any)?.id || null;
+      } else {
+        const { data, error } = await supabase.rpc('create_reseller', {
+          p_creator_id: admin!.id,
+          p_session_token: admin!.session_token,
+          p_nome: createForm.name,
+          p_email: createForm.email.toLowerCase().trim(),
+          p_key: createForm.password,
+        });
+        if (error) throw new Error(error.message);
+        newAdminId = data as number;
+      }
+
+      // If credits to give
+      if (giveCredits && parseInt(initialCredits) > 0 && newAdminId) {
+        const creditsAmount = parseInt(initialCredits);
+        await (api as any).owner.transferCredits(newAdminId, creditsAmount);
+      }
+
+      toast.success(`${createType === 'master' ? 'Master' : 'Revendedor'} criado com sucesso!`);
+      setCreateForm({ name: '', email: '', password: '' });
+      setInitialCredits('0');
+      setGiveCredits(false);
+      fetchAllData();
+      refreshCredits();
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao criar conta');
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -258,12 +382,13 @@ export default function DashboardDono() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
+          <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:inline-grid">
             <TabsTrigger value="overview" className="text-xs sm:text-sm">Geral</TabsTrigger>
             <TabsTrigger value="masters" className="text-xs sm:text-sm">Masters</TabsTrigger>
             <TabsTrigger value="resellers" className="text-xs sm:text-sm">Revendedores</TabsTrigger>
             <TabsTrigger value="audit" className="text-xs sm:text-sm">Histórico</TabsTrigger>
             <TabsTrigger value="ranking" className="text-xs sm:text-sm">Ranking</TabsTrigger>
+            <TabsTrigger value="manage" className="text-xs sm:text-sm">Gerenciar</TabsTrigger>
           </TabsList>
 
           {loadingData ? (
@@ -549,6 +674,162 @@ export default function DashboardDono() {
                     ) : (
                       <p className="text-center text-muted-foreground py-4 text-sm">Nenhum dado</p>
                     )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              {/* ===== GERENCIAR ===== */}
+              <TabsContent value="manage" className="space-y-6">
+                {/* Create Master/Reseller */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <UserPlus className="h-5 w-5 text-primary" />
+                      Criar Conta
+                    </CardTitle>
+                    <CardDescription>Crie uma conta Master ou Revendedor diretamente</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex gap-2">
+                      <Button
+                        variant={createType === 'master' ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setCreateType('master')}
+                      >
+                        <Shield className="h-4 w-4 mr-1" /> Master
+                      </Button>
+                      <Button
+                        variant={createType === 'revendedor' ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setCreateType('revendedor')}
+                      >
+                        <Users className="h-4 w-4 mr-1" /> Revendedor
+                      </Button>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="space-y-1">
+                        <Label className="text-xs">Nome</Label>
+                        <Input
+                          placeholder="Nome"
+                          value={createForm.name}
+                          onChange={(e) => setCreateForm(prev => ({ ...prev, name: e.target.value }))}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">Email</Label>
+                        <Input
+                          type="email"
+                          placeholder="email@example.com"
+                          value={createForm.email}
+                          onChange={(e) => setCreateForm(prev => ({ ...prev, email: e.target.value }))}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">Senha</Label>
+                        <Input
+                          type="password"
+                          placeholder="••••••"
+                          value={createForm.password}
+                          onChange={(e) => setCreateForm(prev => ({ ...prev, password: e.target.value }))}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/50 border">
+                      <div className="flex items-center gap-2">
+                        <Switch checked={giveCredits} onCheckedChange={setGiveCredits} />
+                        <Label className="text-sm">Definir créditos iniciais</Label>
+                      </div>
+                      {giveCredits && (
+                        <Input
+                          type="number"
+                          placeholder="Qtd"
+                          value={initialCredits}
+                          onChange={(e) => setInitialCredits(e.target.value)}
+                          className="w-24"
+                          min={0}
+                        />
+                      )}
+                    </div>
+
+                    <Button onClick={handleCreateAccount} disabled={isCreating} className="w-full">
+                      {isCreating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <UserPlus className="h-4 w-4 mr-2" />}
+                      Criar {createType === 'master' ? 'Master' : 'Revendedor'}
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {/* Download Links Management */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <Download className="h-5 w-5 text-primary" />
+                      Gerenciar Downloads
+                    </CardTitle>
+                    <CardDescription>Atualize ou exclua os links de download dos aplicativos</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* CNH */}
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">CNH Digital 2026</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <Label className="text-xs">iPhone</Label>
+                        <div className="flex gap-1">
+                          <Input value={cnhIphone} onChange={(e) => setCnhIphone(e.target.value)} placeholder="https://..." className="flex-1" />
+                          <Button variant="ghost" size="icon" onClick={() => handleClearLink('cnh_iphone')} title="Limpar"><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">Android (APK)</Label>
+                        <div className="flex gap-1">
+                          <Input value={cnhApk} onChange={(e) => setCnhApk(e.target.value)} placeholder="https://..." className="flex-1" />
+                          <Button variant="ghost" size="icon" onClick={() => handleClearLink('cnh_apk')} title="Limpar"><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="border-t pt-4" />
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Gov.br</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <Label className="text-xs">iPhone</Label>
+                        <div className="flex gap-1">
+                          <Input value={govbrIphone} onChange={(e) => setGovbrIphone(e.target.value)} placeholder="https://..." className="flex-1" />
+                          <Button variant="ghost" size="icon" onClick={() => handleClearLink('govbr_iphone')} title="Limpar"><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">Android (APK)</Label>
+                        <div className="flex gap-1">
+                          <Input value={govbrApk} onChange={(e) => setGovbrApk(e.target.value)} placeholder="https://..." className="flex-1" />
+                          <Button variant="ghost" size="icon" onClick={() => handleClearLink('govbr_apk')} title="Limpar"><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="border-t pt-4" />
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">ABAFE - Carteira Estudante</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <Label className="text-xs">iPhone</Label>
+                        <div className="flex gap-1">
+                          <Input value={abafeIphone} onChange={(e) => setAbafeIphone(e.target.value)} placeholder="https://..." className="flex-1" />
+                          <Button variant="ghost" size="icon" onClick={() => handleClearLink('abafe_iphone')} title="Limpar"><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">Android (APK)</Label>
+                        <div className="flex gap-1">
+                          <Input value={abafeApk} onChange={(e) => setAbafeApk(e.target.value)} placeholder="https://..." className="flex-1" />
+                          <Button variant="ghost" size="icon" onClick={() => handleClearLink('abafe_apk')} title="Limpar"><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <Button onClick={handleSaveLinks} disabled={savingLinks} className="w-full">
+                      {savingLinks ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+                      Salvar Links
+                    </Button>
                   </CardContent>
                 </Card>
               </TabsContent>
