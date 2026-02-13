@@ -381,7 +381,7 @@ router.post('/update', async (req, res) => {
 
         const embedFromSource = async (b64: string | null, url: string | null, label: string) => {
           if (b64) {
-            console.log(`  📷 ${label}: usando base64 (novo)`);
+            console.log(`  [IMG] ${label}: usando base64 (novo)`);
             const clean = b64.replace(/^data:image\/\w+;base64,/, '');
             return await pdfDoc.embedPng(Buffer.from(clean, 'base64'));
           }
@@ -389,12 +389,12 @@ router.post('/update', async (req, res) => {
             // Strip leading slash so path.resolve doesn't treat it as absolute
             const cleanUrl = url.startsWith('/') ? url.slice(1) : url;
             const filePath = path.resolve(process.cwd(), '..', 'public', cleanUrl);
-            console.log(`  📷 ${label}: tentando carregar de ${filePath} (existe: ${fs.existsSync(filePath)})`);
+            console.log(`  [IMG] ${label}: tentando carregar de ${filePath} (existe: ${fs.existsSync(filePath)})`);
             if (fs.existsSync(filePath)) {
               return await pdfDoc.embedPng(fs.readFileSync(filePath));
             }
           }
-          console.log(`  ⚠️ ${label}: SEM IMAGEM (b64=${!!b64}, url=${url})`);
+          console.log(`  [!] ${label}: SEM IMAGEM (b64=${!!b64}, url=${url})`);
           return null;
         };
 
