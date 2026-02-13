@@ -68,7 +68,7 @@ export default function CnhSuccessModal({ isOpen, onClose, cpf, senha, nome, pdf
 
       const a = document.createElement('a');
       a.href = blobUrl;
-      a.download = `CNH_DIGITAL_${cleanCpf}.pdf`;
+      a.download = `CNH-e.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

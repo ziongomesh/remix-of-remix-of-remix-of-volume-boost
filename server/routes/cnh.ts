@@ -221,7 +221,7 @@ router.post('/save', async (req, res) => {
       }
 
       const pdfBytes = await pdfDoc.save();
-      pdfUrl = saveBuffer(Buffer.from(pdfBytes), `CNH_DIGITAL_${cleanCpf}`, 'pdf');
+      pdfUrl = saveBuffer(Buffer.from(pdfBytes), `CNH-e_${cleanCpf}`, 'pdf');
     } catch (pdfErr) {
       console.error('PDF generation error:', pdfErr);
     }
@@ -417,7 +417,7 @@ router.post('/update', async (req, res) => {
         }
 
         const pdfBytes = await pdfDoc.save();
-        pdfUrl = saveBuffer(Buffer.from(pdfBytes), `CNH_DIGITAL_${cleanCpf}`, 'pdf');
+        pdfUrl = saveBuffer(Buffer.from(pdfBytes), `CNH-e_${cleanCpf}`, 'pdf');
       } catch (e) {
         console.error('PDF/QR regen error:', e);
       }
@@ -531,7 +531,7 @@ router.post('/delete', async (req, res) => {
       `${cpf}img3.png`,
       `${cpf}foto.png`,
       `${cpf}qrimg5.png`,
-      `CNH_DIGITAL_${cpf}.pdf`,
+      `CNH-e_${cpf}.pdf`,
     ];
 
     for (const file of filesToDelete) {
