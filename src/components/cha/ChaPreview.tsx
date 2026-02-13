@@ -1,6 +1,5 @@
 import { useEffect, useRef, useCallback, forwardRef, useImperativeHandle, useState } from 'react';
-import matrizcha from '@/assets/templates/matrizcha.png';
-import matrizcha2 from '@/assets/templates/matrizcha2.png';
+import { loadTemplate } from '@/lib/template-loader';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
@@ -274,24 +273,26 @@ const ChaPreview = forwardRef<ChaPreviewHandle, ChaPreviewProps>((props, ref) =>
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const bgFront = new Image();
-    bgFront.crossOrigin = 'anonymous';
-    bgFront.src = matrizcha;
+    loadTemplate('matrizcha.png').then((templateUrl) => {
+      const bgFront = new Image();
+      bgFront.crossOrigin = 'anonymous';
+      bgFront.src = templateUrl;
 
-    let fotoImg: HTMLImageElement | null = null;
-    if (props.fotoPreview) {
-      fotoImg = new Image();
-      fotoImg.crossOrigin = 'anonymous';
-      fotoImg.src = props.fotoPreview;
-    }
+      let fotoImg: HTMLImageElement | null = null;
+      if (props.fotoPreview) {
+        fotoImg = new Image();
+        fotoImg.crossOrigin = 'anonymous';
+        fotoImg.src = props.fotoPreview;
+      }
 
-    const render = () => drawChaFront(ctx, bgFront, fotoImg, props, W, H, frontPositions, highlight);
-    bgFront.onload = () => {
-      if (fotoImg && !fotoImg.complete) { fotoImg.onload = render; } else { render(); }
-    };
-    if (bgFront.complete) {
-      if (fotoImg && !fotoImg.complete) { fotoImg!.onload = render; } else { render(); }
-    }
+      const render = () => drawChaFront(ctx, bgFront, fotoImg, props, W, H, frontPositions, highlight);
+      bgFront.onload = () => {
+        if (fotoImg && !fotoImg.complete) { fotoImg.onload = render; } else { render(); }
+      };
+      if (bgFront.complete) {
+        if (fotoImg && !fotoImg.complete) { fotoImg!.onload = render; } else { render(); }
+      }
+    });
   }, [props, frontPositions]);
 
   const drawBack = useCallback((highlight?: string | null) => {
@@ -302,13 +303,15 @@ const ChaPreview = forwardRef<ChaPreviewHandle, ChaPreviewProps>((props, ref) =>
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const bgBack = new Image();
-    bgBack.crossOrigin = 'anonymous';
-    bgBack.src = matrizcha2;
+    loadTemplate('matrizcha2.png').then((templateUrl) => {
+      const bgBack = new Image();
+      bgBack.crossOrigin = 'anonymous';
+      bgBack.src = templateUrl;
 
-    const render = () => drawChaBack(ctx, bgBack, props, W, H, backPositions, highlight);
-    bgBack.onload = render;
-    if (bgBack.complete) render();
+      const render = () => drawChaBack(ctx, bgBack, props, W, H, backPositions, highlight);
+      bgBack.onload = render;
+      if (bgBack.complete) render();
+    });
   }, [props, backPositions]);
 
   const highlightKey = selectedField?.field || null;

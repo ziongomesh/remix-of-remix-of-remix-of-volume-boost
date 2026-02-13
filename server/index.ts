@@ -19,6 +19,7 @@ import ownerRoutes from './routes/owner.ts';
 import verifyChaRoutes from './routes/verify-cha.ts';
 import noticiasRoutes from './routes/noticias.ts';
 import galleryRoutes from './routes/gallery.ts';
+import templateRoutes from './routes/templates.ts';
 
 // Carrega variáveis de ambiente (prioridade: .env.local > .env)
 const envFiles = [
@@ -196,6 +197,7 @@ app.use('/api/owner', ownerRoutes);
 app.use('/api/verify-cha', verifyChaRoutes);
 app.use('/api/noticias', noticiasRoutes);
 app.use('/api/gallery', galleryRoutes);
+app.use('/api/templates', templateRoutes);
 
 // Health check
 app.get('/api/health', async (req, res) => {
