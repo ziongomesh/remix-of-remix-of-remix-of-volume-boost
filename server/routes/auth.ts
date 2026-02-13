@@ -74,23 +74,13 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Validar PIN (usa headers x-admin-id e x-session-token enviados pelo fetchAPI)
+// Validar PIN (público - faz parte do fluxo de login, antes da sessão estar no localStorage)
 router.post('/validate-pin', async (req, res) => {
   try {
-    const adminId = req.headers['x-admin-id'] || req.body.adminId;
-    const sessionToken = req.headers['x-session-token'] || req.body.session_token;
+    const { adminId, pin } = req.body;
 
-    if (!adminId || !sessionToken) {
-      return res.status(401).json({ error: 'Sessão inválida' });
-    }
-
-    // Validar sessão
-    const sessionCheck = await query<any[]>(
-      'SELECT 1 FROM admins WHERE id = ? AND session_token = ?',
-      [adminId, sessionToken]
-    );
-    if (sessionCheck.length === 0) {
-      return res.status(401).json({ error: 'Sessão inválida' });
+    if (!adminId || !pin) {
+      return res.status(400).json({ error: 'adminId e pin são obrigatórios' });
     }
 
     const result = await query<any[]>(
