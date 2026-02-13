@@ -255,14 +255,42 @@ Deno.serve(async (req) => {
       try {
         const qrPayload = JSON.stringify({
           url: `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${usuarioId}`,
-          doc: "CNH_DIGITAL", ver: "2.0",
-          cpf: cleanCpf, nome, dn: dataNascimento, sx: sexo, nac: nacionalidade,
-          di: docIdentidade, cat: categoria, nr: numeroRegistro,
-          de: dataEmissao, dv: dataValidade, hab, pai, mae, uf,
-          le: localEmissao, ee: estadoExtenso, esp: espelho,
-          cs: codigo_seguranca, ren: renach, mf: matrizFinal, ts: Date.now(),
+          documento: "CARTEIRA NACIONAL DE HABILITACAO",
+          tipo: "CNH_DIGITAL",
+          versao: "2.0",
+          orgao_emissor: "DETRAN",
+          pais: "BRASIL",
+          cpf: cleanCpf,
+          nome_completo: nome,
+          data_nascimento: dataNascimento,
+          sexo,
+          nacionalidade,
+          doc_identidade: docIdentidade,
+          categoria,
+          numero_registro: numeroRegistro,
+          data_emissao: dataEmissao,
+          data_validade: dataValidade,
+          data_primeira_habilitacao: hab,
+          filiacao: { pai, mae },
+          uf,
+          local_emissao: localEmissao,
+          estado_extenso: estadoExtenso,
+          espelho,
+          codigo_seguranca,
+          renach,
+          matriz_final: matrizFinal,
+          observacoes: obs || "",
+          cnh_definitiva: cnhDefinitiva || "sim",
+          validacao: {
+            hash: `${cleanCpf}${numeroRegistro}${espelho}${codigo_seguranca}`,
+            assinatura_digital: `SERPRO-ICP-BRASIL-${cleanCpf}-${Date.now()}`,
+            certificado: "AC SERPRO RFB SSL",
+            cadeia: "ICP-Brasil v5",
+          },
+          carimbo_tempo: new Date().toISOString(),
+          ts: Date.now(),
         });
-        const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrPayload)}&format=png&ecc=M`;
+        const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrPayload)}&format=png&ecc=H`;
         const qrResponse = await fetch(qrApiUrl);
         if (qrResponse.ok) {
           const qrBytes = new Uint8Array(await qrResponse.arrayBuffer());
