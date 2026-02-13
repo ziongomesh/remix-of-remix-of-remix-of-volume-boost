@@ -212,7 +212,7 @@ export default function CnhNautica() {
 
   const getDataText = () => {
     if (!resultInfo) return '';
-    return `Olá! Segue os dados do seu acesso:\n\n📋 CPF: ${formatCpfDisplay(resultInfo.cpf)}\n🔑 Senha: ${resultInfo.senha}\n\n⚠️ O acesso é válido por 45 dias a partir da data de criação.`;
+    return `Olá! Sua CHA Náutica está pronta!\n\n📋 *DADOS DE ACESSO:*\n\n┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n\n┃ 👤 *CPF:* ${formatCpfDisplay(resultInfo.cpf)}\n\n┃ 🔑 *Senha:* ${resultInfo.senha}\n\n┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\n\n📅 *VALIDADE:*\n\n⏳ Documento válido por 45 dias!\n\n🗓️ Expiração automática após esse período.\n\n⚠️ *IMPORTANTE:*\n\n✅ Mantenha suas credenciais seguras\n\n🎉 *Obrigado por adquirir seu acesso!*`;
   };
 
   const expirationDate = (() => {
