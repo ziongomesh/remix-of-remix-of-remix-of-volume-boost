@@ -59,6 +59,17 @@ router.post('/', async (req, res) => {
         creatorAdminId = rows[0].admin_id;
         isOwn = rows[0].admin_id === admin_id;
       }
+    } else if (service_type === 'nautica') {
+      const rows = await query<any[]>(
+        'SELECT id, nome, admin_id FROM chas WHERE cpf = ? LIMIT 1',
+        [cleanCpf]
+      );
+      if (rows && rows.length > 0) {
+        exists = true;
+        recordName = rows[0].nome;
+        creatorAdminId = rows[0].admin_id;
+        isOwn = rows[0].admin_id === admin_id;
+      }
     }
 
     let creatorName = '';
