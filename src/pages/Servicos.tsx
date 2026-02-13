@@ -1,6 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { FileText, CheckCircle, Clock, CreditCard, AlertTriangle, Anchor, IdCard, Car, Home, Stethoscope, ImageIcon } from 'lucide-react';
+import { FileText, CheckCircle, Clock, CreditCard, AlertTriangle, Anchor, IdCard, Car, Home, Stethoscope, ImageIcon, Eye } from 'lucide-react';
+import exemploCnh from '@/assets/exemplo-cnh.png';
+import exemploGovbr from '@/assets/exemplo-govbr.png';
+import exemploAbafe from '@/assets/exemplo-abafe.png';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -13,6 +16,7 @@ interface Service {
   available: boolean;
   route: string;
   icon?: React.ElementType;
+  exampleImage?: string;
 }
 
 interface ServiceCategory {
@@ -32,6 +36,7 @@ const categories: ServiceCategory[] = [
         available: true,
         route: '/servicos/cnh-digital',
         icon: FileText,
+        exampleImage: exemploCnh,
       },
       {
         id: 'rg-digital',
@@ -41,6 +46,7 @@ const categories: ServiceCategory[] = [
         available: true,
         route: '/servicos/rg-digital',
         icon: FileText,
+        exampleImage: exemploGovbr,
       },
       {
         id: 'cnh-arrais-nautica',
@@ -50,6 +56,7 @@ const categories: ServiceCategory[] = [
         available: true,
         route: '/servicos/cnh-nautica',
         icon: Anchor,
+        exampleImage: exemploGovbr,
       },
       {
         id: 'passaporte-digital',
@@ -73,6 +80,7 @@ const categories: ServiceCategory[] = [
         available: true,
         route: '/servicos/carteira-estudante',
         icon: IdCard,
+        exampleImage: exemploAbafe,
       },
     ],
   },
@@ -169,31 +177,66 @@ function ServiceCard({ service, hasCredits }: { service: Service; hasCredits: bo
   const navigate = useNavigate();
   const canAccess = service.available && hasCredits;
   const Icon = service.icon || FileText;
+  const [showExample, setShowExample] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showExample) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (cardRef.current && !cardRef.current.contains(e.target as Node)) {
+        setShowExample(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showExample]);
 
   return (
-    <div
-      className={`bg-card border border-border rounded-lg p-3 flex items-center gap-3 transition-shadow ${service.available ? (canAccess ? 'hover:shadow-md hover:border-primary/30 cursor-pointer' : 'cursor-default') : 'opacity-50 cursor-default'}`}
-      onClick={() => canAccess && navigate(service.route)}
-    >
-      <div className="h-9 w-9 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
-        <Icon className="h-4 w-4 text-primary" />
+    <div ref={cardRef} className="relative">
+      <div
+        className={`bg-card border border-border rounded-lg p-3 flex items-center gap-3 transition-shadow ${service.available ? (canAccess ? 'hover:shadow-md hover:border-primary/30 cursor-pointer' : 'cursor-default') : 'opacity-50 cursor-default'}`}
+        onClick={() => canAccess && navigate(service.route)}
+      >
+        <div className="h-9 w-9 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
+          <Icon className="h-4 w-4 text-primary" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="font-semibold text-sm text-foreground truncate">{service.name}</h3>
+          <p className="text-xs text-muted-foreground truncate">{service.description}</p>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          {service.exampleImage && (
+            <button
+              onClick={(e) => { e.stopPropagation(); setShowExample(!showExample); }}
+              className="flex items-center gap-1 text-[10px] text-primary hover:text-primary/80 font-medium transition-colors px-1.5 py-0.5 rounded bg-primary/5 hover:bg-primary/10"
+            >
+              <Eye className="h-2.5 w-2.5" />
+              Exemplo
+            </button>
+          )}
+          <span className="text-xs text-muted-foreground hidden sm:inline">{service.credits} cred.</span>
+          {service.available ? (
+            <Badge variant="default" className="bg-success text-success-foreground text-[10px] px-1.5 py-0">
+              <CheckCircle className="h-2.5 w-2.5 mr-0.5" /> Ativo
+            </Badge>
+          ) : (
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+              <Clock className="h-2.5 w-2.5 mr-0.5" /> Breve
+            </Badge>
+          )}
+        </div>
       </div>
-      <div className="flex-1 min-w-0">
-        <h3 className="font-semibold text-sm text-foreground truncate">{service.name}</h3>
-        <p className="text-xs text-muted-foreground truncate">{service.description}</p>
-      </div>
-      <div className="flex items-center gap-2 shrink-0">
-        <span className="text-xs text-muted-foreground hidden sm:inline">{service.credits} cred.</span>
-        {service.available ? (
-          <Badge variant="default" className="bg-success text-success-foreground text-[10px] px-1.5 py-0">
-            <CheckCircle className="h-2.5 w-2.5 mr-0.5" /> Ativo
-          </Badge>
-        ) : (
-          <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-            <Clock className="h-2.5 w-2.5 mr-0.5" /> Breve
-          </Badge>
-        )}
-      </div>
+      {showExample && service.exampleImage && (
+        <div className="absolute z-50 top-full left-0 right-0 mt-1 rounded-lg border border-border bg-card shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+          <img
+            src={service.exampleImage}
+            alt={`Exemplo ${service.name}`}
+            className="w-full object-contain max-h-[300px]"
+            draggable={false}
+            onContextMenu={(e) => e.preventDefault()}
+          />
+        </div>
+      )}
     </div>
   );
 }
