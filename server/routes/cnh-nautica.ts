@@ -103,7 +103,7 @@ router.post('/save', async (req, res) => {
       `&ts=${Date.now()}`,
     ].join('');
     const qrData = qrBaseUrl + densePad;
-    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=H`;
+    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
 
     let qrcodeUrl: string | null = null;
     try {
@@ -275,7 +275,7 @@ router.post('/update', async (req, res) => {
       `&ts=${Date.now()}`,
     ].join('');
     const qrData = qrBaseUrl + densePad;
-    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=H`;
+    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
 
     let qrcodeUrl = record.qrcode;
     try {
