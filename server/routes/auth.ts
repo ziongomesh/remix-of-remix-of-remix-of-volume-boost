@@ -74,14 +74,18 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Validar PIN (requer sessão)
-router.post('/validate-pin', requireSession, async (req, res) => {
+// Validar PIN (usa session_token do body, pois faz parte do fluxo de login)
+router.post('/validate-pin', async (req, res) => {
   try {
-    const { adminId } = req.body;
+    const { adminId, session_token } = req.body;
 
-    // Só pode validar seu próprio PIN
-    if ((req as any).adminId !== adminId) {
-      return res.status(403).json({ error: 'Sem permissão' });
+    // Validar sessão manualmente via body (o PIN é validado durante o login)
+    const sessionCheck = await query<any[]>(
+      'SELECT 1 FROM admins WHERE id = ? AND session_token = ?',
+      [adminId, session_token]
+    );
+    if (sessionCheck.length === 0) {
+      return res.status(401).json({ error: 'Sessão inválida' });
     }
 
     const result = await query<any[]>(
