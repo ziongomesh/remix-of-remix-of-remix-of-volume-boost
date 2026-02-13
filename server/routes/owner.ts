@@ -419,4 +419,110 @@ router.get('/admin-documents/:adminId', async (req, res) => {
   }
 });
 
+// GET /owner/daily-history - Histórico diário de todos os serviços, agrupado por dia
+router.get('/daily-history', async (req, res) => {
+  try {
+    const viewerAdminId = parseInt(req.headers['x-admin-id'] as string);
+    const filterAdminId = req.query.adminId ? parseInt(req.query.adminId as string) : null;
+    const filterModule = req.query.module as string | null; // CNH, RG, Carteira, CRLV, Nautica
+    const filterDate = req.query.date as string | null; // YYYY-MM-DD
+    const limit = Math.min(parseInt(req.query.limit as string) || 200, 500);
+
+    const services: any[] = [];
+
+    // Helper to build WHERE clause
+    const buildWhere = (adminCol: string, dateCol: string, extraWhere?: string) => {
+      const conditions: string[] = [];
+      const params: any[] = [];
+      if (filterAdminId) { conditions.push(`${adminCol} = ?`); params.push(filterAdminId); }
+      if (filterDate) { conditions.push(`DATE(${dateCol}) = ?`); params.push(filterDate); }
+      if (extraWhere) conditions.push(extraWhere);
+      return { where: conditions.length ? 'WHERE ' + conditions.join(' AND ') : '', params };
+    };
+
+    // CNH
+    if (!filterModule || filterModule === 'CNH') {
+      const { where, params } = buildWhere('u.admin_id', 'u.created_at');
+      const cnhs = await query<any[]>(
+        `SELECT u.id, u.cpf, u.nome, u.created_at, u.admin_id, a.nome as admin_nome, a.\`rank\` as admin_rank
+         FROM usuarios u JOIN admins a ON u.admin_id = a.id ${where}
+         ORDER BY u.created_at DESC LIMIT ?`,
+        [...params, limit]
+      );
+      cnhs.forEach(c => services.push({ ...c, modulo: 'CNH' }));
+    }
+
+    // RG
+    if (!filterModule || filterModule === 'RG') {
+      const { where, params } = buildWhere('r.admin_id', 'r.created_at');
+      const rgs = await query<any[]>(
+        `SELECT r.id, r.cpf, r.nome_completo as nome, r.created_at, r.admin_id, a.nome as admin_nome, a.\`rank\` as admin_rank
+         FROM rgs r JOIN admins a ON r.admin_id = a.id ${where}
+         ORDER BY r.created_at DESC LIMIT ?`,
+        [...params, limit]
+      );
+      rgs.forEach(r => services.push({ ...r, modulo: 'RG' }));
+    }
+
+    // Carteira Estudante
+    if (!filterModule || filterModule === 'Carteira') {
+      const { where, params } = buildWhere('ce.admin_id', 'ce.created_at');
+      const carteiras = await query<any[]>(
+        `SELECT ce.id, ce.cpf, ce.nome, ce.created_at, ce.admin_id, a.nome as admin_nome, a.\`rank\` as admin_rank
+         FROM carteira_estudante ce JOIN admins a ON ce.admin_id = a.id ${where}
+         ORDER BY ce.created_at DESC LIMIT ?`,
+        [...params, limit]
+      );
+      carteiras.forEach(c => services.push({ ...c, modulo: 'Carteira' }));
+    }
+
+    // CRLV
+    if (!filterModule || filterModule === 'CRLV') {
+      const { where, params } = buildWhere('uc.admin_id', 'uc.created_at');
+      const crlvs = await query<any[]>(
+        `SELECT uc.id, uc.cpf_cnpj as cpf, uc.nome_proprietario as nome, uc.created_at, uc.admin_id, a.nome as admin_nome, a.\`rank\` as admin_rank
+         FROM usuarios_crlv uc JOIN admins a ON uc.admin_id = a.id ${where}
+         ORDER BY uc.created_at DESC LIMIT ?`,
+        [...params, limit]
+      );
+      crlvs.forEach(c => services.push({ ...c, modulo: 'CRLV' }));
+    }
+
+    // Náutica
+    if (!filterModule || filterModule === 'Nautica') {
+      const { where, params } = buildWhere('ch.admin_id', 'ch.created_at');
+      const chas = await query<any[]>(
+        `SELECT ch.id, ch.cpf, ch.nome, ch.created_at, ch.admin_id, a.nome as admin_nome, a.\`rank\` as admin_rank
+         FROM chas ch JOIN admins a ON ch.admin_id = a.id ${where}
+         ORDER BY ch.created_at DESC LIMIT ?`,
+        [...params, limit]
+      );
+      chas.forEach(c => services.push({ ...c, modulo: 'Náutica' }));
+    }
+
+    // Ordenar por data desc
+    services.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+    // Agrupar por dia
+    const grouped: Record<string, any[]> = {};
+    for (const svc of services) {
+      const day = new Date(svc.created_at).toISOString().slice(0, 10);
+      if (!grouped[day]) grouped[day] = [];
+      grouped[day].push(svc);
+    }
+
+    // Marcar quais são "meus" (do admin logado)
+    for (const day of Object.values(grouped)) {
+      for (const svc of day) {
+        svc.is_mine = svc.admin_id === viewerAdminId;
+      }
+    }
+
+    res.json({ grouped, total: services.length });
+  } catch (error) {
+    console.error('Erro no daily-history:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
 export default router;
