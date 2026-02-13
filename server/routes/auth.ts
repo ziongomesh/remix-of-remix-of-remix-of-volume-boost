@@ -74,15 +74,20 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Validar PIN (usa session_token do body, pois faz parte do fluxo de login)
+// Validar PIN (usa headers x-admin-id e x-session-token enviados pelo fetchAPI)
 router.post('/validate-pin', async (req, res) => {
   try {
-    const { adminId, session_token } = req.body;
+    const adminId = req.headers['x-admin-id'] || req.body.adminId;
+    const sessionToken = req.headers['x-session-token'] || req.body.session_token;
 
-    // Validar sessão manualmente via body (o PIN é validado durante o login)
+    if (!adminId || !sessionToken) {
+      return res.status(401).json({ error: 'Sessão inválida' });
+    }
+
+    // Validar sessão
     const sessionCheck = await query<any[]>(
       'SELECT 1 FROM admins WHERE id = ? AND session_token = ?',
-      [adminId, session_token]
+      [adminId, sessionToken]
     );
     if (sessionCheck.length === 0) {
       return res.status(401).json({ error: 'Sessão inválida' });
