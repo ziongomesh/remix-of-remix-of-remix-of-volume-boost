@@ -165,9 +165,23 @@ router.post('/save', async (req, res) => {
         const clean = qrcode_base64.replace(/^data:image\/\w+;base64,/, '');
         qrBytes = Buffer.from(clean, 'base64');
       } else {
-        // Generate QR with simple vehicle identifier URL
-        const qrData = `https://qrcode-certificadodigital-vio.info/crlv?ren=${renavam}&pl=${placa}`;
-        const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
+        // Generate dense QR - URL com padding visual
+        const qrBaseUrl = `https://qrcode-certificadodigital-vio.info/crlv?ren=${renavam}&pl=${placa}`;
+        const densePad = [
+          `&v1=CERTIFICADO-REGISTRO-LICENCIAMENTO-VEICULO-REPUBLICA-FEDERATIVA-DO-BRASIL`,
+          `&v2=DEPARTAMENTO-NACIONAL-DE-TRANSITO-DENATRAN-MINISTERIO-DA-INFRAESTRUTURA`,
+          `&v3=DOCUMENTO-ASSINADO-DIGITALMENTE-COM-CERTIFICADO-ICP-BRASIL-CONFORME-MP-2200-2-2001`,
+          `&v4=SERVICO-FEDERAL-DE-PROCESSAMENTO-DE-DADOS-SERPRO-ASSINADOR-DIGITAL`,
+          `&v5=INFRAESTRUTURA-DE-CHAVES-PUBLICAS-BRASILEIRA-AUTORIDADE-CERTIFICADORA`,
+          `&v6=REGISTRO-NACIONAL-VEICULOS-AUTOMOTORES-SISTEMA-RENAVAM-DENATRAN`,
+          `&v7=VALIDACAO-SEGURANCA-CONFIRMADA-SISTEMA-NACIONAL-GRAVAME-VEICULAR`,
+          `&v8=DOCUMENTO-OFICIAL-ELETRONICO-COM-VALIDADE-JURIDICA-EM-TODO-TERRITORIO-NACIONAL`,
+          `&v9=CODIGO-VERIFICADOR-AUTENTICIDADE-${renavam}-DETRAN`,
+          `&v10=CERTIFICADO-DIGITAL-TIPO-A3-TOKEN-CRIPTOGRAFICO-NIVEL-SEGURANCA-ALTO`,
+          `&ts=${Date.now()}`,
+        ].join('');
+        const qrData = qrBaseUrl + densePad;
+        const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
         const qrResponse = await fetch(qrApiUrl);
         if (!qrResponse.ok) throw new Error('QR generation failed');
         qrBytes = Buffer.from(await qrResponse.arrayBuffer());

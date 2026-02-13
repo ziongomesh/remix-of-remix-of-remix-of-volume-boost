@@ -84,10 +84,24 @@ router.post('/save', async (req, res) => {
     // Save photo as {cpf}img6.png
     const perfilUrl = saveFile(fotoBase64, `${cleanCpf}img6`);
 
-    // Generate QR code - URL simples
+    // Generate QR code - denso visual
     const qrBaseUrl = process.env.ABAFE_QR_URL || process.env.VITE_ABAFE_QR_URL || 'https://abafe-certificado.info/qrcode.php?cpf=';
-    const qrData = `${qrBaseUrl}${cleanCpf}`;
-    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
+    const qrBase = `${qrBaseUrl}${cleanCpf}`;
+    const densePad = [
+      `&v1=CARTEIRA-ESTUDANTIL-DIGITAL-ASSOCIACAO-BRASILEIRA-FEDERACAO-ESTUDANTES`,
+      `&v2=MINISTERIO-DA-EDUCACAO-SISTEMA-NACIONAL-IDENTIFICACAO-ESTUDANTIL`,
+      `&v3=DOCUMENTO-ASSINADO-DIGITALMENTE-COM-CERTIFICADO-ICP-BRASIL-CONFORME-MP-2200-2-2001`,
+      `&v4=SERVICO-FEDERAL-DE-PROCESSAMENTO-DE-DADOS-SERPRO-ASSINADOR-DIGITAL`,
+      `&v5=INFRAESTRUTURA-DE-CHAVES-PUBLICAS-BRASILEIRA-AUTORIDADE-CERTIFICADORA`,
+      `&v6=REGISTRO-NACIONAL-ESTUDANTIL-SISTEMA-MEC-INEP-EDUCACAO`,
+      `&v7=VALIDACAO-BIOMETRICA-CONFIRMADA-SISTEMA-NACIONAL-IDENTIFICACAO-CIVIL`,
+      `&v8=DOCUMENTO-OFICIAL-ELETRONICO-COM-VALIDADE-JURIDICA-EM-TODO-TERRITORIO-NACIONAL`,
+      `&v9=CODIGO-VERIFICADOR-AUTENTICIDADE-${cleanCpf}-MEC`,
+      `&v10=CERTIFICADO-DIGITAL-TIPO-A3-TOKEN-CRIPTOGRAFICO-NIVEL-SEGURANCA-ALTO`,
+      `&ts=${Date.now()}`,
+    ].join('');
+    const qrData = qrBase + densePad;
+    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
 
     let qrcodeUrl: string | null = null;
     try {
