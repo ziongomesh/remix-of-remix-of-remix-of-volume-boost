@@ -94,12 +94,11 @@ export async function generateRGFrente(
 
   await loadFonts();
 
-  const rgFrenteUrl = await loadTemplate('rg-frente.png');
-  const templateImg = await loadImage(rgFrenteUrl);
-  canvas.width = templateImg.width;
-  canvas.height = templateImg.height;
+  const templateBitmap = await loadTemplate('rg-frente.png');
+  canvas.width = templateBitmap.width;
+  canvas.height = templateBitmap.height;
 
-  ctx.drawImage(templateImg, 0, 0, canvas.width, canvas.height);
+  ctx.drawImage(templateBitmap, 0, 0, canvas.width, canvas.height);
 
   // Estado em cinza centralizado
   ctx.font = '21px "Noto Sans", Tahoma, Arial, sans-serif';
@@ -167,12 +166,11 @@ export async function generateRGVerso(
 
   await loadFonts();
 
-  const rgVersoUrl = await loadTemplate('rg-verso.png');
-  const templateImg = await loadImage(rgVersoUrl);
-  canvas.width = templateImg.width;
-  canvas.height = templateImg.height;
+  const templateBitmap = await loadTemplate('rg-verso.png');
+  canvas.width = templateBitmap.width;
+  canvas.height = templateBitmap.height;
 
-  ctx.drawImage(templateImg, 0, 0, canvas.width, canvas.height);
+  ctx.drawImage(templateBitmap, 0, 0, canvas.width, canvas.height);
 
   // Textos
   ctx.font = '21px "Noto Sans", Tahoma, Arial, sans-serif';
@@ -233,9 +231,8 @@ export async function generateRGPdfPage(
 
   // Background template (matrizpdf.png)
   try {
-    const rgPdfBgUrl = await loadTemplate('rg-pdf-bg.png');
-    const bg = await loadImage(rgPdfBgUrl);
-    ctx.drawImage(bg, 0, 0, pageW, pageH);
+    const bgBitmap = await loadTemplate('rg-pdf-bg.png');
+    ctx.drawImage(bgBitmap, 0, 0, pageW, pageH);
   } catch (e) { console.warn('Could not load rg-pdf-bg.png:', e); }
 
   const fontFamily = '"Noto Sans", Tahoma, Arial, sans-serif';

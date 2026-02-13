@@ -35,9 +35,8 @@ async function loadFont(): Promise<void> {
 
 async function drawTemplate(ctx: CanvasRenderingContext2D): Promise<void> {
   try {
-    const templateUrl = await loadTemplate('limpa3.png');
-    const templateImg = await loadImage(templateUrl);
-    ctx.drawImage(templateImg, 0, 0, 1011, 740);
+    const bitmap = await loadTemplate('limpa3.png');
+    ctx.drawImage(bitmap, 0, 0, 1011, 740);
   } catch {
     ctx.fillStyle = '#f0f0f0';
     ctx.fillRect(0, 0, 1011, 740);

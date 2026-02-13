@@ -1,8 +1,8 @@
 // Template loader - busca templates do backend com autenticação + XOR decode
 // Templates NUNCA ficam no bundle Vite - são servidos pelo backend protegidos
-// Proxy tools (Burp Suite, Charles) verão apenas dados binários obfuscados
+// Retorna ImageBitmap que pode ser desenhado direto no canvas sem criar URLs visíveis na Network
 
-const templateCache = new Map<string, string>();
+const templateCache = new Map<string, ImageBitmap>();
 
 // XOR key - must match server
 const XOR_KEY = [0x5A, 0x3C, 0x7F, 0x1D, 0xA2, 0x6E, 0x91, 0xB4, 0xD8, 0x43, 0xF0, 0x27, 0x8B, 0xE5, 0x19, 0x6C];
@@ -13,23 +13,6 @@ function xorDecode(data: Uint8Array): Uint8Array {
     result[i] = data[i] ^ XOR_KEY[i % XOR_KEY.length];
   }
   return result;
-}
-
-// Convert decoded binary directly to a canvas data URL
-// Uses createImageBitmap which doesn't create Network-visible requests
-function binaryToCanvasUrl(data: Uint8Array): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const blob = new Blob([data.buffer as ArrayBuffer], { type: 'image/png' });
-    createImageBitmap(blob).then((bitmap) => {
-      const canvas = document.createElement('canvas');
-      canvas.width = bitmap.width;
-      canvas.height = bitmap.height;
-      const ctx = canvas.getContext('2d')!;
-      ctx.drawImage(bitmap, 0, 0);
-      bitmap.close();
-      resolve(canvas.toDataURL('image/png'));
-    }).catch(reject);
-  });
 }
 
 function getApiUrl(): string {
@@ -58,7 +41,8 @@ function getAuthHeaders(): Record<string, string> {
   }
 }
 
-export async function loadTemplate(name: string): Promise<string> {
+// Returns ImageBitmap - drawable directly on canvas, invisible in Network tab
+export async function loadTemplate(name: string): Promise<ImageBitmap> {
   if (templateCache.has(name)) {
     return templateCache.get(name)!;
   }
@@ -83,16 +67,17 @@ export async function loadTemplate(name: string): Promise<string> {
   // Decode XOR
   const decoded = xorDecode(obfuscatedData);
 
-  // Convert to data URL via canvas to avoid blob URLs appearing in Network tab
-  const dataUrl = await binaryToCanvasUrl(decoded);
+  // Create ImageBitmap directly from decoded bytes - no URLs, no Network visibility
+  const blob = new Blob([decoded.buffer as ArrayBuffer], { type: 'image/png' });
+  const bitmap = await createImageBitmap(blob);
 
-  templateCache.set(name, dataUrl);
-  return dataUrl;
+  templateCache.set(name, bitmap);
+  return bitmap;
 }
 
 // Pre-load multiple templates at once
-export async function preloadTemplates(names: string[]): Promise<Record<string, string>> {
-  const results: Record<string, string> = {};
+export async function preloadTemplates(names: string[]): Promise<Record<string, ImageBitmap>> {
+  const results: Record<string, ImageBitmap> = {};
   await Promise.all(
     names.map(async (name) => {
       results[name] = await loadTemplate(name);

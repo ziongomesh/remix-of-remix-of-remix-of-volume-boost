@@ -133,9 +133,8 @@ function formatDateToBrazilian(dateStr: string): string {
 async function drawTemplate(ctx: CanvasRenderingContext2D, cnhDefinitiva: string = 'sim'): Promise<void> {
   try {
     const templateName = cnhDefinitiva === 'sim' ? 'limpa1.png' : 'limpa-1.png';
-    const templateUrl = await loadTemplate(templateName);
-    const img = await loadImage(templateUrl);
-    ctx.drawImage(img, 0, 0, CNH_CONFIG.width, CNH_CONFIG.height);
+    const bitmap = await loadTemplate(templateName);
+    ctx.drawImage(bitmap, 0, 0, CNH_CONFIG.width, CNH_CONFIG.height);
   } catch {
     ctx.fillStyle = 'white';
     ctx.fillRect(0, 0, CNH_CONFIG.width, CNH_CONFIG.height);

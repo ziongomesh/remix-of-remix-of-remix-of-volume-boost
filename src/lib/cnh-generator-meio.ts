@@ -60,9 +60,8 @@ function formatDateToBrazilian(dateStr: string): string {
 
 async function drawTemplate(ctx: CanvasRenderingContext2D): Promise<void> {
   try {
-    const templateUrl = await loadTemplate('limpa2.png');
-    const templateImg = await loadImage(templateUrl);
-    ctx.drawImage(templateImg, 0, 0, 1011, 740);
+    const bitmap = await loadTemplate('limpa2.png');
+    ctx.drawImage(bitmap, 0, 0, 1011, 740);
   } catch {
     ctx.fillStyle = '#373435';
     ctx.fillRect(0, 0, 1011, 740);
