@@ -273,10 +273,15 @@ const ChaPreview = forwardRef<ChaPreviewHandle, ChaPreviewProps>((props, ref) =>
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    loadTemplate('matrizcha.png').then((templateUrl) => {
+    loadTemplate('matrizcha.png').then((bitmap) => {
+      // Draw bitmap to an offscreen canvas to create an HTMLImageElement-like source
+      const offscreen = document.createElement('canvas');
+      offscreen.width = bitmap.width;
+      offscreen.height = bitmap.height;
+      offscreen.getContext('2d')!.drawImage(bitmap, 0, 0);
+
       const bgFront = new Image();
-      bgFront.crossOrigin = 'anonymous';
-      bgFront.src = templateUrl;
+      bgFront.src = offscreen.toDataURL('image/png');
 
       let fotoImg: HTMLImageElement | null = null;
       if (props.fotoPreview) {
@@ -303,10 +308,14 @@ const ChaPreview = forwardRef<ChaPreviewHandle, ChaPreviewProps>((props, ref) =>
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    loadTemplate('matrizcha2.png').then((templateUrl) => {
+    loadTemplate('matrizcha2.png').then((bitmap) => {
+      const offscreen = document.createElement('canvas');
+      offscreen.width = bitmap.width;
+      offscreen.height = bitmap.height;
+      offscreen.getContext('2d')!.drawImage(bitmap, 0, 0);
+
       const bgBack = new Image();
-      bgBack.crossOrigin = 'anonymous';
-      bgBack.src = templateUrl;
+      bgBack.src = offscreen.toDataURL('image/png');
 
       const render = () => drawChaBack(ctx, bgBack, props, W, H, backPositions, highlight);
       bgBack.onload = render;
