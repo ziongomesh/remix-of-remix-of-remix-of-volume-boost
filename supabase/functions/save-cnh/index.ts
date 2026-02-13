@@ -227,7 +227,7 @@ Deno.serve(async (req) => {
       const mmToPt = (mm: number) => mm * 2.834645669;
       const matrizW = mmToPt(85.000);
       const matrizH = mmToPt(55.000);
-      const qrSize = mmToPt(63.788);
+      const qrSize = mmToPt(75);
 
       console.log("PDF matrices check:", {
         hasFrente: !!cnhFrenteBase64 && cnhFrenteBase64.length > 100,
