@@ -1,9 +1,10 @@
 import { Router } from "express";
 import { query } from "../db";
+import { requireSession, requireDono } from "../middleware/auth";
 
 const router = Router();
 
-// Tabela de preços - DEVE bater com o frontend
+// Tabela de preços
 const PRICE_TIERS = [
   { credits: 5, unitPrice: 14.0, total: 70 },
   { credits: 10, unitPrice: 14.0, total: 140 },
@@ -20,47 +21,36 @@ const PRICE_TIERS = [
   { credits: 1000, unitPrice: 9.0, total: 9000 },
 ];
 
-// Preço para criação de revendedor
 const RESELLER_PRICE = 90;
 const RESELLER_CREDITS = 5;
 
 const ALLOWED_PACKAGES = [5, 10, 25, 50, 75, 100, 150, 200, 250, 300, 400, 500, 1000];
 
 function calculatePrice(quantity: number): { unitPrice: number; total: number } | null {
-  if (!ALLOWED_PACKAGES.includes(quantity)) {
-    return null;
-  }
+  if (!ALLOWED_PACKAGES.includes(quantity)) return null;
   const tier = PRICE_TIERS.find((t) => t.credits === quantity);
   if (!tier) return null;
   return { unitPrice: tier.unitPrice, total: tier.total };
 }
 
-// Criar pagamento PIX via VizzionPay
-router.post("/create-pix", async (req, res) => {
+// Criar pagamento PIX (requer sessão)
+router.post("/create-pix", requireSession, async (req, res) => {
   try {
     const { credits, adminId, adminName } = req.body;
 
-    console.log("=== PIX PAYMENT REQUEST (MySQL) ===");
-    console.log("Request body:", { credits, adminId, adminName });
+    // Verificar que é o próprio admin
+    if ((req as any).adminId !== adminId) {
+      return res.status(403).json({ error: "Sem permissão" });
+    }
 
-    // Validar input
-    if (
-      !credits ||
-      !adminId ||
-      !adminName ||
-      typeof credits !== "number" ||
-      typeof adminId !== "number" ||
-      typeof adminName !== "string"
-    ) {
+    if (!credits || !adminId || !adminName || typeof credits !== "number" || typeof adminId !== "number" || typeof adminName !== "string") {
       return res.status(400).json({ error: "Dados incompletos ou inválidos" });
     }
 
-    // Validar pacote de créditos
     if (!ALLOWED_PACKAGES.includes(credits)) {
       return res.status(400).json({ error: "Pacote de créditos inválido" });
     }
 
-    // Calcular preço
     const pricing = calculatePrice(credits);
     if (!pricing) {
       return res.status(400).json({ error: "Erro ao calcular preço" });
@@ -68,39 +58,27 @@ router.post("/create-pix", async (req, res) => {
 
     const { total: amount } = pricing;
 
-    // Verificar se admin existe
     const admins = await query<any[]>("SELECT id, nome, rank FROM admins WHERE id = ?", [adminId]);
     if (admins.length === 0) {
       return res.status(400).json({ error: "Admin não encontrado" });
     }
 
-    // Verificar se é master
     if (admins[0].rank !== "master") {
       return res.status(403).json({ error: "Apenas masters podem recarregar" });
     }
 
-    // Credenciais VizzionPay
     const publicKey = process.env.VIZZIONPAY_PUBLIC_KEY;
     const privateKey = process.env.VIZZIONPAY_PRIVATE_KEY;
 
     if (!publicKey || !privateKey) {
-      console.error("VizzionPay credentials not configured");
       return res.status(500).json({ error: "Chaves da VizzionPay não configuradas" });
     }
 
-    const sanitizedAdminName = adminName
-      .replace(/[<>\"'&]/g, "")
-      .trim()
-      .substring(0, 50);
+    const sanitizedAdminName = adminName.replace(/[<>\"'&]/g, "").trim().substring(0, 50);
     const identifier = `ADMIN_${adminId}_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
 
-    // Usa DOMAIN_URL (igual ao outro projeto) ou API_URL ou detecta automaticamente
     const domainUrl = process.env.DOMAIN_URL || process.env.API_URL || `${req.protocol}://${req.get("host")}`;
     const webhookUrl = process.env.PIX_WEBHOOK_URL || `${domainUrl}/api/payments/webhook`;
-    
-    console.log("=== WEBHOOK CONFIG ===");
-    console.log("DOMAIN_URL:", process.env.DOMAIN_URL);
-    console.log("Webhook URL:", webhookUrl);
 
     const pixRequest: any = {
       identifier: identifier,
@@ -114,18 +92,10 @@ router.post("/create-pix", async (req, res) => {
       callbackUrl: webhookUrl,
     };
 
-    // Split para valores > R$10
     if (amount > 10) {
       const amountSplit = Math.round(amount * 0.05 * 100) / 100;
-      pixRequest.splits = [
-        {
-          producerId: "cmd80ujse00klosducwe52nkw",
-          amount: amountSplit,
-        },
-      ];
+      pixRequest.splits = [{ producerId: "cmd80ujse00klosducwe52nkw", amount: amountSplit }];
     }
-
-    console.log("VizzionPay request:", JSON.stringify(pixRequest, null, 2));
 
     const vizzionResponse = await fetch("https://app.vizzionpay.com/api/v1/gateway/pix/receive", {
       method: "POST",
@@ -137,28 +107,21 @@ router.post("/create-pix", async (req, res) => {
       body: JSON.stringify(pixRequest),
     });
 
-    console.log("VizzionPay response status:", vizzionResponse.status);
-
     if (!vizzionResponse.ok) {
       const errorData = await vizzionResponse.text();
-      console.error("VizzionPay error response:", errorData);
       throw new Error(`VizzionPay error: ${vizzionResponse.status} - ${errorData}`);
     }
 
     const pixData = await vizzionResponse.json();
-    console.log("VizzionPay response received:", JSON.stringify(pixData, null, 2));
 
     if (!pixData.transactionId || typeof pixData.transactionId !== "string") {
       throw new Error("Invalid VizzionPay response");
     }
 
-    // Salvar pagamento no MySQL
     await query(
       "INSERT INTO pix_payments (admin_id, admin_name, credits, amount, transaction_id, status) VALUES (?, ?, ?, ?, ?, ?)",
       [adminId, sanitizedAdminName, credits, Math.round(amount * 100) / 100, pixData.transactionId, "PENDING"],
     );
-
-    console.log("Pagamento PIX salvo no MySQL com transactionId:", pixData.transactionId);
 
     res.json({
       transactionId: pixData.transactionId,
@@ -171,100 +134,55 @@ router.post("/create-pix", async (req, res) => {
     });
   } catch (error: any) {
     console.error("Erro ao criar pagamento PIX:", error);
-    res.status(500).json({
-      error: "Erro ao criar pagamento PIX",
-      details: error.message,
-    });
+    res.status(500).json({ error: "Erro ao criar pagamento PIX", details: error.message });
   }
 });
 
-// Verificar status do pagamento (com fallback consultando a VizzionPay)
-router.get("/status/:transactionId", async (req, res) => {
+// Verificar status do pagamento (requer sessão)
+router.get("/status/:transactionId", requireSession, async (req, res) => {
   try {
     const { transactionId } = req.params;
-
-    console.log("=== STATUS CHECK ===");
-    console.log("TransactionId:", transactionId);
 
     const payments = await query<any[]>("SELECT * FROM pix_payments WHERE transaction_id = ?", [transactionId]);
 
     if (payments.length === 0) {
-      console.log("Pagamento não encontrado no banco");
       return res.status(404).json({ error: "Pagamento não encontrado" });
     }
 
     const payment = payments[0];
-    console.log("Payment from DB:", JSON.stringify(payment, null, 2));
 
-    // Se for pagamento de revendedor, o endpoint correto é /reseller-status
+    // Verificar que o admin só pode ver seus próprios pagamentos
+    if ((req as any).adminId !== payment.admin_id && (req as any).adminRank !== 'dono') {
+      return res.status(403).json({ error: "Sem permissão" });
+    }
+
     if (typeof payment.admin_name === "string" && payment.admin_name.startsWith("RESELLER:")) {
       return res.status(400).json({ error: "Use /payments/reseller-status para este pagamento" });
     }
 
-    // Já processado
     if (payment.status === "PAID") {
-      console.log("Pagamento já está PAID");
       return res.json(payment);
     }
 
-    // Fallback: consultar VizzionPay quando estiver pendente
+    // Fallback: consultar VizzionPay
     const publicKey = process.env.VIZZIONPAY_PUBLIC_KEY;
     const privateKey = process.env.VIZZIONPAY_PRIVATE_KEY;
 
-    console.log("=== DEBUG CREDENCIAIS ===");
-    console.log("Has publicKey:", !!publicKey);
-    console.log("Has privateKey:", !!privateKey);
-    console.log("PublicKey (primeiros 20 chars):", publicKey?.substring(0, 20) + "...");
-
     if (payment.status === "PENDING" && publicKey && privateKey) {
-      console.log("=== CONSULTANDO VIZZIONPAY ===");
       try {
-        const vizzionUrl = `https://app.vizzionpay.com/api/v1/gateway/pix/${transactionId}`;
-        console.log("URL:", vizzionUrl);
-
-        const vizzionResponse = await fetch(vizzionUrl, {
-          headers: {
-            "x-public-key": publicKey,
-            "x-secret-key": privateKey,
-          },
+        const vizzionResponse = await fetch(`https://app.vizzionpay.com/api/v1/gateway/pix/${transactionId}`, {
+          headers: { "x-public-key": publicKey, "x-secret-key": privateKey },
         });
-
-        console.log("VizzionPay HTTP status:", vizzionResponse.status);
 
         if (vizzionResponse.ok) {
           const vizzionData = await vizzionResponse.json();
-          console.log("=== VIZZIONPAY RESPONSE ===");
-          console.log(JSON.stringify(vizzionData, null, 2));
 
-          const remoteStatus =
-            vizzionData?.status ||
-            vizzionData?.transaction?.status ||
-            vizzionData?.data?.status ||
-            vizzionData?.data?.transaction?.status ||
-            vizzionData?.pix?.status;
+          const remoteStatus = vizzionData?.status || vizzionData?.transaction?.status || vizzionData?.data?.status || vizzionData?.data?.transaction?.status || vizzionData?.pix?.status;
+          const remoteEvent = vizzionData?.event || vizzionData?.data?.event || vizzionData?.pix?.event;
 
-          const remoteEvent = 
-            vizzionData?.event || 
-            vizzionData?.data?.event ||
-            vizzionData?.pix?.event;
-
-          console.log("Detected remoteStatus:", remoteStatus);
-          console.log("Detected remoteEvent:", remoteEvent);
-
-          const isPaid = 
-            remoteEvent === "TRANSACTION_PAID" || 
-            remoteStatus === "PAID" || 
-            remoteStatus === "COMPLETED" ||
-            remoteStatus === "paid" ||
-            remoteStatus === "completed" ||
-            remoteStatus === "CONFIRMED" ||
-            vizzionData?.paid === true;
-
-          console.log("isPaid:", isPaid);
+          const isPaid = remoteEvent === "TRANSACTION_PAID" || remoteStatus === "PAID" || remoteStatus === "COMPLETED" || remoteStatus === "paid" || remoteStatus === "completed" || remoteStatus === "CONFIRMED" || vizzionData?.paid === true;
 
           if (isPaid) {
-            console.log("=== PAGAMENTO CONFIRMADO - PROCESSANDO ===");
-            // Re-busca com lock lógico por status (idempotência)
             const pendingRows = await query<any[]>(
               "SELECT * FROM pix_payments WHERE transaction_id = ? AND status = ?",
               [transactionId, "PENDING"],
@@ -273,48 +191,25 @@ router.get("/status/:transactionId", async (req, res) => {
             if (pendingRows.length > 0) {
               const pendingPayment = pendingRows[0];
 
-              // Atualiza pagamento
-              await query("UPDATE pix_payments SET status = ?, paid_at = NOW() WHERE transaction_id = ?", [
-                "PAID",
-                transactionId,
-              ]);
-              console.log("Status atualizado para PAID");
+              await query("UPDATE pix_payments SET status = ?, paid_at = NOW() WHERE transaction_id = ?", ["PAID", transactionId]);
 
-              // Credita admin e registra transação
               const tier = PRICE_TIERS.find((t) => t.credits === pendingPayment.credits);
               if (tier) {
-                await query("UPDATE admins SET creditos = creditos + ? WHERE id = ?", [
-                  pendingPayment.credits,
-                  pendingPayment.admin_id,
-                ]);
-                console.log(`Créditos adicionados: ${pendingPayment.credits} para admin ${pendingPayment.admin_id}`);
-
+                await query("UPDATE admins SET creditos = creditos + ? WHERE id = ?", [pendingPayment.credits, pendingPayment.admin_id]);
                 await query(
                   "INSERT INTO credit_transactions (to_admin_id, amount, unit_price, total_price, transaction_type) VALUES (?, ?, ?, ?, ?)",
                   [pendingPayment.admin_id, pendingPayment.credits, tier.unitPrice, tier.total, "recharge"],
                 );
-                console.log("Transação de crédito registrada");
               }
-            } else {
-              console.log("Pagamento já foi processado anteriormente");
             }
 
             const updated = await query<any[]>("SELECT * FROM pix_payments WHERE transaction_id = ?", [transactionId]);
             return res.json(updated[0]);
           }
-        } else {
-          const errorText = await vizzionResponse.text();
-          console.error("VizzionPay error response:", errorText);
         }
       } catch (e) {
         console.error("Erro ao consultar VizzionPay (status):", e);
       }
-    } else {
-      console.log("Skipping VizzionPay check - reason:", 
-        !publicKey ? "missing publicKey" : 
-        !privateKey ? "missing privateKey" : 
-        "status is not PENDING"
-      );
     }
 
     return res.json(payment);
@@ -324,127 +219,18 @@ router.get("/status/:transactionId", async (req, res) => {
   }
 });
 
-// Endpoint de teste - consulta VizzionPay diretamente (para debug)
-router.get("/test-vizzion/:transactionId", async (req, res) => {
-  const { transactionId } = req.params;
-  const publicKey = process.env.VIZZIONPAY_PUBLIC_KEY;
-  const privateKey = process.env.VIZZIONPAY_PRIVATE_KEY;
+// REMOVIDO: test-vizzion (endpoint de debug inseguro)
+// REMOVIDO: confirm-manual (endpoint de teste sem autenticação)
 
-  console.log("=== TEST VIZZIONPAY ENDPOINT ===");
-  console.log("TransactionId:", transactionId);
-  console.log("PublicKey:", publicKey?.substring(0, 20) + "...");
-  console.log("PrivateKey:", privateKey ? "[CONFIGURED]" : "[NOT CONFIGURED]");
-
-  if (!publicKey || !privateKey) {
-    return res.status(500).json({
-      error: "Credenciais VizzionPay não configuradas",
-      hasPublicKey: !!publicKey,
-      hasPrivateKey: !!privateKey,
-    });
-  }
-
-  try {
-    const response = await fetch(`https://app.vizzionpay.com/api/v1/gateway/pix/${transactionId}`, {
-      headers: {
-        "x-public-key": publicKey,
-        "x-secret-key": privateKey,
-      },
-    });
-
-    const data = await response.json();
-    console.log("VizzionPay full response:", JSON.stringify(data, null, 2));
-
-    res.json({
-      httpStatus: response.status,
-      vizzionPayResponse: data,
-    });
-  } catch (error: any) {
-    console.error("Erro ao consultar VizzionPay:", error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Endpoint de CONFIRMAÇÃO MANUAL para testes locais (REMOVER EM PRODUÇÃO!)
-// Use: POST /api/payments/confirm-manual/:transactionId
-router.post("/confirm-manual/:transactionId", async (req, res) => {
-  try {
-    const { transactionId } = req.params;
-    console.log("=== CONFIRMAÇÃO MANUAL ===");
-    console.log("TransactionId:", transactionId);
-
-    // Buscar pagamento pendente
-    const payments = await query<any[]>(
-      "SELECT * FROM pix_payments WHERE transaction_id = ? AND status = 'PENDING'",
-      [transactionId]
-    );
-
-    if (payments.length === 0) {
-      return res.status(404).json({ error: "Pagamento não encontrado ou já processado" });
-    }
-
-    const payment = payments[0];
-
-    // Se for pagamento de revendedor, tratar diferente
-    if (payment.admin_name && payment.admin_name.startsWith("RESELLER:")) {
-      // Extrair dados do revendedor
-      const parts = payment.admin_name.split(":");
-      if (parts.length >= 4) {
-        const nome = parts[1];
-        const email = parts[2];
-        const key = parts[3];
-        const masterId = payment.admin_id;
-
-        // Verificar se já não foi criado
-        const existing = await query<any[]>("SELECT id FROM admins WHERE email = ?", [email]);
-        if (existing.length === 0) {
-          console.log(`Criando revendedor: ${nome} (${email}) para master ${masterId}`);
-
-          const result = await query<any>(
-            "INSERT INTO admins (nome, email, `key`, `rank`, criado_por, creditos) VALUES (?, ?, ?, ?, ?, ?)",
-            [nome, email, key, "revendedor", masterId, 5]
-          );
-
-          console.log(`Revendedor criado com ID: ${result.insertId}`);
-        }
-
-        await query(
-          "UPDATE pix_payments SET status = 'PAID', paid_at = NOW(), admin_name = ? WHERE transaction_id = ?",
-          [`Revendedor criado: ${nome}`, transactionId]
-        );
-
-        return res.json({ status: "PAID", message: "Revendedor criado com sucesso!" });
-      }
-    }
-
-    // Pagamento normal de recarga
-    await query("UPDATE pix_payments SET status = 'PAID', paid_at = NOW() WHERE transaction_id = ?", [transactionId]);
-    console.log("Status atualizado para PAID");
-
-    // Creditar admin
-    const tier = PRICE_TIERS.find((t) => t.credits === payment.credits);
-    if (tier) {
-      await query("UPDATE admins SET creditos = creditos + ? WHERE id = ?", [payment.credits, payment.admin_id]);
-      console.log(`Créditos adicionados: ${payment.credits} para admin ${payment.admin_id}`);
-
-      await query(
-        "INSERT INTO credit_transactions (to_admin_id, amount, unit_price, total_price, transaction_type) VALUES (?, ?, ?, ?, ?)",
-        [payment.admin_id, payment.credits, tier.unitPrice, tier.total, "recharge"]
-      );
-      console.log("Transação de crédito registrada");
-    }
-
-    const updated = await query<any[]>("SELECT * FROM pix_payments WHERE transaction_id = ?", [transactionId]);
-    res.json({ status: "PAID", message: "Pagamento confirmado manualmente!", payment: updated[0] });
-  } catch (error: any) {
-    console.error("Erro na confirmação manual:", error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Histórico de pagamentos
-router.get("/history/:adminId", async (req, res) => {
+// Histórico de pagamentos (requer sessão)
+router.get("/history/:adminId", requireSession, async (req, res) => {
   try {
     const { adminId } = req.params;
+
+    // Só pode ver seus próprios pagamentos
+    if ((req as any).adminId !== parseInt(adminId) && (req as any).adminRank !== 'dono') {
+      return res.status(403).json({ error: "Sem permissão" });
+    }
 
     const payments = await query<any[]>(
       "SELECT id, amount, credits, status, created_at, paid_at FROM pix_payments WHERE admin_id = ? ORDER BY created_at DESC LIMIT 10",
@@ -458,56 +244,36 @@ router.get("/history/:adminId", async (req, res) => {
   }
 });
 
-// Webhook de pagamento VizzionPay
+// Webhook de pagamento VizzionPay (público - chamado pela VizzionPay)
 router.post("/webhook", async (req, res) => {
   try {
     console.log("=== PIX WEBHOOK RECEIVED ===");
-    console.log("Webhook body:", JSON.stringify(req.body, null, 2));
-
     const body = req.body || {};
     const transactionId = body.transactionId || body.transaction?.id;
     const status = body.status || body.transaction?.status;
     const event = body.event;
-    const identifier = body.identifier;
 
     if (!transactionId) {
-      console.error("Webhook sem transactionId:", JSON.stringify(body, null, 2));
       return res.status(400).json({ error: "transactionId ausente" });
     }
 
-    // VizzionPay pode enviar:
-    // - status: PAID/COMPLETED
-    // - ou event: TRANSACTION_PAID + transaction.status = COMPLETED
     const isPaid = event === "TRANSACTION_PAID" || status === "PAID" || status === "COMPLETED";
 
     if (isPaid) {
-      const payments = await query<any[]>("SELECT * FROM pix_payments WHERE transaction_id = ? AND status = ?", [
-        transactionId,
-        "PENDING",
-      ]);
+      const payments = await query<any[]>("SELECT * FROM pix_payments WHERE transaction_id = ? AND status = ?", [transactionId, "PENDING"]);
 
       if (payments.length > 0) {
         const payment = payments[0];
 
-        console.log("Processando pagamento confirmado:", payment);
+        await query("UPDATE pix_payments SET status = ?, paid_at = NOW() WHERE transaction_id = ?", ["PAID", transactionId]);
 
-        // Atualizar status do pagamento
-        await query("UPDATE pix_payments SET status = ?, paid_at = NOW() WHERE transaction_id = ?", [
-          "PAID",
-          transactionId,
-        ]);
-
-        // Adicionar créditos ao admin
         const tier = PRICE_TIERS.find((t) => t.credits === payment.credits);
         if (tier) {
           await query("UPDATE admins SET creditos = creditos + ? WHERE id = ?", [payment.credits, payment.admin_id]);
-
           await query(
             "INSERT INTO credit_transactions (to_admin_id, amount, unit_price, total_price, transaction_type) VALUES (?, ?, ?, ?, ?)",
             [payment.admin_id, payment.credits, tier.unitPrice, tier.total, "recharge"],
           );
-
-          console.log(`Créditos adicionados: ${payment.credits} para admin ${payment.admin_id}`);
         }
       }
     }
@@ -519,11 +285,10 @@ router.post("/webhook", async (req, res) => {
   }
 });
 
-// Obter tabela de preços
-router.get("/price-tiers", async (req, res) => {
+// Obter tabela de preços (requer sessão)
+router.get("/price-tiers", requireSession, async (req, res) => {
   try {
     const tiers = await query<any[]>("SELECT * FROM price_tiers WHERE is_active = TRUE ORDER BY min_qty");
-
     res.json(tiers.length > 0 ? tiers : PRICE_TIERS);
   } catch (error) {
     console.error("Erro ao buscar preços:", error);
@@ -531,13 +296,11 @@ router.get("/price-tiers", async (req, res) => {
   }
 });
 
-// Metas mensais
-router.get("/goal/:year/:month", async (req, res) => {
+// Metas mensais (requer sessão)
+router.get("/goal/:year/:month", requireSession, async (req, res) => {
   try {
     const { year, month } = req.params;
-
     const goals = await query<any[]>("SELECT * FROM monthly_goals WHERE year = ? AND month = ?", [year, month]);
-
     res.json(goals[0] || { target_revenue: 0 });
   } catch (error) {
     console.error("Erro ao buscar meta:", error);
@@ -545,18 +308,16 @@ router.get("/goal/:year/:month", async (req, res) => {
   }
 });
 
-// Atualizar meta mensal
-router.post("/goal", async (req, res) => {
+// Atualizar meta mensal (requer sessão + dono)
+router.post("/goal", requireSession, requireDono, async (req, res) => {
   try {
     const { year, month, targetRevenue } = req.body;
-
     await query(
       `INSERT INTO monthly_goals (year, month, target_revenue) 
        VALUES (?, ?, ?) 
        ON DUPLICATE KEY UPDATE target_revenue = ?, updated_at = NOW()`,
       [year, month, targetRevenue, targetRevenue],
     );
-
     res.json({ success: true });
   } catch (error) {
     console.error("Erro ao atualizar meta:", error);
@@ -564,44 +325,36 @@ router.post("/goal", async (req, res) => {
   }
 });
 
-// Métricas de pagamentos (apenas PAID)
-router.get("/metrics", async (_req, res) => {
+// Métricas de pagamentos (requer sessão + dono)
+router.get("/metrics", requireSession, requireDono, async (_req, res) => {
   try {
-    // Contar total de operações (todos os pagamentos)
     const allPayments = await query<any[]>("SELECT id FROM pix_payments");
     const totalOperations = allPayments.length;
 
-    // Métricas apenas de pagamentos PAID
     const paidPayments = await query<any[]>("SELECT amount, credits FROM pix_payments WHERE status = ?", ["PAID"]);
-
     const totalPaidDeposits = paidPayments.length;
     const totalPaidValue = paidPayments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
     const avgTicket = totalPaidDeposits > 0 ? totalPaidValue / totalPaidDeposits : 0;
 
-    res.json({
-      totalOperations, // Total de operações (todos os IDs)
-      totalPaidDeposits, // Quantidade de depósitos PAID
-      totalPaidValue, // Valor total dos PAID (receita)
-      avgTicket, // Ticket médio dos PAID
-    });
+    res.json({ totalOperations, totalPaidDeposits, totalPaidValue, avgTicket });
   } catch (error) {
     console.error("Erro ao buscar métricas de pagamentos:", error);
     res.status(500).json({ error: "Erro interno do servidor" });
   }
 });
 
-// Criar PIX para novo revendedor (R$90 = 5 créditos)
-router.post("/create-reseller-pix", async (req, res) => {
+// Criar PIX para novo revendedor (requer sessão + master)
+router.post("/create-reseller-pix", requireSession, async (req, res) => {
   try {
-    const { masterId, masterName, resellerData } = req.body;
+    const { resellerData } = req.body;
+    const masterId = (req as any).adminId;
+    const masterName = req.body.masterName;
 
-    console.log("=== RESELLER PIX PAYMENT REQUEST ===");
-    console.log("Request body:", { masterId, masterName, resellerData });
+    if ((req as any).adminRank !== 'master') {
+      return res.status(403).json({ error: "Apenas masters podem criar revendedores" });
+    }
 
-    // Usa constantes globais RESELLER_PRICE e RESELLER_CREDITS
-
-    // Validar input
-    if (!masterId || !masterName || !resellerData) {
+    if (!resellerData) {
       return res.status(400).json({ error: "Dados incompletos" });
     }
 
@@ -610,19 +363,11 @@ router.post("/create-reseller-pix", async (req, res) => {
       return res.status(400).json({ error: "Dados do revendedor incompletos" });
     }
 
-    // Verificar se master existe
-    const masters = await query<any[]>("SELECT id, nome, rank FROM admins WHERE id = ?", [masterId]);
-    if (masters.length === 0 || masters[0].rank !== "master") {
-      return res.status(403).json({ error: "Apenas masters podem criar revendedores" });
-    }
-
-    // Verificar se email já existe
     const existing = await query<any[]>("SELECT id FROM admins WHERE email = ?", [email]);
     if (existing.length > 0) {
       return res.status(400).json({ error: "Email já cadastrado" });
     }
 
-    // Credenciais VizzionPay
     const publicKey = process.env.VIZZIONPAY_PUBLIC_KEY;
     const privateKey = process.env.VIZZIONPAY_PRIVATE_KEY;
 
@@ -630,19 +375,11 @@ router.post("/create-reseller-pix", async (req, res) => {
       return res.status(500).json({ error: "Chaves da VizzionPay não configuradas" });
     }
 
-    const sanitizedName = masterName
-      .replace(/[<>\"'&]/g, "")
-      .trim()
-      .substring(0, 50);
+    const sanitizedName = (masterName || '').replace(/[<>\"'&]/g, "").trim().substring(0, 50);
     const identifier = `RESELLER_${masterId}_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
 
-    // Usa DOMAIN_URL (igual ao outro projeto)
     const domainUrl = process.env.DOMAIN_URL || process.env.API_URL || `${req.protocol}://${req.get("host")}`;
     const webhookUrl = process.env.PIX_WEBHOOK_URL || `${domainUrl}/api/payments/webhook-reseller`;
-
-    console.log("=== RESELLER WEBHOOK CONFIG ===");
-    console.log("DOMAIN_URL:", process.env.DOMAIN_URL);
-    console.log("Webhook URL:", webhookUrl);
 
     const pixRequest: any = {
       identifier: identifier,
@@ -656,14 +393,8 @@ router.post("/create-reseller-pix", async (req, res) => {
       callbackUrl: webhookUrl,
     };
 
-    // Split para valores > R$10
     const amountSplit = Math.round(RESELLER_PRICE * 0.05 * 100) / 100;
-    pixRequest.splits = [
-      {
-        producerId: "cmd80ujse00klosducwe52nkw",
-        amount: amountSplit,
-      },
-    ];
+    pixRequest.splits = [{ producerId: "cmd80ujse00klosducwe52nkw", amount: amountSplit }];
 
     const vizzionResponse = await fetch("https://app.vizzionpay.com/api/v1/gateway/pix/receive", {
       method: "POST",
@@ -677,7 +408,6 @@ router.post("/create-reseller-pix", async (req, res) => {
 
     if (!vizzionResponse.ok) {
       const errorData = await vizzionResponse.text();
-      console.error("VizzionPay error:", errorData);
       throw new Error(`VizzionPay error: ${vizzionResponse.status}`);
     }
 
@@ -687,22 +417,10 @@ router.post("/create-reseller-pix", async (req, res) => {
       throw new Error("Invalid VizzionPay response");
     }
 
-    // Salvar pagamento pendente com dados do revendedor
-    // Usa status PENDING (compatível com MySQL ENUM/VARCHAR) e identifica pelo prefixo RESELLER: no admin_name
     await query(
-      `INSERT INTO pix_payments (admin_id, admin_name, credits, amount, transaction_id, status) 
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [
-        masterId,
-        `RESELLER:${nome}:${email}:${key}`,
-        RESELLER_CREDITS,
-        RESELLER_PRICE,
-        pixData.transactionId,
-        "PENDING",
-      ],
+      `INSERT INTO pix_payments (admin_id, admin_name, credits, amount, transaction_id, status) VALUES (?, ?, ?, ?, ?, ?)`,
+      [masterId, `RESELLER:${nome}:${email}:${key}`, RESELLER_CREDITS, RESELLER_PRICE, pixData.transactionId, "PENDING"],
     );
-
-    console.log("PIX para revendedor salvo:", pixData.transactionId);
 
     res.json({
       transactionId: pixData.transactionId,
@@ -720,26 +438,22 @@ router.post("/create-reseller-pix", async (req, res) => {
   }
 });
 
-// Webhook específico para criação de revendedor
+// Webhook revendedor (público - chamado pela VizzionPay)
 router.post("/webhook-reseller", async (req, res) => {
   try {
     console.log("=== RESELLER PIX WEBHOOK ===");
-    console.log("Body:", JSON.stringify(req.body, null, 2));
-
     const body = req.body || {};
     const transactionId = body.transactionId || body.transaction?.id;
     const status = body.status || body.transaction?.status;
     const event = body.event;
 
     if (!transactionId) {
-      console.error("[WEBHOOK] Sem transactionId:", JSON.stringify(body, null, 2));
       return res.status(400).json({ error: "transactionId ausente" });
     }
 
     const isPaid = event === "TRANSACTION_PAID" || status === "PAID" || status === "COMPLETED";
 
     if (isPaid) {
-      // Busca por transactionId E admin_name começando com RESELLER: E status PENDING
       const payments = await query<any[]>(
         `SELECT * FROM pix_payments WHERE transaction_id = ? AND admin_name LIKE 'RESELLER:%' AND status = 'PENDING'`,
         [transactionId],
@@ -747,8 +461,6 @@ router.post("/webhook-reseller", async (req, res) => {
 
       if (payments.length > 0) {
         const payment = payments[0];
-
-        // Extrair dados do revendedor do admin_name
         const parts = payment.admin_name.split(":");
         if (parts[0] === "RESELLER" && parts.length >= 4) {
           const nome = parts[1];
@@ -756,36 +468,23 @@ router.post("/webhook-reseller", async (req, res) => {
           const key = parts[3];
           const masterId = payment.admin_id;
 
-          // Criar revendedor
-          console.log(`[WEBHOOK] Criando revendedor: ${nome} (${email}) para master ${masterId}`);
-
           const result = await query<any>(
             "INSERT INTO admins (nome, email, `key`, `rank`, criado_por, creditos) VALUES (?, ?, ?, ?, ?, ?)",
             [nome, email, key, "revendedor", masterId, 5],
           );
 
-          console.log(`[WEBHOOK] Revendedor criado com ID: ${result.insertId}`);
-
-          // Registrar transação (não bloqueia se falhar)
           try {
             await query(
-              `INSERT INTO credit_transactions (from_admin_id, to_admin_id, amount, total_price, transaction_type) 
-               VALUES (?, ?, ?, ?, ?)`,
+              `INSERT INTO credit_transactions (from_admin_id, to_admin_id, amount, total_price, transaction_type) VALUES (?, ?, ?, ?, ?)`,
               [masterId, result.insertId, RESELLER_CREDITS, RESELLER_PRICE, "reseller_creation"],
             );
-            console.log("[WEBHOOK] Transação registrada");
           } catch (txError: any) {
             console.error("[WEBHOOK] Erro ao registrar transação:", txError.message);
           }
 
-          // Atualizar pagamento
           await query("UPDATE pix_payments SET status = ?, paid_at = NOW(), admin_name = ? WHERE transaction_id = ?", [
-            "PAID",
-            `Revendedor criado: ${nome}`,
-            transactionId,
+            "PAID", `Revendedor criado: ${nome}`, transactionId,
           ]);
-
-          console.log(`Revendedor ${nome} criado com sucesso!`);
         }
       }
     }
@@ -797,8 +496,8 @@ router.post("/webhook-reseller", async (req, res) => {
   }
 });
 
-// Verificar status do PIX de revendedor e criar se pago
-router.get("/reseller-status/:transactionId", async (req, res) => {
+// Verificar status do PIX de revendedor (requer sessão)
+router.get("/reseller-status/:transactionId", requireSession, async (req, res) => {
   try {
     const { transactionId } = req.params;
 
@@ -810,41 +509,32 @@ router.get("/reseller-status/:transactionId", async (req, res) => {
 
     const payment = payments[0];
 
-    // Se já foi processado
+    // Verificar permissão
+    if ((req as any).adminId !== payment.admin_id && (req as any).adminRank !== 'dono') {
+      return res.status(403).json({ error: "Sem permissão" });
+    }
+
     if (payment.status === "PAID") {
       return res.json({ status: "PAID", message: "Revendedor criado com sucesso!" });
     }
 
-    // Verificar status na VizzionPay
     const publicKey = process.env.VIZZIONPAY_PUBLIC_KEY;
     const privateKey = process.env.VIZZIONPAY_PRIVATE_KEY;
 
     if (publicKey && privateKey) {
       try {
         const vizzionResponse = await fetch(`https://app.vizzionpay.com/api/v1/gateway/pix/${transactionId}`, {
-          headers: {
-            "x-public-key": publicKey,
-            "x-secret-key": privateKey,
-          },
+          headers: { "x-public-key": publicKey, "x-secret-key": privateKey },
         });
 
         if (vizzionResponse.ok) {
           const vizzionData = await vizzionResponse.json();
-          console.log("VizzionPay status response:", JSON.stringify(vizzionData, null, 2));
 
-          const remoteStatus =
-            vizzionData?.status ||
-            vizzionData?.transaction?.status ||
-            vizzionData?.data?.status ||
-            vizzionData?.data?.transaction?.status;
-
+          const remoteStatus = vizzionData?.status || vizzionData?.transaction?.status || vizzionData?.data?.status || vizzionData?.data?.transaction?.status;
           const remoteEvent = vizzionData?.event || vizzionData?.data?.event;
-
-          // VizzionPay pode retornar status COMPLETED/PAID, ou event TRANSACTION_PAID
           const isPaid = remoteEvent === "TRANSACTION_PAID" || remoteStatus === "PAID" || remoteStatus === "COMPLETED";
 
           if (isPaid) {
-            // Processar criação do revendedor
             const parts = payment.admin_name.split(":");
             if (parts[0] === "RESELLER" && parts.length >= 4) {
               const nome = parts[1];
@@ -852,31 +542,21 @@ router.get("/reseller-status/:transactionId", async (req, res) => {
               const key = parts[3];
               const masterId = payment.admin_id;
 
-              // Verificar se já não foi criado
               const existing = await query<any[]>("SELECT id FROM admins WHERE email = ?", [email]);
               if (existing.length === 0) {
-                console.log(`Criando revendedor: ${nome} (${email}) para master ${masterId}`);
-
                 const result = await query<any>(
                   "INSERT INTO admins (nome, email, `key`, `rank`, criado_por, creditos) VALUES (?, ?, ?, ?, ?, ?)",
                   [nome, email, key, "revendedor", masterId, 5],
                 );
 
-                console.log(`Revendedor criado com ID: ${result.insertId}`);
-
                 try {
                   await query(
-                    `INSERT INTO credit_transactions (from_admin_id, to_admin_id, amount, total_price, transaction_type) 
-                     VALUES (?, ?, ?, ?, ?)`,
+                    `INSERT INTO credit_transactions (from_admin_id, to_admin_id, amount, total_price, transaction_type) VALUES (?, ?, ?, ?, ?)`,
                     [masterId, result.insertId, RESELLER_CREDITS, RESELLER_PRICE, "reseller_creation"],
                   );
-                  console.log("Transação de crédito registrada");
                 } catch (txError: any) {
-                  console.error("Erro ao registrar transação (pode ser AUTO_INCREMENT):", txError.message);
-                  // Não bloqueia - revendedor já foi criado
+                  console.error("Erro ao registrar transação:", txError.message);
                 }
-              } else {
-                console.log(`Revendedor ${email} já existe, pulando criação`);
               }
 
               await query(

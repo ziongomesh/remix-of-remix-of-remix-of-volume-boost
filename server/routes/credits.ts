@@ -1,15 +1,21 @@
 import { Router } from 'express';
 import { query, getConnection } from '../db';
 import logger from '../utils/logger.ts';
+import { requireSession, requireDono, requireMasterOrAbove } from '../middleware/auth';
 
 const router = Router();
 
-// Transferir créditos
-router.post('/transfer', async (req, res) => {
+// Transferir créditos (requer sessão)
+router.post('/transfer', requireSession, async (req, res) => {
   const connection = await getConnection();
   
   try {
     const { fromAdminId, toAdminId, amount } = req.body;
+
+    // Verificar que o remetente é o próprio usuário logado
+    if ((req as any).adminId !== fromAdminId) {
+      return res.status(403).json({ error: 'Sem permissão para transferir de outro admin' });
+    }
 
     if (!fromAdminId || !toAdminId || !amount || amount <= 0) {
       return res.status(400).json({ error: 'Dados inválidos' });
@@ -17,7 +23,6 @@ router.post('/transfer', async (req, res) => {
 
     await connection.beginTransaction();
 
-    // Verificar saldo
     const [fromAdmin] = await connection.execute(
       'SELECT creditos FROM admins WHERE id = ? FOR UPDATE',
       [fromAdminId]
@@ -30,19 +35,16 @@ router.post('/transfer', async (req, res) => {
       return res.status(400).json({ error: 'Saldo insuficiente' });
     }
 
-    // Debitar do remetente
     await connection.execute(
       'UPDATE admins SET creditos = creditos - ?, last_active = NOW() WHERE id = ?',
       [amount, fromAdminId]
     );
 
-    // Creditar ao destinatário
     await connection.execute(
       'UPDATE admins SET creditos = creditos + ?, last_active = NOW() WHERE id = ?',
       [amount, toAdminId]
     );
 
-    // Registrar transação
     await connection.execute(
       'INSERT INTO credit_transactions (from_admin_id, to_admin_id, amount, transaction_type) VALUES (?, ?, ?, ?)',
       [fromAdminId, toAdminId, amount, 'transfer']
@@ -57,7 +59,6 @@ router.post('/transfer', async (req, res) => {
     await connection.rollback();
     console.error('Erro na transferência:', error);
 
-    // Erro comum quando a tabela credit_transactions foi criada sem AUTO_INCREMENT no id
     if (error?.code === 'ER_DUP_ENTRY' && String(error?.sqlMessage || '').includes("for key 'PRIMARY'")) {
       return res.status(500).json({
         error:
@@ -71,8 +72,8 @@ router.post('/transfer', async (req, res) => {
   }
 });
 
-// Recarregar créditos
-router.post('/recharge', async (req, res) => {
+// Recarregar créditos (requer sessão + dono)
+router.post('/recharge', requireSession, requireDono, async (req, res) => {
   try {
     const { adminId, amount, unitPrice, totalPrice } = req.body;
 
@@ -95,9 +96,16 @@ router.post('/recharge', async (req, res) => {
   }
 });
 
-// Histórico de transações
-router.get('/transactions/:adminId', async (req, res) => {
+// Histórico de transações (requer sessão - só próprias ou dono vê tudo)
+router.get('/transactions/:adminId', requireSession, async (req, res) => {
   try {
+    const targetId = req.params.adminId;
+    
+    // Só pode ver suas próprias transações, ou dono vê qualquer
+    if ((req as any).adminId !== parseInt(targetId) && (req as any).adminRank !== 'dono') {
+      return res.status(403).json({ error: 'Sem permissão' });
+    }
+
     const transactions = await query<any[]>(
       `SELECT ct.*, 
         fa.nome as from_admin_name, 
@@ -108,7 +116,7 @@ router.get('/transactions/:adminId', async (req, res) => {
       WHERE ct.from_admin_id = ? OR ct.to_admin_id = ?
       ORDER BY ct.created_at DESC
       LIMIT 50`,
-      [req.params.adminId, req.params.adminId]
+      [targetId, targetId]
     );
 
     res.json(transactions);
@@ -118,9 +126,15 @@ router.get('/transactions/:adminId', async (req, res) => {
   }
 });
 
-// Obter saldo
-router.get('/balance/:adminId', async (req, res) => {
+// Obter saldo (requer sessão - só próprio ou dono)
+router.get('/balance/:adminId', requireSession, async (req, res) => {
   try {
+    const targetId = parseInt(req.params.adminId);
+    
+    if ((req as any).adminId !== targetId && (req as any).adminRank !== 'dono') {
+      return res.status(403).json({ error: 'Sem permissão' });
+    }
+
     const admins = await query<any[]>(
       'SELECT creditos FROM admins WHERE id = ?',
       [req.params.adminId]
@@ -137,8 +151,8 @@ router.get('/balance/:adminId', async (req, res) => {
   }
 });
 
-// Receita mensal
-router.get('/revenue/:year/:month', async (req, res) => {
+// Receita mensal (requer sessão + dono)
+router.get('/revenue/:year/:month', requireSession, requireDono, async (req, res) => {
   try {
     const { year, month } = req.params;
 
@@ -158,8 +172,8 @@ router.get('/revenue/:year/:month', async (req, res) => {
   }
 });
 
-// Get all transactions
-router.get('/transactions/all', async (_req, res) => {
+// Get all transactions (requer sessão + dono)
+router.get('/transactions/all', requireSession, requireDono, async (_req, res) => {
   try {
     const transactions = await query<any[]>(
       `SELECT ct.*, fa.nome as from_admin_name, ta.nome as to_admin_name
@@ -175,10 +189,9 @@ router.get('/transactions/all', async (_req, res) => {
   }
 });
 
-// Get metrics (depósitos de pix_payments PAID + transferências de credit_transactions)
-router.get('/metrics', async (_req, res) => {
+// Métricas (requer sessão + dono)
+router.get('/metrics', requireSession, requireDono, async (_req, res) => {
   try {
-    // Métricas de pagamentos PIX (apenas PAID)
     const paidPayments = await query<any[]>(
       'SELECT amount FROM pix_payments WHERE status = ?',
       ['PAID']
@@ -187,7 +200,6 @@ router.get('/metrics', async (_req, res) => {
     const totalDepositValue = paidPayments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
     const avgTicket = totalDeposits > 0 ? totalDepositValue / totalDeposits : 0;
 
-    // Métricas de transferências
     const transfers = await query<any[]>(
       'SELECT amount FROM credit_transactions WHERE transaction_type = ?',
       ['transfer']
@@ -208,8 +220,8 @@ router.get('/metrics', async (_req, res) => {
   }
 });
 
-// Get monthly data
-router.get('/monthly-data', async (_req, res) => {
+// Monthly data (requer sessão + dono)
+router.get('/monthly-data', requireSession, requireDono, async (_req, res) => {
   try {
     const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
     const chartData = [];
@@ -225,15 +237,14 @@ router.get('/monthly-data', async (_req, res) => {
   }
 });
 
-// Métricas específicas de um Master (transferências para seus revendedores)
-router.get('/master-metrics/:masterId', async (req, res) => {
+// Métricas de um Master (requer sessão + master ou dono)
+router.get('/master-metrics/:masterId', requireSession, requireMasterOrAbove, async (req, res) => {
   try {
     const { masterId } = req.params;
     const now = new Date();
     const currentMonth = now.getMonth() + 1;
     const currentYear = now.getFullYear();
 
-    // Total de créditos transferidos pelo master (para seus revendedores)
     const transfersTotal = await query<any[]>(
       `SELECT COALESCE(SUM(amount), 0) as total_transferred, COUNT(*) as total_transfers
        FROM credit_transactions 
@@ -241,7 +252,6 @@ router.get('/master-metrics/:masterId', async (req, res) => {
       [masterId]
     );
 
-    // Transferências do mês atual
     const transfersMonth = await query<any[]>(
       `SELECT COALESCE(SUM(amount), 0) as month_transferred, COUNT(*) as month_transfers
        FROM credit_transactions 
@@ -250,7 +260,6 @@ router.get('/master-metrics/:masterId', async (req, res) => {
       [masterId, currentMonth, currentYear]
     );
 
-    // Total de recargas do master (quanto ele recarregou de créditos)
     const rechargesTotal = await query<any[]>(
       `SELECT COALESCE(SUM(amount), 0) as total_recharged, COALESCE(SUM(total_price), 0) as total_spent
        FROM credit_transactions 
@@ -258,7 +267,6 @@ router.get('/master-metrics/:masterId', async (req, res) => {
       [masterId]
     );
 
-    // Recargas do mês
     const rechargesMonth = await query<any[]>(
       `SELECT COALESCE(SUM(amount), 0) as month_recharged, COALESCE(SUM(total_price), 0) as month_spent
        FROM credit_transactions 
@@ -267,23 +275,20 @@ router.get('/master-metrics/:masterId', async (req, res) => {
       [masterId, currentMonth, currentYear]
     );
 
-    // Meta do master para o mês (usar monthly_goals se existir)
     const masterGoal = await query<any[]>(
       `SELECT target_revenue FROM monthly_goals 
        WHERE year = ? AND month = ?`,
       [currentYear, currentMonth]
     );
 
-    // Total de revendedores do master
     const resellersCount = await query<any[]>(
       `SELECT COUNT(*) as count FROM admins WHERE criado_por = ? AND rank = 'revendedor'`,
       [masterId]
     );
 
-    // Lucro estimado (transferências x R$20 mínimo por crédito - custo)
     const totalTransferred = Number(transfersTotal[0]?.total_transferred) || 0;
     const totalSpent = Number(rechargesTotal[0]?.total_spent) || 0;
-    const estimatedRevenue = totalTransferred * 20; // R$20 mínimo por crédito vendido
+    const estimatedRevenue = totalTransferred * 20;
     const estimatedProfit = estimatedRevenue - totalSpent;
 
     res.json({
@@ -306,8 +311,8 @@ router.get('/master-metrics/:masterId', async (req, res) => {
   }
 });
 
-// Histórico de transferências de um master para seus revendedores
-router.get('/master-transfers/:masterId', async (req, res) => {
+// Histórico de transferências de um master (requer sessão + master ou dono)
+router.get('/master-transfers/:masterId', requireSession, requireMasterOrAbove, async (req, res) => {
   try {
     const { masterId } = req.params;
     
@@ -329,12 +334,11 @@ router.get('/master-transfers/:masterId', async (req, res) => {
   }
 });
 
-// Atualizar/criar meta do master
-router.post('/master-goal', async (req, res) => {
+// Atualizar/criar meta (requer sessão + dono)
+router.post('/master-goal', requireSession, requireDono, async (req, res) => {
   try {
-    const { masterId, year, month, targetRevenue } = req.body;
+    const { year, month, targetRevenue } = req.body;
 
-    // Verificar se já existe uma meta para este mês
     const existing = await query<any[]>(
       'SELECT id FROM monthly_goals WHERE year = ? AND month = ?',
       [year, month]
