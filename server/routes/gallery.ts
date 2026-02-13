@@ -98,7 +98,7 @@ router.post('/list', async (req, res) => {
     // 2. RG - rgs table (foto_url, assinatura_url)
     try {
       const rgRows = await query<any[]>(
-        'SELECT nome, cpf, foto_url, assinatura_url, created_at FROM rgs WHERE admin_id = ? AND (foto_url IS NOT NULL OR assinatura_url IS NOT NULL) ORDER BY created_at DESC LIMIT 100',
+        'SELECT nome_completo as nome, cpf, foto_url, assinatura_url, created_at FROM rgs WHERE admin_id = ? AND (foto_url IS NOT NULL OR assinatura_url IS NOT NULL) ORDER BY created_at DESC LIMIT 100',
         [admin_id]
       );
       for (const row of rgRows) {
