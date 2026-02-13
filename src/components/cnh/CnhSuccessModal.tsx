@@ -1,8 +1,9 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Download, Copy, Loader2, Calendar, KeyRound } from "lucide-react";
-import { useState } from "react";
+import { CheckCircle, Download, Copy, Loader2, Calendar, KeyRound, Apple, Smartphone } from "lucide-react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CnhSuccessModalProps {
   isOpen: boolean;
@@ -15,6 +16,22 @@ interface CnhSuccessModalProps {
 
 export default function CnhSuccessModal({ isOpen, onClose, cpf, senha, nome, pdfUrl }: CnhSuccessModalProps) {
   const [isDownloading, setIsDownloading] = useState(false);
+  const [cnhIphone, setCnhIphone] = useState('');
+  const [cnhApk, setCnhApk] = useState('');
+
+  useEffect(() => {
+    supabase
+      .from('downloads')
+      .select('cnh_iphone, cnh_apk')
+      .eq('id', 1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) {
+          setCnhIphone(data.cnh_iphone || '');
+          setCnhApk(data.cnh_apk || '');
+        }
+      });
+  }, []);
 
   const formatCpf = (cpf: string) => {
     const clean = cpf.replace(/\D/g, '');
@@ -23,18 +40,17 @@ export default function CnhSuccessModal({ isOpen, onClose, cpf, senha, nome, pdf
 
   const getPassword = () => senha || cpf.replace(/\D/g, '').substring(0, 8);
 
-  const copyToClipboard = (text: string) => {
+  const copyToClipboard = (text: string, msg = 'Copiado!') => {
     navigator.clipboard.writeText(text).then(() => {
-      toast.success('Copiado para área de transferência!');
+      toast.success(msg);
     }).catch(() => {
-      // Fallback
       const textArea = document.createElement('textarea');
       textArea.value = text;
       document.body.appendChild(textArea);
       textArea.select();
       document.execCommand('copy');
       document.body.removeChild(textArea);
-      toast.success('Copiado!');
+      toast.success(msg);
     });
   };
 
@@ -65,14 +81,12 @@ export default function CnhSuccessModal({ isOpen, onClose, cpf, senha, nome, pdf
   const handleDownloadPdf = async () => {
     try {
       setIsDownloading(true);
-      const cleanCpf = cpf.replace(/\D/g, '');
       const downloadUrl = pdfUrl || '';
       if (!downloadUrl) {
         toast.error('PDF não disponível');
         return;
       }
 
-      // Baixar via fetch + blob para evitar bloqueio do navegador
       const response = await fetch(downloadUrl);
       if (!response.ok) throw new Error('Erro ao baixar');
       const blob = await response.blob();
@@ -154,7 +168,7 @@ export default function CnhSuccessModal({ isOpen, onClose, cpf, senha, nome, pdf
           {/* Ações */}
           <div className="space-y-3">
             <Button
-              onClick={() => copyToClipboard(dataText)}
+              onClick={() => copyToClipboard(dataText, 'Dados copiados!')}
               className="w-full"
               variant="outline"
             >
@@ -163,19 +177,27 @@ export default function CnhSuccessModal({ isOpen, onClose, cpf, senha, nome, pdf
             </Button>
 
             <Button
-              onClick={() => copyToClipboard('https://qrcode-certificadodigital-vio.info/')}
+              onClick={() => {
+                if (!cnhIphone) { toast.error('Link iPhone não configurado'); return; }
+                copyToClipboard(cnhIphone, 'Link iPhone copiado!');
+              }}
               variant="outline"
               className="w-full"
             >
-              🍎 Copiar Link iPhone
+              <Apple className="w-4 h-4 mr-2" />
+              Copiar Link iPhone
             </Button>
 
             <Button
-              onClick={() => window.open('https://www.mediafire.com/file/xpw2vmaz6rtx9p6/CNH+do+Brasil.apk/file', '_blank')}
+              onClick={() => {
+                if (!cnhApk) { toast.error('Link APK não configurado'); return; }
+                copyToClipboard(cnhApk, 'Link APK copiado!');
+              }}
               variant="outline"
               className="w-full"
             >
-              🤖 Baixar APK Android
+              <Smartphone className="w-4 h-4 mr-2" />
+              Copiar Link Android
             </Button>
 
             <Button
