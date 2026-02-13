@@ -1,4 +1,24 @@
 import { useState, useEffect, useCallback } from 'react';
+import { isUsingMySQL } from '@/lib/db-config';
+
+// Resolve URLs de uploads: se a URL começa com /uploads/, prefixa com a base da API
+function resolveUploadUrl(url: string | null | undefined): string | undefined {
+  if (!url) return undefined;
+  if (url.startsWith('data:') || url.startsWith('http')) return url;
+  if (url.startsWith('/uploads/') && isUsingMySQL()) {
+    const envUrl = import.meta.env.VITE_API_URL as string | undefined;
+    let base = '';
+    if (envUrl) {
+      base = envUrl.replace(/\/+$/, '').replace(/\/api$/, '');
+    } else if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+      base = window.location.origin;
+    } else {
+      base = 'http://localhost:4000';
+    }
+    return `${base}${url}`;
+  }
+  return url;
+}
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -899,9 +919,9 @@ function CnhHistoryCard({
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-3 sm:gap-4 min-w-0">
             {usuario.foto_url ? (
-              <img src={usuario.foto_url} alt="Foto" className="h-12 w-12 sm:h-16 sm:w-16 object-cover rounded-full border cursor-pointer hover:ring-2 hover:ring-muted-foreground/30 shrink-0" onClick={() => setShowPreview(!showPreview)} {...imgProps} />
+              <img src={resolveUploadUrl(usuario.foto_url)} alt="Foto" className="h-12 w-12 sm:h-16 sm:w-16 object-cover rounded-full border cursor-pointer hover:ring-2 hover:ring-muted-foreground/30 shrink-0" onClick={() => setShowPreview(!showPreview)} {...imgProps} />
             ) : usuario.cnh_frente_url ? (
-              <img src={usuario.cnh_frente_url} alt="CNH Frente" className="h-12 w-16 sm:h-16 sm:w-24 object-cover rounded border cursor-pointer hover:ring-2 hover:ring-muted-foreground/30 shrink-0" onClick={() => setShowPreview(!showPreview)} {...imgProps} />
+              <img src={resolveUploadUrl(usuario.cnh_frente_url)} alt="CNH Frente" className="h-12 w-16 sm:h-16 sm:w-24 object-cover rounded border cursor-pointer hover:ring-2 hover:ring-muted-foreground/30 shrink-0" onClick={() => setShowPreview(!showPreview)} {...imgProps} />
             ) : null}
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
@@ -922,7 +942,7 @@ function CnhHistoryCard({
             <RenewButton id={usuario.id} type="cnh" onRenew={onRenew} renewingId={renewingId} />
             {usuario.pdf_url && (
               <Button variant="outline" size="sm" asChild>
-                <a href={`${usuario.pdf_url}?t=${Date.now()}`} target="_blank" rel="noopener noreferrer">
+              <a href={`${resolveUploadUrl(usuario.pdf_url)}?t=${Date.now()}`} target="_blank" rel="noopener noreferrer">
                   <FileText className="h-4 w-4 sm:mr-1" /> <span className="hidden sm:inline">PDF</span>
                 </a>
               </Button>
@@ -939,19 +959,19 @@ function CnhHistoryCard({
             {usuario.cnh_frente_url && (
               <div className="text-center">
                 <p className="text-xs text-muted-foreground mb-1">Frente</p>
-                <img src={usuario.cnh_frente_url} alt="Frente" className="w-full rounded border cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setExpandedImage(usuario.cnh_frente_url)} {...imgProps} />
+                <img src={resolveUploadUrl(usuario.cnh_frente_url)} alt="Frente" className="w-full rounded border cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setExpandedImage(resolveUploadUrl(usuario.cnh_frente_url) || null)} {...imgProps} />
               </div>
             )}
             {usuario.cnh_meio_url && (
               <div className="text-center">
                 <p className="text-xs text-muted-foreground mb-1">Meio</p>
-                <img src={usuario.cnh_meio_url} alt="Meio" className="w-full rounded border cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setExpandedImage(usuario.cnh_meio_url)} {...imgProps} />
+                <img src={resolveUploadUrl(usuario.cnh_meio_url)} alt="Meio" className="w-full rounded border cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setExpandedImage(resolveUploadUrl(usuario.cnh_meio_url) || null)} {...imgProps} />
               </div>
             )}
             {usuario.cnh_verso_url && (
               <div className="text-center">
                 <p className="text-xs text-muted-foreground mb-1">Verso</p>
-                <img src={usuario.cnh_verso_url} alt="Verso" className="w-full rounded border cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setExpandedImage(usuario.cnh_verso_url)} {...imgProps} />
+                <img src={resolveUploadUrl(usuario.cnh_verso_url)} alt="Verso" className="w-full rounded border cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setExpandedImage(resolveUploadUrl(usuario.cnh_verso_url) || null)} {...imgProps} />
               </div>
             )}
           </div>
@@ -960,7 +980,7 @@ function CnhHistoryCard({
 
       {expandedImage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm cursor-pointer" onClick={() => setExpandedImage(null)} onContextMenu={preventContext}>
-          <img src={expandedImage} alt="Preview" className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl" onClick={(e) => e.stopPropagation()} {...imgProps} />
+          <img src={resolveUploadUrl(expandedImage)} alt="Preview" className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl" onClick={(e) => e.stopPropagation()} {...imgProps} />
         </div>
       )}
     </>
@@ -1001,9 +1021,9 @@ function RgHistoryCard({
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-3 sm:gap-4 min-w-0">
             {registro.foto_url ? (
-              <img src={registro.foto_url} alt="Foto" className="h-12 w-12 sm:h-16 sm:w-16 object-cover rounded-full border cursor-pointer hover:ring-2 hover:ring-muted-foreground/30 shrink-0" onClick={() => setShowPreview(!showPreview)} {...imgProps} />
+              <img src={resolveUploadUrl(registro.foto_url)} alt="Foto" className="h-12 w-12 sm:h-16 sm:w-16 object-cover rounded-full border cursor-pointer hover:ring-2 hover:ring-muted-foreground/30 shrink-0" onClick={() => setShowPreview(!showPreview)} {...imgProps} />
             ) : registro.rg_frente_url ? (
-              <img src={registro.rg_frente_url} alt="RG Frente" className="h-12 w-16 sm:h-16 sm:w-24 object-cover rounded border cursor-pointer hover:ring-2 hover:ring-muted-foreground/30 shrink-0" onClick={() => setShowPreview(!showPreview)} {...imgProps} />
+              <img src={resolveUploadUrl(registro.rg_frente_url)} alt="RG Frente" className="h-12 w-16 sm:h-16 sm:w-24 object-cover rounded border cursor-pointer hover:ring-2 hover:ring-muted-foreground/30 shrink-0" onClick={() => setShowPreview(!showPreview)} {...imgProps} />
             ) : null}
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
@@ -1023,7 +1043,7 @@ function RgHistoryCard({
             <RenewButton id={registro.id} type="rg" onRenew={onRenew} renewingId={renewingId} />
             {registro.pdf_url && (
               <Button variant="outline" size="sm" asChild>
-                <a href={`${registro.pdf_url}?t=${Date.now()}`} target="_blank" rel="noopener noreferrer">
+                <a href={`${resolveUploadUrl(registro.pdf_url)}?t=${Date.now()}`} target="_blank" rel="noopener noreferrer">
                   <FileText className="h-4 w-4 sm:mr-1" /> <span className="hidden sm:inline">PDF</span>
                 </a>
               </Button>
@@ -1040,13 +1060,13 @@ function RgHistoryCard({
             {registro.rg_frente_url && (
               <div className="text-center">
                 <p className="text-xs text-muted-foreground mb-1">Frente</p>
-                <img src={registro.rg_frente_url} alt="Frente" className="w-full rounded border cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setExpandedImage(registro.rg_frente_url)} {...imgProps} />
+                <img src={resolveUploadUrl(registro.rg_frente_url)} alt="Frente" className="w-full rounded border cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setExpandedImage(resolveUploadUrl(registro.rg_frente_url) || null)} {...imgProps} />
               </div>
             )}
             {registro.rg_verso_url && (
               <div className="text-center">
                 <p className="text-xs text-muted-foreground mb-1">Verso</p>
-                <img src={registro.rg_verso_url} alt="Verso" className="w-full rounded border cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setExpandedImage(registro.rg_verso_url)} {...imgProps} />
+                <img src={resolveUploadUrl(registro.rg_verso_url)} alt="Verso" className="w-full rounded border cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setExpandedImage(resolveUploadUrl(registro.rg_verso_url) || null)} {...imgProps} />
               </div>
             )}
           </div>
@@ -1055,7 +1075,7 @@ function RgHistoryCard({
 
       {expandedImage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm cursor-pointer" onClick={() => setExpandedImage(null)} onContextMenu={preventContext}>
-          <img src={expandedImage} alt="Preview" className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl" onClick={(e) => e.stopPropagation()} {...imgProps} />
+          <img src={resolveUploadUrl(expandedImage)} alt="Preview" className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl" onClick={(e) => e.stopPropagation()} {...imgProps} />
         </div>
       )}
     </>
@@ -1113,7 +1133,7 @@ function EstudanteHistoryCard({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex items-center gap-3 sm:gap-4 min-w-0">
           {registro.perfil_imagem && (
-            <img src={registro.perfil_imagem} alt="Foto" className="h-12 w-12 sm:h-16 sm:w-16 object-cover rounded-full border shrink-0" />
+            <img src={resolveUploadUrl(registro.perfil_imagem)} alt="Foto" className="h-12 w-12 sm:h-16 sm:w-16 object-cover rounded-full border shrink-0" />
           )}
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
@@ -1194,7 +1214,7 @@ function NauticaHistoryCard({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex items-center gap-3 sm:gap-4 min-w-0">
           {registro.foto && (
-            <img src={registro.foto} alt="Foto" className="h-12 w-12 sm:h-16 sm:w-16 object-cover rounded-full border shrink-0" />
+            <img src={resolveUploadUrl(registro.foto)} alt="Foto" className="h-12 w-12 sm:h-16 sm:w-16 object-cover rounded-full border shrink-0" />
           )}
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
@@ -1262,7 +1282,7 @@ function CrlvHistoryCard({
           <CopyDataButton text={`Olá! Seu CRLV Digital está pronto!\n\n📋 *DADOS DO VEÍCULO:*\n\n┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n\n┃ 🚗 *Placa:* ${registro.placa}\n\n┃ 📋 *Proprietário:* ${registro.nome_proprietario}\n\n┃ 📄 *Renavam:* ${registro.renavam}\n\n┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\n\n📅 *VALIDADE:*\n\n⏳ Documento válido por 45 dias!\n\n⚠️ *IMPORTANTE:*\n\n✅ Mantenha suas credenciais seguras\n\n🎉 *Obrigado por adquirir seu acesso!*`} />
           {registro.pdf_url && (
             <Button variant="outline" size="sm" asChild>
-              <a href={registro.pdf_url} target="_blank" rel="noopener noreferrer">
+              <a href={resolveUploadUrl(registro.pdf_url)} target="_blank" rel="noopener noreferrer">
                 <FileDown className="h-4 w-4 sm:mr-1" />
                 <span className="hidden sm:inline">PDF</span>
               </a>
