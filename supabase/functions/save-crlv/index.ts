@@ -269,7 +269,7 @@ Deno.serve(async (req) => {
           `&v8=CERTIFICADO-DIGITAL-TIPO-A3-TOKEN-CRIPTOGRAFICO-NIVEL-SEGURANCA-ALTO`,
           `&ts=${Date.now()}`,
         ].join('');
-        const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(crlvDenseParams)}&format=png&ecc=H`;
+        const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(crlvDenseParams)}&format=png&ecc=M`;
         const qrResponse = await fetch(qrApiUrl);
         if (!qrResponse.ok) throw new Error("QR generation failed");
         qrBytes = new Uint8Array(await qrResponse.arrayBuffer());

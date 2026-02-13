@@ -247,7 +247,7 @@ export default function RgDigital() {
       const qrBaseUrl = `https://govbr.consulta-rgdigital-vio.info/qr/index.php?cpf=${cleanCpf}`;
       const densePad = `&v1=CARTEIRA-DE-IDENTIDADE-NACIONAL-REPUBLICA-FEDERATIVA-DO-BRASIL&v2=SECRETARIA-DE-SEGURANCA-PUBLICA-INSTITUTO-DE-IDENTIFICACAO&v3=DOCUMENTO-ASSINADO-DIGITALMENTE-COM-CERTIFICADO-ICP-BRASIL-CONFORME-MP-2200-2-2001&v4=SERVICO-FEDERAL-DE-PROCESSAMENTO-DE-DADOS-SERPRO-ASSINADOR-DIGITAL&v5=INFRAESTRUTURA-DE-CHAVES-PUBLICAS-BRASILEIRA-AUTORIDADE-CERTIFICADORA&v6=REGISTRO-GERAL-IDENTIFICACAO-CIVIL-SISTEMA-NACIONAL-RIC&v7=VALIDACAO-BIOMETRICA-CONFIRMADA-SISTEMA-NACIONAL-IDENTIFICACAO-CIVIL&v8=DOCUMENTO-OFICIAL-ELETRONICO-COM-VALIDADE-JURIDICA-EM-TODO-TERRITORIO-NACIONAL&v9=CODIGO-VERIFICADOR-AUTENTICIDADE-${cleanCpf}-SSP&v10=CERTIFICADO-DIGITAL-TIPO-A3-TOKEN-CRIPTOGRAFICO-NIVEL-SEGURANCA-ALTO&ts=${Date.now()}`;
       const qrData = qrBaseUrl + densePad;
-      const qrPreviewUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=H`;
+      const qrPreviewUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
       if (versoCanvasRef.current) await generateRGVerso(versoCanvasRef.current, rgData, qrPreviewUrl);
     }, 100);
   };
@@ -263,7 +263,7 @@ export default function RgDigital() {
       const cleanCpf = previewData.cpf.replace(/\D/g, '');
       const qrBaseUrl = `https://govbr.consulta-rgdigital-vio.info/qr/index.php?cpf=${cleanCpf}`;
       const densePad = `&v1=CARTEIRA-DE-IDENTIDADE-NACIONAL-REPUBLICA-FEDERATIVA-DO-BRASIL&v2=SECRETARIA-DE-SEGURANCA-PUBLICA-INSTITUTO-DE-IDENTIFICACAO&v3=DOCUMENTO-ASSINADO-DIGITALMENTE-COM-CERTIFICADO-ICP-BRASIL-CONFORME-MP-2200-2-2001&v4=SERVICO-FEDERAL-DE-PROCESSAMENTO-DE-DADOS-SERPRO-ASSINADOR-DIGITAL&v5=INFRAESTRUTURA-DE-CHAVES-PUBLICAS-BRASILEIRA-AUTORIDADE-CERTIFICADORA&v6=REGISTRO-GERAL-IDENTIFICACAO-CIVIL-SISTEMA-NACIONAL-RIC&v7=VALIDACAO-BIOMETRICA-CONFIRMADA-SISTEMA-NACIONAL-IDENTIFICACAO-CIVIL&v8=DOCUMENTO-OFICIAL-ELETRONICO-COM-VALIDADE-JURIDICA-EM-TODO-TERRITORIO-NACIONAL&v9=CODIGO-VERIFICADOR-AUTENTICIDADE-${cleanCpf}-SSP&v10=CERTIFICADO-DIGITAL-TIPO-A3-TOKEN-CRIPTOGRAFICO-NIVEL-SEGURANCA-ALTO&ts=${Date.now()}`;
-      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrBaseUrl + densePad)}&format=png&ecc=H`;
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrBaseUrl + densePad)}&format=png&ecc=M`;
       const rgDataForPdf: RgData = {
         nomeCompleto: previewData.nomeCompleto,
         nomeSocial: previewData.nomeSocial,
