@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { useForm, type FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
@@ -14,8 +14,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
-  IdCard, User, Shield, CreditCard, Upload, Camera, Loader2, Calendar, ArrowLeft, Copy, Smartphone, FileText, Eye, Sparkles
+  IdCard, User, Shield, CreditCard, Upload, Camera, Loader2, Calendar, ArrowLeft, Copy, Smartphone, FileText, Eye, Sparkles, FolderOpen
 } from 'lucide-react';
+import ImageGalleryModal from '@/components/ImageGalleryModal';
 import { generateRGFrente, generateRGVerso, generateRGPdfPage, type RgData } from '@/lib/rg-generator';
 import { rgService } from '@/lib/rg-service';
 import { playSuccessSound } from '@/lib/success-sound';
@@ -93,7 +94,20 @@ export default function RgDigital() {
   const [rgInfo, setRgInfo] = useState<{ cpf: string; senha: string; pdf: string | null } | null>(null);
   const [downloadLinks, setDownloadLinks] = useState<{ govbr_iphone: string; govbr_apk: string }>({ govbr_iphone: '', govbr_apk: '' });
   const [demoFilling, setDemoFilling] = useState(false);
+  const [galleryType, setGalleryType] = useState<'foto' | 'assinatura' | null>(null);
 
+  const RG_FIELD_LABELS: Record<string, string> = {
+    nomeCompleto: 'Nome Completo', cpf: 'CPF', dataNascimento: 'Data de Nascimento',
+    naturalidade: 'Naturalidade', genero: 'Gênero', validade: 'Validade',
+    uf: 'UF', dataEmissao: 'Data de Emissão', local: 'Local', orgaoExpedidor: 'Órgão Expedidor',
+  };
+
+  const handleFormInvalid = (errors: FieldErrors<RgFormData>) => {
+    const missing = Object.keys(errors).map(k => RG_FIELD_LABELS[k] || k).slice(0, 5);
+    if (missing.length > 0) {
+      toast.error(`Campos obrigatórios: ${missing.join(', ')}`, { position: 'top-right', duration: 5000 });
+    }
+  };
   useEffect(() => {
     supabase.from('downloads').select('govbr_iphone, govbr_apk').eq('id', 1).maybeSingle().then(({ data }) => {
       if (data) setDownloadLinks({ govbr_iphone: data.govbr_iphone || '', govbr_apk: data.govbr_apk || '' });
@@ -199,8 +213,8 @@ export default function RgDigital() {
   if (!admin) return <Navigate to="/login" replace />;
 
   const handleGeneratePreview = async (data: RgFormData) => {
-    if (!fotoPerfil) { toast.error('Foto de perfil é obrigatória'); return; }
-    if (!assinatura) { toast.error('Assinatura é obrigatória'); return; }
+    if (!fotoPerfil) { toast.error('Foto de perfil é obrigatória', { position: 'top-right' }); return; }
+    if (!assinatura) { toast.error('Assinatura é obrigatória', { position: 'top-right' }); return; }
     setPreviewData(data);
     setShowPreview(true);
 
@@ -450,7 +464,7 @@ export default function RgDigital() {
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleGeneratePreview)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(handleGeneratePreview, handleFormInvalid)} className="space-y-6">
             {/* Dados Pessoais */}
             <Card>
               <CardHeader>
@@ -621,7 +635,12 @@ export default function RgDigital() {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <FormLabel>Foto de Perfil <span className="text-destructive">*</span></FormLabel>
+                    <div className="flex items-center justify-between">
+                      <FormLabel>Foto de Perfil <span className="text-destructive">*</span></FormLabel>
+                      <Button type="button" variant="ghost" size="sm" className="h-6 text-xs gap-1 text-primary" onClick={() => setGalleryType('foto')}>
+                        <FolderOpen className="h-3 w-3" /> Acervo
+                      </Button>
+                    </div>
                     <label className="flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-border rounded-xl cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors">
                       {fotoPreview ? (
                         <img src={fotoPreview} alt="Foto" className="h-28 w-28 object-cover rounded-lg" />
@@ -635,7 +654,12 @@ export default function RgDigital() {
                     </label>
                   </div>
                   <div className="space-y-2">
-                    <FormLabel>Assinatura <span className="text-destructive">*</span></FormLabel>
+                    <div className="flex items-center justify-between">
+                      <FormLabel>Assinatura <span className="text-destructive">*</span></FormLabel>
+                      <Button type="button" variant="ghost" size="sm" className="h-6 text-xs gap-1 text-primary" onClick={() => setGalleryType('assinatura')}>
+                        <FolderOpen className="h-3 w-3" /> Acervo
+                      </Button>
+                    </div>
                     <label className="flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-border rounded-xl cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors">
                       {assPreview ? (
                         <img src={assPreview} alt="Assinatura" className="h-16 w-36 object-contain rounded-lg" />
@@ -724,6 +748,28 @@ export default function RgDigital() {
         result={cpfCheck.cpfDuplicate}
         serviceLabel="RG"
       />
+      {admin && galleryType && (
+        <ImageGalleryModal
+          isOpen={!!galleryType}
+          onClose={() => setGalleryType(null)}
+          onSelect={(file) => {
+            if (galleryType === 'foto') {
+              setFotoPerfil(file);
+              const reader = new FileReader();
+              reader.onload = () => setFotoPreview(reader.result as string);
+              reader.readAsDataURL(file);
+            } else {
+              setAssinatura(file);
+              const reader = new FileReader();
+              reader.onload = () => setAssPreview(reader.result as string);
+              reader.readAsDataURL(file);
+            }
+          }}
+          type={galleryType}
+          adminId={admin.id}
+          sessionToken={admin.session_token}
+        />
+      )}
       </div>
     </DashboardLayout>
   );
