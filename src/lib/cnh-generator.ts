@@ -228,7 +228,7 @@ function drawEspelho(ctx: CanvasRenderingContext2D, text?: string): void {
   ctx.translate(130, 690);
   ctx.rotate(-Math.PI / 2);
 
-  ctx.font = '39px "OCR-B", "Courier Prime", monospace';
+  ctx.font = '29px "OCR-B", "Courier Prime", monospace';
 
   ctx.fillStyle = 'black';
   ctx.textAlign = 'left';
