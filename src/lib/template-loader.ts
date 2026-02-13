@@ -25,14 +25,11 @@ export async function loadTemplate(name: string): Promise<string> {
   if (!response.ok) throw new Error(`Template ${name} não encontrado`);
   
   const blob = await response.blob();
-  const dataUrl = await new Promise<string>((resolve) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.readAsDataURL(blob);
-  });
+  // Usar blob URL em vez de data URL para não aparecer no Network tab
+  const blobUrl = URL.createObjectURL(blob);
 
-  templateCache.set(name, dataUrl);
-  return dataUrl;
+  templateCache.set(name, blobUrl);
+  return blobUrl;
 }
 
 // Pre-load multiple templates at once
