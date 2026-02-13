@@ -26,6 +26,7 @@ export default function ImageGalleryModal({
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [loadingImage, setLoadingImage] = useState<string | null>(null);
+  const [brokenUrls, setBrokenUrls] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!isOpen) return;
@@ -43,13 +44,16 @@ export default function ImageGalleryModal({
 
   if (!isOpen) return null;
 
-  const filtered = search
+  const filtered = (search
     ? items.filter(
         (i) =>
           i.nome.toLowerCase().includes(search.toLowerCase()) ||
           i.cpf.includes(search.replace(/\D/g, ''))
       )
-    : items;
+    : items
+  ).filter((i) => !brokenUrls.has(i.url));
+
+  const visibleCount = items.filter((i) => !brokenUrls.has(i.url)).length;
 
   const handleSelect = async (item: GalleryItem) => {
     setLoadingImage(item.url);
@@ -88,7 +92,7 @@ export default function ImageGalleryModal({
             </div>
             <div className="flex-1">
               <p className="text-sm font-medium text-foreground">
-                Encontrei <strong>{items.length}</strong> {label.toLowerCase()} no seu acervo!
+                Encontrei <strong>{visibleCount}</strong> {label.toLowerCase()} no seu acervo!
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">
                 Você pode reutilizar {type === 'foto' ? 'uma foto' : 'uma assinatura'} de um cliente anterior. Selecione abaixo ou faça upload de uma nova.
@@ -150,8 +154,8 @@ export default function ImageGalleryModal({
                         alt={item.nome}
                         className={`w-full h-full ${type === 'foto' ? 'object-cover' : 'object-contain p-2'}`}
                         loading="lazy"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
+                        onError={() => {
+                          setBrokenUrls(prev => new Set(prev).add(item.url));
                         }}
                       />
                     )}
