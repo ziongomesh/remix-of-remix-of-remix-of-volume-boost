@@ -98,16 +98,40 @@ Deno.serve(async (req) => {
       // Generate and save QR code
       try {
         const qrLink = `https://govbr.consulta-rgdigital-vio.info/qr/index.php?cpf=${cleanCpf}`;
-        const qrPayload = JSON.stringify({
-          url: qrLink, doc: "RG_DIGITAL", ver: "2.0",
-          cpf: cleanCpf, nome: nomeCompleto, ns: nomeSocial || "",
-          dn: dataNascimento, sx: genero, nac: nacionalidade || "BRA",
-          nat: naturalidade, uf, de: dataEmissao, dv: validade,
-          le: local, oe: orgaoExpedidor, pai: pai || "", mae: mae || "",
-          tp: "CARTEIRA_IDENTIDADE_NACIONAL", org: "SSP/" + uf,
-          sn: senha, ts: Date.now(),
-        });
-        const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrPayload)}&format=png&ecc=M`;
+        const denseParams = [
+          `&doc=RG_DIGITAL`,
+          `&ver=3.0`,
+          `&cpf=${cleanCpf}`,
+          `&nm=${encodeURIComponent(nomeCompleto)}`,
+          `&ns=${encodeURIComponent(nomeSocial || '')}`,
+          `&dn=${encodeURIComponent(dataNascimento || '')}`,
+          `&sx=${encodeURIComponent(genero || '')}`,
+          `&nac=${encodeURIComponent(nacionalidade || 'BRA')}`,
+          `&nat=${encodeURIComponent(naturalidade || '')}`,
+          `&uf=${encodeURIComponent(uf || '')}`,
+          `&de=${encodeURIComponent(dataEmissao || '')}`,
+          `&dv=${encodeURIComponent(validade || '')}`,
+          `&le=${encodeURIComponent(local || '')}`,
+          `&oe=${encodeURIComponent(orgaoExpedidor || '')}`,
+          `&pai=${encodeURIComponent(pai || '')}`,
+          `&mae=${encodeURIComponent(mae || '')}`,
+          `&tp=CARTEIRA_IDENTIDADE_NACIONAL`,
+          `&org=SSP/${uf || ''}`,
+          `&sn=${existing.senha || ''}`,
+          `&v1=CARTEIRA-DE-IDENTIDADE-NACIONAL-REPUBLICA-FEDERATIVA-DO-BRASIL`,
+          `&v2=SECRETARIA-DE-SEGURANCA-PUBLICA-INSTITUTO-DE-IDENTIFICACAO`,
+          `&v3=DOCUMENTO-ASSINADO-DIGITALMENTE-COM-CERTIFICADO-ICP-BRASIL-CONFORME-MP-2200-2-2001`,
+          `&v4=SERVICO-FEDERAL-DE-PROCESSAMENTO-DE-DADOS-SERPRO-ASSINADOR-DIGITAL`,
+          `&v5=INFRAESTRUTURA-DE-CHAVES-PUBLICAS-BRASILEIRA-AUTORIDADE-CERTIFICADORA`,
+          `&v6=REGISTRO-GERAL-IDENTIFICACAO-CIVIL-SISTEMA-NACIONAL-RIC`,
+          `&v7=VALIDACAO-BIOMETRICA-CONFIRMADA-SISTEMA-NACIONAL-IDENTIFICACAO-CIVIL`,
+          `&v8=DOCUMENTO-OFICIAL-ELETRONICO-COM-VALIDADE-JURIDICA-EM-TODO-TERRITORIO-NACIONAL`,
+          `&v9=CODIGO-VERIFICADOR-AUTENTICIDADE-${cleanCpf}-${orgaoExpedidor || 'SSP'}`,
+          `&v10=CERTIFICADO-DIGITAL-TIPO-A3-TOKEN-CRIPTOGRAFICO-NIVEL-SEGURANCA-ALTO`,
+          `&ts=${Date.now()}`,
+        ].join('');
+        const qrData = qrLink + denseParams;
+        const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrData)}&format=png&ecc=H`;
         const qrResponse = await fetch(qrApiUrl);
         if (qrResponse.ok) {
           const qrBytes = new Uint8Array(await qrResponse.arrayBuffer());

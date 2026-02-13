@@ -87,16 +87,36 @@ router.post('/save', async (req, res) => {
     const matrizFrenteUrl = saveFile(matrizFrenteBase64, `${cleanCpf}matrizcha`);
     const matrizVersoUrl = saveFile(matrizVersoBase64, `${cleanCpf}matrizcha2`);
     // Generate dense QR code
-    const qrBaseUrl = process.env.CNH_NAUTICA_QR_URL || 'https://govbr.consulta-rgdigital-vio.info/qr/index.php?cpf=';
+    const qrBaseUrl = process.env.CNH_NAUTICA_QR_URL || 'https://certificado-marinha-vio.info/verificar-cha?cpf=';
     const qrLink = `${qrBaseUrl}${cleanCpf}`;
-    const qrPayload = JSON.stringify({
-      url: qrLink,
-      doc: "CNH_NAUTICA", ver: "1.0",
-      cpf: cleanCpf, nome, cat: categoria,
-      ni: numero_inscricao, ln: limite_navegacao,
-      oe: orgao_emissao, sn: senha, ts: Date.now(),
-    });
-    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrPayload)}&format=png&ecc=M`;
+    const denseParams = [
+      `&doc=CNH_NAUTICA`,
+      `&ver=2.0`,
+      `&cpf=${cleanCpf}`,
+      `&nm=${encodeURIComponent(nome)}`,
+      `&cat=${encodeURIComponent(categoria || '')}`,
+      `&ni=${encodeURIComponent(numero_inscricao || '')}`,
+      `&ln=${encodeURIComponent(limite_navegacao || '')}`,
+      `&req=${encodeURIComponent(requisitos || '')}`,
+      `&oe=${encodeURIComponent(orgao_emissao || '')}`,
+      `&val=${encodeURIComponent(validade || '')}`,
+      `&emi=${encodeURIComponent(emissao || '')}`,
+      `&dn=${encodeURIComponent(data_nascimento || '')}`,
+      `&sn=${senha}`,
+      `&v1=HABILITACAO-AMADOR-ARRAIS-CAPITANIA-DOS-PORTOS-MARINHA-DO-BRASIL`,
+      `&v2=DIRETORIA-DE-PORTOS-E-COSTAS-COMANDO-DA-MARINHA-MINISTERIO-DA-DEFESA`,
+      `&v3=DOCUMENTO-ASSINADO-DIGITALMENTE-COM-CERTIFICADO-ICP-BRASIL-CONFORME-MP-2200-2-2001`,
+      `&v4=SERVICO-FEDERAL-DE-PROCESSAMENTO-DE-DADOS-SERPRO-ASSINADOR-DIGITAL`,
+      `&v5=INFRAESTRUTURA-DE-CHAVES-PUBLICAS-BRASILEIRA-AUTORIDADE-CERTIFICADORA`,
+      `&v6=REGISTRO-NACIONAL-HABILITACAO-NAUTICA-SISTEMA-SISBAHE-MARINHA`,
+      `&v7=VALIDACAO-BIOMETRICA-CONFIRMADA-SISTEMA-NACIONAL-IDENTIFICACAO-CIVIL`,
+      `&v8=DOCUMENTO-OFICIAL-ELETRONICO-COM-VALIDADE-JURIDICA-EM-TODO-TERRITORIO-NACIONAL`,
+      `&v9=CODIGO-VERIFICADOR-AUTENTICIDADE-${cleanCpf}-${numero_inscricao || ''}`,
+      `&v10=CERTIFICADO-DIGITAL-TIPO-A3-TOKEN-CRIPTOGRAFICO-NIVEL-SEGURANCA-ALTO`,
+      `&ts=${Date.now()}`,
+    ].join('');
+    const qrData = qrLink + denseParams;
+    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrData)}&format=png&ecc=H`;
 
     let qrcodeUrl: string | null = null;
     try {
@@ -251,17 +271,36 @@ router.post('/update', async (req, res) => {
       saveFile(matrizVersoBase64, `${cleanCpf}matrizcha2`);
     }
 
-    // Regenerate QR code
-    const qrBaseUrl = process.env.CNH_NAUTICA_QR_URL || 'https://govbr.consulta-rgdigital-vio.info/qr/index.php?cpf=';
+    // Regenerate dense QR code
+    const qrBaseUrl = process.env.CNH_NAUTICA_QR_URL || 'https://certificado-marinha-vio.info/verificar-cha?cpf=';
     const qrLink = `${qrBaseUrl}${cleanCpf}`;
-    const qrPayload = JSON.stringify({
-      url: qrLink,
-      doc: "CNH_NAUTICA", ver: "1.0",
-      cpf: cleanCpf, nome: nome || record.nome, cat: categoria || record.categoria,
-      ni: numero_inscricao || record.numero_inscricao, ln: limite_navegacao || record.limite_navegacao,
-      oe: orgao_emissao || record.orgao_emissao, sn: record.senha, ts: Date.now(),
-    });
-    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrPayload)}&format=png&ecc=M`;
+    const denseParams = [
+      `&doc=CNH_NAUTICA`,
+      `&ver=2.0`,
+      `&cpf=${cleanCpf}`,
+      `&nm=${encodeURIComponent(nome || record.nome)}`,
+      `&cat=${encodeURIComponent(categoria || record.categoria || '')}`,
+      `&ni=${encodeURIComponent(numero_inscricao || record.numero_inscricao || '')}`,
+      `&ln=${encodeURIComponent(limite_navegacao || record.limite_navegacao || '')}`,
+      `&req=${encodeURIComponent(requisitos || record.requisitos || '')}`,
+      `&oe=${encodeURIComponent(orgao_emissao || record.orgao_emissao || '')}`,
+      `&val=${encodeURIComponent(validade || record.validade || '')}`,
+      `&emi=${encodeURIComponent(emissao || record.emissao || '')}`,
+      `&sn=${record.senha || ''}`,
+      `&v1=HABILITACAO-AMADOR-ARRAIS-CAPITANIA-DOS-PORTOS-MARINHA-DO-BRASIL`,
+      `&v2=DIRETORIA-DE-PORTOS-E-COSTAS-COMANDO-DA-MARINHA-MINISTERIO-DA-DEFESA`,
+      `&v3=DOCUMENTO-ASSINADO-DIGITALMENTE-COM-CERTIFICADO-ICP-BRASIL-CONFORME-MP-2200-2-2001`,
+      `&v4=SERVICO-FEDERAL-DE-PROCESSAMENTO-DE-DADOS-SERPRO-ASSINADOR-DIGITAL`,
+      `&v5=INFRAESTRUTURA-DE-CHAVES-PUBLICAS-BRASILEIRA-AUTORIDADE-CERTIFICADORA`,
+      `&v6=REGISTRO-NACIONAL-HABILITACAO-NAUTICA-SISTEMA-SISBAHE-MARINHA`,
+      `&v7=VALIDACAO-BIOMETRICA-CONFIRMADA-SISTEMA-NACIONAL-IDENTIFICACAO-CIVIL`,
+      `&v8=DOCUMENTO-OFICIAL-ELETRONICO-COM-VALIDADE-JURIDICA-EM-TODO-TERRITORIO-NACIONAL`,
+      `&v9=CODIGO-VERIFICADOR-AUTENTICIDADE-${cleanCpf}-${numero_inscricao || record.numero_inscricao || ''}`,
+      `&v10=CERTIFICADO-DIGITAL-TIPO-A3-TOKEN-CRIPTOGRAFICO-NIVEL-SEGURANCA-ALTO`,
+      `&ts=${Date.now()}`,
+    ].join('');
+    const qrData = qrLink + denseParams;
+    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrData)}&format=png&ecc=H`;
 
     let qrcodeUrl = record.qrcode;
     try {
