@@ -17,18 +17,18 @@ function loadImage(src: string): Promise<HTMLImageElement> {
 
 async function loadFont(): Promise<void> {
   try {
-    const courierFontUrl = (await import('../assets/CourierPrime.ttf')).default;
-    const font = new FontFace('Courier Prime', `url(${courierFontUrl})`, { weight: '700' });
+    const ocrBFontUrl = (await import('../assets/OCR-B.otf')).default;
+    const font = new FontFace('OCR-B', `url(${ocrBFontUrl})`);
     const loaded = await font.load();
     document.fonts.add(loaded);
   } catch {
-    // Fallback - tentar Google Fonts
-    if (!document.querySelector('link[href*="Courier+Prime"]')) {
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = 'https://fonts.googleapis.com/css2?family=Courier+Prime:wght@700&display=swap';
-      document.head.appendChild(link);
-    }
+    // Fallback to Courier Prime
+    try {
+      const courierFontUrl = (await import('../assets/CourierPrime.ttf')).default;
+      const font = new FontFace('Courier Prime', `url(${courierFontUrl})`, { weight: '700' });
+      const loaded = await font.load();
+      document.fonts.add(loaded);
+    } catch { /* silent */ }
   }
   await document.fonts.ready;
 }
@@ -44,7 +44,7 @@ async function drawTemplate(ctx: CanvasRenderingContext2D): Promise<void> {
 }
 
 function drawMrzText(ctx: CanvasRenderingContext2D, data: CnhVersoData): void {
-  ctx.font = 'bold 32px "Courier Prime", "Courier New", monospace';
+  ctx.font = '32px "OCR-B", "Courier Prime", "Courier New", monospace';
   ctx.fillStyle = '#373435';
   ctx.textAlign = 'left';
 
