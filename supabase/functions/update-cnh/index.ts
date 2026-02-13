@@ -148,7 +148,7 @@ Deno.serve(async (req) => {
           const img = (changed.includes("meio") && cnhMeioBase64)
             ? await embedBase64(cnhMeioBase64)
             : meioUrl ? await embedFromUrl(meioUrl) : null;
-          if (img) page.drawImage(img, { x: mmToPt(13.406), y: pageHeight - mmToPt(84.691) - matrizH, width: matrizW, height: matrizH });
+          if (img) page.drawImage(img, { x: mmToPt(11.406), y: pageHeight - mmToPt(84.691) - matrizH, width: matrizW, height: matrizH });
         } catch (e) { console.error("Meio error:", e); }
 
         // Matriz 3 (Verso) - sempre incluir
