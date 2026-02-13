@@ -15,6 +15,32 @@ function xorDecode(data: Uint8Array): Uint8Array {
   return result;
 }
 
+// Convert decoded binary to a data URL via off-screen canvas
+// This avoids creating blob: URLs that show up in the Network tab
+function binaryToDataUrl(data: Uint8Array): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const blob = new Blob([data.buffer as ArrayBuffer], { type: 'image/png' });
+    const reader = new FileReader();
+    reader.onload = () => {
+      // Draw to canvas and export to break any direct reference
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d')!;
+        ctx.drawImage(img, 0, 0);
+        const result = canvas.toDataURL('image/png');
+        resolve(result);
+      };
+      img.onerror = () => reject(new Error('Failed to decode template'));
+      img.src = reader.result as string;
+    };
+    reader.onerror = () => reject(new Error('Failed to read template'));
+    reader.readAsDataURL(blob);
+  });
+}
+
 function getApiUrl(): string {
   const envUrl = import.meta.env.VITE_API_URL as string | undefined;
   if (envUrl) {
@@ -66,12 +92,11 @@ export async function loadTemplate(name: string): Promise<string> {
   // Decode XOR
   const decoded = xorDecode(obfuscatedData);
 
-  // Create blob URL from decoded data (never appears as readable image in Network)
-  const blob = new Blob([decoded.buffer as ArrayBuffer], { type: 'image/png' });
-  const blobUrl = URL.createObjectURL(blob);
+  // Convert to data URL via canvas to avoid blob URLs appearing in Network tab
+  const dataUrl = await binaryToDataUrl(decoded);
 
-  templateCache.set(name, blobUrl);
-  return blobUrl;
+  templateCache.set(name, dataUrl);
+  return dataUrl;
 }
 
 // Pre-load multiple templates at once
