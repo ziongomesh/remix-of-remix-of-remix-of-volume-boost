@@ -7,7 +7,7 @@ import path from 'path';
 const router = Router();
 
 function getUploadsDir(): string {
-  return process.env.UPLOADS_PATH || path.resolve(process.cwd(), 'uploads');
+  return process.env.UPLOADS_PATH || path.resolve(process.cwd(), '..', 'public', 'uploads');
 }
 
 function fileExistsInUploads(filePath: string): boolean {
