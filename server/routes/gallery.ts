@@ -129,7 +129,6 @@ router.post('/list', async (req, res) => {
             photos.push({ url: makeUrl(row.perfil_imagem), nome: row.nome, cpf: row.cpf, modulo: 'Estudante', created_at: row.created_at });
           }
         }
-        }
       }
     } catch (e) { /* table may not exist */ }
 
