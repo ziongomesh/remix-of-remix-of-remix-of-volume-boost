@@ -12,7 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
-  GraduationCap, User, CreditCard, Upload, Loader2, Copy, CheckCircle, AlertTriangle, Calendar, KeyRound, Smartphone, Apple, ImageIcon
+  GraduationCap, User, CreditCard, Upload, Loader2, Copy, CheckCircle, AlertTriangle, Calendar, KeyRound, Smartphone, Apple, FolderOpen
 } from 'lucide-react';
 import { estudanteService } from '@/lib/estudante-service';
 import { playSuccessSound } from '@/lib/success-sound';
@@ -309,37 +309,35 @@ export default function CarteiraEstudante() {
                   <AlertTriangle className="h-4 w-4 text-accent-foreground shrink-0" />
                   <p className="text-xs text-accent-foreground">A foto deve ter <strong>fundo branco</strong> obrigatoriamente.</p>
                 </div>
-                <div className="flex items-center gap-4">
-                  {fotoPreview && (
-                    <img src={fotoPreview} alt="Preview" className="h-20 w-20 rounded-lg object-cover border" />
-                  )}
-                  <label className="flex-1 flex items-center gap-3 px-4 py-6 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors">
-                    <Upload className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium text-foreground">{fotoPerfil ? fotoPerfil.name : 'Selecionar foto'}</p>
-                      <p className="text-xs text-muted-foreground">PNG ou JPG - Fundo branco</p>
-                    </div>
-                    <input
-                      type="file"
-                      className="hidden"
-                      accept="image/png,image/jpeg,image/jpg"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleFileUpload(file);
-                      }}
-                    />
-                  </label>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Foto de Perfil <span className="text-destructive">*</span></span>
+                    <Button type="button" variant="ghost" size="sm" className="text-primary" onClick={() => setShowGallery(true)}>
+                      <FolderOpen className="h-4 w-4 mr-1" /> Acervo
+                    </Button>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    {fotoPreview && (
+                      <img src={fotoPreview} alt="Preview" className="h-20 w-20 rounded-lg object-cover border" />
+                    )}
+                    <label className="flex-1 flex items-center gap-3 px-4 py-6 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors">
+                      <Upload className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{fotoPerfil ? fotoPerfil.name : 'Selecionar foto'}</p>
+                        <p className="text-xs text-muted-foreground">PNG ou JPG - Fundo branco</p>
+                      </div>
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/png,image/jpeg,image/jpg"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleFileUpload(file);
+                        }}
+                      />
+                    </label>
+                  </div>
                 </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="mt-3"
-                  onClick={() => setShowGallery(true)}
-                >
-                  <ImageIcon className="h-4 w-4 mr-2" />
-                  Acervo de Fotos
-                </Button>
               </CardContent>
             </Card>
 
@@ -355,7 +353,7 @@ export default function CarteiraEstudante() {
       </div>
 
       {/* Success Modal */}
-      <Dialog open={showSuccess} onOpenChange={(open) => { if (!open) setShowSuccess(false); }}>
+      <Dialog open={showSuccess} onOpenChange={(open) => { setShowSuccess(open); if (!open) { form.reset(); setFotoPerfil(null); setFotoPreview(null); } }}>
         <DialogContent className="max-w-lg mx-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3">
