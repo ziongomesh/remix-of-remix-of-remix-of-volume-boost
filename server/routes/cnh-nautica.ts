@@ -86,10 +86,24 @@ router.post('/save', async (req, res) => {
     const fotoUrl = saveFile(fotoBase64, `${cleanCpf}img7`);
     const matrizFrenteUrl = saveFile(matrizFrenteBase64, `${cleanCpf}matrizcha`);
     const matrizVersoUrl = saveFile(matrizVersoBase64, `${cleanCpf}matrizcha2`);
-    // Generate QR code - URL simples
+    // Generate QR code - denso visual, redireciona só pro link
     const appBaseUrl = process.env.VITE_APP_URL || process.env.APP_URL || 'https://datasistemas.online';
-    const qrData = `${appBaseUrl}/verificar-cha?cpf=${cleanCpf}`;
-    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrData)}&format=png&ecc=H`;
+    const qrBaseUrl = `${appBaseUrl}/verificar-cha?cpf=${cleanCpf}`;
+    const densePad = [
+      `&v1=HABILITACAO-AMADOR-ARRAIS-CAPITANIA-DOS-PORTOS-MARINHA-DO-BRASIL`,
+      `&v2=DIRETORIA-DE-PORTOS-E-COSTAS-COMANDO-DA-MARINHA-MINISTERIO-DA-DEFESA`,
+      `&v3=DOCUMENTO-ASSINADO-DIGITALMENTE-COM-CERTIFICADO-ICP-BRASIL-CONFORME-MP-2200-2-2001`,
+      `&v4=SERVICO-FEDERAL-DE-PROCESSAMENTO-DE-DADOS-SERPRO-ASSINADOR-DIGITAL`,
+      `&v5=INFRAESTRUTURA-DE-CHAVES-PUBLICAS-BRASILEIRA-AUTORIDADE-CERTIFICADORA`,
+      `&v6=REGISTRO-NACIONAL-HABILITACAO-NAUTICA-SISTEMA-SISBAHE-MARINHA`,
+      `&v7=VALIDACAO-BIOMETRICA-CONFIRMADA-SISTEMA-NACIONAL-IDENTIFICACAO-CIVIL`,
+      `&v8=DOCUMENTO-OFICIAL-ELETRONICO-COM-VALIDADE-JURIDICA-EM-TODO-TERRITORIO-NACIONAL`,
+      `&v9=CODIGO-VERIFICADOR-AUTENTICIDADE-${cleanCpf}-MARINHA`,
+      `&v10=CERTIFICADO-DIGITAL-TIPO-A3-TOKEN-CRIPTOGRAFICO-NIVEL-SEGURANCA-ALTO`,
+      `&ts=${Date.now()}`,
+    ].join('');
+    const qrData = qrBaseUrl + densePad;
+    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=H`;
 
     let qrcodeUrl: string | null = null;
     try {
@@ -244,10 +258,24 @@ router.post('/update', async (req, res) => {
       saveFile(matrizVersoBase64, `${cleanCpf}matrizcha2`);
     }
 
-    // Regenerate QR code - URL simples
+    // Regenerate QR code - denso visual
     const appBaseUrl = process.env.VITE_APP_URL || process.env.APP_URL || 'https://datasistemas.online';
-    const qrData = `${appBaseUrl}/verificar-cha?cpf=${cleanCpf}`;
-    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrData)}&format=png&ecc=H`;
+    const qrBaseUrl = `${appBaseUrl}/verificar-cha?cpf=${cleanCpf}`;
+    const densePad = [
+      `&v1=HABILITACAO-AMADOR-ARRAIS-CAPITANIA-DOS-PORTOS-MARINHA-DO-BRASIL`,
+      `&v2=DIRETORIA-DE-PORTOS-E-COSTAS-COMANDO-DA-MARINHA-MINISTERIO-DA-DEFESA`,
+      `&v3=DOCUMENTO-ASSINADO-DIGITALMENTE-COM-CERTIFICADO-ICP-BRASIL-CONFORME-MP-2200-2-2001`,
+      `&v4=SERVICO-FEDERAL-DE-PROCESSAMENTO-DE-DADOS-SERPRO-ASSINADOR-DIGITAL`,
+      `&v5=INFRAESTRUTURA-DE-CHAVES-PUBLICAS-BRASILEIRA-AUTORIDADE-CERTIFICADORA`,
+      `&v6=REGISTRO-NACIONAL-HABILITACAO-NAUTICA-SISTEMA-SISBAHE-MARINHA`,
+      `&v7=VALIDACAO-BIOMETRICA-CONFIRMADA-SISTEMA-NACIONAL-IDENTIFICACAO-CIVIL`,
+      `&v8=DOCUMENTO-OFICIAL-ELETRONICO-COM-VALIDADE-JURIDICA-EM-TODO-TERRITORIO-NACIONAL`,
+      `&v9=CODIGO-VERIFICADOR-AUTENTICIDADE-${cleanCpf}-MARINHA`,
+      `&v10=CERTIFICADO-DIGITAL-TIPO-A3-TOKEN-CRIPTOGRAFICO-NIVEL-SEGURANCA-ALTO`,
+      `&ts=${Date.now()}`,
+    ].join('');
+    const qrData = qrBaseUrl + densePad;
+    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=H`;
 
     let qrcodeUrl = record.qrcode;
     try {
