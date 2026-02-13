@@ -60,10 +60,11 @@ router.post('/save', async (req, res) => {
     }
 
     // Verificar créditos
-    const admins = await query<any[]>('SELECT creditos FROM admins WHERE id = ?', [admin_id]);
+    const admins = await query<any[]>('SELECT creditos, nome as admin_nome FROM admins WHERE id = ?', [admin_id]);
     if (!admins.length || admins[0].creditos <= 0) {
       return res.status(400).json({ error: 'Créditos insuficientes' });
     }
+    const adminNome = admins[0].admin_nome;
 
     // Verificar CPF duplicado
     const cleanCpf = cpf.replace(/\D/g, '');
@@ -237,7 +238,7 @@ router.post('/save', async (req, res) => {
       [admin_id, admin_id, 'cnh_creation']
     );
 
-    logger.cnhCreated({ id: admin_id, nome }, cleanCpf, nome);
+    logger.cnhCreated({ id: admin_id, nome: adminNome }, cleanCpf, nome);
 
     // Buscar data_expiracao inserida
     const inserted = await query<any[]>('SELECT id, data_expiracao FROM usuarios WHERE id = ?', [usuarioId]);
@@ -279,6 +280,8 @@ router.post('/update', async (req, res) => {
     if (!existing.length) {
       return res.status(404).json({ error: 'Registro não encontrado' });
     }
+    const adminRow = await query<any[]>('SELECT nome FROM admins WHERE id = ?', [admin_id]);
+    const adminNome = adminRow.length ? adminRow[0].nome : `ID ${admin_id}`;
 
     const cleanCpf = cpf.replace(/\D/g, '');
     const changed: string[] = changedMatrices || [];
@@ -448,7 +451,7 @@ router.post('/update', async (req, res) => {
       ]
     );
 
-    logger.cnhUpdated(admin_id, usuario_id, nome, changed);
+    logger.cnhUpdated(admin_id, usuario_id, nome, changed, adminNome);
 
     res.json({
       success: true,

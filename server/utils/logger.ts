@@ -86,10 +86,10 @@ export const logger = {
     console.log(`${colors.cyan}${line()}${colors.reset}\n`);
   },
 
-  cnhUpdated(adminId: number, usuarioId: number, nome: string, changed: string[]) {
+  cnhUpdated(adminId: number, usuarioId: number, nome: string, changed: string[], adminNome?: string) {
     console.log(`\n${colors.bgBlue}${colors.bright} ✏️  CNH EDITADA ${colors.reset}`);
     console.log(`${colors.blue}${line()}${colors.reset}`);
-    console.log(`  👤 Admin ID: ${adminId}`);
+    console.log(`  👤 Admin: ${adminNome || `ID ${adminId}`} (ID: ${adminId})`);
     console.log(`  📋 Usuário: ${nome} (ID: ${usuarioId})`);
     console.log(`  🔄 Matrizes alteradas: ${changed.length > 0 ? changed.join(', ') : 'nenhuma'}`);
     console.log(`  🕐 ${timestamp()}`);
