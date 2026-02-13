@@ -274,8 +274,8 @@ router.post('/reseller', requireSession, async (req, res) => {
     const { nome, email, key } = req.body;
     const criadoPor = (req as any).adminId;
 
-    if ((req as any).adminRank !== 'master') {
-      return res.status(403).json({ error: 'Apenas masters podem criar revendedores' });
+    if ((req as any).adminRank !== 'master' && (req as any).adminRank !== 'dono') {
+      return res.status(403).json({ error: 'Apenas masters ou donos podem criar revendedores' });
     }
 
     const existing = await query<any[]>(
