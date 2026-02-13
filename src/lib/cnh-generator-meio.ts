@@ -127,8 +127,8 @@ function drawTexts(ctx: CanvasRenderingContext2D, data: CnhMeioData): void {
     ctx.fillText(text, x, y);
   };
 
-  drawFittedText(data.codigo_seguranca || '', 760, 555, 17, 10);
-  drawFittedText(data.renach || '', 760, 578, 17, 10);
+  drawFittedText(data.codigo_seguranca || '', 760, 552, 14, 9);
+  drawFittedText(data.renach || '', 760, 580, 14, 9);
 
   // Estado por extenso
   ctx.font = `bold 40px ${font}`;
