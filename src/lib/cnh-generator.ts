@@ -1,6 +1,5 @@
 // Gerador de CNH Frente (Canvas client-side)
-import limpa1 from '@/assets/templates/limpa1.png';
-import limpa1Alt from '@/assets/templates/limpa-1.png';
+import { loadTemplate } from './template-loader';
 
 interface CnhData {
   nome?: string;
@@ -132,20 +131,15 @@ function formatDateToBrazilian(dateStr: string): string {
 }
 
 async function drawTemplate(ctx: CanvasRenderingContext2D, cnhDefinitiva: string = 'sim'): Promise<void> {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => {
-      ctx.drawImage(img, 0, 0, CNH_CONFIG.width, CNH_CONFIG.height);
-      resolve();
-    };
-    img.onerror = () => {
-      ctx.fillStyle = 'white';
-      ctx.fillRect(0, 0, CNH_CONFIG.width, CNH_CONFIG.height);
-      resolve();
-    };
-    const templateFile = cnhDefinitiva === 'sim' ? limpa1 : limpa1Alt;
-    img.src = templateFile;
-  });
+  try {
+    const templateName = cnhDefinitiva === 'sim' ? 'limpa1.png' : 'limpa-1.png';
+    const templateUrl = await loadTemplate(templateName);
+    const img = await loadImage(templateUrl);
+    ctx.drawImage(img, 0, 0, CNH_CONFIG.width, CNH_CONFIG.height);
+  } catch {
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, CNH_CONFIG.width, CNH_CONFIG.height);
+  }
 }
 
 async function drawTexts(ctx: CanvasRenderingContext2D, data: CnhData): Promise<void> {

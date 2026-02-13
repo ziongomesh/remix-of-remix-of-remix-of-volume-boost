@@ -1,5 +1,5 @@
 // Gerador de CNH Meio (Canvas client-side)
-import limpa2 from '@/assets/templates/limpa2.png';
+import { loadTemplate } from './template-loader';
 
 interface CnhMeioData {
   obs?: string;
@@ -60,7 +60,8 @@ function formatDateToBrazilian(dateStr: string): string {
 
 async function drawTemplate(ctx: CanvasRenderingContext2D): Promise<void> {
   try {
-    const templateImg = await loadImage(limpa2);
+    const templateUrl = await loadTemplate('limpa2.png');
+    const templateImg = await loadImage(templateUrl);
     ctx.drawImage(templateImg, 0, 0, 1011, 740);
   } catch {
     ctx.fillStyle = '#373435';
