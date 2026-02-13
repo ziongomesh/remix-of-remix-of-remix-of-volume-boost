@@ -114,6 +114,15 @@ export default function DashboardDono() {
   const [adminSearch, setAdminSearch] = useState('');
   const [adminRankFilter, setAdminRankFilter] = useState<string>('all');
 
+  // Daily history state
+  const [dailyHistory, setDailyHistory] = useState<Record<string, any[]>>({});
+  const [dailyTotal, setDailyTotal] = useState(0);
+  const [dailyLoading, setDailyLoading] = useState(false);
+  const [dailyFilterAdmin, setDailyFilterAdmin] = useState<string>('all');
+  const [dailyFilterModule, setDailyFilterModule] = useState<string>('all');
+  const [dailyFilterDate, setDailyFilterDate] = useState<string>('');
+  const [dailyFilterOwnership, setDailyFilterOwnership] = useState<string>('all'); // all, mine, others
+
   const [passwordDialog, setPasswordDialog] = useState<{ open: boolean; admin: AdminItem | null }>({ open: false, admin: null });
   const [transferDialog, setTransferDialog] = useState<{ open: boolean; admin: AdminItem | null }>({ open: false, admin: null });
   const [newPassword, setNewPassword] = useState('');
@@ -318,6 +327,30 @@ export default function DashboardDono() {
       setAuditLog(data);
     } catch (error) { console.error('Erro:', error); }
   };
+
+  const fetchDailyHistory = async () => {
+    setDailyLoading(true);
+    try {
+      const filters: any = {};
+      if (dailyFilterAdmin !== 'all') filters.adminId = parseInt(dailyFilterAdmin);
+      if (dailyFilterModule !== 'all') filters.module = dailyFilterModule;
+      if (dailyFilterDate) filters.date = dailyFilterDate;
+      const data = await (api as any).owner.getDailyHistory(filters);
+      setDailyHistory(data.grouped || {});
+      setDailyTotal(data.total || 0);
+    } catch (error) {
+      console.error('Erro ao buscar histórico diário:', error);
+      toast.error('Erro ao carregar histórico diário');
+    } finally {
+      setDailyLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (admin && role === 'dono' && activeTab === 'audit') {
+      fetchDailyHistory();
+    }
+  }, [activeTab, dailyFilterAdmin, dailyFilterModule, dailyFilterDate]);
 
   const openDetailDialog = async (adm: AdminItem) => {
     setDetailDialog({ open: true, admin: adm });
@@ -595,71 +628,149 @@ export default function DashboardDono() {
                 {renderAdminTable(resellers.filter(a => !adminSearch || a.nome.toLowerCase().includes(adminSearch.toLowerCase()) || a.email.toLowerCase().includes(adminSearch.toLowerCase())))}
               </TabsContent>
 
-              {/* ===== AUDIT LOG ===== */}
+              {/* ===== HISTÓRICO DIÁRIO ===== */}
               <TabsContent value="audit" className="space-y-4">
-                <div className="flex items-center gap-3 flex-wrap">
-                  <Select value={auditFilter} onValueChange={(val) => { setAuditFilter(val); handleFilterAudit(val === 'all' ? undefined : parseInt(val)); }}>
-                    <SelectTrigger className="w-[250px]"><SelectValue placeholder="Filtrar por admin..." /></SelectTrigger>
+                {/* Filtros */}
+                <div className="flex flex-wrap items-center gap-3">
+                  <Select value={dailyFilterAdmin} onValueChange={setDailyFilterAdmin}>
+                    <SelectTrigger className="w-[220px]"><SelectValue placeholder="Filtrar por admin..." /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Todos os admins</SelectItem>
                       {allAdmins.map(a => (<SelectItem key={a.id} value={String(a.id)}>{a.nome} ({a.rank})</SelectItem>))}
                     </SelectContent>
                   </Select>
-                  <Badge variant="secondary">{auditLog.length} registros</Badge>
+
+                  <Select value={dailyFilterModule} onValueChange={setDailyFilterModule}>
+                    <SelectTrigger className="w-[180px]"><SelectValue placeholder="Módulo..." /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos os módulos</SelectItem>
+                      <SelectItem value="CNH">CNH Digital</SelectItem>
+                      <SelectItem value="RG">RG Digital</SelectItem>
+                      <SelectItem value="Carteira">Carteira Estudante</SelectItem>
+                      <SelectItem value="CRLV">CRLV</SelectItem>
+                      <SelectItem value="Nautica">Arrais Náutica</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <Select value={dailyFilterOwnership} onValueChange={setDailyFilterOwnership}>
+                    <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos</SelectItem>
+                      <SelectItem value="mine">Meus serviços</SelectItem>
+                      <SelectItem value="others">De outros</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <Input
+                    type="date"
+                    value={dailyFilterDate}
+                    onChange={(e) => setDailyFilterDate(e.target.value)}
+                    className="w-[170px]"
+                    placeholder="Filtrar por data"
+                  />
+                  {dailyFilterDate && (
+                    <Button variant="ghost" size="sm" onClick={() => setDailyFilterDate('')}>Limpar data</Button>
+                  )}
+
+                  <Badge variant="secondary">{dailyTotal} serviços</Badge>
                 </div>
 
-                <Card>
-                  <CardContent className="p-0">
-                    <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Tipo</TableHead>
-                            <TableHead>Detalhes</TableHead>
-                            <TableHead>Admin</TableHead>
-                            <TableHead>Saldo Atual</TableHead>
-                            <TableHead>Data</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {auditLog.map((entry, idx) => (
-                            <TableRow key={idx}>
-                              <TableCell>
-                                {entry.type === 'service' ? (
-                                  <div className="flex items-center gap-1.5">
-                                    {getServiceIcon(entry.service || '')}
-                                    <Badge variant="secondary" className="text-[10px]">{entry.service}</Badge>
-                                  </div>
-                                ) : entry.type === 'transfer' ? (
-                                  <Badge className="bg-blue-500/20 text-blue-600 border-blue-500/30 text-[10px]"><ArrowUpRight className="h-3 w-3 mr-1" />Transfer</Badge>
-                                ) : (
-                                  <Badge className="bg-green-500/20 text-green-600 border-green-500/30 text-[10px]"><ArrowDownRight className="h-3 w-3 mr-1" />Recarga</Badge>
-                                )}
-                              </TableCell>
-                              <TableCell>
-                                {entry.type === 'service' ? (
-                                  <div><p className="text-sm font-medium">{entry.nome_documento}</p><p className="text-xs text-muted-foreground">CPF: {entry.cpf}</p></div>
-                                ) : entry.type === 'transfer' ? (
-                                  <div><p className="text-sm">{entry.from_nome} → {entry.to_nome}</p><p className="text-xs font-semibold text-primary">{entry.amount} créditos</p></div>
-                                ) : (
-                                  <div><p className="text-sm">{entry.to_nome}</p><p className="text-xs font-semibold text-green-600">+{entry.amount} créditos {entry.total_price ? `(R$ ${entry.total_price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })})` : ''}</p></div>
-                                )}
-                              </TableCell>
-                              <TableCell className="text-sm">{entry.type === 'service' ? entry.admin_nome : entry.type === 'transfer' ? entry.from_nome : entry.to_nome}</TableCell>
-                              <TableCell>
-                                <span className="font-semibold text-sm">
-                                  {entry.type === 'service' ? entry.admin_saldo_atual?.toLocaleString('pt-BR') : entry.type === 'transfer' ? `${entry.from_saldo_atual?.toLocaleString('pt-BR')} / ${entry.to_saldo_atual?.toLocaleString('pt-BR')}` : entry.to_saldo_atual?.toLocaleString('pt-BR')}
-                                </span>
-                              </TableCell>
-                              <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{formatDate(entry.created_at)}</TableCell>
-                            </TableRow>
-                          ))}
-                          {auditLog.length === 0 && (<TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Nenhum registro</TableCell></TableRow>)}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  </CardContent>
-                </Card>
+                {dailyLoading ? (
+                  <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>
+                ) : Object.keys(dailyHistory).length === 0 ? (
+                  <Card>
+                    <CardContent className="py-12 text-center">
+                      <Clock className="h-10 w-10 mx-auto text-muted-foreground/50 mb-3" />
+                      <p className="text-muted-foreground">Nenhum serviço encontrado</p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-4">
+                    {Object.entries(dailyHistory)
+                      .sort(([a], [b]) => b.localeCompare(a))
+                      .map(([day, services]) => {
+                        // Apply ownership filter client-side
+                        const filtered = services.filter(s => {
+                          if (dailyFilterOwnership === 'mine') return s.is_mine;
+                          if (dailyFilterOwnership === 'others') return !s.is_mine;
+                          return true;
+                        });
+                        if (filtered.length === 0) return null;
+
+                        const dayDate = new Date(day + 'T12:00:00');
+                        const isToday = new Date().toISOString().slice(0, 10) === day;
+                        const isYesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10) === day;
+                        const dayLabel = isToday ? 'Hoje' : isYesterday ? 'Ontem' : dayDate.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
+
+                        // Count per module
+                        const moduleCounts: Record<string, number> = {};
+                        filtered.forEach(s => { moduleCounts[s.modulo] = (moduleCounts[s.modulo] || 0) + 1; });
+
+                        return (
+                          <Card key={day}>
+                            <CardHeader className="pb-3">
+                              <div className="flex items-center justify-between">
+                                <CardTitle className="text-sm font-semibold flex items-center gap-2 capitalize">
+                                  <Clock className="h-4 w-4 text-primary" />
+                                  {dayLabel}
+                                </CardTitle>
+                                <div className="flex items-center gap-2">
+                                  {Object.entries(moduleCounts).map(([mod, count]) => (
+                                    <div key={mod} className="flex items-center gap-1">
+                                      {getServiceIcon(mod)}
+                                      <span className="text-xs font-semibold">{count}</span>
+                                    </div>
+                                  ))}
+                                  <Badge variant="outline" className="text-xs">{filtered.length} total</Badge>
+                                </div>
+                              </div>
+                            </CardHeader>
+                            <CardContent className="p-0">
+                              <div className="overflow-x-auto">
+                                <Table>
+                                  <TableHeader>
+                                    <TableRow>
+                                      <TableHead className="w-[80px]">Módulo</TableHead>
+                                      <TableHead>Documento</TableHead>
+                                      <TableHead>Gerado por</TableHead>
+                                      <TableHead className="w-[80px]">Hora</TableHead>
+                                    </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                    {filtered.map((svc, idx) => (
+                                      <TableRow key={`${svc.modulo}-${svc.id}-${idx}`} className={svc.is_mine ? 'bg-primary/5' : ''}>
+                                        <TableCell>
+                                          <div className="flex items-center gap-1.5">
+                                            {getServiceIcon(svc.modulo)}
+                                            <span className="text-[10px] font-medium">{svc.modulo}</span>
+                                          </div>
+                                        </TableCell>
+                                        <TableCell>
+                                          <p className="text-sm font-medium">{svc.nome}</p>
+                                          <p className="text-[10px] text-muted-foreground">CPF: {svc.cpf}</p>
+                                        </TableCell>
+                                        <TableCell>
+                                          <div className="flex items-center gap-1.5">
+                                            <span className="text-sm font-medium">{svc.admin_nome}</span>
+                                            {svc.is_mine && <Badge variant="secondary" className="text-[9px] px-1">Eu</Badge>}
+                                            <Badge variant="outline" className="text-[9px] px-1 capitalize">{svc.admin_rank}</Badge>
+                                          </div>
+                                          <p className="text-[10px] text-muted-foreground">ID: {svc.admin_id}</p>
+                                        </TableCell>
+                                        <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                                          {new Date(svc.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                        </TableCell>
+                                      </TableRow>
+                                    ))}
+                                  </TableBody>
+                                </Table>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                  </div>
+                )}
               </TabsContent>
 
               {/* ===== RANKING ===== */}

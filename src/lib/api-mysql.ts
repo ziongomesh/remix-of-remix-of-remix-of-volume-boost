@@ -392,6 +392,14 @@ export const mysqlApi = {
     getTopResellers: async () => fetchAPI('/owner/top-resellers'),
     getLastService: async () => fetchAPI('/owner/last-service'),
     getAdminDocuments: async (adminId: number) => fetchAPI(`/owner/admin-documents/${adminId}`),
+    getDailyHistory: async (filters?: { adminId?: number; module?: string; date?: string }) => {
+      const params = new URLSearchParams();
+      if (filters?.adminId) params.set('adminId', String(filters.adminId));
+      if (filters?.module) params.set('module', filters.module);
+      if (filters?.date) params.set('date', filters.date);
+      const qs = params.toString();
+      return fetchAPI(`/owner/daily-history${qs ? '?' + qs : ''}`);
+    },
   },
 
   noticias: {
