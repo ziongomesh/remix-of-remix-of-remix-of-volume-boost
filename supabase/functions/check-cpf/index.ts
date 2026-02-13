@@ -73,6 +73,32 @@ Deno.serve(async (req) => {
         creatorAdminId = existing.admin_id;
         isOwn = existing.admin_id === admin_id;
       }
+    } else if (service_type === "nautica") {
+      const { data: existing } = await supabase
+        .from("chas")
+        .select("id, nome, admin_id")
+        .eq("cpf", cleanCpf)
+        .maybeSingle();
+
+      if (existing) {
+        exists = true;
+        recordName = existing.nome;
+        creatorAdminId = existing.admin_id;
+        isOwn = existing.admin_id === admin_id;
+      }
+    } else if (service_type === "estudante") {
+      const { data: existing } = await supabase
+        .from("carteira_estudante")
+        .select("id, nome, admin_id")
+        .eq("cpf", cleanCpf)
+        .maybeSingle();
+
+      if (existing) {
+        exists = true;
+        recordName = existing.nome;
+        creatorAdminId = existing.admin_id;
+        isOwn = existing.admin_id === admin_id;
+      }
     }
 
     // Get creator name if exists

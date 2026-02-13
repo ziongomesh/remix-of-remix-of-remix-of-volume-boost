@@ -27,7 +27,8 @@ import { mysqlApi } from '@/lib/api-mysql';
 import { supabase } from '@/integrations/supabase/client';
 import { generateChaPdf, downloadPdfBlob } from '@/lib/cha-pdf-generator';
 import ImageGalleryModal from '@/components/ImageGalleryModal';
-
+import { useCpfCheck } from '@/hooks/useCpfCheck';
+import CpfDuplicateModal from '@/components/CpfDuplicateModal';
 const nauticaSchema = z.object({
   nome: z.string().min(1, 'Nome obrigatório'),
   cpf: z.string().min(14, 'CPF inválido'),
@@ -69,6 +70,11 @@ export default function CnhNautica() {
   const [govbrIphone, setGovbrIphone] = useState('');
   const [galleryType, setGalleryType] = useState<'foto' | null>(null);
   const chaPreviewRef = useRef<ChaPreviewHandle>(null);
+  const { cpfDuplicate, showDuplicateModal, checkCpf, dismissModal, resetCheck } = useCpfCheck({
+    admin_id: admin?.id || 0,
+    session_token: admin?.session_token || '',
+    service_type: 'nautica',
+  });
 
   // Fetch download links
   useState(() => {
@@ -216,6 +222,7 @@ export default function CnhNautica() {
     setFotoPreview(null);
     setPdfBytes(null);
     setPreviewData(null);
+    resetCheck();
   };
 
   const copyToClipboard = (text: string, msg = 'Copiado!') => {
@@ -353,7 +360,7 @@ export default function CnhNautica() {
                     <FormItem>
                       <FormLabel>CPF <span className="text-destructive">*</span></FormLabel>
                       <FormControl>
-                        <Input placeholder="000.000.000-00" {...field} onChange={(e) => field.onChange(formatCPF(e.target.value))} maxLength={14} />
+                        <Input placeholder="000.000.000-00" {...field} onChange={(e) => { const formatted = formatCPF(e.target.value); field.onChange(formatted); checkCpf(formatted); }} maxLength={14} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -719,6 +726,13 @@ export default function CnhNautica() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <CpfDuplicateModal
+        open={showDuplicateModal}
+        onClose={dismissModal}
+        result={cpfDuplicate}
+        serviceLabel="CHA Náutica"
+      />
     </DashboardLayout>
   );
 }
