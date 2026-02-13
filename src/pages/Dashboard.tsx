@@ -4,7 +4,7 @@ import { StatsCard } from '@/components/dashboard/StatsCard';
 import ResellerGoals from '@/components/dashboard/ResellerGoals';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CreditCard, Crown, Sparkles, TrendingUp, Users, Clock, FileText, IdCard, GraduationCap, Car, Trophy, Medal, Award, Wallet, BarChart3, Megaphone } from 'lucide-react';
+import { CreditCard, Crown, Sparkles, TrendingUp, Users, Clock, FileText, IdCard, GraduationCap, Car, Trophy, Medal, Award, Wallet, BarChart3, Megaphone, History, Search, Filter, Calendar, Anchor, ChevronDown, ChevronRight } from 'lucide-react';
 import { Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import api from '@/lib/api';
@@ -57,6 +57,15 @@ export default function Dashboard() {
   const [showMasterOnboarding, setShowMasterOnboarding] = useState(false);
   const [noticias, setNoticias] = useState<Noticia[]>([]);
   const [myDocStats, setMyDocStats] = useState<{ today: number; week: number; month: number }>({ today: 0, week: 0, month: 0 });
+
+  // Master daily history state
+  const [masterHistory, setMasterHistory] = useState<Record<string, any[]>>({});
+  const [masterHistoryAdmins, setMasterHistoryAdmins] = useState<any[]>([]);
+  const [masterHistoryLoading, setMasterHistoryLoading] = useState(false);
+  const [masterFilterAdmin, setMasterFilterAdmin] = useState<string>('all');
+  const [masterFilterModule, setMasterFilterModule] = useState<string>('all');
+  const [masterFilterDate, setMasterFilterDate] = useState<string>('');
+  const [masterExpandedDays, setMasterExpandedDays] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (admin && !loading) {
@@ -164,6 +173,31 @@ export default function Dashboard() {
       setLoadingStats(false);
     }
   }, [admin, role]);
+
+  // Fetch master daily history
+  useEffect(() => {
+    const fetchMasterHistory = async () => {
+      if (!admin || role !== 'master') return;
+      setMasterHistoryLoading(true);
+      try {
+        const filters: any = {};
+        if (masterFilterAdmin !== 'all') filters.adminId = parseInt(masterFilterAdmin);
+        if (masterFilterModule !== 'all') filters.module = masterFilterModule;
+        if (masterFilterDate) filters.date = masterFilterDate;
+        const data = await (api as any).admins.getMasterDailyHistory(admin.id, filters);
+        setMasterHistory(data.grouped || {});
+        setMasterHistoryAdmins(data.admins || []);
+        // Auto-expand today
+        const today = new Date().toISOString().slice(0, 10);
+        setMasterExpandedDays(prev => ({ ...prev, [today]: true }));
+      } catch (e) {
+        console.error('Erro ao buscar histórico master:', e);
+      } finally {
+        setMasterHistoryLoading(false);
+      }
+    };
+    fetchMasterHistory();
+  }, [admin, role, masterFilterAdmin, masterFilterModule, masterFilterDate]);
 
   if (loading) {
     return (
@@ -632,6 +666,129 @@ export default function Dashboard() {
             totalDocumentsWeek={myDocStats.week}
             totalDocumentsMonth={myDocStats.month}
           />
+        )}
+
+        {/* Histórico Diário - Master */}
+        {role === 'master' && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <History className="h-5 w-5 text-primary" />
+                Histórico Diário
+                <Badge variant="secondary" className="text-[10px] ml-auto">Revendedores</Badge>
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Serviços gerados pelos seus revendedores
+              </p>
+              {/* Filters */}
+              <div className="flex flex-wrap gap-2 pt-3">
+                <select
+                  value={masterFilterAdmin}
+                  onChange={e => setMasterFilterAdmin(e.target.value)}
+                  className="text-xs px-3 py-1.5 rounded-md border border-border bg-background text-foreground"
+                >
+                  <option value="all">Todos os admins</option>
+                  {masterHistoryAdmins.map((a: any) => (
+                    <option key={a.id} value={a.id}>
+                      {a.nome} ({a.rank})
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={masterFilterModule}
+                  onChange={e => setMasterFilterModule(e.target.value)}
+                  className="text-xs px-3 py-1.5 rounded-md border border-border bg-background text-foreground"
+                >
+                  <option value="all">Todos os módulos</option>
+                  <option value="CNH">CNH</option>
+                  <option value="RG">RG</option>
+                  <option value="Carteira">Carteira Estudante</option>
+                  <option value="CRLV">CRLV</option>
+                  <option value="Nautica">Náutica</option>
+                </select>
+                <input
+                  type="date"
+                  value={masterFilterDate}
+                  onChange={e => setMasterFilterDate(e.target.value)}
+                  className="text-xs px-3 py-1.5 rounded-md border border-border bg-background text-foreground"
+                />
+                {(masterFilterAdmin !== 'all' || masterFilterModule !== 'all' || masterFilterDate) && (
+                  <button
+                    onClick={() => { setMasterFilterAdmin('all'); setMasterFilterModule('all'); setMasterFilterDate(''); }}
+                    className="text-xs px-3 py-1.5 rounded-md bg-destructive/10 text-destructive hover:bg-destructive/20"
+                  >
+                    Limpar
+                  </button>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent>
+              {masterHistoryLoading ? (
+                <div className="flex justify-center py-8">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
+                </div>
+              ) : Object.keys(masterHistory).length > 0 ? (
+                <div className="space-y-4">
+                  {Object.entries(masterHistory).sort(([a], [b]) => b.localeCompare(a)).map(([day, items]) => {
+                    const isExpanded = masterExpandedDays[day] ?? false;
+                    const dayLabel = new Date(day + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
+                    return (
+                      <div key={day} className="border border-border rounded-lg overflow-hidden">
+                        <button
+                          onClick={() => setMasterExpandedDays(prev => ({ ...prev, [day]: !isExpanded }))}
+                          className="w-full flex items-center justify-between px-4 py-3 bg-muted/50 hover:bg-muted transition-colors"
+                        >
+                          <div className="flex items-center gap-2">
+                            {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                            <Calendar className="h-4 w-4 text-primary" />
+                            <span className="font-medium text-sm capitalize">{dayLabel}</span>
+                          </div>
+                          <Badge variant="secondary">{items.length} serviço{items.length > 1 ? 's' : ''}</Badge>
+                        </button>
+                        {isExpanded && (
+                          <div className="divide-y divide-border">
+                            {items.map((svc: any, idx: number) => {
+                              const moduleColors: Record<string, string> = {
+                                'CNH': 'bg-green-500/10 text-green-700 dark:text-green-400',
+                                'RG': 'bg-purple-500/10 text-purple-700 dark:text-purple-400',
+                                'Carteira': 'bg-amber-500/10 text-amber-700 dark:text-amber-400',
+                                'CRLV': 'bg-blue-500/10 text-blue-700 dark:text-blue-400',
+                                'Náutica': 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-400',
+                              };
+                              const moduleIcons: Record<string, any> = {
+                                'CNH': Car, 'RG': IdCard, 'Carteira': GraduationCap, 'CRLV': FileText, 'Náutica': Anchor
+                              };
+                              const ModIcon = moduleIcons[svc.modulo] || FileText;
+                              return (
+                                <div key={`${svc.modulo}-${svc.id}-${idx}`} className={`flex items-center justify-between px-4 py-2.5 text-sm ${svc.is_mine ? 'bg-primary/5' : ''}`}>
+                                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold ${moduleColors[svc.modulo] || 'bg-muted text-muted-foreground'}`}>
+                                      <ModIcon className="h-3 w-3" />
+                                      {svc.modulo}
+                                    </span>
+                                    <span className="font-medium truncate">{svc.nome}</span>
+                                    {svc.is_mine && <Badge variant="default" className="text-[9px] px-1.5 py-0">Eu</Badge>}
+                                  </div>
+                                  <div className="flex items-center gap-3 text-xs text-muted-foreground shrink-0">
+                                    <span className="hidden sm:inline">{svc.admin_nome}</span>
+                                    <span>{new Date(svc.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-center text-muted-foreground py-8 text-sm">
+                  Nenhum serviço encontrado para os filtros selecionados
+                </p>
+              )}
+            </CardContent>
+          </Card>
         )}
 
         {/* Notícias / Comunicados */}
