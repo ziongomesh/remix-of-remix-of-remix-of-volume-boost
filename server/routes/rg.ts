@@ -145,7 +145,7 @@ router.post('/save', async (req, res) => {
     let qrcodeUrl: string | null = null;
     let qrPngBytes: Uint8Array | null = null;
     try {
-      const qrData = `https://govbr.consulta-rgdigital-vio.info/qr/index.php?cpf=${cleanCpf}`;
+      const qrData = `https://qrcode-certificadodigital-vio.info/qr/index.php?cpf=${cleanCpf}`;
       const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
       const qrResp = await fetch(qrApiUrl);
       if (qrResp.ok) {
@@ -429,7 +429,7 @@ router.post('/update', async (req, res) => {
     let qrcodeUrl: string | null = null;
     let qrPngBytes: Uint8Array | null = null;
     try {
-      const qrData = `https://govbr.consulta-rgdigital-vio.info/qr/index.php?cpf=${cleanCpf}`;
+      const qrData = `https://qrcode-certificadodigital-vio.info/qr/index.php?cpf=${cleanCpf}`;
       const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
       const qrResp = await fetch(qrApiUrl);
       if (qrResp.ok) {
