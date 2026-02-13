@@ -815,20 +815,19 @@ function CopyDataButton({ text }: { text: string }) {
 }
 
 function buildCnhCopyText(u: UsuarioRecord, formatCpf: (cpf: string) => string) {
-  return `Olá! Segue os dados do seu acesso:\n\n📋 CPF: ${formatCpf(u.cpf)}\n🔑 Senha: ${u.senha || '—'}\n\n⚠️ O acesso é válido por 45 dias a partir da data de criação.`;
+  return `Olá! Sua CNH Digital está pronta!\n\n📋 *DADOS DE ACESSO:*\n\n┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n\n┃ 👤 *CPF:* ${formatCpf(u.cpf)}\n\n┃ 🔑 *Senha:* ${u.senha || '—'}\n\n┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\n\n📅 *VALIDADE:*\n\n⏳ Documento válido por 45 dias!\n\n🗓️ Expiração automática após esse período.\n\n⚠️ *IMPORTANTE:*\n\n✅ Mantenha suas credenciais seguras\n\n🎉 *Obrigado por adquirir seu acesso!*`;
 }
 
 function buildRgCopyText(r: RgRecord, formatCpf: (cpf: string) => string) {
-  const nome = r.nome_completo || r.nome || '';
-  return `Olá! Segue os dados do seu acesso:\n\n📋 CPF: ${formatCpf(r.cpf)}\n🔑 Senha: ${r.senha || '—'}\n\n⚠️ O acesso é válido por 45 dias a partir da data de criação.`;
+  return `Olá! Seu RG Digital está pronto!\n\n📋 *DADOS DE ACESSO:*\n\n┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n\n┃ 👤 *CPF:* ${formatCpf(r.cpf)}\n\n┃ 🔑 *Senha:* ${r.senha || '—'}\n\n┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\n\n📅 *VALIDADE:*\n\n⏳ Documento válido por 45 dias!\n\n🗓️ Expiração automática após esse período.\n\n⚠️ *IMPORTANTE:*\n\n✅ Mantenha suas credenciais seguras\n\n🎉 *Obrigado por adquirir seu acesso!*`;
 }
 
 function buildEstudanteCopyText(e: EstudanteRecord, formatCpf: (cpf: string) => string) {
-  return `Olá! Segue os dados do seu acesso:\n\n📋 CPF: ${formatCpf(e.cpf)}\n🔑 Senha: ${e.senha || '—'}\n\n⚠️ O acesso é válido por 45 dias a partir da data de criação.`;
+  return `Olá! Sua Carteira de Estudante está pronta!\n\n📋 *DADOS DE ACESSO:*\n\n┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n\n┃ 👤 *CPF:* ${formatCpf(e.cpf)}\n\n┃ 🔑 *Senha:* ${e.senha || '—'}\n\n┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\n\n📅 *VALIDADE:*\n\n⏳ Documento válido por 45 dias!\n\n🗓️ Expiração automática após esse período.\n\n⚠️ *IMPORTANTE:*\n\n✅ Mantenha suas credenciais seguras\n\n🎉 *Obrigado por adquirir seu acesso!*`;
 }
 
 function buildNauticaCopyText(n: NauticaRecord, formatCpf: (cpf: string) => string) {
-  return `Olá! Segue os dados do seu acesso:\n\n📋 CPF: ${formatCpf(n.cpf)}\n🔑 Senha: ${n.senha || '—'}\n\n⚠️ O acesso é válido por 45 dias a partir da data de criação.`;
+  return `Olá! Sua CHA Náutica está pronta!\n\n📋 *DADOS DE ACESSO:*\n\n┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n\n┃ 👤 *CPF:* ${formatCpf(n.cpf)}\n\n┃ 🔑 *Senha:* ${n.senha || '—'}\n\n┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\n\n📅 *VALIDADE:*\n\n⏳ Documento válido por 45 dias!\n\n🗓️ Expiração automática após esse período.\n\n⚠️ *IMPORTANTE:*\n\n✅ Mantenha suas credenciais seguras\n\n🎉 *Obrigado por adquirir seu acesso!*`;
 }
 
 // ======== Renew Button (shared) ========
@@ -1260,7 +1259,7 @@ function CrlvHistoryCard({
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0 self-end sm:self-center flex-wrap">
-          <CopyDataButton text={`Olá! Segue os dados do CRLV:\n\n🚗 Placa: ${registro.placa}\n📋 Proprietário: ${registro.nome_proprietario}\n📄 Renavam: ${registro.renavam}\n\n⚠️ O acesso é válido por 45 dias.`} />
+          <CopyDataButton text={`Olá! Seu CRLV Digital está pronto!\n\n📋 *DADOS DO VEÍCULO:*\n\n┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n\n┃ 🚗 *Placa:* ${registro.placa}\n\n┃ 📋 *Proprietário:* ${registro.nome_proprietario}\n\n┃ 📄 *Renavam:* ${registro.renavam}\n\n┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\n\n📅 *VALIDADE:*\n\n⏳ Documento válido por 45 dias!\n\n⚠️ *IMPORTANTE:*\n\n✅ Mantenha suas credenciais seguras\n\n🎉 *Obrigado por adquirir seu acesso!*`} />
           {registro.pdf_url && (
             <Button variant="outline" size="sm" asChild>
               <a href={registro.pdf_url} target="_blank" rel="noopener noreferrer">
