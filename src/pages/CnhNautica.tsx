@@ -13,8 +13,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
-  Anchor, User, CreditCard, Upload, Loader2, Copy, CheckCircle, AlertTriangle, Calendar, KeyRound, Smartphone, Apple, Ship, Eye, FileDown, ArrowLeft, FolderOpen, Shield
+  Anchor, User, CreditCard, Upload, Loader2, Copy, CheckCircle, AlertTriangle, Calendar, KeyRound, Ship, Eye, FileDown, ArrowLeft, FolderOpen, Shield
 } from 'lucide-react';
+import iconGovbr from '@/assets/icon-govbr.png';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { nauticaService } from '@/lib/cnh-nautica-service';
 import ChaPreview, { ChaPreviewHandle } from '@/components/cha/ChaPreview';
@@ -693,13 +694,13 @@ export default function CnhNautica() {
                     if (!govbrIphone) { toast.error('Link iPhone não configurado'); return; }
                     copyToClipboard(govbrIphone, 'Link iPhone copiado!');
                   }} variant="outline" className="w-full">
-                    <Apple className="w-4 h-4 mr-2" /> Copiar Link iPhone
+                    <img src={iconGovbr} alt="Gov.br" className="w-5 h-5 mr-2 rounded" /> Copiar Link iPhone
                   </Button>
                   <Button onClick={() => {
                     if (!govbrApk) { toast.error('Link APK não configurado'); return; }
                     copyToClipboard(govbrApk, 'Link APK copiado!');
                   }} variant="outline" className="w-full">
-                    <Smartphone className="w-4 h-4 mr-2" /> Copiar Link Android
+                    <img src={iconGovbr} alt="Gov.br" className="w-5 h-5 mr-2 rounded" /> Copiar Link Android
                   </Button>
                 </div>
 
