@@ -73,7 +73,7 @@ function drawTexts(ctx: CanvasRenderingContext2D, data: CnhMeioData): void {
   const dataFormatada = formatDateToBrazilian(data.dataValidade || '');
   const categoria = data.categoria;
 
-  ctx.fillStyle = '#d32f2f';
+  ctx.fillStyle = '#373435';
   ctx.font = `bold 14px ${font}`;
 
   // Categorias - posições baseadas no template original

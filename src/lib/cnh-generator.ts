@@ -36,7 +36,7 @@ const CNH_CONFIG = {
     rg: { x: 470, y: 410, font: 'bold 20px Asul, Arial, sans-serif', color: '#373435' },
     cpf: { x: 470, y: 470, font: 'bold 20px Asul, Arial, sans-serif', color: '#373435' },
     registro: { x: 680, y: 470, font: 'bold 20px Asul, Arial, sans-serif', color: 'red' },
-    categoria: { x: 870, y: 470, font: 'bold 20px Asul, Arial, sans-serif', color: '#373435' },
+    categoria: { x: 870, y: 470, font: 'bold 20px Asul, Arial, sans-serif', color: 'red' },
     nacionalidade: { x: 470, y: 530, font: 'bold 20px Asul, Arial, sans-serif', color: '#373435' },
     filiacaoPai: { x: 470, y: 590, font: 'bold 20px Asul, Arial, sans-serif', color: '#373435' },
     filiacaoMae: { x: 470, y: 650, font: 'bold 20px Asul, Arial, sans-serif', color: '#373435' },
