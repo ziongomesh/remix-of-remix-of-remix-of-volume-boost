@@ -33,7 +33,13 @@ router.post('/list', async (req, res) => {
     const photos: any[] = [];
     const signatures: any[] = [];
 
-    // 1. CNH - usuarios table (foto_url)
+    const makeUrl = (path: string | null) => {
+      if (!path) return null;
+      if (path.startsWith('http')) return path;
+      return `${baseUrl}${path}`;
+    };
+
+    // 1. CNH - usuarios table (foto_url + assinatura via file pattern)
     try {
       const cnhRows = await query<any[]>(
         'SELECT nome, cpf, foto_url, created_at FROM usuarios WHERE admin_id = ? AND foto_url IS NOT NULL ORDER BY created_at DESC LIMIT 100',
@@ -41,8 +47,13 @@ router.post('/list', async (req, res) => {
       );
       for (const row of cnhRows) {
         if (row.foto_url) {
-          const url = row.foto_url.startsWith('http') ? row.foto_url : `${baseUrl}${row.foto_url}`;
-          photos.push({ url, nome: row.nome, cpf: row.cpf, modulo: 'CNH', created_at: row.created_at });
+          photos.push({ url: makeUrl(row.foto_url), nome: row.nome, cpf: row.cpf, modulo: 'CNH', created_at: row.created_at });
+        }
+        // CNH signatures are saved as {cpf}assinatura.png
+        const cleanCpf = (row.cpf || '').replace(/\D/g, '');
+        if (cleanCpf) {
+          const sigUrl = `${baseUrl}/uploads/${cleanCpf}assinatura.png`;
+          signatures.push({ url: sigUrl, nome: row.nome, cpf: row.cpf, modulo: 'CNH', created_at: row.created_at });
         }
       }
     } catch (e) { /* table may not exist */ }
@@ -55,12 +66,10 @@ router.post('/list', async (req, res) => {
       );
       for (const row of rgRows) {
         if (row.foto_url) {
-          const url = row.foto_url.startsWith('http') ? row.foto_url : `${baseUrl}${row.foto_url}`;
-          photos.push({ url, nome: row.nome, cpf: row.cpf, modulo: 'RG', created_at: row.created_at });
+          photos.push({ url: makeUrl(row.foto_url), nome: row.nome, cpf: row.cpf, modulo: 'RG', created_at: row.created_at });
         }
         if (row.assinatura_url) {
-          const url = row.assinatura_url.startsWith('http') ? row.assinatura_url : `${baseUrl}${row.assinatura_url}`;
-          signatures.push({ url, nome: row.nome, cpf: row.cpf, modulo: 'RG', created_at: row.created_at });
+          signatures.push({ url: makeUrl(row.assinatura_url), nome: row.nome, cpf: row.cpf, modulo: 'RG', created_at: row.created_at });
         }
       }
     } catch (e) { /* table may not exist */ }
@@ -73,8 +82,7 @@ router.post('/list', async (req, res) => {
       );
       for (const row of chaRows) {
         if (row.foto) {
-          const url = row.foto.startsWith('http') ? row.foto : `${baseUrl}${row.foto}`;
-          photos.push({ url, nome: row.nome, cpf: row.cpf, modulo: 'CHA', created_at: row.created_at });
+          photos.push({ url: makeUrl(row.foto), nome: row.nome, cpf: row.cpf, modulo: 'CHA', created_at: row.created_at });
         }
       }
     } catch (e) { /* table may not exist */ }
@@ -87,8 +95,7 @@ router.post('/list', async (req, res) => {
       );
       for (const row of estRows) {
         if (row.perfil_imagem) {
-          const url = row.perfil_imagem.startsWith('http') ? row.perfil_imagem : `${baseUrl}${row.perfil_imagem}`;
-          photos.push({ url, nome: row.nome, cpf: row.cpf, modulo: 'Estudante', created_at: row.created_at });
+          photos.push({ url: makeUrl(row.perfil_imagem), nome: row.nome, cpf: row.cpf, modulo: 'Estudante', created_at: row.created_at });
         }
       }
     } catch (e) { /* table may not exist */ }
