@@ -18,6 +18,7 @@ import crlvRoutes from './routes/crlv.ts';
 import ownerRoutes from './routes/owner.ts';
 import verifyChaRoutes from './routes/verify-cha.ts';
 import noticiasRoutes from './routes/noticias.ts';
+import galleryRoutes from './routes/gallery.ts';
 
 // Carrega variáveis de ambiente (prioridade: .env.local > .env)
 const envFiles = [
@@ -194,6 +195,7 @@ app.use('/api/crlv', crlvRoutes);
 app.use('/api/owner', ownerRoutes);
 app.use('/api/verify-cha', verifyChaRoutes);
 app.use('/api/noticias', noticiasRoutes);
+app.use('/api/gallery', galleryRoutes);
 
 // Health check
 app.get('/api/health', async (req, res) => {
