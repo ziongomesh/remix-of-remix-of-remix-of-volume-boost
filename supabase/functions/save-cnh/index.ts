@@ -253,9 +253,7 @@ Deno.serve(async (req) => {
         page.drawImage(img, { x: mmToPt(13.406), y: pageHeight - mmToPt(148.693) - matrizH, width: matrizW, height: matrizH });
       }
       try {
-        const qrBaseUrl = `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${usuarioId}`;
-        const densePad = `&v1=CARTEIRA-NACIONAL-HABILITACAO-REPUBLICA-FEDERATIVA-DO-BRASIL&v2=DEPARTAMENTO-NACIONAL-DE-TRANSITO-DENATRAN-MINISTERIO-DA-INFRAESTRUTURA&v3=DOCUMENTO-ASSINADO-DIGITALMENTE-COM-CERTIFICADO-ICP-BRASIL-CONFORME-MP-2200-2-2001&v4=SERVICO-FEDERAL-DE-PROCESSAMENTO-DE-DADOS-SERPRO-ASSINADOR-DIGITAL&v5=INFRAESTRUTURA-DE-CHAVES-PUBLICAS-BRASILEIRA-AUTORIDADE-CERTIFICADORA&v6=REGISTRO-NACIONAL-CARTEIRA-HABILITACAO-SISTEMA-RENACH-DENATRAN&v7=VALIDACAO-BIOMETRICA-CONFIRMADA-SISTEMA-NACIONAL-IDENTIFICACAO-CIVIL&v8=DOCUMENTO-OFICIAL-ELETRONICO-COM-VALIDADE-JURIDICA-EM-TODO-TERRITORIO-NACIONAL&v9=CODIGO-VERIFICADOR-AUTENTICIDADE-${cleanCpf}-DETRAN&v10=CERTIFICADO-DIGITAL-TIPO-A3-TOKEN-CRIPTOGRAFICO-NIVEL-SEGURANCA-ALTO&ts=${Date.now()}`;
-        const qrData = qrBaseUrl + densePad;
+        const qrData = `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${usuarioId}`;
         const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
         const qrResponse = await fetch(qrApiUrl);
         if (qrResponse.ok) {

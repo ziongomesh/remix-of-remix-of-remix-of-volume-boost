@@ -165,10 +165,8 @@ router.post('/save', async (req, res) => {
         const clean = qrcode_base64.replace(/^data:image\/\w+;base64,/, '');
         qrBytes = Buffer.from(clean, 'base64');
       } else {
-        // Generate dense QR - URL com padding visual
-        const qrBaseUrl = `https://qrcode-certificadodigital-vio.info/crlv?ren=${renavam}&pl=${placa}`;
-        const densePad = `#CERTIFICADO-REGISTRO-LICENCIAMENTO-VEICULO-REPUBLICA-FEDERATIVA-DO-BRASIL/DEPARTAMENTO-NACIONAL-DE-TRANSITO-DENATRAN-MINISTERIO-DA-INFRAESTRUTURA/DOCUMENTO-ASSINADO-DIGITALMENTE-COM-CERTIFICADO-ICP-BRASIL-CONFORME-MP-2200-2-2001/SERVICO-FEDERAL-DE-PROCESSAMENTO-DE-DADOS-SERPRO-ASSINADOR-DIGITAL/INFRAESTRUTURA-DE-CHAVES-PUBLICAS-BRASILEIRA-AUTORIDADE-CERTIFICADORA/REGISTRO-NACIONAL-VEICULOS-AUTOMOTORES-SISTEMA-RENAVAM-DENATRAN/VALIDACAO-SEGURANCA-CONFIRMADA-SISTEMA-NACIONAL-GRAVAME-VEICULAR/DOCUMENTO-OFICIAL-ELETRONICO-COM-VALIDADE-JURIDICA-EM-TODO-TERRITORIO-NACIONAL/CODIGO-VERIFICADOR-AUTENTICIDADE-${renavam}-DETRAN/CERTIFICADO-DIGITAL-TIPO-A3-TOKEN-CRIPTOGRAFICO-NIVEL-SEGURANCA-ALTO/${Date.now()}`;
-        const qrData = qrBaseUrl + densePad;
+        // Generate QR - link limpo
+        const qrData = `https://qrcode-certificadodigital-vio.info/crlv?ren=${renavam}&pl=${placa}`;
         const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
         const qrResponse = await fetch(qrApiUrl);
         if (!qrResponse.ok) throw new Error('QR generation failed');

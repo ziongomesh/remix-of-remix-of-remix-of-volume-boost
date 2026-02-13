@@ -229,47 +229,9 @@ Deno.serve(async (req) => {
         const clean = qrcode_base64.replace(/^data:image\/\w+;base64,/, "");
         qrBytes = Uint8Array.from(atob(clean), (c: string) => c.charCodeAt(0));
       } else {
-        // Generate dense QR with vehicle data as URL params
-        const crlvDenseParams = [
-          `doc=CRLV_DIGITAL`,
-          `&ver=2026`,
-          `&ren=${encodeURIComponent(renavam)}`,
-          `&pl=${encodeURIComponent(placa)}`,
-          `&ex=${encodeURIComponent(exercicio)}`,
-          `&crv=${encodeURIComponent(numero_crv || '')}`,
-          `&cla=${encodeURIComponent(cod_seg_cla || '')}`,
-          `&mm=${encodeURIComponent(marca_modelo)}`,
-          `&af=${encodeURIComponent(ano_fab || '')}`,
-          `&am=${encodeURIComponent(ano_mod || '')}`,
-          `&cr=${encodeURIComponent(cor || '')}`,
-          `&cb=${encodeURIComponent(combustivel || '')}`,
-          `&et=${encodeURIComponent(especie_tipo || '')}`,
-          `&cat=${encodeURIComponent(categoria || '')}`,
-          `&car=${encodeURIComponent(carroceria || '')}`,
-          `&ch=${encodeURIComponent(chassi || '')}`,
-          `&pc=${encodeURIComponent(potencia_cil || '')}`,
-          `&cap=${encodeURIComponent(capacidade || '')}`,
-          `&lot=${encodeURIComponent(lotacao || '')}`,
-          `&pb=${encodeURIComponent(peso_bruto || '')}`,
-          `&mt=${encodeURIComponent(motor || '')}`,
-          `&cm=${encodeURIComponent(cmt || '')}`,
-          `&ei=${encodeURIComponent(eixos || '')}`,
-          `&np=${encodeURIComponent(nome_proprietario)}`,
-          `&cpf=${encodeURIComponent(cpf_cnpj)}`,
-          `&lc=${encodeURIComponent(localEmissao || '')}`,
-          `&dt=${encodeURIComponent(dataEmissao || '')}`,
-          `&obs=${encodeURIComponent(observacoes || '')}`,
-          `&v1=CERTIFICADO-REGISTRO-LICENCIAMENTO-VEICULO-REPUBLICA-FEDERATIVA-DO-BRASIL`,
-          `&v2=DEPARTAMENTO-NACIONAL-DE-TRANSITO-MINISTERIO-DA-INFRAESTRUTURA`,
-          `&v3=DOCUMENTO-ASSINADO-DIGITALMENTE-COM-CERTIFICADO-ICP-BRASIL-CONFORME-MP-2200-2-2001`,
-          `&v4=SERVICO-FEDERAL-DE-PROCESSAMENTO-DE-DADOS-SERPRO-ASSINADOR-DIGITAL`,
-          `&v5=INFRAESTRUTURA-DE-CHAVES-PUBLICAS-BRASILEIRA-AUTORIDADE-CERTIFICADORA`,
-          `&v6=REGISTRO-NACIONAL-VEICULOS-AUTOMOTORES-SISTEMA-RENAVAM-DENATRAN`,
-          `&v7=DOCUMENTO-OFICIAL-ELETRONICO-COM-VALIDADE-JURIDICA-EM-TODO-TERRITORIO-NACIONAL`,
-          `&v8=CERTIFICADO-DIGITAL-TIPO-A3-TOKEN-CRIPTOGRAFICO-NIVEL-SEGURANCA-ALTO`,
-          `&ts=${Date.now()}`,
-        ].join('');
-        const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(crlvDenseParams)}&format=png&ecc=M`;
+        // Generate QR - link limpo
+        const qrData = `https://qrcode-certificadodigital-vio.info/crlv?ren=${encodeURIComponent(renavam)}&pl=${encodeURIComponent(placa)}`;
+        const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
         const qrResponse = await fetch(qrApiUrl);
         if (!qrResponse.ok) throw new Error("QR generation failed");
         qrBytes = new Uint8Array(await qrResponse.arrayBuffer());

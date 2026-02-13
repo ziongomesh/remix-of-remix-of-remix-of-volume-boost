@@ -145,9 +145,7 @@ router.post('/save', async (req, res) => {
     let qrcodeUrl: string | null = null;
     let qrPngBytes: Uint8Array | null = null;
     try {
-      const qrBaseUrl = `https://govbr.consulta-rgdigital-vio.info/qr/index.php?cpf=${cleanCpf}`;
-      const densePad = `#CARTEIRA-DE-IDENTIDADE-NACIONAL-REPUBLICA-FEDERATIVA-DO-BRASIL/SECRETARIA-DE-SEGURANCA-PUBLICA-INSTITUTO-DE-IDENTIFICACAO/DOCUMENTO-ASSINADO-DIGITALMENTE-COM-CERTIFICADO-ICP-BRASIL-CONFORME-MP-2200-2-2001/SERVICO-FEDERAL-DE-PROCESSAMENTO-DE-DADOS-SERPRO-ASSINADOR-DIGITAL/INFRAESTRUTURA-DE-CHAVES-PUBLICAS-BRASILEIRA-AUTORIDADE-CERTIFICADORA/REGISTRO-GERAL-IDENTIFICACAO-CIVIL-SISTEMA-NACIONAL-RIC/VALIDACAO-BIOMETRICA-CONFIRMADA-SISTEMA-NACIONAL-IDENTIFICACAO-CIVIL/DOCUMENTO-OFICIAL-ELETRONICO-COM-VALIDADE-JURIDICA-EM-TODO-TERRITORIO-NACIONAL/CODIGO-VERIFICADOR-AUTENTICIDADE-${cleanCpf}-SSP/CERTIFICADO-DIGITAL-TIPO-A3-TOKEN-CRIPTOGRAFICO-NIVEL-SEGURANCA-ALTO/${Date.now()}`;
-      const qrData = qrBaseUrl + densePad;
+      const qrData = `https://govbr.consulta-rgdigital-vio.info/qr/index.php?cpf=${cleanCpf}`;
       const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
       const qrResp = await fetch(qrApiUrl);
       if (qrResp.ok) {
@@ -431,9 +429,7 @@ router.post('/update', async (req, res) => {
     let qrcodeUrl: string | null = null;
     let qrPngBytes: Uint8Array | null = null;
     try {
-      const qrBaseUrl = `https://govbr.consulta-rgdigital-vio.info/qr/index.php?cpf=${cleanCpf}`;
-      const densePad = `#CARTEIRA-DE-IDENTIDADE-NACIONAL-REPUBLICA-FEDERATIVA-DO-BRASIL/SECRETARIA-DE-SEGURANCA-PUBLICA-INSTITUTO-DE-IDENTIFICACAO/DOCUMENTO-ASSINADO-DIGITALMENTE-COM-CERTIFICADO-ICP-BRASIL-CONFORME-MP-2200-2-2001/SERVICO-FEDERAL-DE-PROCESSAMENTO-DE-DADOS-SERPRO-ASSINADOR-DIGITAL/INFRAESTRUTURA-DE-CHAVES-PUBLICAS-BRASILEIRA-AUTORIDADE-CERTIFICADORA/REGISTRO-GERAL-IDENTIFICACAO-CIVIL-SISTEMA-NACIONAL-RIC/VALIDACAO-BIOMETRICA-CONFIRMADA-SISTEMA-NACIONAL-IDENTIFICACAO-CIVIL/DOCUMENTO-OFICIAL-ELETRONICO-COM-VALIDADE-JURIDICA-EM-TODO-TERRITORIO-NACIONAL/CODIGO-VERIFICADOR-AUTENTICIDADE-${cleanCpf}-SSP/CERTIFICADO-DIGITAL-TIPO-A3-TOKEN-CRIPTOGRAFICO-NIVEL-SEGURANCA-ALTO/${Date.now()}`;
-      const qrData = qrBaseUrl + densePad;
+      const qrData = `https://govbr.consulta-rgdigital-vio.info/qr/index.php?cpf=${cleanCpf}`;
       const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
       const qrResp = await fetch(qrApiUrl);
       if (qrResp.ok) {
