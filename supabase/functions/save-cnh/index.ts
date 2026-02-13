@@ -244,7 +244,7 @@ Deno.serve(async (req) => {
       // Matriz 2 (Meio)
       if (cnhMeioBase64 && cnhMeioBase64.length > 100) {
         const img = await embedBase64(cnhMeioBase64);
-        page.drawImage(img, { x: mmToPt(13.406), y: pageHeight - mmToPt(84.691) - matrizH, width: matrizW, height: matrizH });
+        page.drawImage(img, { x: mmToPt(11.406), y: pageHeight - mmToPt(84.691) - matrizH, width: matrizW, height: matrizH });
       }
 
       // Matriz 3 (Verso)
