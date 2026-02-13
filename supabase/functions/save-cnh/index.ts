@@ -298,7 +298,7 @@ Deno.serve(async (req) => {
       }
 
       const pdfBytes = await pdfDoc.save();
-      const pdfPath = `CNH_DIGITAL_${cleanCpf}.pdf`;
+      const pdfPath = `CNH-e_${cleanCpf}.pdf`;
 
       const { error: pdfError } = await supabase.storage
         .from("uploads")
