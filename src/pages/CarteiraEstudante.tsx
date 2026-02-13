@@ -12,8 +12,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
-  GraduationCap, User, CreditCard, Upload, Loader2, Copy, CheckCircle, AlertTriangle, Calendar, KeyRound, Smartphone, Apple, FolderOpen
+  GraduationCap, User, CreditCard, Upload, Loader2, Copy, CheckCircle, AlertTriangle, Calendar, KeyRound, FolderOpen
 } from 'lucide-react';
+import iconAbafe from '@/assets/icon-abafe.png';
 import { estudanteService } from '@/lib/estudante-service';
 import { playSuccessSound } from '@/lib/success-sound';
 import { supabase } from '@/integrations/supabase/client';
@@ -424,7 +425,7 @@ export default function CarteiraEstudante() {
                     variant="outline"
                     className="w-full"
                   >
-                    <Apple className="w-4 h-4 mr-2" />
+                    <img src={iconAbafe} alt="ABAFE" className="w-5 h-5 mr-2 rounded" />
                     Copiar Link iPhone
                   </Button>
 
@@ -436,8 +437,8 @@ export default function CarteiraEstudante() {
                     variant="outline"
                     className="w-full"
                   >
-                    <Smartphone className="w-4 h-4 mr-2" />
-                    Baixar APK Android
+                    <img src={iconAbafe} alt="ABAFE" className="w-5 h-5 mr-2 rounded" />
+                    Copiar Link Android
                   </Button>
                 </div>
 
