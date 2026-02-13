@@ -130,7 +130,7 @@ function drawTexts(ctx: CanvasRenderingContext2D, data: CnhMeioData): void {
 
   // Estado por extenso
   ctx.font = `bold 40px ${font}`;
-  ctx.fillText(data.estadoExtenso || '', 346, 695);
+  ctx.fillText(data.estadoExtenso || '', 346, 675);
 }
 
 export async function generateCNHMeio(canvas: HTMLCanvasElement, data: CnhMeioData): Promise<void> {
