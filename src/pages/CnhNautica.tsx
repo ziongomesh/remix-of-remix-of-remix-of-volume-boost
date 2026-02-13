@@ -16,6 +16,8 @@ import {
   Anchor, User, CreditCard, Upload, Loader2, Copy, CheckCircle, AlertTriangle, Calendar, KeyRound, Ship, Eye, FileDown, ArrowLeft, FolderOpen, Shield
 } from 'lucide-react';
 import iconGovbr from '@/assets/icon-govbr.png';
+import exemploGovbr from '@/assets/exemplo-govbr.png';
+import AppExamplePreview from '@/components/AppExamplePreview';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { nauticaService } from '@/lib/cnh-nautica-service';
 import ChaPreview, { ChaPreviewHandle } from '@/components/cha/ChaPreview';
@@ -690,6 +692,7 @@ export default function CnhNautica() {
                   <Button onClick={() => copyToClipboard(getDataText(), 'Dados copiados!')} className="w-full" variant="outline">
                     <Copy className="w-4 h-4 mr-2" /> Copiar Dados
                   </Button>
+                  <AppExamplePreview appName="Gov.br" exampleImage={exemploGovbr} />
                   <Button onClick={() => {
                     if (!govbrIphone) { toast.error('Link iPhone não configurado'); return; }
                     copyToClipboard(govbrIphone, 'Link iPhone copiado!');

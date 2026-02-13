@@ -5,6 +5,8 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import iconCnh from "@/assets/icon-cnh.png";
+import exemploCnh from "@/assets/exemplo-cnh.png";
+import AppExamplePreview from "@/components/AppExamplePreview";
 
 interface CnhSuccessModalProps {
   isOpen: boolean;
@@ -165,6 +167,8 @@ export default function CnhSuccessModal({ isOpen, onClose, cpf, senha, nome, pdf
             </div>
             <p className="text-sm text-muted-foreground">Expira em: <strong>{expirationDate}</strong></p>
           </div>
+
+          <AppExamplePreview appName="CNH do Brasil" exampleImage={exemploCnh} />
 
           {/* Ações */}
           <div className="space-y-3">

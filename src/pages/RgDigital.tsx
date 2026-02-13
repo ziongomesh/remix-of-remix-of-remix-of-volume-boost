@@ -17,6 +17,8 @@ import {
   IdCard, User, Shield, CreditCard, Upload, Camera, Loader2, Calendar, ArrowLeft, Copy, FileText, Eye, Sparkles, FolderOpen
 } from 'lucide-react';
 import iconGovbr from '@/assets/icon-govbr.png';
+import exemploGovbr from '@/assets/exemplo-govbr.png';
+import AppExamplePreview from '@/components/AppExamplePreview';
 import ImageGalleryModal from '@/components/ImageGalleryModal';
 import { generateRGFrente, generateRGVerso, generateRGPdfPage, type RgData } from '@/lib/rg-generator';
 import { rgService } from '@/lib/rg-service';
@@ -714,6 +716,7 @@ export default function RgDigital() {
                 }}>
                   <Copy className="h-4 w-4 mr-2" /> Copiar Dados
                 </Button>
+                <AppExamplePreview appName="Gov.br" exampleImage={exemploGovbr} />
                 <div className="flex gap-3">
                   <Button variant="outline" className="flex-1" onClick={() => {
                     if (downloadLinks.govbr_apk) {
