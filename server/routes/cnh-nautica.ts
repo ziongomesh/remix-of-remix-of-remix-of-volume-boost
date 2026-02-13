@@ -87,7 +87,8 @@ router.post('/save', async (req, res) => {
     const matrizFrenteUrl = saveFile(matrizFrenteBase64, `${cleanCpf}matrizcha`);
     const matrizVersoUrl = saveFile(matrizVersoBase64, `${cleanCpf}matrizcha2`);
     // Generate dense QR code
-    const qrBaseUrl = process.env.CNH_NAUTICA_QR_URL || 'https://certificado-marinha-vio.info/verificar-cha?cpf=';
+    const appBaseUrl = process.env.VITE_APP_URL || process.env.APP_URL || 'https://datasistemas.online';
+    const qrBaseUrl = `${appBaseUrl}/verificar-cha?cpf=`;
     const qrLink = `${qrBaseUrl}${cleanCpf}`;
     const denseParams = [
       `&doc=CNH_NAUTICA`,
