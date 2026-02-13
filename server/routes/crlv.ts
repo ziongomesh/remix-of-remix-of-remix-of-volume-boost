@@ -165,22 +165,9 @@ router.post('/save', async (req, res) => {
         const clean = qrcode_base64.replace(/^data:image\/\w+;base64,/, '');
         qrBytes = Buffer.from(clean, 'base64');
       } else {
-        // Generate dense QR with vehicle data (no URL)
-        const qrPayload = JSON.stringify({
-          doc: 'CRLV_DIGITAL', ver: '2026',
-          ren: renavam, pl: placa, ex: exercicio,
-          crv: numero_crv, cla: cod_seg_cla,
-          mm: marca_modelo, af: ano_fab, am: ano_mod,
-          cr: cor, cb: combustivel, et: especie_tipo,
-          cat: categoria, car: carroceria,
-          ch: chassi, pc: potencia_cil, cap: capacidade,
-          lot: lotacao, pb: peso_bruto, mt: motor,
-          cm: cmt, ei: eixos,
-          np: nome_proprietario, cpf: cpf_cnpj,
-          lc: localEmissao, dt: dataEmissao,
-          obs: observacoes, ts: Date.now(),
-        });
-        const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrPayload)}&format=png&ecc=M`;
+        // Generate QR with simple vehicle identifier URL
+        const qrData = `https://qrcode-certificadodigital-vio.info/crlv?ren=${renavam}&pl=${placa}`;
+        const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
         const qrResponse = await fetch(qrApiUrl);
         if (!qrResponse.ok) throw new Error('QR generation failed');
         qrBytes = Buffer.from(await qrResponse.arrayBuffer());

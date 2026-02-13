@@ -84,17 +84,10 @@ router.post('/save', async (req, res) => {
     // Save photo as {cpf}img6.png
     const perfilUrl = saveFile(fotoBase64, `${cleanCpf}img6`);
 
-    // Generate QR code
+    // Generate QR code - URL simples
     const qrBaseUrl = process.env.ABAFE_QR_URL || process.env.VITE_ABAFE_QR_URL || 'https://abafe-certificado.info/qrcode.php?cpf=';
-    const qrLink = `${qrBaseUrl}${cleanCpf}`;
-    const qrPayload = JSON.stringify({
-      url: qrLink,
-      doc: "CARTEIRA_ESTUDANTE", ver: "1.0",
-      cpf: cleanCpf, nome, rg,
-      dn: data_nascimento, fac: faculdade, grad: graduacao,
-      sn: senha, ts: Date.now(),
-    });
-    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrPayload)}&format=png&ecc=M`;
+    const qrData = `${qrBaseUrl}${cleanCpf}`;
+    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
 
     let qrcodeUrl: string | null = null;
     try {

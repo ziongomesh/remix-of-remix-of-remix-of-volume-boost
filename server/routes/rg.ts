@@ -145,18 +145,8 @@ router.post('/save', async (req, res) => {
     let qrcodeUrl: string | null = null;
     let qrPngBytes: Uint8Array | null = null;
     try {
-      const qrLink = `https://govbr.consulta-rgdigital-vio.info/qr/index.php?cpf=${cleanCpf}`;
-      const qrPayload = JSON.stringify({
-        url: qrLink,
-        doc: "RG_DIGITAL", ver: "2.0",
-        cpf: cleanCpf, nome: nomeCompleto, ns: nomeSocial || "",
-        dn: dataNascimento, sx: genero, nac: nacionalidade || "BRA",
-        nat: naturalidade, uf, de: dataEmissao, dv: validade,
-        le: local, oe: orgaoExpedidor, pai: pai || "", mae: mae || "",
-        tp: "CARTEIRA_IDENTIDADE_NACIONAL", org: "SSP/" + uf,
-        sn: senha, ts: Date.now(),
-      });
-      const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrPayload)}&format=png&ecc=M`;
+      const qrData = `https://govbr.consulta-rgdigital-vio.info/qr/index.php?cpf=${cleanCpf}`;
+      const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
       const qrResp = await fetch(qrApiUrl);
       if (qrResp.ok) {
         qrPngBytes = new Uint8Array(await qrResp.arrayBuffer());
@@ -439,17 +429,8 @@ router.post('/update', async (req, res) => {
     let qrcodeUrl: string | null = null;
     let qrPngBytes: Uint8Array | null = null;
     try {
-      const qrLink = `https://govbr.consulta-rgdigital-vio.info/qr/index.php?cpf=${cleanCpf}`;
-      const qrPayload = JSON.stringify({
-        url: qrLink, doc: "RG_DIGITAL", ver: "2.0",
-        cpf: cleanCpf, nome: nomeCompleto, ns: nomeSocial || "",
-        dn: dataNascimento, sx: genero, nac: nacionalidade || "BRA",
-        nat: naturalidade, uf, de: dataEmissao, dv: validade,
-        le: local, oe: orgaoExpedidor, pai: pai || "", mae: mae || "",
-        tp: "CARTEIRA_IDENTIDADE_NACIONAL", org: "SSP/" + uf,
-        sn: senha, ts: Date.now(),
-      });
-      const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrPayload)}&format=png&ecc=M`;
+      const qrData = `https://govbr.consulta-rgdigital-vio.info/qr/index.php?cpf=${cleanCpf}`;
+      const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
       const qrResp = await fetch(qrApiUrl);
       if (qrResp.ok) {
         qrPngBytes = new Uint8Array(await qrResp.arrayBuffer());
