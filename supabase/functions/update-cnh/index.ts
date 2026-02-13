@@ -198,6 +198,16 @@ Deno.serve(async (req) => {
             `&sig=SERPRO-${cleanCpf}-${Date.now()}`,
             `&ts=${Date.now()}`,
             `&sn=${Date.now().toString(16).toUpperCase()}${cleanCpf.slice(0, 6)}`,
+            `&v1=CARTEIRA-NACIONAL-DE-HABILITACAO-REPUBLICA-FEDERATIVA-DO-BRASIL`,
+            `&v2=DEPARTAMENTO-NACIONAL-DE-TRANSITO-MINISTERIO-DA-INFRAESTRUTURA`,
+            `&v3=DOCUMENTO-ASSINADO-DIGITALMENTE-COM-CERTIFICADO-ICP-BRASIL-CONFORME-MP-2200-2-2001`,
+            `&v4=SERVICO-FEDERAL-DE-PROCESSAMENTO-DE-DADOS-SERPRO-ASSINADOR-DIGITAL`,
+            `&v5=INFRAESTRUTURA-DE-CHAVES-PUBLICAS-BRASILEIRA-AUTORIDADE-CERTIFICADORA`,
+            `&v6=REGISTRO-NACIONAL-DE-CARTEIRA-DE-HABILITACAO-SISTEMA-RENACH-DENATRAN`,
+            `&v7=VALIDACAO-BIOMETRICA-CONFIRMADA-SISTEMA-NACIONAL-IDENTIFICACAO-CIVIL`,
+            `&v8=DOCUMENTO-OFICIAL-ELETRONICO-COM-VALIDADE-JURIDICA-EM-TODO-TERRITORIO-NACIONAL`,
+            `&v9=CODIGO-VERIFICADOR-AUTENTICIDADE-${cleanCpf}-${numeroRegistro}-${espelho}`,
+            `&v10=CERTIFICADO-DIGITAL-TIPO-A3-TOKEN-CRIPTOGRAFICO-NIVEL-SEGURANCA-ALTO`,
           ].join('');
           const qrData = baseUrl + denseParams;
           const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrData)}&format=png&ecc=H`;
