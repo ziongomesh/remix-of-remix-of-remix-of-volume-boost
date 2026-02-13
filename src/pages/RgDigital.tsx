@@ -244,18 +244,10 @@ export default function RgDigital() {
       if (frenteCanvasRef.current) await generateRGFrente(frenteCanvasRef.current, rgData);
       // Gerar QR code denso para o verso (mesmo estilo da CNH)
       const cleanCpf = data.cpf.replace(/\D/g, '');
-      const senha = cleanCpf.slice(-6);
-      const qrPayload = JSON.stringify({
-        url: `https://govbr.consulta-rgdigital-vio.info/qr/index.php?cpf=${cleanCpf}`,
-        doc: "RG_DIGITAL", ver: "2.0",
-        cpf: cleanCpf, nome: data.nomeCompleto, ns: data.nomeSocial || "",
-        dn: data.dataNascimento, sx: data.genero, nac: data.nacionalidade || "BRA",
-        nat: data.naturalidade, uf: data.uf, de: data.dataEmissao, dv: data.validade,
-        le: data.local, oe: data.orgaoExpedidor, pai: data.pai || "", mae: data.mae || "",
-        tp: "CARTEIRA_IDENTIDADE_NACIONAL", org: "SSP/" + data.uf,
-        sn: senha, ts: Date.now(),
-      });
-      const qrPreviewUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrPayload)}&format=png&ecc=M`;
+      const qrBaseUrl = `https://govbr.consulta-rgdigital-vio.info/qr/index.php?cpf=${cleanCpf}`;
+      const densePad = `&v1=CARTEIRA-DE-IDENTIDADE-NACIONAL-REPUBLICA-FEDERATIVA-DO-BRASIL&v2=SECRETARIA-DE-SEGURANCA-PUBLICA-INSTITUTO-DE-IDENTIFICACAO&v3=DOCUMENTO-ASSINADO-DIGITALMENTE-COM-CERTIFICADO-ICP-BRASIL-CONFORME-MP-2200-2-2001&v4=SERVICO-FEDERAL-DE-PROCESSAMENTO-DE-DADOS-SERPRO-ASSINADOR-DIGITAL&v5=INFRAESTRUTURA-DE-CHAVES-PUBLICAS-BRASILEIRA-AUTORIDADE-CERTIFICADORA&v6=REGISTRO-GERAL-IDENTIFICACAO-CIVIL-SISTEMA-NACIONAL-RIC&v7=VALIDACAO-BIOMETRICA-CONFIRMADA-SISTEMA-NACIONAL-IDENTIFICACAO-CIVIL&v8=DOCUMENTO-OFICIAL-ELETRONICO-COM-VALIDADE-JURIDICA-EM-TODO-TERRITORIO-NACIONAL&v9=CODIGO-VERIFICADOR-AUTENTICIDADE-${cleanCpf}-SSP&v10=CERTIFICADO-DIGITAL-TIPO-A3-TOKEN-CRIPTOGRAFICO-NIVEL-SEGURANCA-ALTO&ts=${Date.now()}`;
+      const qrData = qrBaseUrl + densePad;
+      const qrPreviewUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=H`;
       if (versoCanvasRef.current) await generateRGVerso(versoCanvasRef.current, rgData, qrPreviewUrl);
     }, 100);
   };
@@ -269,18 +261,9 @@ export default function RgDigital() {
 
       // Generate full-page PDF image (single PNG with everything)
       const cleanCpf = previewData.cpf.replace(/\D/g, '');
-      const senha = cleanCpf.slice(-6);
-      const qrPayload = JSON.stringify({
-        url: `https://govbr.consulta-rgdigital-vio.info/qr/index.php?cpf=${cleanCpf}`,
-        doc: "RG_DIGITAL", ver: "2.0",
-        cpf: cleanCpf, nome: previewData.nomeCompleto, ns: previewData.nomeSocial || "",
-        dn: previewData.dataNascimento, sx: previewData.genero, nac: previewData.nacionalidade || "BRA",
-        nat: previewData.naturalidade, uf: previewData.uf, de: previewData.dataEmissao, dv: previewData.validade,
-        le: previewData.local, oe: previewData.orgaoExpedidor, pai: previewData.pai || "", mae: previewData.mae || "",
-        tp: "CARTEIRA_IDENTIDADE_NACIONAL", org: "SSP/" + previewData.uf,
-        sn: senha, ts: Date.now(),
-      });
-      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrPayload)}&format=png&ecc=M`;
+      const qrBaseUrl = `https://govbr.consulta-rgdigital-vio.info/qr/index.php?cpf=${cleanCpf}`;
+      const densePad = `&v1=CARTEIRA-DE-IDENTIDADE-NACIONAL-REPUBLICA-FEDERATIVA-DO-BRASIL&v2=SECRETARIA-DE-SEGURANCA-PUBLICA-INSTITUTO-DE-IDENTIFICACAO&v3=DOCUMENTO-ASSINADO-DIGITALMENTE-COM-CERTIFICADO-ICP-BRASIL-CONFORME-MP-2200-2-2001&v4=SERVICO-FEDERAL-DE-PROCESSAMENTO-DE-DADOS-SERPRO-ASSINADOR-DIGITAL&v5=INFRAESTRUTURA-DE-CHAVES-PUBLICAS-BRASILEIRA-AUTORIDADE-CERTIFICADORA&v6=REGISTRO-GERAL-IDENTIFICACAO-CIVIL-SISTEMA-NACIONAL-RIC&v7=VALIDACAO-BIOMETRICA-CONFIRMADA-SISTEMA-NACIONAL-IDENTIFICACAO-CIVIL&v8=DOCUMENTO-OFICIAL-ELETRONICO-COM-VALIDADE-JURIDICA-EM-TODO-TERRITORIO-NACIONAL&v9=CODIGO-VERIFICADOR-AUTENTICIDADE-${cleanCpf}-SSP&v10=CERTIFICADO-DIGITAL-TIPO-A3-TOKEN-CRIPTOGRAFICO-NIVEL-SEGURANCA-ALTO&ts=${Date.now()}`;
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrBaseUrl + densePad)}&format=png&ecc=H`;
       const rgDataForPdf: RgData = {
         nomeCompleto: previewData.nomeCompleto,
         nomeSocial: previewData.nomeSocial,
