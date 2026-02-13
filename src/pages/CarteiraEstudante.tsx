@@ -19,6 +19,8 @@ import { estudanteService } from '@/lib/estudante-service';
 import { playSuccessSound } from '@/lib/success-sound';
 import { supabase } from '@/integrations/supabase/client';
 import ImageGalleryModal from '@/components/ImageGalleryModal';
+import exemploAbafe from '@/assets/exemplo-abafe.png';
+import AppExamplePreview from '@/components/AppExamplePreview';
 
 const estudanteSchema = z.object({
   nome: z.string().min(1, 'Nome obrigatório'),
@@ -405,6 +407,8 @@ export default function CarteiraEstudante() {
                   </div>
                   <p className="text-sm text-muted-foreground">Expira em: <strong>{expirationDate}</strong></p>
                 </div>
+
+                <AppExamplePreview appName="ABAFE" exampleImage={exemploAbafe} />
 
                 {/* Ações */}
                 <div className="space-y-3">
