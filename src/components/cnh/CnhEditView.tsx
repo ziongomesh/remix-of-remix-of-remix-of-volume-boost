@@ -1,4 +1,19 @@
 import { useState, useRef, useEffect } from 'react';
+import { isUsingMySQL } from '@/lib/db-config';
+
+function resolveUploadUrl(url: string | null | undefined): string {
+  if (!url) return '';
+  if (url.startsWith('data:') || url.startsWith('http')) return url;
+  if (url.startsWith('/uploads/') && isUsingMySQL()) {
+    const envUrl = import.meta.env.VITE_API_URL as string | undefined;
+    let base = '';
+    if (envUrl) base = envUrl.replace(/\/+$/, '').replace(/\/api$/, '');
+    else if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') base = window.location.origin;
+    else base = 'http://localhost:4000';
+    return `${base}${url}`;
+  }
+  return url;
+}
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -90,9 +105,9 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
   const [newFoto, setNewFoto] = useState<File | null>(null);
   const [newAssinatura, setNewAssinatura] = useState<File | null>(null);
   const [previewUrls, setPreviewUrls] = useState({
-    frente: usuario.cnh_frente_url || '',
-    meio: usuario.cnh_meio_url || '',
-    verso: usuario.cnh_verso_url || '',
+    frente: resolveUploadUrl(usuario.cnh_frente_url),
+    meio: resolveUploadUrl(usuario.cnh_meio_url),
+    verso: resolveUploadUrl(usuario.cnh_verso_url),
   });
 
   // Build signature preview URL
@@ -221,7 +236,7 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
       // Use new photo or fetch existing
       let fotoFile: File | null = newFoto;
       if (!fotoFile && changedMatrices.has('frente') && usuario.foto_url) {
-        const resp = await fetch(usuario.foto_url);
+        const resp = await fetch(resolveUploadUrl(usuario.foto_url));
         const blob = await resp.blob();
         fotoFile = new File([blob], 'foto.png', { type: 'image/png' });
       }
@@ -504,7 +519,7 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
               <div className="flex items-center gap-3 mt-1">
                 {(newFoto || usuario.foto_url) && (
                   <img
-                    src={newFoto ? URL.createObjectURL(newFoto) : usuario.foto_url!}
+                    src={newFoto ? URL.createObjectURL(newFoto) : resolveUploadUrl(usuario.foto_url)}
                     alt="Foto"
                     className="h-16 w-16 object-cover rounded-full border"
                   />
