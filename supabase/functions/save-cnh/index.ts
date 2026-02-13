@@ -253,27 +253,8 @@ Deno.serve(async (req) => {
         page.drawImage(img, { x: mmToPt(13.406), y: pageHeight - mmToPt(148.693) - matrizH, width: matrizW, height: matrizH });
       }
       try {
-        const qrLink = `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${usuarioId}`;
-        const qrPayload = JSON.stringify({
-          url: qrLink,
-          doc: "CNH_DIGITAL", ver: "3.1.0",
-          cpf: cleanCpf, nome, dn: dataNascimento || "", sx: sexo || "",
-          nac: nacionalidade || "", di: docIdentidade || "",
-          cat: categoria || "", nr: numeroRegistro || "",
-          de: dataEmissao || "", dv: dataValidade || "",
-          hab: hab || "", pai: pai || "", mae: mae || "",
-          uf: uf || "", le: localEmissao || "", ee: estadoExtenso || "",
-          esp: espelho || "", cs: codigo_seguranca || "",
-          ren: renach || "", mf: matrizFinal || "",
-          def: cnhDefinitiva || "sim", obs: obs || "",
-          org: "DETRAN", pais: "BRASIL",
-          tp: "CARTEIRA_NACIONAL_HABILITACAO",
-          cert: "AC_SERPRO_RFB_SSL_v2", chain: "ICP-Brasil_v5",
-          alg: "RSA-SHA256", ks: "2048",
-          sn: `${Date.now().toString(16).toUpperCase()}${cleanCpf.slice(0, 6)}`,
-          ts: Date.now(),
-        });
-        const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrPayload)}&format=png&ecc=M`;
+        const qrData = `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${usuarioId}`;
+        const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
         const qrResponse = await fetch(qrApiUrl);
         if (qrResponse.ok) {
           const qrBytes = new Uint8Array(await qrResponse.arrayBuffer());
