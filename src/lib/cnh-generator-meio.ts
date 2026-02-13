@@ -105,7 +105,7 @@ function drawTexts(ctx: CanvasRenderingContext2D, data: CnhMeioData): void {
   ctx.save();
   ctx.translate(130, 690);
   ctx.rotate(-Math.PI / 2);
-  ctx.font = '48px "OCR-B", "Courier Prime", monospace';
+  ctx.font = '39px "OCR-B", "Courier Prime", monospace';
   ctx.fillStyle = 'black';
   ctx.fillText(data.espelho || '', 0, 0);
   ctx.restore();
