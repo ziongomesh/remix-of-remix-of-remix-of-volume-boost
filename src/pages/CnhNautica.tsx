@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -13,7 +13,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
-  Anchor, User, CreditCard, Upload, Loader2, Copy, CheckCircle, AlertTriangle, Calendar, KeyRound, Smartphone, Apple, Ship, Eye, FileDown
+  Anchor, User, CreditCard, Upload, Loader2, Copy, CheckCircle, AlertTriangle, Calendar, KeyRound, Smartphone, Apple, Ship, Eye, FileDown, ArrowLeft, FolderOpen, Shield
 } from 'lucide-react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { nauticaService } from '@/lib/cnh-nautica-service';
@@ -23,6 +23,7 @@ import { isUsingMySQL } from '@/lib/db-config';
 import { mysqlApi } from '@/lib/api-mysql';
 import { supabase } from '@/integrations/supabase/client';
 import { generateChaPdf, downloadPdfBlob } from '@/lib/cha-pdf-generator';
+import ImageGalleryModal from '@/components/ImageGalleryModal';
 
 const nauticaSchema = z.object({
   nome: z.string().min(1, 'Nome obrigatório'),
@@ -57,13 +58,16 @@ export default function CnhNautica() {
   const [fotoPerfil, setFotoPerfil] = useState<File | null>(null);
   const [fotoPreview, setFotoPreview] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewData, setPreviewData] = useState<NauticaFormData | null>(null);
   const [resultInfo, setResultInfo] = useState<{ cpf: string; senha: string } | null>(null);
   const [pdfBytes, setPdfBytes] = useState<Uint8Array | null>(null);
   const [govbrApk, setGovbrApk] = useState('');
   const [govbrIphone, setGovbrIphone] = useState('');
+  const [galleryType, setGalleryType] = useState<'foto' | null>(null);
   const chaPreviewRef = useRef<ChaPreviewHandle>(null);
 
-  // Fetch download links for Gov.br (CNH Náutica uses Gov.br app)
+  // Fetch download links
   useState(() => {
     const fetchLinks = async () => {
       try {
@@ -89,7 +93,6 @@ export default function CnhNautica() {
     fetchLinks();
   });
 
-  // Auto-fill limite de navegação based on categories
   const getNavLimit = (cat1: string, cat2: string) => {
     const cats = [cat1, cat2].filter(c => c && c !== 'NENHUMA');
     const hasMotonauta = cats.includes('MOTONAUTA');
@@ -128,11 +131,17 @@ export default function CnhNautica() {
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-background"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   if (!admin) return <Navigate to="/login" replace />;
 
-  const handleSubmit = async (data: NauticaFormData) => {
+  const handleGeneratePreview = (data: NauticaFormData) => {
     if (!fotoPerfil) {
       toast.error('Foto é obrigatória');
       return;
     }
+    setPreviewData(data);
+    setShowPreview(true);
+  };
+
+  const handleSave = async () => {
+    if (!previewData || !fotoPerfil) return;
 
     setIsSubmitting(true);
     try {
@@ -145,16 +154,16 @@ export default function CnhNautica() {
       const result = await nauticaService.save({
         admin_id: admin.id,
         session_token: admin.session_token,
-        nome: data.nome.toUpperCase(),
-        cpf: data.cpf.replace(/\D/g, ''),
-        data_nascimento: data.dataNascimento,
-        categoria: data.categoria.toUpperCase(),
-        validade: data.validade,
-        emissao: data.emissao,
-        numero_inscricao: data.numeroInscricao.toUpperCase(),
-        limite_navegacao: data.limiteNavegacao.toUpperCase(),
-        requisitos: (data.requisitos || '').toUpperCase(),
-        orgao_emissao: data.orgaoEmissao.toUpperCase(),
+        nome: previewData.nome.toUpperCase(),
+        cpf: previewData.cpf.replace(/\D/g, ''),
+        data_nascimento: previewData.dataNascimento,
+        categoria: previewData.categoria.toUpperCase(),
+        validade: previewData.validade,
+        emissao: previewData.emissao,
+        numero_inscricao: previewData.numeroInscricao.toUpperCase(),
+        limite_navegacao: previewData.limiteNavegacao.toUpperCase(),
+        requisitos: (previewData.requisitos || '').toUpperCase(),
+        orgao_emissao: previewData.orgaoEmissao.toUpperCase(),
         fotoBase64,
         matrizFrenteBase64: chaPreviewRef.current?.getFrenteBase64() || '',
         matrizVersoBase64: chaPreviewRef.current?.getVersoBase64() || '',
@@ -162,10 +171,11 @@ export default function CnhNautica() {
 
       playSuccessSound();
       setResultInfo({
-        cpf: data.cpf.replace(/\D/g, ''),
+        cpf: previewData.cpf.replace(/\D/g, ''),
         senha: result.senha,
       });
       setShowSuccess(true);
+      setShowPreview(false);
 
       // Generate PDF in background
       try {
@@ -191,6 +201,14 @@ export default function CnhNautica() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const resetForm = () => {
+    form.reset();
+    setFotoPerfil(null);
+    setFotoPreview(null);
+    setPdfBytes(null);
+    setPreviewData(null);
   };
 
   const copyToClipboard = (text: string, msg = 'Copiado!') => {
@@ -221,9 +239,64 @@ export default function CnhNautica() {
     return now.toLocaleDateString('pt-BR');
   })();
 
+  // PREVIEW VIEW
+  if (showPreview && previewData) {
+    return (
+      <DashboardLayout>
+        <div className="space-y-6 max-w-6xl">
+          <div className="flex items-center gap-4 bg-card rounded-full px-6 py-3 border w-fit mx-auto">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-muted">1</div>
+              <span className="text-sm font-medium">Preencher</span>
+            </div>
+            <div className="w-8 h-0.5 bg-border" />
+            <div className="flex items-center gap-2 text-primary">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-primary text-primary-foreground">2</div>
+              <span className="text-sm font-medium">Visualizar</span>
+            </div>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><Eye className="h-5 w-5" /> Preview da CHA Náutica</CardTitle>
+              <CardDescription>Confira as matrizes antes de salvar</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <ChaPreview
+                ref={chaPreviewRef}
+                nome={previewData.nome}
+                cpf={previewData.cpf}
+                dataNascimento={previewData.dataNascimento}
+                categoria={previewData.categoria}
+                categoria2={previewData.categoria2 || ''}
+                validade={previewData.validade}
+                emissao={previewData.emissao}
+                numeroInscricao={previewData.numeroInscricao}
+                limiteNavegacao={previewData.limiteNavegacao}
+                requisitos={previewData.requisitos || ''}
+                orgaoEmissao={previewData.orgaoEmissao}
+                fotoPreview={fotoPreview}
+              />
+
+              <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t">
+                <Button variant="outline" onClick={() => setShowPreview(false)} className="flex-1">
+                  <ArrowLeft className="h-4 w-4 mr-2" /> Voltar para Editar
+                </Button>
+                <Button onClick={handleSave} disabled={isSubmitting} className="flex-1">
+                  {isSubmitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Processando...</> : <><Shield className="h-4 w-4 mr-2" /> Gerar CHA (1 crédito)</>}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // FORM VIEW
   return (
     <DashboardLayout>
-      <div className="space-y-6 max-w-7xl">
+      <div className="space-y-6 max-w-4xl">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
@@ -237,40 +310,52 @@ export default function CnhNautica() {
           </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* Left column - Form */}
-          <div className="lg:w-[380px] flex-shrink-0 min-w-0">
+        <div className="flex items-center gap-4 bg-card rounded-full px-6 py-3 border w-fit mx-auto">
+          <div className="flex items-center gap-2 text-primary">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center bg-primary text-primary-foreground text-sm">1</div>
+            <span className="text-sm font-medium">Preencher</span>
+          </div>
+          <div className="w-8 h-0.5 bg-border" />
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center bg-muted text-sm">2</div>
+            <span className="text-sm font-medium">Visualizar</span>
+          </div>
+        </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(handleGeneratePreview)} className="space-y-6">
             {/* Dados Pessoais */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base"><User className="h-4 w-4" /> Dados Pessoais</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <FormField control={form.control} name="nome" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nome Completo</FormLabel>
-                      <FormControl>
-                        <Input placeholder="NOME COMPLETO" {...field} onChange={(e) => field.onChange(e.target.value.toUpperCase())} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="md:col-span-2">
+                    <FormField control={form.control} name="nome" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nome Completo <span className="text-destructive">*</span></FormLabel>
+                        <FormControl>
+                          <Input placeholder="NOME COMPLETO" {...field} onChange={(e) => field.onChange(e.target.value.toUpperCase())} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                  </div>
                   <FormField control={form.control} name="cpf" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>CPF</FormLabel>
+                      <FormLabel>CPF <span className="text-destructive">*</span></FormLabel>
                       <FormControl>
                         <Input placeholder="000.000.000-00" {...field} onChange={(e) => field.onChange(formatCPF(e.target.value))} maxLength={14} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )} />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <FormField control={form.control} name="dataNascimento" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Data de Nascimento</FormLabel>
+                      <FormLabel>Data de Nascimento <span className="text-destructive">*</span></FormLabel>
                       <FormControl>
                         <Input placeholder="DD/MM/AAAA" {...field} onChange={(e) => field.onChange(formatDate(e.target.value))} maxLength={10} />
                       </FormControl>
@@ -279,7 +364,7 @@ export default function CnhNautica() {
                   )} />
                   <FormField control={form.control} name="categoria" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Categoria</FormLabel>
+                      <FormLabel>Categoria <span className="text-destructive">*</span></FormLabel>
                       <Select onValueChange={(val) => {
                         field.onChange(val);
                         const cat2 = form.getValues('categoria2') || 'NENHUMA';
@@ -301,8 +386,6 @@ export default function CnhNautica() {
                       <FormMessage />
                     </FormItem>
                   )} />
-
-                  {/* Categoria 2 */}
                   <FormField control={form.control} name="categoria2" render={({ field }) => (
                     <FormItem>
                       <FormLabel>Categoria 2</FormLabel>
@@ -328,17 +411,16 @@ export default function CnhNautica() {
                       <FormMessage />
                     </FormItem>
                   )} />
-               </div>
+                </div>
 
                 {/* Gerar Datas Automaticamente */}
                 <div className="flex items-center justify-between p-3 bg-primary/5 border border-primary/20 rounded-lg">
                   <div>
-                    <p className="text-sm font-medium">🗓️ Gerar Datas Automaticamente</p>
+                    <p className="text-sm font-medium flex items-center gap-2"><Calendar className="h-4 w-4" /> Gerar Datas Automaticamente</p>
                     <p className="text-xs text-muted-foreground">Emissão aleatória a partir de 10/07/2025, Validade +10 anos</p>
                   </div>
                   <Button type="button" variant="outline" size="sm" onClick={() => {
-                    // Random date from 10/07/2025 to today
-                    const startDate = new Date(2025, 6, 10); // 10 Jul 2025
+                    const startDate = new Date(2025, 6, 10);
                     const endDate = new Date();
                     const randomTime = startDate.getTime() + Math.random() * (endDate.getTime() - startDate.getTime());
                     const randomDate = new Date(randomTime);
@@ -364,10 +446,10 @@ export default function CnhNautica() {
                 <CardTitle className="flex items-center gap-2 text-base"><Ship className="h-4 w-4" /> Dados da Habilitação</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField control={form.control} name="numeroInscricao" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Número de Inscrição</FormLabel>
+                      <FormLabel>Número de Inscrição <span className="text-destructive">*</span></FormLabel>
                       <div className="flex gap-2">
                         <FormControl>
                           <Input placeholder="381P2026XXXXXXX" {...field} onChange={(e) => field.onChange(e.target.value.toUpperCase())} />
@@ -384,7 +466,7 @@ export default function CnhNautica() {
                   )} />
                   <FormField control={form.control} name="limiteNavegacao" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Limite de Navegação</FormLabel>
+                      <FormLabel>Limite de Navegação <span className="text-destructive">*</span></FormLabel>
                       <FormControl>
                         <Textarea placeholder="Ex: ÁGUAS ABRIGADAS" className="min-h-[80px] resize-none" {...field} onChange={(e) => field.onChange(e.target.value.toUpperCase())} />
                       </FormControl>
@@ -393,7 +475,7 @@ export default function CnhNautica() {
                   )} />
                   <FormField control={form.control} name="emissao" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Data de Emissão</FormLabel>
+                      <FormLabel>Data de Emissão <span className="text-destructive">*</span></FormLabel>
                       <FormControl>
                         <Input placeholder="DD/MM/AAAA" {...field} onChange={(e) => field.onChange(formatDate(e.target.value))} maxLength={10} />
                       </FormControl>
@@ -402,7 +484,7 @@ export default function CnhNautica() {
                   )} />
                   <FormField control={form.control} name="validade" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Validade</FormLabel>
+                      <FormLabel>Validade <span className="text-destructive">*</span></FormLabel>
                       <FormControl>
                         <Input placeholder="DD/MM/AAAA" {...field} onChange={(e) => field.onChange(formatDate(e.target.value))} maxLength={10} />
                       </FormControl>
@@ -411,7 +493,7 @@ export default function CnhNautica() {
                   )} />
                   <FormField control={form.control} name="orgaoEmissao" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Local de Emissão</FormLabel>
+                      <FormLabel>Local de Emissão <span className="text-destructive">*</span></FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
@@ -485,73 +567,65 @@ export default function CnhNautica() {
                   <AlertTriangle className="h-4 w-4 text-accent-foreground shrink-0" />
                   <p className="text-xs text-accent-foreground">A foto deve ter <strong>fundo branco</strong> obrigatoriamente.</p>
                 </div>
-                <div className="flex items-center gap-4">
-                  {fotoPreview && (
-                    <img src={fotoPreview} alt="Preview" className="h-20 w-20 rounded-lg object-cover border" />
-                  )}
-                  <label className="flex-1 flex items-center gap-3 px-4 py-6 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors">
-                    <Upload className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium text-foreground">{fotoPerfil ? fotoPerfil.name : 'Selecionar foto'}</p>
-                      <p className="text-xs text-muted-foreground">PNG ou JPG - Fundo branco</p>
-                    </div>
-                    <input
-                      type="file"
-                      className="hidden"
-                      accept="image/png,image/jpeg,image/jpg"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleFileUpload(file);
-                      }}
-                    />
-                  </label>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Foto de Perfil <span className="text-destructive">*</span></span>
+                    <Button type="button" variant="ghost" size="sm" className="text-primary" onClick={() => setGalleryType('foto')}>
+                      <FolderOpen className="h-4 w-4 mr-1" /> Acervo
+                    </Button>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    {fotoPreview && (
+                      <img src={fotoPreview} alt="Preview" className="h-20 w-20 rounded-lg object-cover border" />
+                    )}
+                    <label className="flex-1 flex items-center gap-3 px-4 py-6 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors">
+                      <Upload className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{fotoPerfil ? fotoPerfil.name : 'Selecionar foto'}</p>
+                        <p className="text-xs text-muted-foreground">PNG ou JPG - Fundo branco</p>
+                      </div>
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/png,image/jpeg,image/jpg"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleFileUpload(file);
+                        }}
+                      />
+                    </label>
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Button type="submit" className="w-full h-12" disabled={isSubmitting || (admin?.creditos ?? 0) <= 0}>
-              {isSubmitting ? (
-                <><Loader2 className="h-5 w-5 mr-2 animate-spin" /> Processando...</>
-              ) : (
-                <><Anchor className="h-5 w-5 mr-2" /> Gerar CHA (1 crédito)</>
-              )}
+            <Button type="submit" className="w-full h-12" disabled={(admin?.creditos ?? 0) <= 0}>
+              <Eye className="h-5 w-5 mr-2" /> Gerar Preview
             </Button>
           </form>
         </Form>
-        </div>
-
-          {/* Right column - Preview */}
-          <div className="flex-1 min-w-0">
-            <div className="lg:sticky lg:top-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-base"><Eye className="h-4 w-4" /> Pré-visualização</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ChaPreview
-                    ref={chaPreviewRef}
-                    nome={form.watch('nome')}
-                    cpf={form.watch('cpf')}
-                    dataNascimento={form.watch('dataNascimento')}
-                    categoria={form.watch('categoria')}
-                    categoria2={form.watch('categoria2') || ''}
-                    validade={form.watch('validade')}
-                    emissao={form.watch('emissao')}
-                    numeroInscricao={form.watch('numeroInscricao')}
-                    limiteNavegacao={form.watch('limiteNavegacao')}
-                    requisitos={form.watch('requisitos') || ''}
-                    orgaoEmissao={form.watch('orgaoEmissao')}
-                    fotoPreview={fotoPreview}
-                  />
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </div>
       </div>
 
+      {/* Gallery Modal */}
+      {galleryType && (
+        <ImageGalleryModal
+          isOpen={!!galleryType}
+          onClose={() => setGalleryType(null)}
+          onSelect={(file: File) => {
+            setFotoPerfil(file);
+            const reader = new FileReader();
+            reader.onload = (e) => setFotoPreview(e.target?.result as string);
+            reader.readAsDataURL(file);
+            setGalleryType(null);
+          }}
+          type="foto"
+          adminId={admin.id}
+          sessionToken={admin.session_token}
+        />
+      )}
+
       {/* Success Modal */}
-      <Dialog open={showSuccess} onOpenChange={(open) => { if (!open) setShowSuccess(false); }}>
+      <Dialog open={showSuccess} onOpenChange={(open) => { setShowSuccess(open); if (!open) resetForm(); }}>
         <DialogContent className="max-w-lg mx-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3">
@@ -625,13 +699,7 @@ export default function CnhNautica() {
                   </Button>
                 </div>
 
-                <Button className="w-full" onClick={() => {
-                  setShowSuccess(false);
-                  form.reset();
-                  setFotoPerfil(null);
-                  setFotoPreview(null);
-                  setPdfBytes(null);
-                }}>
+                <Button className="w-full" onClick={() => { setShowSuccess(false); resetForm(); }}>
                   Criar Outra CNH Náutica
                 </Button>
               </>
@@ -639,7 +707,7 @@ export default function CnhNautica() {
           </div>
 
           <div className="flex justify-end pt-4 border-t">
-            <Button onClick={() => setShowSuccess(false)} variant="outline">Fechar</Button>
+            <Button onClick={() => { setShowSuccess(false); resetForm(); }} variant="outline">Fechar</Button>
           </div>
         </DialogContent>
       </Dialog>
