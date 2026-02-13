@@ -230,7 +230,7 @@ function drawEspelho(ctx: CanvasRenderingContext2D, text?: string): void {
 
   ctx.font = '29px "OCR-B", "Courier Prime", monospace';
 
-  ctx.fillStyle = 'black';
+  ctx.fillStyle = '#373435';
   ctx.textAlign = 'left';
   ctx.textBaseline = 'alphabetic';
   ctx.fillText(text, 0, 0);
