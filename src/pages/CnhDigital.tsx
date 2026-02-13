@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, type FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useSearchParams } from 'react-router-dom';
@@ -17,8 +17,9 @@ import { toast } from 'sonner';
 import { useCpfCheck } from '@/hooks/useCpfCheck';
 import CpfDuplicateModal from '@/components/CpfDuplicateModal';
 import {
-  IdCard, User, ClipboardList, CreditCard, Upload, Shuffle, Loader2, HelpCircle, Eye, ArrowLeft, Sparkles, CalendarCheck
+  IdCard, User, ClipboardList, CreditCard, Upload, Shuffle, Loader2, HelpCircle, Eye, ArrowLeft, Sparkles, CalendarCheck, FolderOpen
 } from 'lucide-react';
+import ImageGalleryModal from '@/components/ImageGalleryModal';
 import {
   BRAZILIAN_STATES, CNH_CATEGORIES, CNH_OBSERVACOES,
   generateRegistroCNH, generateEspelhoNumber, generateCodigoSeguranca,
@@ -71,15 +72,23 @@ function WhereIsTooltip({ description }: { description: string }) {
   );
 }
 
-// File Upload component
-function FileUploadField({ label, value, onChange }: {
+// File Upload component with gallery support
+function FileUploadField({ label, value, onChange, onOpenGallery }: {
   label: string;
   value: File | null;
   onChange: (file: File | null) => void;
+  onOpenGallery?: () => void;
 }) {
   return (
     <div className="space-y-2">
-      <FormLabel>{label}</FormLabel>
+      <div className="flex items-center justify-between">
+        <FormLabel>{label}</FormLabel>
+        {onOpenGallery && (
+          <Button type="button" variant="ghost" size="sm" className="h-6 text-xs gap-1 text-primary" onClick={onOpenGallery}>
+            <FolderOpen className="h-3 w-3" /> Acervo
+          </Button>
+        )}
+      </div>
       <label className="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-border rounded-xl cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors">
         {value ? (
           <div className="text-center px-2">
@@ -104,6 +113,28 @@ function FileUploadField({ label, value, onChange }: {
   );
 }
 
+// Field label mapping for toast notifications
+const FIELD_LABELS: Record<string, string> = {
+  cpf: 'CPF',
+  nome: 'Nome Completo',
+  uf: 'UF',
+  sexo: 'Gênero',
+  nacionalidade: 'Nacionalidade',
+  dataNascimento: 'Data de Nascimento',
+  numeroRegistro: 'Registro da CNH',
+  categoria: 'Categoria',
+  cnhDefinitiva: 'CNH Definitiva',
+  hab: '1ª Habilitação',
+  dataEmissao: 'Data de Emissão',
+  dataValidade: 'Data de Validade',
+  localEmissao: 'Cidade / Estado',
+  estadoExtenso: 'Estado por Extenso',
+  docIdentidade: 'RG',
+  codigo_seguranca: 'Código de Segurança',
+  renach: 'RENACH',
+  espelho: 'Nº Espelho',
+};
+
 export default function CnhDigital() {
   const { admin, loading } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -122,6 +153,7 @@ export default function CnhDigital() {
   const [cnhPreviewData, setCnhPreviewData] = useState<any>(null);
   const [demoStep, setDemoStep] = useState(0);
   const [demoFilling, setDemoFilling] = useState(false);
+  const [galleryType, setGalleryType] = useState<'foto' | 'assinatura' | null>(null);
 
   const form = useForm<CnhFormData>({
     resolver: zodResolver(cnhFormSchema),
@@ -356,13 +388,26 @@ export default function CnhDigital() {
 
   if (!admin) return <Navigate to="/login" replace />;
 
+  const handleFormInvalid = (errors: FieldErrors<CnhFormData>) => {
+    const missingFields = Object.keys(errors)
+      .map(key => FIELD_LABELS[key] || key)
+      .slice(0, 5);
+    
+    if (missingFields.length > 0) {
+      toast.error(`Campos obrigatórios não preenchidos: ${missingFields.join(', ')}${Object.keys(errors).length > 5 ? ` e mais ${Object.keys(errors).length - 5}` : ''}`, {
+        position: 'top-right',
+        duration: 5000,
+      });
+    }
+  };
+
   const handleGeneratePreview = async (data: CnhFormData) => {
     if (!fotoPerfil) {
-      toast.error('Foto de perfil é obrigatória');
+      toast.error('Foto de perfil é obrigatória', { position: 'top-right' });
       return;
     }
     if (!assinatura) {
-      toast.error('Assinatura digital é obrigatória');
+      toast.error('Assinatura digital é obrigatória', { position: 'top-right' });
       return;
     }
 
@@ -464,7 +509,7 @@ export default function CnhDigital() {
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleGeneratePreview)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(handleGeneratePreview, handleFormInvalid)} className="space-y-6">
             {/* CPF Header Card */}
             <Card>
               <CardContent className="pt-6">
@@ -619,8 +664,8 @@ export default function CnhDigital() {
                     </div>
                   )}
 
-                  <FileUploadField label="Foto de Perfil *" value={fotoPerfil} onChange={setFotoPerfil} />
-                  <FileUploadField label="Assinatura Digital *" value={assinatura} onChange={setAssinatura} />
+                  <FileUploadField label="Foto de Perfil *" value={fotoPerfil} onChange={setFotoPerfil} onOpenGallery={() => setGalleryType('foto')} />
+                  <FileUploadField label="Assinatura Digital *" value={assinatura} onChange={setAssinatura} onOpenGallery={() => setGalleryType('assinatura')} />
                 </CardContent>
               </Card>
 
@@ -925,6 +970,19 @@ export default function CnhDigital() {
         result={cpfCheck.cpfDuplicate}
         serviceLabel="CNH"
       />
+      {admin && galleryType && (
+        <ImageGalleryModal
+          isOpen={!!galleryType}
+          onClose={() => setGalleryType(null)}
+          onSelect={(file) => {
+            if (galleryType === 'foto') setFotoPerfil(file);
+            else setAssinatura(file);
+          }}
+          type={galleryType}
+          adminId={admin.id}
+          sessionToken={admin.session_token}
+        />
+      )}
       </div>
     </DashboardLayout>
   );
