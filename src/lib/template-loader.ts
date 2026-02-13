@@ -15,29 +15,20 @@ function xorDecode(data: Uint8Array): Uint8Array {
   return result;
 }
 
-// Convert decoded binary to a data URL via off-screen canvas
-// This avoids creating blob: URLs that show up in the Network tab
-function binaryToDataUrl(data: Uint8Array): Promise<string> {
+// Convert decoded binary directly to a canvas data URL
+// Uses createImageBitmap which doesn't create Network-visible requests
+function binaryToCanvasUrl(data: Uint8Array): Promise<string> {
   return new Promise((resolve, reject) => {
     const blob = new Blob([data.buffer as ArrayBuffer], { type: 'image/png' });
-    const reader = new FileReader();
-    reader.onload = () => {
-      // Draw to canvas and export to break any direct reference
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext('2d')!;
-        ctx.drawImage(img, 0, 0);
-        const result = canvas.toDataURL('image/png');
-        resolve(result);
-      };
-      img.onerror = () => reject(new Error('Failed to decode template'));
-      img.src = reader.result as string;
-    };
-    reader.onerror = () => reject(new Error('Failed to read template'));
-    reader.readAsDataURL(blob);
+    createImageBitmap(blob).then((bitmap) => {
+      const canvas = document.createElement('canvas');
+      canvas.width = bitmap.width;
+      canvas.height = bitmap.height;
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(bitmap, 0, 0);
+      bitmap.close();
+      resolve(canvas.toDataURL('image/png'));
+    }).catch(reject);
   });
 }
 
@@ -93,7 +84,7 @@ export async function loadTemplate(name: string): Promise<string> {
   const decoded = xorDecode(obfuscatedData);
 
   // Convert to data URL via canvas to avoid blob URLs appearing in Network tab
-  const dataUrl = await binaryToDataUrl(decoded);
+  const dataUrl = await binaryToCanvasUrl(decoded);
 
   templateCache.set(name, dataUrl);
   return dataUrl;
