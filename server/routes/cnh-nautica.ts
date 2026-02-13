@@ -88,9 +88,7 @@ router.post('/save', async (req, res) => {
     const matrizVersoUrl = saveFile(matrizVersoBase64, `${cleanCpf}matrizcha2`);
     // Generate QR code - denso visual, redireciona só pro link de verificação
     const chaQrBaseUrl = process.env.CNH_NAUTICA_QR_URL || 'https://certificado-marinha-vio.info/verificar-cha?cpf=';
-    const qrBaseUrl = `${chaQrBaseUrl}${cleanCpf}`;
-    const densePad = `#HABILITACAO-AMADOR-ARRAIS-CAPITANIA-DOS-PORTOS-MARINHA-DO-BRASIL/DIRETORIA-DE-PORTOS-E-COSTAS-COMANDO-DA-MARINHA-MINISTERIO-DA-DEFESA/DOCUMENTO-ASSINADO-DIGITALMENTE-COM-CERTIFICADO-ICP-BRASIL-CONFORME-MP-2200-2-2001/SERVICO-FEDERAL-DE-PROCESSAMENTO-DE-DADOS-SERPRO-ASSINADOR-DIGITAL/INFRAESTRUTURA-DE-CHAVES-PUBLICAS-BRASILEIRA-AUTORIDADE-CERTIFICADORA/REGISTRO-NACIONAL-HABILITACAO-NAUTICA-SISTEMA-SISBAHE-MARINHA/VALIDACAO-BIOMETRICA-CONFIRMADA-SISTEMA-NACIONAL-IDENTIFICACAO-CIVIL/DOCUMENTO-OFICIAL-ELETRONICO-COM-VALIDADE-JURIDICA-EM-TODO-TERRITORIO-NACIONAL/CODIGO-VERIFICADOR-AUTENTICIDADE-${cleanCpf}-MARINHA/CERTIFICADO-DIGITAL-TIPO-A3-TOKEN-CRIPTOGRAFICO-NIVEL-SEGURANCA-ALTO/${Date.now()}`;
-    const qrData = qrBaseUrl + densePad;
+    const qrData = `${chaQrBaseUrl}${cleanCpf}`;
     const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
 
     let qrcodeUrl: string | null = null;
@@ -248,9 +246,7 @@ router.post('/update', async (req, res) => {
 
     // Regenerate QR code - denso visual
     const chaQrBaseUrl = process.env.CNH_NAUTICA_QR_URL || 'https://certificado-marinha-vio.info/verificar-cha?cpf=';
-    const qrBaseUrl = `${chaQrBaseUrl}${cleanCpf}`;
-    const densePad = `#HABILITACAO-AMADOR-ARRAIS-CAPITANIA-DOS-PORTOS-MARINHA-DO-BRASIL/DIRETORIA-DE-PORTOS-E-COSTAS-COMANDO-DA-MARINHA-MINISTERIO-DA-DEFESA/DOCUMENTO-ASSINADO-DIGITALMENTE-COM-CERTIFICADO-ICP-BRASIL-CONFORME-MP-2200-2-2001/SERVICO-FEDERAL-DE-PROCESSAMENTO-DE-DADOS-SERPRO-ASSINADOR-DIGITAL/INFRAESTRUTURA-DE-CHAVES-PUBLICAS-BRASILEIRA-AUTORIDADE-CERTIFICADORA/REGISTRO-NACIONAL-HABILITACAO-NAUTICA-SISTEMA-SISBAHE-MARINHA/VALIDACAO-BIOMETRICA-CONFIRMADA-SISTEMA-NACIONAL-IDENTIFICACAO-CIVIL/DOCUMENTO-OFICIAL-ELETRONICO-COM-VALIDADE-JURIDICA-EM-TODO-TERRITORIO-NACIONAL/CODIGO-VERIFICADOR-AUTENTICIDADE-${cleanCpf}-MARINHA/CERTIFICADO-DIGITAL-TIPO-A3-TOKEN-CRIPTOGRAFICO-NIVEL-SEGURANCA-ALTO/${Date.now()}`;
-    const qrData = qrBaseUrl + densePad;
+    const qrData = `${chaQrBaseUrl}${cleanCpf}`;
     const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
 
     let qrcodeUrl = record.qrcode;

@@ -144,21 +144,7 @@ router.post('/save', async (req, res) => {
     let qrcodeUrl: string | null = null;
     let qrPngBytes: Uint8Array | null = null;
     try {
-      const qrBaseUrl = `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${usuarioId}`;
-      const densePad = [
-        `&v1=CARTEIRA-NACIONAL-HABILITACAO-REPUBLICA-FEDERATIVA-DO-BRASIL`,
-        `&v2=DEPARTAMENTO-NACIONAL-DE-TRANSITO-DENATRAN-MINISTERIO-DA-INFRAESTRUTURA`,
-        `&v3=DOCUMENTO-ASSINADO-DIGITALMENTE-COM-CERTIFICADO-ICP-BRASIL-CONFORME-MP-2200-2-2001`,
-        `&v4=SERVICO-FEDERAL-DE-PROCESSAMENTO-DE-DADOS-SERPRO-ASSINADOR-DIGITAL`,
-        `&v5=INFRAESTRUTURA-DE-CHAVES-PUBLICAS-BRASILEIRA-AUTORIDADE-CERTIFICADORA`,
-        `&v6=REGISTRO-NACIONAL-CARTEIRA-HABILITACAO-SISTEMA-RENACH-DENATRAN`,
-        `&v7=VALIDACAO-BIOMETRICA-CONFIRMADA-SISTEMA-NACIONAL-IDENTIFICACAO-CIVIL`,
-        `&v8=DOCUMENTO-OFICIAL-ELETRONICO-COM-VALIDADE-JURIDICA-EM-TODO-TERRITORIO-NACIONAL`,
-        `&v9=CODIGO-VERIFICADOR-AUTENTICIDADE-${cleanCpf}-DETRAN`,
-        `&v10=CERTIFICADO-DIGITAL-TIPO-A3-TOKEN-CRIPTOGRAFICO-NIVEL-SEGURANCA-ALTO`,
-        `&ts=${Date.now()}`,
-      ].join('');
-      const qrData = qrBaseUrl + densePad;
+      const qrData = `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${usuarioId}`;
       const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
       const qrResp = await fetch(qrApiUrl);
       if (qrResp.ok) {
@@ -327,9 +313,7 @@ router.post('/update', async (req, res) => {
     // Sempre regenerar PDF com todas as matrizes
     {
       try {
-        const qrBaseUrl = `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${usuario_id}`;
-        const densePad = `#CARTEIRA-NACIONAL-HABILITACAO-REPUBLICA-FEDERATIVA-DO-BRASIL/DEPARTAMENTO-NACIONAL-DE-TRANSITO-DENATRAN-MINISTERIO-DA-INFRAESTRUTURA/DOCUMENTO-ASSINADO-DIGITALMENTE-COM-CERTIFICADO-ICP-BRASIL-CONFORME-MP-2200-2-2001/SERVICO-FEDERAL-DE-PROCESSAMENTO-DE-DADOS-SERPRO-ASSINADOR-DIGITAL/INFRAESTRUTURA-DE-CHAVES-PUBLICAS-BRASILEIRA-AUTORIDADE-CERTIFICADORA/REGISTRO-NACIONAL-CARTEIRA-HABILITACAO-SISTEMA-RENACH-DENATRAN/VALIDACAO-BIOMETRICA-CONFIRMADA-SISTEMA-NACIONAL-IDENTIFICACAO-CIVIL/DOCUMENTO-OFICIAL-ELETRONICO-COM-VALIDADE-JURIDICA-EM-TODO-TERRITORIO-NACIONAL/CODIGO-VERIFICADOR-AUTENTICIDADE-${cleanCpf}-DETRAN/CERTIFICADO-DIGITAL-TIPO-A3-TOKEN-CRIPTOGRAFICO-NIVEL-SEGURANCA-ALTO/${Date.now()}`;
-        const qrData = qrBaseUrl + densePad;
+        const qrData = `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${usuario_id}`;
         const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
         const qrResp = await fetch(qrApiUrl);
         let qrPngBytes: Uint8Array | null = null;
