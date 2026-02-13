@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { FileText, CheckCircle, Clock, CreditCard, AlertTriangle, Anchor, IdCard } from 'lucide-react';
+import { FileText, CheckCircle, Clock, CreditCard, AlertTriangle, Anchor, IdCard, Car, Home, Stethoscope, ImageIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -22,7 +22,7 @@ interface ServiceCategory {
 
 const categories: ServiceCategory[] = [
   {
-    title: 'Documentos Oficiais',
+    title: 'Documentos Digitais',
     services: [
       {
         id: 'cnh-digital-2026',
@@ -51,6 +51,15 @@ const categories: ServiceCategory[] = [
         route: '/servicos/cnh-nautica',
         icon: Anchor,
       },
+      {
+        id: 'passaporte-digital',
+        name: 'Passaporte Digital',
+        description: 'Passaporte Brasileiro',
+        credits: 1,
+        available: false,
+        route: '#',
+        icon: FileText,
+      },
     ],
   },
   {
@@ -64,6 +73,93 @@ const categories: ServiceCategory[] = [
         available: true,
         route: '/servicos/carteira-estudante',
         icon: IdCard,
+      },
+    ],
+  },
+  {
+    title: 'PDF',
+    services: [
+      {
+        id: 'crlv-digital',
+        name: 'CRLV Digital',
+        description: 'Certificado de Registro e Licenciamento de Veículo',
+        credits: 1,
+        available: false,
+        route: '#',
+        icon: Car,
+      },
+      {
+        id: 'comprovante-residencia',
+        name: 'Comprovante de Residência',
+        description: 'Comprovante de endereço',
+        credits: 1,
+        available: false,
+        route: '#',
+        icon: Home,
+      },
+    ],
+  },
+  {
+    title: 'Atestados',
+    services: [
+      {
+        id: 'atestado-upa24h',
+        name: 'UPA 24H',
+        description: 'Atestado médico - Todos os estados',
+        credits: 1,
+        available: false,
+        route: '#',
+        icon: Stethoscope,
+      },
+      {
+        id: 'atestado-unimed',
+        name: 'Unimed',
+        description: 'Atestado médico - Todos os estados',
+        credits: 1,
+        available: false,
+        route: '#',
+        icon: Stethoscope,
+      },
+      {
+        id: 'atestado-hapvida',
+        name: 'Hapvida',
+        description: 'Atestado médico - Todos os estados',
+        credits: 1,
+        available: false,
+        route: '#',
+        icon: Stethoscope,
+      },
+    ],
+  },
+  {
+    title: 'Imagens Manipuladas',
+    services: [
+      {
+        id: 'mockup-cnh-mesa',
+        name: 'CNH em cima da mesa',
+        description: 'Mockup realista de CNH',
+        credits: 1,
+        available: false,
+        route: '#',
+        icon: ImageIcon,
+      },
+      {
+        id: 'mockup-rg-mesa',
+        name: 'RG em cima da mesa',
+        description: 'Mockup realista de RG',
+        credits: 1,
+        available: false,
+        route: '#',
+        icon: ImageIcon,
+      },
+      {
+        id: 'mockup-passaporte-mesa',
+        name: 'Passaporte em cima da mesa',
+        description: 'Mockup realista de Passaporte',
+        credits: 1,
+        available: false,
+        route: '#',
+        icon: ImageIcon,
       },
     ],
   },
