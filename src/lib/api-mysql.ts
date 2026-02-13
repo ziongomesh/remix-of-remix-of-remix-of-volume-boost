@@ -200,6 +200,15 @@ export const mysqlApi = {
     getMyDocumentStats: async (adminId: number) => {
       return fetchAPI(`/admins/stats/my-documents/${adminId}`);
     },
+
+    getMasterDailyHistory: async (masterId: number, filters?: { adminId?: number; module?: string; date?: string }) => {
+      const params = new URLSearchParams();
+      if (filters?.adminId) params.set('adminId', String(filters.adminId));
+      if (filters?.module) params.set('module', filters.module);
+      if (filters?.date) params.set('date', filters.date);
+      const qs = params.toString();
+      return fetchAPI(`/admins/master/daily-history/${masterId}${qs ? '?' + qs : ''}`);
+    },
   },
 
   credits: {
