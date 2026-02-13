@@ -44,7 +44,7 @@ async function drawTemplate(ctx: CanvasRenderingContext2D): Promise<void> {
 }
 
 function drawMrzText(ctx: CanvasRenderingContext2D, data: CnhVersoData): void {
-  ctx.font = '32px "OCR-B", "Courier Prime", "Courier New", monospace';
+  ctx.font = '23px "OCR-B", "Courier Prime", "Courier New", monospace';
   ctx.fillStyle = '#373435';
   ctx.textAlign = 'left';
 
