@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Info, CheckCircle2, Loader2 } from 'lucide-react';
-// API local Node.js/MySQL
+import { isUsingMySQL } from '@/lib/db-config';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ChaData {
   nome: string;
@@ -15,6 +16,30 @@ interface ChaData {
   orgao_emissao: string | null;
   foto: string | null;
   hash: string | null;
+}
+
+function generateHash(senha: string, cpf: string, numInscricao: string): string {
+  const hashStr = (senha || '') + cpf + (numInscricao || '');
+  let hash = '';
+  for (let i = 0; i < hashStr.length; i++) {
+    hash += hashStr.charCodeAt(i).toString(16).toUpperCase();
+  }
+  return hash.substring(0, 40);
+}
+
+function formatCpf(cpf: string): string {
+  const clean = cpf.replace(/\D/g, '');
+  return clean.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+}
+
+function formatDate(d: string | null): string | null {
+  if (!d) return null;
+  const s = String(d).substring(0, 10);
+  if (s.includes('-')) {
+    const [y, m, day] = s.split('-');
+    return `${day}/${m}/${y}`;
+  }
+  return s;
 }
 
 export default function VerificarCha() {
@@ -35,15 +60,44 @@ export default function VerificarCha() {
     const fetchData = async () => {
       try {
         const cleanCpf = cpf.replace(/\D/g, '');
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
-        const response = await fetch(`${apiUrl}/verify-cha?cpf=${cleanCpf}`);
-        if (!response.ok) {
-          setError('Usuário não encontrado.');
-          return;
-        }
-        const result = await response.json();
 
-        setData(result);
+        if (isUsingMySQL()) {
+          const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+          const response = await fetch(`${apiUrl}/verify-cha?cpf=${cleanCpf}`);
+          if (!response.ok) {
+            setError('Usuário não encontrado.');
+            return;
+          }
+          const result = await response.json();
+          setData(result);
+        } else {
+          // Query Supabase directly
+          const { data: record, error: dbError } = await supabase
+            .from('chas')
+            .select('*')
+            .eq('cpf', cleanCpf)
+            .maybeSingle();
+
+          if (dbError || !record) {
+            setError('Usuário não encontrado.');
+            return;
+          }
+
+          setData({
+            nome: record.nome,
+            cpf: formatCpf(cleanCpf),
+            data_nascimento: formatDate(record.data_nascimento),
+            categoria: record.categoria,
+            validade: record.validade,
+            emissao: record.emissao,
+            numero_inscricao: record.numero_inscricao,
+            limite_navegacao: record.limite_navegacao,
+            orgao_emissao: record.orgao_emissao,
+            foto: record.foto,
+            hash: generateHash(record.senha || '', cleanCpf, record.numero_inscricao || ''),
+          });
+        }
+
         const now = new Date();
         setConsultaTime(
           `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`
