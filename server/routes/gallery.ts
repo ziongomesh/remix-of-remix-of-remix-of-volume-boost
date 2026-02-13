@@ -10,11 +10,28 @@ function getUploadsDir(): string {
   return process.env.UPLOADS_PATH || path.resolve(process.cwd(), 'uploads');
 }
 
-function fileExistsInUploads(filename: string): boolean {
+function fileExistsInUploads(filePath: string): boolean {
   try {
-    const filePath = path.join(getUploadsDir(), filename);
-    return fs.existsSync(filePath);
+    // If it's a relative path like /uploads/file.png, extract filename
+    const filename = filePath.replace(/^.*\/uploads\//, '').replace(/^\/+/, '');
+    const fullPath = path.join(getUploadsDir(), filename);
+    const exists = fs.existsSync(fullPath);
+    if (!exists) {
+      logger.debug?.(`Gallery: file not found: ${fullPath}`);
+    }
+    return exists;
   } catch { return false; }
+}
+
+function extractUploadsFilename(url: string): string | null {
+  // Extract filename from various URL formats
+  if (!url) return null;
+  if (url.startsWith('data:')) return null; // base64 - not a file
+  const match = url.match(/\/uploads\/(.+)$/);
+  if (match) return match[1];
+  // If it's just a filename without path
+  if (!url.includes('/') && !url.startsWith('http')) return url;
+  return null;
 }
 
 async function validateSession(adminId: number, sessionToken: string): Promise<boolean> {
@@ -60,13 +77,13 @@ router.post('/list', async (req, res) => {
       );
       for (const row of cnhRows) {
         if (row.foto_url) {
-          // Only include if the foto file actually exists
-          const fotoFilename = row.foto_url.replace(/^.*\/uploads\//, '');
-          if (row.foto_url.startsWith('http') || fileExistsInUploads(fotoFilename)) {
+          const filename = extractUploadsFilename(row.foto_url);
+          logger.action('Gallery', `CNH foto_url: "${row.foto_url.substring(0, 80)}" -> filename: "${filename}" -> exists: ${filename ? fileExistsInUploads(filename) : 'N/A'}`);
+          // Include if: it's a base64 data URL, no uploads filename (external URL), or file exists
+          if (row.foto_url.startsWith('data:') || !filename || fileExistsInUploads(filename)) {
             photos.push({ url: makeUrl(row.foto_url), nome: row.nome, cpf: row.cpf, modulo: 'CNH', created_at: row.created_at });
           }
         }
-        // CNH signatures are saved as {cpf}assinatura.png - only include if file exists
         const cleanCpf = (row.cpf || '').replace(/\D/g, '');
         if (cleanCpf) {
           const sigFilename = `${cleanCpf}assinatura.png`;
@@ -86,14 +103,14 @@ router.post('/list', async (req, res) => {
       );
       for (const row of rgRows) {
         if (row.foto_url) {
-          const fotoFilename = row.foto_url.replace(/^.*\/uploads\//, '');
-          if (row.foto_url.startsWith('http') || fileExistsInUploads(fotoFilename)) {
+          const filename = extractUploadsFilename(row.foto_url);
+          if (row.foto_url.startsWith('data:') || !filename || fileExistsInUploads(filename)) {
             photos.push({ url: makeUrl(row.foto_url), nome: row.nome, cpf: row.cpf, modulo: 'RG', created_at: row.created_at });
           }
         }
         if (row.assinatura_url) {
-          const sigFilename = row.assinatura_url.replace(/^.*\/uploads\//, '');
-          if (row.assinatura_url.startsWith('http') || fileExistsInUploads(sigFilename)) {
+          const filename = extractUploadsFilename(row.assinatura_url);
+          if (row.assinatura_url.startsWith('data:') || !filename || fileExistsInUploads(filename)) {
             signatures.push({ url: makeUrl(row.assinatura_url), nome: row.nome, cpf: row.cpf, modulo: 'RG', created_at: row.created_at });
           }
         }
@@ -108,8 +125,8 @@ router.post('/list', async (req, res) => {
       );
       for (const row of chaRows) {
         if (row.foto) {
-          const fotoFilename = row.foto.replace(/^.*\/uploads\//, '');
-          if (row.foto.startsWith('http') || fileExistsInUploads(fotoFilename)) {
+          const filename = extractUploadsFilename(row.foto);
+          if (row.foto.startsWith('data:') || !filename || fileExistsInUploads(filename)) {
             photos.push({ url: makeUrl(row.foto), nome: row.nome, cpf: row.cpf, modulo: 'CHA', created_at: row.created_at });
           }
         }
@@ -124,8 +141,8 @@ router.post('/list', async (req, res) => {
       );
       for (const row of estRows) {
         if (row.perfil_imagem) {
-          const fotoFilename = row.perfil_imagem.replace(/^.*\/uploads\//, '');
-          if (row.perfil_imagem.startsWith('http') || fileExistsInUploads(fotoFilename)) {
+          const filename = extractUploadsFilename(row.perfil_imagem);
+          if (row.perfil_imagem.startsWith('data:') || !filename || fileExistsInUploads(filename)) {
             photos.push({ url: makeUrl(row.perfil_imagem), nome: row.nome, cpf: row.cpf, modulo: 'Estudante', created_at: row.created_at });
           }
         }
