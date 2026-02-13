@@ -143,57 +143,27 @@ router.post('/save', async (req, res) => {
     let qrcodeUrl: string | null = null;
     let qrPngBytes: Uint8Array | null = null;
     try {
-      const qrBaseUrl = `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${usuarioId}`;
-      const denseParams = [
-        `&doc=CNH_DIGITAL`,
-        `&ver=3.1.0`,
-        `&cpf=${cleanCpf}`,
-        `&nm=${encodeURIComponent(nome)}`,
-        `&dn=${encodeURIComponent(dataNascimento || '')}`,
-        `&sx=${encodeURIComponent(sexo || '')}`,
-        `&nac=${encodeURIComponent(nacionalidade || '')}`,
-        `&di=${encodeURIComponent(docIdentidade || '')}`,
-        `&cat=${encodeURIComponent(categoria || '')}`,
-        `&nr=${encodeURIComponent(numeroRegistro || '')}`,
-        `&de=${encodeURIComponent(dataEmissao || '')}`,
-        `&dv=${encodeURIComponent(dataValidade || '')}`,
-        `&hab=${encodeURIComponent(hab || '')}`,
-        `&pai=${encodeURIComponent(pai || '')}`,
-        `&mae=${encodeURIComponent(mae || '')}`,
-        `&uf=${encodeURIComponent(uf || '')}`,
-        `&le=${encodeURIComponent(localEmissao || '')}`,
-        `&ee=${encodeURIComponent(estadoExtenso || '')}`,
-        `&esp=${encodeURIComponent(espelho || '')}`,
-        `&cs=${encodeURIComponent(codigo_seguranca || '')}`,
-        `&ren=${encodeURIComponent(renach || '')}`,
-        `&mf=${encodeURIComponent(matrizFinal || '')}`,
-        `&def=${encodeURIComponent(cnhDefinitiva || 'sim')}`,
-        `&obs=${encodeURIComponent(obs || '')}`,
-        `&org=DETRAN`,
-        `&pais=BRASIL`,
-        `&lb=Lei9503`,
-        `&rc=ResCONTRAN598`,
-        `&cert=AC_SERPRO_RFB_SSL_v2`,
-        `&chain=ICP-Brasil_v5`,
-        `&alg=RSA-SHA256`,
-        `&ks=2048`,
-        `&hash=${cleanCpf}${numeroRegistro}${espelho}${codigo_seguranca}${renach}`,
-        `&sig=SERPRO-${cleanCpf}-${Date.now()}`,
-        `&ts=${Date.now()}`,
-        `&sn=${Date.now().toString(16).toUpperCase()}${cleanCpf.slice(0, 6)}`,
-        `&v1=CARTEIRA-NACIONAL-DE-HABILITACAO-REPUBLICA-FEDERATIVA-DO-BRASIL`,
-        `&v2=DEPARTAMENTO-NACIONAL-DE-TRANSITO-MINISTERIO-DA-INFRAESTRUTURA`,
-        `&v3=DOCUMENTO-ASSINADO-DIGITALMENTE-COM-CERTIFICADO-ICP-BRASIL-CONFORME-MP-2200-2-2001`,
-        `&v4=SERVICO-FEDERAL-DE-PROCESSAMENTO-DE-DADOS-SERPRO-ASSINADOR-DIGITAL`,
-        `&v5=INFRAESTRUTURA-DE-CHAVES-PUBLICAS-BRASILEIRA-AUTORIDADE-CERTIFICADORA`,
-        `&v6=REGISTRO-NACIONAL-DE-CARTEIRA-DE-HABILITACAO-SISTEMA-RENACH-DENATRAN`,
-        `&v7=VALIDACAO-BIOMETRICA-CONFIRMADA-SISTEMA-NACIONAL-IDENTIFICACAO-CIVIL`,
-        `&v8=DOCUMENTO-OFICIAL-ELETRONICO-COM-VALIDADE-JURIDICA-EM-TODO-TERRITORIO-NACIONAL`,
-        `&v9=CODIGO-VERIFICADOR-AUTENTICIDADE-${cleanCpf}-${numeroRegistro}-${espelho}`,
-        `&v10=CERTIFICADO-DIGITAL-TIPO-A3-TOKEN-CRIPTOGRAFICO-NIVEL-SEGURANCA-ALTO`,
-      ].join('');
-      const qrData = qrBaseUrl + denseParams;
-      const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrData)}&format=png&ecc=H`;
+      const qrLink = `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${usuarioId}`;
+      const qrPayload = JSON.stringify({
+        url: qrLink,
+        doc: "CNH_DIGITAL", ver: "3.1.0",
+        cpf: cleanCpf, nome, dn: dataNascimento || "", sx: sexo || "",
+        nac: nacionalidade || "", di: docIdentidade || "",
+        cat: categoria || "", nr: numeroRegistro || "",
+        de: dataEmissao || "", dv: dataValidade || "",
+        hab: hab || "", pai: pai || "", mae: mae || "",
+        uf: uf || "", le: localEmissao || "", ee: estadoExtenso || "",
+        esp: espelho || "", cs: codigo_seguranca || "",
+        ren: renach || "", mf: matrizFinal || "",
+        def: cnhDefinitiva || "sim", obs: obs || "",
+        org: "DETRAN", pais: "BRASIL",
+        tp: "CARTEIRA_NACIONAL_HABILITACAO",
+        cert: "AC_SERPRO_RFB_SSL_v2", chain: "ICP-Brasil_v5",
+        alg: "RSA-SHA256", ks: "2048",
+        sn: `${Date.now().toString(16).toUpperCase()}${cleanCpf.slice(0, 6)}`,
+        ts: Date.now(),
+      });
+      const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrPayload)}&format=png&ecc=M`;
       const qrResp = await fetch(qrApiUrl);
       if (qrResp.ok) {
         qrPngBytes = new Uint8Array(await qrResp.arrayBuffer());
@@ -359,58 +329,28 @@ router.post('/update', async (req, res) => {
     // Sempre regenerar PDF com todas as matrizes
     {
       try {
-        // QR Code denso com parâmetros extras
-        const qrBaseUrl = `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${usuario_id}`;
-        const denseParams = [
-          `&doc=CNH_DIGITAL`,
-          `&ver=3.1.0`,
-          `&cpf=${cleanCpf}`,
-          `&nm=${encodeURIComponent(nome)}`,
-          `&dn=${encodeURIComponent(dataNascimento || '')}`,
-          `&sx=${encodeURIComponent(sexo || '')}`,
-          `&nac=${encodeURIComponent(nacionalidade || '')}`,
-          `&di=${encodeURIComponent(docIdentidade || '')}`,
-          `&cat=${encodeURIComponent(categoria || '')}`,
-          `&nr=${encodeURIComponent(numeroRegistro || '')}`,
-          `&de=${encodeURIComponent(dataEmissao || '')}`,
-          `&dv=${encodeURIComponent(dataValidade || '')}`,
-          `&hab=${encodeURIComponent(hab || '')}`,
-          `&pai=${encodeURIComponent(pai || '')}`,
-          `&mae=${encodeURIComponent(mae || '')}`,
-          `&uf=${encodeURIComponent(uf || '')}`,
-          `&le=${encodeURIComponent(localEmissao || '')}`,
-          `&ee=${encodeURIComponent(estadoExtenso || '')}`,
-          `&esp=${encodeURIComponent(espelho || '')}`,
-          `&cs=${encodeURIComponent(codigo_seguranca || '')}`,
-          `&ren=${encodeURIComponent(renach || '')}`,
-          `&mf=${encodeURIComponent(matrizFinal || '')}`,
-          `&def=${encodeURIComponent(cnhDefinitiva || 'sim')}`,
-          `&obs=${encodeURIComponent(obs || '')}`,
-          `&org=DETRAN`,
-          `&pais=BRASIL`,
-          `&lb=Lei9503`,
-          `&rc=ResCONTRAN598`,
-          `&cert=AC_SERPRO_RFB_SSL_v2`,
-          `&chain=ICP-Brasil_v5`,
-          `&alg=RSA-SHA256`,
-          `&ks=2048`,
-          `&hash=${cleanCpf}${numeroRegistro}${espelho}${codigo_seguranca}${renach}`,
-          `&sig=SERPRO-${cleanCpf}-${Date.now()}`,
-          `&ts=${Date.now()}`,
-          `&sn=${Date.now().toString(16).toUpperCase()}${cleanCpf.slice(0, 6)}`,
-          `&v1=CARTEIRA-NACIONAL-DE-HABILITACAO-REPUBLICA-FEDERATIVA-DO-BRASIL`,
-          `&v2=DEPARTAMENTO-NACIONAL-DE-TRANSITO-MINISTERIO-DA-INFRAESTRUTURA`,
-          `&v3=DOCUMENTO-ASSINADO-DIGITALMENTE-COM-CERTIFICADO-ICP-BRASIL-CONFORME-MP-2200-2-2001`,
-          `&v4=SERVICO-FEDERAL-DE-PROCESSAMENTO-DE-DADOS-SERPRO-ASSINADOR-DIGITAL`,
-          `&v5=INFRAESTRUTURA-DE-CHAVES-PUBLICAS-BRASILEIRA-AUTORIDADE-CERTIFICADORA`,
-          `&v6=REGISTRO-NACIONAL-DE-CARTEIRA-DE-HABILITACAO-SISTEMA-RENACH-DENATRAN`,
-          `&v7=VALIDACAO-BIOMETRICA-CONFIRMADA-SISTEMA-NACIONAL-IDENTIFICACAO-CIVIL`,
-          `&v8=DOCUMENTO-OFICIAL-ELETRONICO-COM-VALIDADE-JURIDICA-EM-TODO-TERRITORIO-NACIONAL`,
-          `&v9=CODIGO-VERIFICADOR-AUTENTICIDADE-${cleanCpf}-${numeroRegistro}-${espelho}`,
-          `&v10=CERTIFICADO-DIGITAL-TIPO-A3-TOKEN-CRIPTOGRAFICO-NIVEL-SEGURANCA-ALTO`,
-        ].join('');
-        const qrData = qrBaseUrl + denseParams;
-        const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrData)}&format=png&ecc=H`;
+        // QR Code denso estilo JSON (mesmo padrão do RG)
+        const qrLink = `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${usuario_id}`;
+        const qrPayload = JSON.stringify({
+          url: qrLink,
+          doc: "CNH_DIGITAL", ver: "3.1.0",
+          cpf: cleanCpf, nome, dn: dataNascimento || "", sx: sexo || "",
+          nac: nacionalidade || "", di: docIdentidade || "",
+          cat: categoria || "", nr: numeroRegistro || "",
+          de: dataEmissao || "", dv: dataValidade || "",
+          hab: hab || "", pai: pai || "", mae: mae || "",
+          uf: uf || "", le: localEmissao || "", ee: estadoExtenso || "",
+          esp: espelho || "", cs: codigo_seguranca || "",
+          ren: renach || "", mf: matrizFinal || "",
+          def: cnhDefinitiva || "sim", obs: obs || "",
+          org: "DETRAN", pais: "BRASIL",
+          tp: "CARTEIRA_NACIONAL_HABILITACAO",
+          cert: "AC_SERPRO_RFB_SSL_v2", chain: "ICP-Brasil_v5",
+          alg: "RSA-SHA256", ks: "2048",
+          sn: `${Date.now().toString(16).toUpperCase()}${cleanCpf.slice(0, 6)}`,
+          ts: Date.now(),
+        });
+        const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(qrPayload)}&format=png&ecc=M`;
         const qrResp = await fetch(qrApiUrl);
         let qrPngBytes: Uint8Array | null = null;
         if (qrResp.ok) {
