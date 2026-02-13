@@ -79,7 +79,7 @@ export const logger = {
   cnhCreated(admin: { id: number; nome?: string }, cpf: string, nome: string) {
     console.log(`\n${colors.bgCyan}${colors.bright} 📄 CNH CRIADA ${colors.reset}`);
     console.log(`${colors.cyan}${line()}${colors.reset}`);
-    console.log(`  👤 Admin: ${admin.nome || `ID ${admin.id}`}`);
+    console.log(`  👤 Admin ID: ${admin.id} | Nome: ${admin.nome || 'N/A'}`);
     console.log(`  📋 Nome: ${colors.bright}${nome}${colors.reset}`);
     console.log(`  🔢 CPF: ${cpf}`);
     console.log(`  🕐 ${timestamp()}`);
