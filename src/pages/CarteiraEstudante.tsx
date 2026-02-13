@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, type FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
@@ -12,11 +12,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
-  GraduationCap, User, CreditCard, Upload, Loader2, Copy, CheckCircle, AlertTriangle, Calendar, KeyRound, Smartphone, Apple
+  GraduationCap, User, CreditCard, Upload, Loader2, Copy, CheckCircle, AlertTriangle, Calendar, KeyRound, Smartphone, Apple, ImageIcon
 } from 'lucide-react';
 import { estudanteService } from '@/lib/estudante-service';
 import { playSuccessSound } from '@/lib/success-sound';
 import { supabase } from '@/integrations/supabase/client';
+import ImageGalleryModal from '@/components/ImageGalleryModal';
 
 const estudanteSchema = z.object({
   nome: z.string().min(1, 'Nome obrigatório'),
@@ -28,6 +29,15 @@ const estudanteSchema = z.object({
 });
 
 type EstudanteFormData = z.infer<typeof estudanteSchema>;
+
+const FIELD_LABELS: Record<string, string> = {
+  nome: 'Nome Completo',
+  cpf: 'CPF',
+  rg: 'RG',
+  dataNascimento: 'Data de Nascimento',
+  faculdade: 'Faculdade',
+  graduacao: 'Graduação',
+};
 
 const formatCPF = (v: string) => {
   const d = v.replace(/\D/g, '').slice(0, 11);
@@ -49,6 +59,7 @@ export default function CarteiraEstudante() {
   const [resultInfo, setResultInfo] = useState<{ cpf: string; senha: string; qrcode: string | null } | null>(null);
   const [abafeApk, setAbafeApk] = useState('');
   const [abafeIphone, setAbafeIphone] = useState('');
+  const [showGallery, setShowGallery] = useState(false);
 
   useEffect(() => {
     supabase
@@ -88,9 +99,15 @@ export default function CarteiraEstudante() {
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-background"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   if (!admin) return <Navigate to="/login" replace />;
 
+  const handleFormInvalid = (errors: FieldErrors<EstudanteFormData>) => {
+    const missing = Object.keys(errors).map(k => FIELD_LABELS[k] || k);
+    if (!fotoPerfil) missing.push('Foto do Estudante');
+    toast.error(`Campos obrigatórios não preenchidos: ${missing.join(', ')}`, { position: 'top-right' });
+  };
+
   const handleSubmit = async (data: EstudanteFormData) => {
     if (!fotoPerfil) {
-      toast.error('Foto de perfil é obrigatória');
+      toast.error('Foto de perfil é obrigatória', { position: 'top-right' });
       return;
     }
 
@@ -193,7 +210,7 @@ export default function CarteiraEstudante() {
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(handleSubmit, handleFormInvalid)} className="space-y-6">
             {/* Dados Pessoais */}
             <Card>
               <CardHeader>
@@ -301,6 +318,16 @@ export default function CarteiraEstudante() {
                     />
                   </label>
                 </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="mt-3"
+                  onClick={() => setShowGallery(true)}
+                >
+                  <ImageIcon className="h-4 w-4 mr-2" />
+                  Acervo de Fotos
+                </Button>
               </CardContent>
             </Card>
 
@@ -423,6 +450,17 @@ export default function CarteiraEstudante() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {admin && (
+        <ImageGalleryModal
+          isOpen={showGallery}
+          onClose={() => setShowGallery(false)}
+          onSelect={(file) => handleFileUpload(file)}
+          type="foto"
+          adminId={admin.id}
+          sessionToken={admin.session_token}
+        />
+      )}
     </DashboardLayout>
   );
 }
