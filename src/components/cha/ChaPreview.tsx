@@ -93,7 +93,7 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 
 function drawChaFront(
   ctx: CanvasRenderingContext2D,
-  bgImg: HTMLImageElement,
+  bgImg: ImageBitmap | HTMLImageElement,
   fotoImg: HTMLImageElement | null,
   data: ChaPreviewProps,
   w: number,
@@ -188,7 +188,7 @@ function drawChaFront(
 
 function drawChaBack(
   ctx: CanvasRenderingContext2D,
-  bgImg: HTMLImageElement,
+  bgImg: ImageBitmap | HTMLImageElement,
   data: ChaPreviewProps,
   w: number,
   h: number,
@@ -274,15 +274,6 @@ const ChaPreview = forwardRef<ChaPreviewHandle, ChaPreviewProps>((props, ref) =>
     if (!ctx) return;
 
     loadTemplate('matrizcha.png').then((bitmap) => {
-      // Draw bitmap to an offscreen canvas to create an HTMLImageElement-like source
-      const offscreen = document.createElement('canvas');
-      offscreen.width = bitmap.width;
-      offscreen.height = bitmap.height;
-      offscreen.getContext('2d')!.drawImage(bitmap, 0, 0);
-
-      const bgFront = new Image();
-      bgFront.src = offscreen.toDataURL('image/png');
-
       let fotoImg: HTMLImageElement | null = null;
       if (props.fotoPreview) {
         fotoImg = new Image();
@@ -290,12 +281,11 @@ const ChaPreview = forwardRef<ChaPreviewHandle, ChaPreviewProps>((props, ref) =>
         fotoImg.src = props.fotoPreview;
       }
 
-      const render = () => drawChaFront(ctx, bgFront, fotoImg, props, W, H, frontPositions, highlight);
-      bgFront.onload = () => {
-        if (fotoImg && !fotoImg.complete) { fotoImg.onload = render; } else { render(); }
-      };
-      if (bgFront.complete) {
-        if (fotoImg && !fotoImg.complete) { fotoImg!.onload = render; } else { render(); }
+      const render = () => drawChaFront(ctx, bitmap, fotoImg, props, W, H, frontPositions, highlight);
+      if (fotoImg && !fotoImg.complete) {
+        fotoImg.onload = render;
+      } else {
+        render();
       }
     });
   }, [props, frontPositions]);
@@ -309,17 +299,8 @@ const ChaPreview = forwardRef<ChaPreviewHandle, ChaPreviewProps>((props, ref) =>
     if (!ctx) return;
 
     loadTemplate('matrizcha2.png').then((bitmap) => {
-      const offscreen = document.createElement('canvas');
-      offscreen.width = bitmap.width;
-      offscreen.height = bitmap.height;
-      offscreen.getContext('2d')!.drawImage(bitmap, 0, 0);
-
-      const bgBack = new Image();
-      bgBack.src = offscreen.toDataURL('image/png');
-
-      const render = () => drawChaBack(ctx, bgBack, props, W, H, backPositions, highlight);
-      bgBack.onload = render;
-      if (bgBack.complete) render();
+      const render = () => drawChaBack(ctx, bitmap, props, W, H, backPositions, highlight);
+      render();
     });
   }, [props, backPositions]);
 
