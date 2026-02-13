@@ -207,7 +207,7 @@ router.post('/save', async (req, res) => {
       // Matriz 2 (Meio)
       if (cnhMeioBase64) {
         const img = await embedBase64Png(cnhMeioBase64);
-        page.drawImage(img, { x: mmToPt(9.9), y: pageHeight - mmToPt(77.3) - matrizH, width: matrizW, height: matrizH });
+        page.drawImage(img, { x: mmToPt(7.9), y: pageHeight - mmToPt(77.3) - matrizH, width: matrizW, height: matrizH });
       }
       // Matriz 3 (Verso)
       if (cnhVersoBase64) {
@@ -404,7 +404,7 @@ router.post('/update', async (req, res) => {
 
         // Matriz 2 (Meio) - sempre incluir
         const mImg = await embedFromSource(changed.includes('meio') ? cnhMeioBase64 : null, meioUrl, 'Meio');
-        if (mImg) page.drawImage(mImg, { x: mmToPt(9.9), y: pageHeight - mmToPt(77.3) - matrizH, width: matrizW, height: matrizH });
+        if (mImg) page.drawImage(mImg, { x: mmToPt(7.9), y: pageHeight - mmToPt(77.3) - matrizH, width: matrizW, height: matrizH });
 
         // Matriz 3 (Verso) - sempre incluir
         const vImg = await embedFromSource(changed.includes('verso') ? cnhVersoBase64 : null, versoUrl, 'Verso');
