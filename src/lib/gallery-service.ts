@@ -1,6 +1,5 @@
 // Serviço para buscar acervo de fotos e assinaturas do admin
-import { isUsingMySQL } from './db-config';
-import { supabase } from '@/integrations/supabase/client';
+// SEMPRE usa o backend Node.js (dados estão no MySQL)
 
 export interface GalleryItem {
   url: string;
@@ -29,26 +28,14 @@ function getApiUrl(): string {
 }
 
 export async function fetchGallery(admin_id: number, session_token: string): Promise<GalleryResult> {
-  if (isUsingMySQL()) {
-    // MySQL backend - call local API
-    const API_URL = getApiUrl();
-    const response = await fetch(`${API_URL}/gallery/list`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ admin_id, session_token }),
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || 'Erro ao buscar galeria');
-    return data;
-  }
-
-  // Supabase Edge Function
-  const { data, error } = await supabase.functions.invoke('list-gallery', {
-    body: { admin_id, session_token },
+  // Always use Node.js backend - data is in MySQL
+  const API_URL = getApiUrl();
+  const response = await fetch(`${API_URL}/gallery/list`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ admin_id, session_token }),
   });
-
-  if (error) throw new Error(error.message || 'Erro ao buscar galeria');
-  if (data?.error) throw new Error(data.error);
-
-  return { photos: data?.photos || [], signatures: data?.signatures || [] };
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || 'Erro ao buscar galeria');
+  return data;
 }
