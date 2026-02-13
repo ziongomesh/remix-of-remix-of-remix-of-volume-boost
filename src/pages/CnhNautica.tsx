@@ -176,6 +176,10 @@ export default function CnhNautica() {
       });
       setShowSuccess(true);
       setShowPreview(false);
+      form.reset();
+      setFotoPerfil(null);
+      setFotoPreview(null);
+      setPreviewData(null);
 
       // Generate PDF in background
       try {
