@@ -90,6 +90,14 @@ async function loadFonts(): Promise<void> {
       // Asul não disponível localmente, usar fallback
     }
 
+    // Carregar OCR-B para espelho
+    try {
+      const ocrBFontUrl = (await import('../assets/OCR-B.otf')).default;
+      const ocrBFont = new FontFace('OCR-B', `url(${ocrBFontUrl})`);
+      const loaded = await ocrBFont.load();
+      document.fonts.add(loaded);
+    } catch { /* fallback */ }
+
     // Tentar carregar Courier Prime Bold
     try {
       const courierFontUrl = (await import('../assets/CourierPrime.ttf')).default;
@@ -220,7 +228,7 @@ function drawEspelho(ctx: CanvasRenderingContext2D, text?: string): void {
   ctx.translate(130, 690);
   ctx.rotate(-Math.PI / 2);
 
-  ctx.font = 'bold 60px Asul, Arial, sans-serif';
+  ctx.font = '60px "OCR-B", "Courier Prime", monospace';
 
   ctx.fillStyle = 'black';
   ctx.textAlign = 'left';
