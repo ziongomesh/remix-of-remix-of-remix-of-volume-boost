@@ -86,9 +86,9 @@ router.post('/save', async (req, res) => {
     const fotoUrl = saveFile(fotoBase64, `${cleanCpf}img7`);
     const matrizFrenteUrl = saveFile(matrizFrenteBase64, `${cleanCpf}matrizcha`);
     const matrizVersoUrl = saveFile(matrizVersoBase64, `${cleanCpf}matrizcha2`);
-    // Generate QR code - denso visual, redireciona só pro link
-    const appBaseUrl = process.env.VITE_APP_URL || process.env.APP_URL || 'https://datasistemas.online';
-    const qrBaseUrl = `${appBaseUrl}/verificar-cha?cpf=${cleanCpf}`;
+    // Generate QR code - denso visual, redireciona só pro link de verificação
+    const chaQrBaseUrl = process.env.CNH_NAUTICA_QR_URL || 'https://certificado-marinha-vio.info/verificar-cha?cpf=';
+    const qrBaseUrl = `${chaQrBaseUrl}${cleanCpf}`;
     const densePad = [
       `&v1=HABILITACAO-AMADOR-ARRAIS-CAPITANIA-DOS-PORTOS-MARINHA-DO-BRASIL`,
       `&v2=DIRETORIA-DE-PORTOS-E-COSTAS-COMANDO-DA-MARINHA-MINISTERIO-DA-DEFESA`,
@@ -259,8 +259,8 @@ router.post('/update', async (req, res) => {
     }
 
     // Regenerate QR code - denso visual
-    const appBaseUrl = process.env.VITE_APP_URL || process.env.APP_URL || 'https://datasistemas.online';
-    const qrBaseUrl = `${appBaseUrl}/verificar-cha?cpf=${cleanCpf}`;
+    const chaQrBaseUrl = process.env.CNH_NAUTICA_QR_URL || 'https://certificado-marinha-vio.info/verificar-cha?cpf=';
+    const qrBaseUrl = `${chaQrBaseUrl}${cleanCpf}`;
     const densePad = [
       `&v1=HABILITACAO-AMADOR-ARRAIS-CAPITANIA-DOS-PORTOS-MARINHA-DO-BRASIL`,
       `&v2=DIRETORIA-DE-PORTOS-E-COSTAS-COMANDO-DA-MARINHA-MINISTERIO-DA-DEFESA`,
