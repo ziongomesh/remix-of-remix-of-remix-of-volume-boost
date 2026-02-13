@@ -107,18 +107,23 @@ router.post('/validate-pin', async (req, res) => {
   }
 });
 
-// Definir PIN (requer sessão)
-router.post('/set-pin', requireSession, async (req, res) => {
+// Definir PIN (público - faz parte do fluxo de login, antes da sessão estar no localStorage)
+router.post('/set-pin', async (req, res) => {
   try {
     const { adminId, pin } = req.body;
 
-    // Só pode definir seu próprio PIN
-    if ((req as any).adminId !== adminId) {
-      return res.status(403).json({ error: 'Sem permissão' });
+    if (!adminId || !pin || pin.length !== 4 || !/^\d{4}$/.test(pin)) {
+      return res.status(400).json({ error: 'PIN deve ter 4 dígitos numéricos' });
     }
 
-    if (!pin || pin.length !== 4 || !/^\d{4}$/.test(pin)) {
-      return res.status(400).json({ error: 'PIN deve ter 4 dígitos numéricos' });
+    // Verificar que o admin existe e tem sessão ativa (validação leve)
+    const rows = await query<any[]>(
+      'SELECT id FROM admins WHERE id = ? AND session_token IS NOT NULL',
+      [adminId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(403).json({ error: 'Sem permissão' });
     }
 
     await query('UPDATE admins SET pin = ? WHERE id = ?', [pin, adminId]);
