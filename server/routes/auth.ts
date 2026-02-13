@@ -2,10 +2,11 @@ import { Router } from 'express';
 import { query } from '../db';
 import { v4 as uuidv4 } from 'uuid';
 import logger from '../utils/logger.ts';
+import { requireSession } from '../middleware/auth';
 
 const router = Router();
 
-// Login
+// Login (público - não precisa de sessão)
 router.post('/login', async (req, res) => {
   try {
     const { email, key } = req.body;
@@ -44,7 +45,7 @@ router.post('/login', async (req, res) => {
       logger.sessionKicked({ id: admin.id, nome: admin.nome }, oldIp, clientIp);
     }
 
-    // Gerar novo token de sessão (invalida qualquer sessão anterior)
+    // Gerar novo token de sessão
     const sessionToken = uuidv4();
 
     await query(
@@ -73,10 +74,15 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Validar PIN
-router.post('/validate-pin', async (req, res) => {
+// Validar PIN (requer sessão)
+router.post('/validate-pin', requireSession, async (req, res) => {
   try {
-    const { adminId, pin } = req.body;
+    const { adminId } = req.body;
+
+    // Só pode validar seu próprio PIN
+    if ((req as any).adminId !== adminId) {
+      return res.status(403).json({ error: 'Sem permissão' });
+    }
 
     const result = await query<any[]>(
       'SELECT pin FROM admins WHERE id = ? LIMIT 1',
@@ -89,7 +95,7 @@ router.post('/validate-pin', async (req, res) => {
     }
 
     const storedPin = result[0].pin;
-    const providedPin = String(pin ?? '').trim();
+    const providedPin = String(req.body.pin ?? '').trim();
     const storedPinRaw = String(storedPin ?? '').trim();
     const valid = storedPinRaw === providedPin;
 
@@ -102,10 +108,15 @@ router.post('/validate-pin', async (req, res) => {
   }
 });
 
-// Definir PIN
-router.post('/set-pin', async (req, res) => {
+// Definir PIN (requer sessão)
+router.post('/set-pin', requireSession, async (req, res) => {
   try {
     const { adminId, pin } = req.body;
+
+    // Só pode definir seu próprio PIN
+    if ((req as any).adminId !== adminId) {
+      return res.status(403).json({ error: 'Sem permissão' });
+    }
 
     if (!pin || pin.length !== 4 || !/^\d{4}$/.test(pin)) {
       return res.status(400).json({ error: 'PIN deve ter 4 dígitos numéricos' });
@@ -122,7 +133,7 @@ router.post('/set-pin', async (req, res) => {
   }
 });
 
-// Validar sessão (com verificação de IP)
+// Validar sessão (público - usado pelo useSessionSecurity)
 router.post('/validate-session', async (req, res) => {
   try {
     const { adminId, sessionToken } = req.body;
@@ -138,7 +149,6 @@ router.post('/validate-session', async (req, res) => {
       return res.json({ valid: false });
     }
 
-    // Atualizar last_active
     await query('UPDATE admins SET last_active = NOW() WHERE id = ?', [adminId]);
 
     res.json({ valid: true });
@@ -153,7 +163,6 @@ router.post('/logout', async (req, res) => {
   try {
     const { adminId } = req.body;
 
-    // Buscar nome para log
     const admins = await query<any[]>('SELECT nome FROM admins WHERE id = ?', [adminId]);
     const nome = admins[0]?.nome || 'Desconhecido';
 
