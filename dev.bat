@@ -1,27 +1,25 @@
 @echo off
+title Data Sistemas
 echo ===============================================
 echo       Iniciando Sistema Data Sistemas
 echo ===============================================
 echo.
 
-echo Iniciando servidor backend...
-start "Backend" cmd /k "cd server && npm run dev"
+echo [1/2] Iniciando servidor backend...
+cd server
+start /b cmd /c "npm run dev 2>&1 | findstr /v /c:\"^$\""
+cd ..
 
-echo Aguardando servidor iniciar...
+echo [2/2] Aguardando backend e iniciando frontend...
 timeout /t 3 /nobreak > nul
-
-echo Iniciando cliente frontend...
-start "Frontend" cmd /k "npm run dev"
 
 echo.
 echo ===============================================
 echo   Sistema iniciado!
 echo ===============================================
-echo.
 echo   Frontend: http://localhost:5173
 echo   Backend:  http://localhost:3001
+echo ===============================================
 echo.
-echo   Pressione qualquer tecla para fechar esta janela.
-echo   As outras janelas continuarao rodando.
-echo.
-pause
+
+npm run dev
