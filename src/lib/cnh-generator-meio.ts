@@ -62,6 +62,13 @@ async function drawTemplate(ctx: CanvasRenderingContext2D): Promise<void> {
   try {
     const templateImg = await loadImage(limpa2);
     ctx.drawImage(templateImg, 0, 0, 1011, 740);
+    // Remove green/mint border by painting over edges with white
+    ctx.fillStyle = '#FFFFFF';
+    const borderSize = 6;
+    ctx.fillRect(0, 0, 1011, borderSize); // top
+    ctx.fillRect(0, 740 - borderSize, 1011, borderSize); // bottom
+    ctx.fillRect(0, 0, borderSize, 740); // left
+    ctx.fillRect(1011 - borderSize, 0, borderSize, 740); // right
   } catch {
     ctx.fillStyle = '#373435';
     ctx.fillRect(0, 0, 1011, 740);
