@@ -1,55 +1,77 @@
-// Template loader - carrega templates do bundle (importados como módulos ES6)
-// Não faz requisições HTTP - templates ficam embutidos no JS bundle
-// e NÃO aparecem no Network tab do navegador
+// Template loader - busca templates do backend com autenticação + XOR decode
+// Templates NUNCA ficam no bundle Vite - são servidos pelo backend protegidos
+// Proxy tools (Burp Suite, Charles) verão apenas dados binários obfuscados
 
 const templateCache = new Map<string, string>();
 
-// Mapeamento de templates para imports dinâmicos do bundle
-const templateImports: Record<string, () => Promise<{ default: string }>> = {
-  'limpa1.png': () => import('../assets/templates/limpa1.png'),
-  'limpa-1.png': () => import('../assets/templates/limpa-1.png'),
-  'limpa1-2.png': () => import('../assets/templates/limpa1-2.png'),
-  'limpa2.png': () => import('../assets/templates/limpa2.png'),
-  'limpa2-2.png': () => import('../assets/templates/limpa2-2.png'),
-  'limpa3.png': () => import('../assets/templates/limpa3.png'),
-  'limpa3-2.png': () => import('../assets/templates/limpa3-2.png'),
-  'matrizcha.png': () => import('../assets/templates/matrizcha.png'),
-  'matrizcha2.png': () => import('../assets/templates/matrizcha2.png'),
-  'rg-frente.png': () => import('../assets/templates/rg-frente.png'),
-  'rg-verso.png': () => import('../assets/templates/rg-verso.png'),
-  'rg-pdf-bg.png': () => import('../assets/templates/rg-pdf-bg.png'),
-  'rg-verso-template.png': () => import('../assets/templates/rg-verso-template.png'),
-  'base.png': () => import('../assets/templates/base.png'),
-  'qrcode-sample.png': () => import('../assets/templates/qrcode-sample.png'),
-  'qrcode-sample-rg.png': () => import('../assets/templates/qrcode-sample-rg.png'),
-  'cha-sample-foto.png': () => import('../assets/templates/cha-sample-foto.png'),
-};
+// XOR key - must match server
+const XOR_KEY = [0x5A, 0x3C, 0x7F, 0x1D, 0xA2, 0x6E, 0x91, 0xB4, 0xD8, 0x43, 0xF0, 0x27, 0x8B, 0xE5, 0x19, 0x6C];
+
+function xorDecode(data: Uint8Array): Uint8Array {
+  const result = new Uint8Array(data.length);
+  for (let i = 0; i < data.length; i++) {
+    result[i] = data[i] ^ XOR_KEY[i % XOR_KEY.length];
+  }
+  return result;
+}
+
+function getApiUrl(): string {
+  const envUrl = import.meta.env.VITE_API_URL as string | undefined;
+  if (envUrl) {
+    const base = envUrl.replace(/\/+$/, '');
+    return base.endsWith('/api') ? base : `${base}/api`;
+  }
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+    return `${window.location.origin}/api`;
+  }
+  return 'http://localhost:4000/api';
+}
+
+function getAuthHeaders(): Record<string, string> {
+  try {
+    const stored = localStorage.getItem('admin');
+    if (!stored) return {};
+    const admin = JSON.parse(stored);
+    return {
+      'X-Admin-Id': String(admin.id),
+      'X-Session-Token': admin.session_token || '',
+    };
+  } catch {
+    return {};
+  }
+}
 
 export async function loadTemplate(name: string): Promise<string> {
   if (templateCache.has(name)) {
     return templateCache.get(name)!;
   }
 
-  const importer = templateImports[name];
-  if (!importer) {
-    throw new Error(`Template ${name} não encontrado no bundle`);
-  }
+  const API_URL = getApiUrl();
+  const headers = getAuthHeaders();
 
-  const module = await importer();
-  const url = module.default;
+  const response = await fetch(`${API_URL}/templates/secure/${encodeURIComponent(name)}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...headers,
+    },
+  });
 
-  // Convert to blob URL to avoid showing in Network as identifiable asset
-  try {
-    const response = await fetch(url);
-    const blob = await response.blob();
-    const blobUrl = URL.createObjectURL(blob);
-    templateCache.set(name, blobUrl);
-    return blobUrl;
-  } catch {
-    // Fallback: use the bundled URL directly
-    templateCache.set(name, url);
-    return url;
-  }
+  if (!response.ok) throw new Error(`Template ${name} não encontrado`);
+
+  // Receive XOR-obfuscated binary data
+  const obfuscatedBuffer = await response.arrayBuffer();
+  const obfuscatedData = new Uint8Array(obfuscatedBuffer);
+
+  // Decode XOR
+  const decoded = xorDecode(obfuscatedData);
+
+  // Create blob URL from decoded data (never appears as readable image in Network)
+  const blob = new Blob([decoded.buffer as ArrayBuffer], { type: 'image/png' });
+  const blobUrl = URL.createObjectURL(blob);
+
+  templateCache.set(name, blobUrl);
+  return blobUrl;
 }
 
 // Pre-load multiple templates at once
