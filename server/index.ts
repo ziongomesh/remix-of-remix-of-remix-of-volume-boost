@@ -33,14 +33,14 @@ let envLoaded = false;
 for (const envPath of envFiles) {
   if (fs.existsSync(envPath)) {
     config({ path: envPath });
-    console.log(`📁 Carregando variáveis de: ${envPath}`);
+    console.log(`[ENV] Carregando variaveis de: ${envPath}`);
     envLoaded = true;
     break;
   }
 }
 if (!envLoaded) {
   config();
-  console.log('⚠️ Nenhum arquivo .env encontrado, usando variáveis do sistema');
+  console.log('[!] Nenhum arquivo .env encontrado, usando variaveis do sistema');
 }
 
 const app = express();
@@ -48,23 +48,23 @@ const PORT = process.env.PORT || 4000;
 
 // Banner do sistema
 console.log('\n');
-console.log('╔══════════════════════════════════════════════════════════════╗');
-console.log('║                    DATA SISTEMAS - BACKEND                   ║');
-console.log('╠══════════════════════════════════════════════════════════════╣');
-console.log('║  Sistema de Gerenciamento de Créditos                        ║');
-console.log('╚══════════════════════════════════════════════════════════════╝');
+console.log('+==============================================================+');
+console.log('|                    DATA SISTEMAS - BACKEND                   |');
+console.log('+==============================================================+');
+console.log('|  Sistema de Gerenciamento de Creditos                        |');
+console.log('+==============================================================+');
 console.log('\n');
 
 // Função para testar conexão com MySQL
 async function testDatabaseConnection() {
-  console.log('📊 CONFIGURAÇÃO DO BANCO DE DADOS');
-  console.log('─────────────────────────────────────────────────────────────────');
+  console.log('[DB] CONFIGURACAO DO BANCO DE DADOS');
+  console.log('------------------------------------------------------------');
   console.log(`   Tipo: MySQL / MariaDB`);
   console.log(`   Host: ${process.env.DB_HOST || 'localhost'}`);
   console.log(`   Porta: ${process.env.DB_PORT || '3306'}`);
   console.log(`   Banco: ${process.env.DB_NAME || 'teste'}`);
-  console.log(`   Usuário: ${process.env.DB_USER || 'ventura'}`);
-  console.log('─────────────────────────────────────────────────────────────────');
+  console.log(`   Usuario: ${process.env.DB_USER || 'ventura'}`);
+  console.log('------------------------------------------------------------');
   
   try {
     const connection = await pool.getConnection();
@@ -82,40 +82,40 @@ async function testDatabaseConnection() {
     
     connection.release();
     
-    console.log('\n✅ CONEXÃO COM MYSQL: SUCESSO');
-    console.log('─────────────────────────────────────────────────────────────────');
+    console.log('\n[OK] CONEXAO COM MYSQL: SUCESSO');
+    console.log('------------------------------------------------------------');
     console.log(`   Total de admins cadastrados: ${totalAdmins}`);
     console.log(`   Donos do sistema: ${totalDonos}`);
     
     if (totalDonos === 0) {
-      console.log('\n⚠️  ATENÇÃO: Nenhum usuário "dono" encontrado!');
-      console.log('   Execute o SQL em docs/database.sql para criar o admin padrão.');
+      console.log('\n[!] ATENCAO: Nenhum usuario "dono" encontrado!');
+      console.log('   Execute o SQL em docs/database.sql para criar o admin padrao.');
     }
     
-    console.log('─────────────────────────────────────────────────────────────────');
+    console.log('------------------------------------------------------------');
     return true;
   } catch (error: any) {
-    console.log('\n❌ CONEXÃO COM MYSQL: FALHOU');
-    console.log('─────────────────────────────────────────────────────────────────');
+    console.log('\n[X] CONEXAO COM MYSQL: FALHOU');
+    console.log('------------------------------------------------------------');
     console.log(`   Erro: ${error.message}`);
     
     if (error.code === 'ECONNREFUSED') {
-      console.log('\n💡 SOLUÇÃO: O MySQL não está rodando ou a porta está errada.');
+      console.log('\n[i] SOLUCAO: O MySQL nao esta rodando ou a porta esta errada.');
       console.log('   - Inicie o MySQL/XAMPP/MariaDB');
       console.log('   - Verifique a porta no .env.local');
     } else if (error.code === 'ER_ACCESS_DENIED_ERROR') {
-      console.log('\n💡 SOLUÇÃO: Usuário ou senha incorretos.');
+      console.log('\n[i] SOLUCAO: Usuario ou senha incorretos.');
       console.log('   - Verifique DB_USER e DB_PASSWORD no .env.local');
     } else if (error.code === 'ER_BAD_DB_ERROR') {
-      console.log('\n💡 SOLUÇÃO: Banco de dados não existe.');
+      console.log('\n[i] SOLUCAO: Banco de dados nao existe.');
       console.log(`   - Crie o banco "${process.env.DB_NAME}" no MySQL`);
       console.log('   - Execute o SQL em docs/database.sql');
     } else if (error.code === 'ER_NO_SUCH_TABLE') {
-      console.log('\n💡 SOLUÇÃO: Tabela não encontrada.');
+      console.log('\n[i] SOLUCAO: Tabela nao encontrada.');
       console.log('   - Execute o SQL em docs/database.sql');
     }
     
-    console.log('─────────────────────────────────────────────────────────────────');
+    console.log('------------------------------------------------------------');
     return false;
   }
 }
@@ -227,22 +227,22 @@ async function startServer() {
   const dbConnected = await testDatabaseConnection();
   
   app.listen(PORT, () => {
-    console.log('\n🚀 SERVIDOR INICIADO');
-    console.log('─────────────────────────────────────────────────────────────────');
+    console.log('\n[>>] SERVIDOR INICIADO');
+    console.log('------------------------------------------------------------');
     console.log(`   URL: http://localhost:${PORT}`);
     console.log(`   API: http://localhost:${PORT}/api`);
     console.log(`   Health: http://localhost:${PORT}/api/health`);
     console.log(`   CORS (origens permitidas): ${Array.from(allowedOrigins).join(', ') || 'nenhuma'}`);
-    console.log('─────────────────────────────────────────────────────────────────');
+    console.log('------------------------------------------------------------');
     
     if (dbConnected) {
-      console.log('\n✅ Sistema pronto para uso!');
+      console.log('\n[OK] Sistema pronto para uso!');
     } else {
-      console.log('\n⚠️  Sistema iniciado, mas sem conexão com banco de dados.');
-      console.log('   Corrija as configurações e reinicie o servidor.');
+      console.log('\n[!] Sistema iniciado, mas sem conexao com banco de dados.');
+      console.log('   Corrija as configuracoes e reinicie o servidor.');
     }
     
-    console.log('\n📝 Pressione Ctrl+C para parar o servidor.\n');
+    console.log('\n[i] Pressione Ctrl+C para parar o servidor.\n');
   });
 }
 
