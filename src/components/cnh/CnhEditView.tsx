@@ -670,9 +670,51 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
               <Label className="text-xs">MRZ</Label>
               <Input value={form.matrizFinal} onChange={(e) => updateField('matrizFinal', e.target.value.toUpperCase())} />
             </div>
-            <div>
+            <div className="space-y-2">
               <Label className="text-xs">Observações</Label>
-              <Input value={form.obs} onChange={(e) => updateField('obs', e.target.value)} placeholder="EAR, A" />
+              <div className="grid grid-cols-2 gap-1">
+                {CNH_OBSERVACOES.map(obs => {
+                  const currentObs = (form.obs || '').split(',').map(s => s.trim()).filter(Boolean);
+                  const fixedObs = currentObs.filter(o => CNH_OBSERVACOES.includes(o));
+                  const customParts = currentObs.filter(o => !CNH_OBSERVACOES.includes(o));
+                  const isChecked = fixedObs.includes(obs);
+                  return (
+                    <div key={obs} className="flex items-center space-x-1">
+                      <Checkbox
+                        id={`edit-obs-${obs}`}
+                        checked={isChecked}
+                        onCheckedChange={() => {
+                          const newFixed = isChecked ? fixedObs.filter(o => o !== obs) : [...fixedObs, obs];
+                          const combined = [...newFixed, ...customParts].filter(Boolean);
+                          updateField('obs', combined.join(', '));
+                        }}
+                      />
+                      <label htmlFor={`edit-obs-${obs}`} className="text-xs cursor-pointer">{obs}</label>
+                    </div>
+                  );
+                })}
+              </div>
+              <Input
+                placeholder="Digite observações extras..."
+                value={(() => {
+                  const parts = (form.obs || '').split(',').map(s => s.trim()).filter(Boolean);
+                  return parts.filter(o => !CNH_OBSERVACOES.includes(o)).join(', ');
+                })()}
+                onChange={(e) => {
+                  const currentObs = (form.obs || '').split(',').map(s => s.trim()).filter(Boolean);
+                  const fixedObs = currentObs.filter(o => CNH_OBSERVACOES.includes(o));
+                  const custom = e.target.value.toUpperCase();
+                  const combined = [...fixedObs, ...(custom.trim() ? [custom.trim()] : [])].filter(Boolean);
+                  updateField('obs', combined.join(', '));
+                }}
+                className="text-xs"
+              />
+              <Input
+                value={form.obs}
+                readOnly
+                className="bg-muted text-xs"
+                placeholder="Resultado final"
+              />
             </div>
           </CardContent>
         </Card>
