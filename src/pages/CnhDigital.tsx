@@ -149,6 +149,7 @@ export default function CnhDigital() {
   const [fotoPerfil, setFotoPerfil] = useState<File | null>(null);
   const [assinatura, setAssinatura] = useState<File | null>(null);
   const [selectedObs, setSelectedObs] = useState<string[]>([]);
+  const [customObs, setCustomObs] = useState('');
   const [showPreview, setShowPreview] = useState(false);
   const [cnhPreviewData, setCnhPreviewData] = useState<any>(null);
   const [demoStep, setDemoStep] = useState(0);
@@ -370,12 +371,23 @@ export default function CnhDigital() {
     setAutoDatesSuggestion(null);
   };
 
+  const updateObsField = (selected: string[], custom: string) => {
+    const parts = [...selected];
+    if (custom.trim()) parts.push(custom.trim());
+    form.setValue('obs', parts.join(', '));
+  };
+
   const handleObsToggle = (obs: string) => {
     const newObs = selectedObs.includes(obs)
       ? selectedObs.filter(o => o !== obs)
       : [...selectedObs, obs];
     setSelectedObs(newObs);
-    form.setValue('obs', newObs.join(', '));
+    updateObsField(newObs, customObs);
+  };
+
+  const handleCustomObsChange = (value: string) => {
+    setCustomObs(value);
+    updateObsField(selectedObs, value);
   };
 
   if (loading) {
@@ -435,6 +447,7 @@ export default function CnhDigital() {
     setFotoPerfil(null);
     setAssinatura(null);
     setSelectedObs([]);
+    setCustomObs('');
   };
 
   // Se estiver mostrando o preview
@@ -919,10 +932,16 @@ export default function CnhDigital() {
                       ))}
                     </div>
                     <Input
-                      placeholder="Selecionadas aparecem aqui"
-                      value={selectedObs.join(', ')}
+                      placeholder="Digite observações extras..."
+                      value={customObs}
+                      onChange={(e) => handleCustomObsChange(e.target.value.toUpperCase())}
+                      className="mt-2"
+                    />
+                    <Input
+                      placeholder="Resultado final"
+                      value={[...selectedObs, ...(customObs.trim() ? [customObs.trim()] : [])].join(', ')}
                       readOnly
-                      className="mt-2 bg-muted"
+                      className="mt-1 bg-muted text-xs"
                     />
                   </div>
 
