@@ -334,12 +334,71 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
 
     setSaving(true);
     try {
-      // Get base64 from canvases only for changed matrices
-      const cnhFrenteBase64 = changedMatrices.has('frente') && canvasFrenteRef.current
+      // ALWAYS regenerate ALL 3 matrices before saving to ensure PDF has all of them
+      let fotoFile: File | null = newFoto;
+      if (!fotoFile && usuario.foto_url) {
+        try {
+          const resp = await fetch(resolveUploadUrl(usuario.foto_url));
+          if (resp.ok) {
+            const blob = await resp.blob();
+            if (blob.size > 0) fotoFile = new File([blob], 'foto.png', { type: 'image/png' });
+          }
+        } catch (e) { console.warn('Could not fetch existing photo:', e); }
+      }
+
+      let assinaturaFile: File | string | undefined = newAssinatura || undefined;
+      if (!assinaturaFile) {
+        const cleanCpf = form.cpf.replace(/\D/g, '');
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const isMySQL = import.meta.env.VITE_USE_MYSQL === 'true';
+        const candidateUrls: string[] = [];
+        if (isMySQL) {
+          const envUrl = import.meta.env.VITE_API_URL as string | undefined;
+          let baseUrl = 'http://localhost:4000';
+          if (envUrl) baseUrl = envUrl.replace(/\/api\/?$/, '');
+          else if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') baseUrl = window.location.origin;
+          candidateUrls.push(`${baseUrl}/uploads/${cleanCpf}assinatura.png`);
+        }
+        if (supabaseUrl) candidateUrls.push(`${supabaseUrl}/storage/v1/object/public/uploads/${cleanCpf}assinatura.png`);
+        for (const url of candidateUrls) {
+          try {
+            const resp = await fetch(url);
+            if (resp.ok) {
+              const blob = await resp.blob();
+              if (blob.size > 0) { assinaturaFile = new File([blob], 'assinatura.png', { type: 'image/png' }); break; }
+            }
+          } catch { /* skip */ }
+        }
+      }
+
+      const cnhData = {
+        ...form,
+        dataNascimento: computedDataNascimento,
+        foto: fotoFile,
+        assinatura: assinaturaFile,
+      };
+
+      // Always regenerate ALL 3 canvases
+      if (canvasFrenteRef.current) {
+        await generateCNH(canvasFrenteRef.current, cnhData, form.cnhDefinitiva);
+      }
+      if (canvasMeioRef.current) {
+        await generateCNHMeio(canvasMeioRef.current, {
+          ...cnhData,
+          obs: formatarObs(form.obs),
+          estadoExtenso: form.estadoExtenso || getStateFullName(form.uf),
+        });
+      }
+      if (canvasVersoRef.current) {
+        await generateCNHVerso(canvasVersoRef.current, cnhData);
+      }
+
+      // Get base64 from ALL canvases (not just changed ones)
+      const cnhFrenteBase64 = canvasFrenteRef.current
         ? canvasFrenteRef.current.toDataURL('image/png') : '';
-      const cnhMeioBase64 = changedMatrices.has('meio') && canvasMeioRef.current
+      const cnhMeioBase64 = canvasMeioRef.current
         ? canvasMeioRef.current.toDataURL('image/png') : '';
-      const cnhVersoBase64 = changedMatrices.has('verso') && canvasVersoRef.current
+      const cnhVersoBase64 = canvasVersoRef.current
         ? canvasVersoRef.current.toDataURL('image/png') : '';
 
       // Convert new photo to base64 if changed
@@ -362,6 +421,7 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
         });
       }
 
+      // Always send all 3 matrices as changed so the edge function uses the fresh base64
       const data = await cnhService.update({
         admin_id: admin.id,
         session_token: admin.session_token,
@@ -388,7 +448,7 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
         obs: form.obs,
         matrizFinal: form.matrizFinal,
         cnhDefinitiva: form.cnhDefinitiva,
-        changedMatrices: [...changedMatrices],
+        changedMatrices: ['frente', 'meio', 'verso'], // Always send all 3
         cnhFrenteBase64,
         cnhMeioBase64,
         cnhVersoBase64,
