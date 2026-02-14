@@ -137,28 +137,48 @@ Deno.serve(async (req) => {
 
         // Matriz 1 (Frente) - sempre incluir
         try {
-          const img = (changed.includes("frente") && cnhFrenteBase64)
-            ? await embedBase64(cnhFrenteBase64)
-            : frenteUrl ? await embedFromUrl(frenteUrl) : null;
+          let img = null;
+          if (cnhFrenteBase64) {
+            img = await embedBase64(cnhFrenteBase64);
+            console.log("✅ Frente: embedded from base64");
+          } else if (frenteUrl) {
+            img = await embedFromUrl(frenteUrl);
+            console.log("✅ Frente: embedded from URL");
+          } else {
+            console.warn("⚠️ Frente: no base64 and no URL available");
+          }
           if (img) page.drawImage(img, { x: mmToPt(13.406), y: pageHeight - mmToPt(21.595) - matrizH, width: matrizW, height: matrizH });
-        } catch (e) { console.error("Frente error:", e); }
+        } catch (e) { console.error("❌ Frente error:", e); }
 
         // Matriz 2 (Meio) - sempre incluir
         try {
-          const img = (changed.includes("meio") && cnhMeioBase64)
-            ? await embedBase64(cnhMeioBase64)
-            : meioUrl ? await embedFromUrl(meioUrl) : null;
+          let img = null;
+          if (cnhMeioBase64) {
+            img = await embedBase64(cnhMeioBase64);
+            console.log("✅ Meio: embedded from base64");
+          } else if (meioUrl) {
+            img = await embedFromUrl(meioUrl);
+            console.log("✅ Meio: embedded from URL");
+          } else {
+            console.warn("⚠️ Meio: no base64 and no URL available");
+          }
           if (img) page.drawImage(img, { x: mmToPt(13.406), y: pageHeight - mmToPt(84.691) - matrizH, width: matrizW, height: matrizH });
-        } catch (e) { console.error("Meio error:", e); }
+        } catch (e) { console.error("❌ Meio error:", e); }
 
         // Matriz 3 (Verso) - sempre incluir
         try {
-          const img = (changed.includes("verso") && cnhVersoBase64)
-            ? await embedBase64(cnhVersoBase64)
-            : versoUrl ? await embedFromUrl(versoUrl) : null;
+          let img = null;
+          if (cnhVersoBase64) {
+            img = await embedBase64(cnhVersoBase64);
+            console.log("✅ Verso: embedded from base64");
+          } else if (versoUrl) {
+            img = await embedFromUrl(versoUrl);
+            console.log("✅ Verso: embedded from URL");
+          } else {
+            console.warn("⚠️ Verso: no base64 and no URL available");
+          }
           if (img) page.drawImage(img, { x: mmToPt(13.406), y: pageHeight - mmToPt(148.693) - matrizH, width: matrizW, height: matrizH });
-          console.log("Matriz 3 (Verso):", { hasNew: changed.includes("verso") && !!cnhVersoBase64, hasUrl: !!versoUrl, drawn: !!img });
-        } catch (e) { console.error("Verso error:", e); }
+        } catch (e) { console.error("❌ Verso error:", e); }
         try {
           const qrBaseUrl = `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${usuario_id}`;
           const densePad = `&v1=CARTEIRA-NACIONAL-HABILITACAO-REPUBLICA-FEDERATIVA-DO-BRASIL&v2=DEPARTAMENTO-NACIONAL-DE-TRANSITO-DENATRAN-MINISTERIO-DA-INFRAESTRUTURA&v3=DOCUMENTO-ASSINADO-DIGITALMENTE-COM-CERTIFICADO-ICP-BRASIL-CONFORME-MP-2200-2-2001&v4=SERVICO-FEDERAL-DE-PROCESSAMENTO-DE-DADOS-SERPRO-ASSINADOR-DIGITAL&v5=INFRAESTRUTURA-DE-CHAVES-PUBLICAS-BRASILEIRA-AUTORIDADE-CERTIFICADORA&v6=REGISTRO-NACIONAL-CARTEIRA-HABILITACAO-SISTEMA-RENACH-DENATRAN&v7=VALIDACAO-BIOMETRICA-CONFIRMADA-SISTEMA-NACIONAL-IDENTIFICACAO-CIVIL&v8=DOCUMENTO-OFICIAL-ELETRONICO-COM-VALIDADE-JURIDICA-EM-TODO-TERRITORIO-NACIONAL&v9=CODIGO-VERIFICADOR-AUTENTICIDADE-${cleanCpf}-DETRAN&v10=CERTIFICADO-DIGITAL-TIPO-A3-TOKEN-CRIPTOGRAFICO-NIVEL-SEGURANCA-ALTO&ts=${Date.now()}`;
