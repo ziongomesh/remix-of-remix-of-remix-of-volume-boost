@@ -11,6 +11,7 @@ import { UserPlus, Loader2, QrCode, Copy, Check, Clock, ArrowLeft, XCircle } fro
 import ReactCanvasConfetti from 'react-canvas-confetti';
 import type { CreateTypes } from 'canvas-confetti';
 import api from '@/lib/api';
+import { mysqlApi } from '@/lib/api-mysql';
 
 type Step = 'form' | 'payment' | 'success';
 
@@ -39,6 +40,17 @@ export default function CriarRevendedor() {
   const [paymentExpired, setPaymentExpired] = useState(false);
   const [checkingPayment, setCheckingPayment] = useState(false);
   const [timeLeft, setTimeLeft] = useState(600);
+
+  // Dynamic settings from API
+  const [resellerPrice, setResellerPrice] = useState(90);
+  const [resellerCredits, setResellerCredits] = useState(5);
+
+  useEffect(() => {
+    mysqlApi.settings.get().then((data: any) => {
+      if (data.reseller_price) setResellerPrice(Number(data.reseller_price));
+      if (data.reseller_credits) setResellerCredits(Number(data.reseller_credits));
+    }).catch(() => {});
+  }, []);
 
   const hasPlayedSound = useRef(false);
   const checkIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -278,7 +290,7 @@ export default function CriarRevendedor() {
                 Novo Revendedor
               </CardTitle>
               <CardDescription>
-                Preencha os dados e pague <strong>R$ 90,00</strong> via PIX. O revendedor receberá <strong>5 créditos</strong> iniciais.
+                Preencha os dados e pague <strong>R$ {resellerPrice.toFixed(2).replace('.', ',')}</strong> via PIX. O revendedor receberá <strong>{resellerCredits} créditos</strong> iniciais.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -317,12 +329,12 @@ export default function CriarRevendedor() {
                   />
                 </div>
                 <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
-                  <p className="text-sm font-medium text-primary">💰 Taxa de ativação: R$ 90,00</p>
-                  <p className="text-sm text-muted-foreground">📦 Créditos iniciais: 5 créditos</p>
+                  <p className="text-sm font-medium text-primary">💰 Taxa de ativação: R$ {resellerPrice.toFixed(2).replace('.', ',')}</p>
+                  <p className="text-sm text-muted-foreground">📦 Créditos iniciais: {resellerCredits} créditos</p>
                 </div>
                 <Button type="submit" className="w-full" disabled={isCreating}>
                   {isCreating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Gerar PIX (R$ 90,00)
+                  Gerar PIX (R$ {resellerPrice.toFixed(2).replace('.', ',')})
                 </Button>
               </form>
             </CardContent>
@@ -366,8 +378,8 @@ export default function CriarRevendedor() {
               )}
 
               <div className="text-center">
-                <p className="text-3xl font-bold text-primary">R$ 90,00</p>
-                <p className="text-sm text-muted-foreground">= 5 créditos para o revendedor</p>
+                <p className="text-3xl font-bold text-primary">R$ {resellerPrice.toFixed(2).replace('.', ',')}</p>
+                <p className="text-sm text-muted-foreground">= {resellerCredits} créditos para o revendedor</p>
               </div>
 
               <div className="space-y-2">
@@ -446,7 +458,7 @@ export default function CriarRevendedor() {
               <div className="p-4 bg-background rounded-lg border space-y-2">
                 <p><strong>Nome:</strong> {formData.name}</p>
                 <p><strong>Email:</strong> {formData.email}</p>
-                <p><strong>Créditos:</strong> 5</p>
+                <p><strong>Créditos:</strong> {resellerCredits}</p>
               </div>
               <Button onClick={handleNewReseller} className="w-full">
                 <UserPlus className="mr-2 h-4 w-4" />
