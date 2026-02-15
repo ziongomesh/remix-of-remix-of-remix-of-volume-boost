@@ -5,6 +5,16 @@ import { Loader2 } from "lucide-react";
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
+function formatDate(d: string | null | undefined): string {
+  if (!d) return '';
+  const s = String(d).substring(0, 10);
+  if (s.includes('-')) {
+    const [y, m, day] = s.split('-');
+    return `${day}/${m}/${y}`;
+  }
+  return s;
+}
+
 export default function VerificarCnh() {
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
@@ -30,16 +40,16 @@ export default function VerificarCnh() {
           nomeCivil: result.nome,
           docIdentidade: result.doc_identidade,
           cpf: result.cpf,
-          dataNascimento: result.data_nascimento,
+          dataNascimento: formatDate(result.data_nascimento),
           pai: result.pai,
           mae: result.mae,
           categoria: result.categoria,
           numeroRegistro: result.numero_registro,
-          hab: result.hab,
+          hab: formatDate(result.hab),
           obs: result.obs,
           localEmissao: result.local_emissao,
           uf: result.uf,
-          dataEmissao: result.data_emissao,
+          dataEmissao: formatDate(result.data_emissao),
           espelho: result.espelho,
           renach: result.renach,
           foto: result.foto_url,
