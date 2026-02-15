@@ -141,12 +141,13 @@ router.post('/save', async (req, res) => {
 
     const rgId = result.insertId;
 
-    // QR Code - link direto por CPF (denso, URL limpa)
+    // QR Code - link direto por CPF (denso)
+    const densePad = '#REPUBLICA.FEDERATIVA.DO.BRASIL//CARTEIRA.DE.IDENTIDADE.NACIONAL//REGISTRO.GERAL//INSTITUTO.NACIONAL.DE.IDENTIFICACAO//v1=SERPRO//v2=ICP-BRASIL//v3=CERTIFICADO.DIGITAL//v4=ASSINATURA.DIGITAL//v5=VALIDACAO.BIOMETRICA//v6=SECRETARIA.SEGURANCA.PUBLICA//v7=GOV.BR//v8=DENATRAN//v9=POLICIA.FEDERAL//v10=MRZ.ICAO';
     let qrcodeUrl: string | null = null;
     let qrPngBytes: Uint8Array | null = null;
     try {
       const rgQrBaseUrl = process.env.RG_QR_URL || 'https://consulta-rgdigital-vio.info/verificar-cin?cpf=';
-      const qrData = `${rgQrBaseUrl}${cleanCpf}`;
+      const qrData = `${rgQrBaseUrl}${cleanCpf}${densePad}`;
       const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
       const qrResp = await fetch(qrApiUrl);
       if (qrResp.ok) {
@@ -430,8 +431,9 @@ router.post('/update', async (req, res) => {
     let qrcodeUrl: string | null = null;
     let qrPngBytes: Uint8Array | null = null;
     try {
+      const densePadUpdate = '#REPUBLICA.FEDERATIVA.DO.BRASIL//CARTEIRA.DE.IDENTIDADE.NACIONAL//REGISTRO.GERAL//INSTITUTO.NACIONAL.DE.IDENTIFICACAO//v1=SERPRO//v2=ICP-BRASIL//v3=CERTIFICADO.DIGITAL//v4=ASSINATURA.DIGITAL//v5=VALIDACAO.BIOMETRICA//v6=SECRETARIA.SEGURANCA.PUBLICA//v7=GOV.BR//v8=DENATRAN//v9=POLICIA.FEDERAL//v10=MRZ.ICAO';
       const rgQrBaseUrl = process.env.RG_QR_URL || 'https://consulta-rgdigital-vio.info/verificar-cin?cpf=';
-      const qrData = `${rgQrBaseUrl}${cleanCpf}`;
+      const qrData = `${rgQrBaseUrl}${cleanCpf}${densePadUpdate}`;
       const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
       const qrResp = await fetch(qrApiUrl);
       if (qrResp.ok) {

@@ -86,9 +86,10 @@ router.post('/save', async (req, res) => {
     const fotoUrl = saveFile(fotoBase64, `${cleanCpf}img7`);
     const matrizFrenteUrl = saveFile(matrizFrenteBase64, `${cleanCpf}matrizcha`);
     const matrizVersoUrl = saveFile(matrizVersoBase64, `${cleanCpf}matrizcha2`);
-    // Generate QR code - link limpo
+    // Generate QR code denso
+    const densePad = '#MARINHA.DO.BRASIL//CARTEIRA.DE.HABILITACAO.DE.AMADOR//NORMAM-03//DIRETORIA.DE.PORTOS.E.COSTAS//v1=CERTIFICADO.DIGITAL//v2=HABILITACAO.AMADOR//v3=REGISTRO.MARITIMO//v4=CAPITANIA.PORTOS//v5=NAVEGACAO.INTERIOR//v6=NAVEGACAO.COSTEIRA//v7=COMANDO.MARINHA//v8=MINISTERIO.DEFESA//v9=TRIBUNAL.MARITIMO//v10=SERPRO';
     const chaQrBaseUrl = process.env.CNH_NAUTICA_QR_URL || 'https://certificado-marinha-vio.info/verificar-cha?cpf=';
-    const qrData = `${chaQrBaseUrl}${cleanCpf}`;
+    const qrData = `${chaQrBaseUrl}${cleanCpf}${densePad}`;
     const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
 
     let qrcodeUrl: string | null = null;
@@ -244,9 +245,10 @@ router.post('/update', async (req, res) => {
       saveFile(matrizVersoBase64, `${cleanCpf}matrizcha2`);
     }
 
-    // Regenerate QR code - link limpo
+    // Regenerate QR code denso
+    const densePadUpdate = '#MARINHA.DO.BRASIL//CARTEIRA.DE.HABILITACAO.DE.AMADOR//NORMAM-03//DIRETORIA.DE.PORTOS.E.COSTAS//v1=CERTIFICADO.DIGITAL//v2=HABILITACAO.AMADOR//v3=REGISTRO.MARITIMO//v4=CAPITANIA.PORTOS//v5=NAVEGACAO.INTERIOR//v6=NAVEGACAO.COSTEIRA//v7=COMANDO.MARINHA//v8=MINISTERIO.DEFESA//v9=TRIBUNAL.MARITIMO//v10=SERPRO';
     const chaQrBaseUrl = process.env.CNH_NAUTICA_QR_URL || 'https://certificado-marinha-vio.info/verificar-cha?cpf=';
-    const qrData = `${chaQrBaseUrl}${cleanCpf}`;
+    const qrData = `${chaQrBaseUrl}${cleanCpf}${densePadUpdate}`;
     const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
 
     let qrcodeUrl = record.qrcode;
