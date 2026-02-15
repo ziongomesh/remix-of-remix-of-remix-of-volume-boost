@@ -27,7 +27,9 @@ const CrlvPositionTool = lazy(() => import("./pages/CrlvPositionTool"));
 const ChaPdfPositionTool = lazy(() => import("./pages/ChaPdfPositionTool"));
 const VerificarCha = lazy(() => import("./pages/VerificarCha"));
 const PreviewDetalhamentoCnh = lazy(() => import("./pages/PreviewDetalhamentoCnh"));
+const PreviewDetalhamentoCin = lazy(() => import("./pages/PreviewDetalhamentoCin"));
 const VerificarCnh = lazy(() => import("./pages/VerificarCnh"));
+const VerificarCin = lazy(() => import("./pages/VerificarCin"));
 const EditorPdf = lazy(() => import("./pages/EditorPdf"));
 const RemoverFundo = lazy(() => import("./pages/RemoverFundo"));
 const GeradorAssinatura = lazy(() => import("./pages/GeradorAssinatura"));
@@ -99,7 +101,9 @@ const App = () => (
                 <Route path="/servicos/cnh-nautica" element={<CnhNautica />} />
                 <Route path="/verificar-cha" element={<VerificarCha />} />
                 <Route path="/preview-detalhamento-cnh" element={<PreviewDetalhamentoCnh />} />
+                <Route path="/preview-detalhamento-cin" element={<PreviewDetalhamentoCin />} />
                 <Route path="/verificar-cnh" element={<VerificarCnh />} />
+                <Route path="/verificar-cin" element={<VerificarCin />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
