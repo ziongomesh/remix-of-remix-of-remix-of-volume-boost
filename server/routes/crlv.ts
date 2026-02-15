@@ -166,8 +166,7 @@ router.post('/save', async (req, res) => {
         qrBytes = Buffer.from(clean, 'base64');
       } else {
         // Generate QR - link limpo
-        const densePad = `#CERTIFICADO-REGISTRO-LICENCIAMENTO-VEICULO-REPUBLICA-FEDERATIVA-DO-BRASIL/DEPARTAMENTO-NACIONAL-TRANSITO-DENATRAN/DOCUMENTO-ASSINADO-DIGITALMENTE-ICP-BRASIL-MP-2200-2001/REGISTRO-NACIONAL-VEICULOS-AUTOMOTORES-RENAVAM/VALIDACAO-SISTEMA-NACIONAL/${Date.now()}`;
-        const qrData = `https://qrcode-certificadodigital-vio.info/crlv?ren=${renavam}&pl=${placa}${densePad}`;
+        const qrData = `https://qrcode-certificadodigital-vio.info/crlv?ren=${renavam}&pl=${placa}`;
         const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
         const qrResponse = await fetch(qrApiUrl);
         if (!qrResponse.ok) throw new Error('QR generation failed');

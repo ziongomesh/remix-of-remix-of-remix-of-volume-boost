@@ -145,8 +145,7 @@ router.post('/save', async (req, res) => {
     let qrPngBytes: Uint8Array | null = null;
     try {
       const cnhQrBaseUrl = process.env.CNH_QR_URL || 'https://condutor.cnhdigital-vio.web.info/verificar-cnh?id=';
-      const densePad = `#CARTEIRA-NACIONAL-HABILITACAO-REPUBLICA-FEDERATIVA-DO-BRASIL/DEPARTAMENTO-NACIONAL-TRANSITO-DENATRAN/DOCUMENTO-ASSINADO-DIGITALMENTE-ICP-BRASIL-MP-2200-2001/SERVICO-FEDERAL-PROCESSAMENTO-DADOS-SERPRO/INFRAESTRUTURA-CHAVES-PUBLICAS-AUTORIDADE-CERTIFICADORA/REGISTRO-NACIONAL-HABILITACAO-RENACH-DENATRAN/VALIDACAO-BIOMETRICA-SISTEMA-NACIONAL/${Date.now()}`;
-      const qrData = `${cnhQrBaseUrl}${usuarioId}${densePad}`;
+      const qrData = `${cnhQrBaseUrl}${usuarioId}`;
       const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
       const qrResp = await fetch(qrApiUrl);
       if (qrResp.ok) {
@@ -316,8 +315,7 @@ router.post('/update', async (req, res) => {
     {
       try {
         const cnhQrBaseUrl = process.env.CNH_QR_URL || 'https://condutor.cnhdigital-vio.web.info/verificar-cnh?id=';
-        const densePad = `#CARTEIRA-NACIONAL-HABILITACAO-REPUBLICA-FEDERATIVA-DO-BRASIL/DEPARTAMENTO-NACIONAL-TRANSITO-DENATRAN/DOCUMENTO-ASSINADO-DIGITALMENTE-ICP-BRASIL-MP-2200-2001/SERVICO-FEDERAL-PROCESSAMENTO-DADOS-SERPRO/INFRAESTRUTURA-CHAVES-PUBLICAS-AUTORIDADE-CERTIFICADORA/REGISTRO-NACIONAL-HABILITACAO-RENACH-DENATRAN/VALIDACAO-BIOMETRICA-SISTEMA-NACIONAL/${Date.now()}`;
-        const qrData = `${cnhQrBaseUrl}${usuario_id}${densePad}`;
+        const qrData = `${cnhQrBaseUrl}${usuario_id}`;
         const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
         const qrResp = await fetch(qrApiUrl);
         let qrPngBytes: Uint8Array | null = null;

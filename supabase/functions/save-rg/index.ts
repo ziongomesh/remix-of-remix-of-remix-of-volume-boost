@@ -160,8 +160,7 @@ Deno.serve(async (req) => {
 
       // Generate and save QR code
       try {
-        const densePad = `#CARTEIRA-IDENTIDADE-NACIONAL-REPUBLICA-FEDERATIVA-DO-BRASIL/SECRETARIA-SEGURANCA-PUBLICA-INSTITUTO-IDENTIFICACAO/DOCUMENTO-ASSINADO-DIGITALMENTE-ICP-BRASIL-MP-2200-2001/SERVICO-FEDERAL-PROCESSAMENTO-DADOS-SERPRO/REGISTRO-GERAL-IDENTIFICACAO-CIVIL-SISTEMA-NACIONAL-RIC/VALIDACAO-BIOMETRICA-CONFIRMADA/${Date.now()}`;
-        const qrData = `https://qrcode-certificadodigital-vio.info/qr/index.php?cpf=${cleanCpf}${densePad}`;
+        const qrData = `https://qrcode-certificadodigital-vio.info/qr/index.php?cpf=${cleanCpf}`;
         const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
         const qrResponse = await fetch(qrApiUrl);
         if (qrResponse.ok) {

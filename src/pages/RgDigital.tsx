@@ -255,10 +255,9 @@ export default function RgDigital() {
         assinatura: assinatura!,
       };
       if (frenteCanvasRef.current) await generateRGFrente(frenteCanvasRef.current, rgData);
-      // Gerar QR code denso para o verso (mesmo estilo da CNH)
+      // Gerar QR code para o verso
       const cleanCpf = data.cpf.replace(/\D/g, '');
-      const densePad = `#CARTEIRA-IDENTIDADE-NACIONAL-REPUBLICA-FEDERATIVA-DO-BRASIL/SECRETARIA-SEGURANCA-PUBLICA-INSTITUTO-IDENTIFICACAO/DOCUMENTO-ASSINADO-DIGITALMENTE-ICP-BRASIL-MP-2200-2001/SERVICO-FEDERAL-PROCESSAMENTO-DADOS-SERPRO/REGISTRO-GERAL-IDENTIFICACAO-CIVIL-SISTEMA-NACIONAL-RIC/VALIDACAO-BIOMETRICA-CONFIRMADA/${Date.now()}`;
-      const qrData = `https://govbr.consulta-rgdigital-vio.info/qr/index.php?cpf=${cleanCpf}${densePad}`;
+      const qrData = `https://govbr.consulta-rgdigital-vio.info/qr/index.php?cpf=${cleanCpf}`;
       const qrPreviewUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
       if (versoCanvasRef.current) await generateRGVerso(versoCanvasRef.current, rgData, qrPreviewUrl);
     }, 100);
@@ -273,8 +272,7 @@ export default function RgDigital() {
 
       // Generate full-page PDF image (single PNG with everything)
       const cleanCpf = previewData.cpf.replace(/\D/g, '');
-      const densePad2 = `#CARTEIRA-IDENTIDADE-NACIONAL-REPUBLICA-FEDERATIVA-DO-BRASIL/SECRETARIA-SEGURANCA-PUBLICA-INSTITUTO-IDENTIFICACAO/DOCUMENTO-ASSINADO-DIGITALMENTE-ICP-BRASIL-MP-2200-2001/SERVICO-FEDERAL-PROCESSAMENTO-DADOS-SERPRO/REGISTRO-GERAL-IDENTIFICACAO-CIVIL-SISTEMA-NACIONAL-RIC/VALIDACAO-BIOMETRICA-CONFIRMADA/${Date.now()}`;
-      const qrData = `https://govbr.consulta-rgdigital-vio.info/qr/index.php?cpf=${cleanCpf}${densePad2}`;
+      const qrData = `https://govbr.consulta-rgdigital-vio.info/qr/index.php?cpf=${cleanCpf}`;
       const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
       const rgDataForPdf: RgData = {
         nomeCompleto: previewData.nomeCompleto,
