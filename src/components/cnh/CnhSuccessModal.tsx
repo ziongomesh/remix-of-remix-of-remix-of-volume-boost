@@ -189,7 +189,7 @@ export default function CnhSuccessModal({ isOpen, onClose, cpf, senha, nome, pdf
               variant="outline"
               className="w-full"
             >
-              <img src={iconCnh} alt="CNH" className="w-5 h-5 mr-2 rounded" />
+               <Copy className="w-4 h-4 mr-2" />
               Copiar Link iPhone
             </Button>
 
@@ -201,7 +201,7 @@ export default function CnhSuccessModal({ isOpen, onClose, cpf, senha, nome, pdf
               variant="outline"
               className="w-full"
             >
-              <img src={iconCnh} alt="CNH" className="w-5 h-5 mr-2 rounded" />
+              <Copy className="w-4 h-4 mr-2" />
               Copiar Link Android
             </Button>
 
