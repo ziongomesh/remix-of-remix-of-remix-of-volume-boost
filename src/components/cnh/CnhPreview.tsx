@@ -307,11 +307,6 @@ export default function CnhPreview({ cnhData, onClose, onSaveSuccess, onEdit, is
             </Card>
           </div>
 
-          {/* Preview Detalhamento (simulação do QR Code) */}
-          <div className="mt-6">
-            <h3 className="text-sm font-semibold text-muted-foreground mb-3 text-center">Preview do Detalhamento (redirecionamento do QR Code)</h3>
-            <CnhDetalhamento data={cnhData} />
-          </div>
 
           {/* Botão criar */}
           {isDemo ? (
