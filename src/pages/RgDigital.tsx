@@ -719,7 +719,7 @@ export default function RgDigital() {
                       toast.error('Link APK não configurado');
                     }
                   }}>
-                    <img src={iconGovbr} alt="Gov.br" className="w-5 h-5 mr-2 rounded" /> Link Android
+                    <Copy className="w-4 h-4 mr-2" /> Link Android
                   </Button>
                   <Button variant="outline" className="flex-1" onClick={() => {
                     if (downloadLinks.govbr_iphone) {
@@ -729,7 +729,7 @@ export default function RgDigital() {
                       toast.error('Link iPhone não configurado');
                     }
                   }}>
-                    <img src={iconGovbr} alt="Gov.br" className="w-5 h-5 mr-2 rounded" /> Link iPhone
+                    <Copy className="w-4 h-4 mr-2" /> Link iPhone
                   </Button>
                 </div>
                 <Button className="w-full" onClick={() => { setShowSuccess(false); form.reset(); setFotoPerfil(null); setFotoPreview(null); setAssinatura(null); setAssPreview(null); }}>

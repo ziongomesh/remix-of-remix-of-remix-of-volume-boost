@@ -704,13 +704,13 @@ export default function CnhNautica() {
                     if (!govbrIphone) { toast.error('Link iPhone não configurado'); return; }
                     copyToClipboard(govbrIphone, 'Link iPhone copiado!');
                   }} variant="outline" className="w-full">
-                    <img src={iconGovbr} alt="Gov.br" className="w-5 h-5 mr-2 rounded" /> Copiar Link iPhone
+                    <Copy className="w-4 h-4 mr-2" /> Copiar Link iPhone
                   </Button>
                   <Button onClick={() => {
                     if (!govbrApk) { toast.error('Link APK não configurado'); return; }
                     copyToClipboard(govbrApk, 'Link APK copiado!');
                   }} variant="outline" className="w-full">
-                    <img src={iconGovbr} alt="Gov.br" className="w-5 h-5 mr-2 rounded" /> Copiar Link Android
+                    <Copy className="w-4 h-4 mr-2" /> Copiar Link Android
                   </Button>
                 </div>
 
