@@ -21,15 +21,13 @@ async function loadFont(): Promise<void> {
     const font = new FontFace('OCR-B', `url(${ocrBFontUrl})`);
     const loaded = await font.load();
     document.fonts.add(loaded);
-  } catch {
-    // Fallback to Courier Prime
-    try {
-      const courierFontUrl = (await import('../assets/CourierPrime.ttf')).default;
-      const font = new FontFace('Courier Prime', `url(${courierFontUrl})`, { weight: '700' });
-      const loaded = await font.load();
-      document.fonts.add(loaded);
-    } catch { /* silent */ }
-  }
+  } catch { /* silent */ }
+  try {
+    const courierNewBoldUrl = (await import('../assets/CourierNewBold.ttf')).default;
+    const font = new FontFace('CourierNewBold', `url(${courierNewBoldUrl})`);
+    const loaded = await font.load();
+    document.fonts.add(loaded);
+  } catch { /* silent */ }
   await document.fonts.ready;
 }
 
@@ -44,7 +42,7 @@ async function drawTemplate(ctx: CanvasRenderingContext2D): Promise<void> {
 }
 
 function drawMrzText(ctx: CanvasRenderingContext2D, data: CnhVersoData): void {
-  ctx.font = '23px "OCR-B", "Courier Prime", "Courier New", monospace';
+  ctx.font = '23px "OCR-B", "CourierNewBold", monospace';
   ctx.fillStyle = '#373435';
   ctx.textAlign = 'left';
 
