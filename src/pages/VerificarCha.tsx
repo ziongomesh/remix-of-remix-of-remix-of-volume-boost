@@ -162,8 +162,8 @@ export default function VerificarCha() {
 
       {/* Content */}
       <div className="flex flex-col items-center px-4 py-6 gap-4 bg-white mx-2 mt-3 rounded-xl shadow-sm">
-        <h2 style={{ fontSize: '1.3rem', color: '#333', fontWeight: 700, letterSpacing: 0.5 }}>CHA - Carteira de Habilitação de Amador</h2>
-        <p style={{ fontSize: '0.85rem', color: '#609D46', marginTop: '-4px' }}>Marinha do Brasil</p>
+        <h2 style={{ fontSize: '1.35rem', color: '#333', fontWeight: 700, letterSpacing: 0.3, textAlign: 'left', width: '100%' }}>CHA - Carteira de Habilitação de Amador</h2>
+        <p style={{ fontSize: '0.85rem', color: '#609D46', marginTop: '-4px', textAlign: 'center', width: '100%' }}>Marinha do Brasil</p>
 
         {/* Photo */}
         {fotoSrc ? (
@@ -190,8 +190,8 @@ export default function VerificarCha() {
 
         {/* Documento Válido */}
         <div className="w-full mt-6 bg-[#e8f5e1] rounded-xl p-6 flex flex-col items-center gap-2 border border-[#96CA71]/30">
-          <CheckCircle2 className="text-[#609D46] w-10 h-10" />
-          <p className="text-[#609D46] font-bold text-lg">DOCUMENTO VÁLIDO</p>
+          <CheckCircle2 className="w-10 h-10" style={{ color: '#2e7d32' }} />
+          <p style={{ color: '#2e7d32', fontWeight: 700, fontSize: '1.1rem' }}>DOCUMENTO VÁLIDO</p>
           <p className="text-sm text-gray-500">Consultado em: {consultaTime}</p>
         </div>
       </div>

@@ -5,6 +5,16 @@ import { Loader2 } from "lucide-react";
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
+function formatDate(d: string | null | undefined): string {
+  if (!d) return '';
+  const s = String(d).substring(0, 10);
+  if (s.includes('-')) {
+    const [y, m, day] = s.split('-');
+    return `${day}/${m}/${y}`;
+  }
+  return s;
+}
+
 export default function VerificarCin() {
   const [searchParams] = useSearchParams();
   const cpf = searchParams.get("cpf");
@@ -30,15 +40,15 @@ export default function VerificarCin() {
           nomeSocial: result.nome_social,
           cpf: result.cpf,
           genero: result.genero,
-          dataNascimento: result.data_nascimento,
+          dataNascimento: formatDate(result.data_nascimento),
           nacionalidade: result.nacionalidade,
           naturalidade: result.naturalidade,
-          validade: result.validade,
+          validade: formatDate(result.validade),
           mae: result.mae,
           pai: result.pai,
           orgaoExpedidor: result.orgao_expedidor,
           localEmissao: result.local_emissao,
-          dataEmissao: result.data_emissao,
+          dataEmissao: formatDate(result.data_emissao),
           foto: result.foto_url,
         });
       })
