@@ -13,10 +13,7 @@ router.get('/', async (req, res) => {
     }
 
     const [rows]: any = await pool.query(
-      `SELECT nome, doc_identidade, cpf, data_nascimento, pai, mae, categoria,
-              numero_registro, hab, obs, local_emissao, uf, data_emissao,
-              espelho, renach, foto_url
-       FROM usuarios WHERE id = ? LIMIT 1`,
+      `SELECT * FROM usuarios WHERE id = ? LIMIT 1`,
       [id]
     );
 
