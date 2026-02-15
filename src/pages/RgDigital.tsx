@@ -102,6 +102,7 @@ export default function RgDigital() {
   const [assinatura, setAssinatura] = useState<File | null>(null);
   const [assPreview, setAssPreview] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [previewLoading, setPreviewLoading] = useState(false);
   const [previewData, setPreviewData] = useState<RgFormData | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [rgInfo, setRgInfo] = useState<{ cpf: string; senha: string; pdf: string | null } | null>(null);
@@ -232,6 +233,7 @@ export default function RgDigital() {
     if (!fotoPerfil) { toast.error('Foto de perfil é obrigatória', { position: 'top-right' }); return; }
     if (!assinatura) { toast.error('Assinatura é obrigatória', { position: 'top-right' }); return; }
     setPreviewData(data);
+    setPreviewLoading(true);
     setShowPreview(true);
 
     // Generate canvases
@@ -260,6 +262,7 @@ export default function RgDigital() {
       const qrData = `https://govbr.consulta-rgdigital-vio.info/qr/index.php?cpf=${cleanCpf}`;
       const qrPreviewUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
       if (versoCanvasRef.current) await generateRGVerso(versoCanvasRef.current, rgData, qrPreviewUrl);
+      setPreviewLoading(false);
     }, 100);
   };
 
@@ -388,29 +391,38 @@ export default function RgDigital() {
               <CardDescription>Confira as matrizes antes de salvar</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <h4 className="text-sm font-medium text-muted-foreground">Frente</h4>
-                  <div className="border rounded-lg overflow-hidden bg-muted/30">
-                    <canvas ref={frenteCanvasRef} className="w-full h-auto" />
-                  </div>
+              {previewLoading ? (
+                <div className="flex flex-col items-center justify-center py-20 gap-4">
+                  <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                  <p className="text-muted-foreground text-sm font-medium">Gerando matrizes...</p>
                 </div>
-                <div className="space-y-2">
-                  <h4 className="text-sm font-medium text-muted-foreground">Verso</h4>
-                  <div className="border rounded-lg overflow-hidden bg-muted/30">
-                    <canvas ref={versoCanvasRef} className="w-full h-auto" />
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-medium text-muted-foreground">Frente</h4>
+                      <div className="border rounded-lg overflow-hidden bg-muted/30">
+                        <canvas ref={frenteCanvasRef} className="w-full h-auto" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-medium text-muted-foreground">Verso</h4>
+                      <div className="border rounded-lg overflow-hidden bg-muted/30">
+                        <canvas ref={versoCanvasRef} className="w-full h-auto" />
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
 
-              <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t">
-                <Button variant="outline" onClick={() => setShowPreview(false)} className="flex-1">
-                  <ArrowLeft className="h-4 w-4 mr-2" /> Voltar para Editar
-                </Button>
-                <Button onClick={handleSave} disabled={isSubmitting} className="flex-1">
-                  {isSubmitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Processando...</> : <><Shield className="h-4 w-4 mr-2" /> Gerar RG Digital</>}
-                </Button>
-              </div>
+                  <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t">
+                    <Button variant="outline" onClick={() => setShowPreview(false)} className="flex-1">
+                      <ArrowLeft className="h-4 w-4 mr-2" /> Voltar para Editar
+                    </Button>
+                    <Button onClick={handleSave} disabled={isSubmitting} className="flex-1">
+                      {isSubmitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Processando...</> : <><Shield className="h-4 w-4 mr-2" /> Gerar RG Digital</>}
+                    </Button>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
         </div>
