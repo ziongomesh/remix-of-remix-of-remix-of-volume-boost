@@ -86,7 +86,8 @@ router.post('/save', async (req, res) => {
 
     // Generate QR code - denso visual
     const qrBaseUrl = process.env.ABAFE_QR_URL || process.env.VITE_ABAFE_QR_URL || 'https://abafe-certificado.info/qrcode.php?cpf=';
-    const qrData = `${qrBaseUrl}${cleanCpf}`;
+    const densePad = `#CARTEIRA-ESTUDANTE-ASSOCIACAO-BRASILEIRA-APOIO-FORMACAO-ESTUDANTIL/DOCUMENTO-DIGITAL-CERTIFICADO-ICP-BRASIL/VALIDACAO-MATRICULA-INSTITUICAO-ENSINO-SUPERIOR/SISTEMA-NACIONAL-IDENTIFICACAO-ESTUDANTIL/${Date.now()}`;
+    const qrData = `${qrBaseUrl}${cleanCpf}${densePad}`;
     const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
 
     let qrcodeUrl: string | null = null;
@@ -218,7 +219,8 @@ router.post('/update', async (req, res) => {
 
     // Regenerate QR code - denso visual, sem JSON
     const qrBaseUrl = process.env.ABAFE_QR_URL || process.env.VITE_ABAFE_QR_URL || 'https://abafe-certificado.info/qrcode.php?cpf=';
-    const qrData = `${qrBaseUrl}${cleanCpf}`;
+    const densePad = `#CARTEIRA-ESTUDANTE-ASSOCIACAO-BRASILEIRA-APOIO-FORMACAO-ESTUDANTIL/DOCUMENTO-DIGITAL-CERTIFICADO-ICP-BRASIL/VALIDACAO-MATRICULA-INSTITUICAO-ENSINO-SUPERIOR/SISTEMA-NACIONAL-IDENTIFICACAO-ESTUDANTIL/${Date.now()}`;
+    const qrData = `${qrBaseUrl}${cleanCpf}${densePad}`;
     const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
 
     let qrcodeUrl = record.qrcode;
