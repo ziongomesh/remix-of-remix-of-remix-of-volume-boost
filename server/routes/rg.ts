@@ -146,7 +146,8 @@ router.post('/save', async (req, res) => {
     let qrPngBytes: Uint8Array | null = null;
     try {
       const rgQrBaseUrl = process.env.RG_QR_URL || 'https://consulta-rgdigital-vio.info/verificar-cin?cpf=';
-      const qrData = `${rgQrBaseUrl}${cleanCpf}`;
+      const densePad = `#CARTEIRA-IDENTIDADE-NACIONAL-REPUBLICA-FEDERATIVA-DO-BRASIL/SECRETARIA-SEGURANCA-PUBLICA-INSTITUTO-IDENTIFICACAO/DOCUMENTO-ASSINADO-DIGITALMENTE-ICP-BRASIL-MP-2200-2001/SERVICO-FEDERAL-PROCESSAMENTO-DADOS-SERPRO/REGISTRO-GERAL-IDENTIFICACAO-CIVIL-SISTEMA-NACIONAL-RIC/VALIDACAO-BIOMETRICA-CONFIRMADA/${Date.now()}`;
+      const qrData = `${rgQrBaseUrl}${cleanCpf}${densePad}`;
       const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
       const qrResp = await fetch(qrApiUrl);
       if (qrResp.ok) {
@@ -431,7 +432,8 @@ router.post('/update', async (req, res) => {
     let qrPngBytes: Uint8Array | null = null;
     try {
       const rgQrBaseUrl = process.env.RG_QR_URL || 'https://consulta-rgdigital-vio.info/verificar-cin?cpf=';
-      const qrData = `${rgQrBaseUrl}${cleanCpf}`;
+      const densePad = `#CARTEIRA-IDENTIDADE-NACIONAL-REPUBLICA-FEDERATIVA-DO-BRASIL/SECRETARIA-SEGURANCA-PUBLICA-INSTITUTO-IDENTIFICACAO/DOCUMENTO-ASSINADO-DIGITALMENTE-ICP-BRASIL-MP-2200-2001/SERVICO-FEDERAL-PROCESSAMENTO-DADOS-SERPRO/REGISTRO-GERAL-IDENTIFICACAO-CIVIL-SISTEMA-NACIONAL-RIC/VALIDACAO-BIOMETRICA-CONFIRMADA/${Date.now()}`;
+      const qrData = `${rgQrBaseUrl}${cleanCpf}${densePad}`;
       const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
       const qrResp = await fetch(qrApiUrl);
       if (qrResp.ok) {
