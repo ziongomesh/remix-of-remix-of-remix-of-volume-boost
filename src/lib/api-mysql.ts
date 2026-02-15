@@ -430,6 +430,20 @@ export const mysqlApi = {
     },
   },
 
+  settings: {
+    get: async () => fetchAPI('/settings'),
+    update: async (data: {
+      reseller_price: number;
+      reseller_credits: number;
+      credit_packages: Array<{ credits: number; unitPrice: number; total: number }>;
+    }) => {
+      return fetchAPI('/settings', {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      });
+    },
+  },
+
   health: async () => {
     try {
       await fetchAPI('/health');

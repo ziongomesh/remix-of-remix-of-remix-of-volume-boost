@@ -149,6 +149,13 @@ export default function DashboardDono() {
   const [giveCredits, setGiveCredits] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
 
+  // Pricing settings state
+  const [resellerPrice, setResellerPrice] = useState('90');
+  const [resellerCredits, setResellerCredits] = useState('5');
+  const [creditPackages, setCreditPackages] = useState<Array<{ credits: number; unitPrice: number; total: number }>>([]);
+  const [savingPricing, setSavingPricing] = useState(false);
+  const [loadingPricing, setLoadingPricing] = useState(false);
+
   // Notícias state
   interface Noticia { id: number; titulo: string; informacao: string; data_post: string; }
   const [noticias, setNoticias] = useState<Noticia[]>([]);
@@ -195,6 +202,16 @@ export default function DashboardDono() {
       try {
         const noticiasData = await (api as any).noticias.list();
         setNoticias(noticiasData || []);
+      } catch { /* tabela pode não existir ainda */ }
+
+      // Fetch pricing settings
+      try {
+        const settingsData = await (api as any).settings.get();
+        if (settingsData) {
+          setResellerPrice(String(settingsData.reseller_price || 90));
+          setResellerCredits(String(settingsData.reseller_credits || 5));
+          setCreditPackages(settingsData.credit_packages || []);
+        }
       } catch { /* tabela pode não existir ainda */ }
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
@@ -1006,6 +1023,143 @@ export default function DashboardDono() {
                     <Button onClick={handleCreateAccount} disabled={isCreating} className="w-full">
                       {isCreating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <UserPlus className="h-4 w-4 mr-2" />}
                       Criar {createType === 'master' ? 'Master' : 'Revendedor'}
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {/* Pricing Configuration */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <DollarSign className="h-5 w-5 text-primary" />
+                      Configurar Valores
+                    </CardTitle>
+                    <CardDescription>Configure os preços dos pacotes de créditos e do cadastro de revendedor</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* Reseller Price */}
+                    <div className="p-4 rounded-lg bg-muted/50 border space-y-3">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Cadastro de Revendedor (PIX)</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <Label className="text-xs">Valor (R$)</Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={resellerPrice}
+                            onChange={(e) => setResellerPrice(e.target.value)}
+                            placeholder="90.00"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Créditos iniciais</Label>
+                          <Input
+                            type="number"
+                            value={resellerCredits}
+                            onChange={(e) => setResellerCredits(e.target.value)}
+                            placeholder="5"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Credit Packages */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Pacotes de Créditos (Recarga)</p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCreditPackages(prev => [...prev, { credits: 0, unitPrice: 0, total: 0 }])}
+                        >
+                          <Plus className="h-3 w-3 mr-1" /> Adicionar
+                        </Button>
+                      </div>
+
+                      <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                        {creditPackages.map((pkg, index) => (
+                          <div key={index} className="grid grid-cols-4 gap-2 items-end p-2 rounded border bg-card">
+                            <div className="space-y-1">
+                              <Label className="text-[10px]">Créditos</Label>
+                              <Input
+                                type="number"
+                                value={pkg.credits}
+                                onChange={(e) => {
+                                  const val = parseInt(e.target.value) || 0;
+                                  setCreditPackages(prev => prev.map((p, i) => i === index ? { ...p, credits: val } : p));
+                                }}
+                                className="h-8 text-xs"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-[10px]">Preço/un (R$)</Label>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                value={pkg.unitPrice}
+                                onChange={(e) => {
+                                  const val = parseFloat(e.target.value) || 0;
+                                  const credits = pkg.credits || 0;
+                                  setCreditPackages(prev => prev.map((p, i) => i === index ? { ...p, unitPrice: val, total: Math.round(val * credits * 100) / 100 } : p));
+                                }}
+                                className="h-8 text-xs"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-[10px]">Total (R$)</Label>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                value={pkg.total}
+                                onChange={(e) => {
+                                  const val = parseFloat(e.target.value) || 0;
+                                  setCreditPackages(prev => prev.map((p, i) => i === index ? { ...p, total: val } : p));
+                                }}
+                                className="h-8 text-xs"
+                              />
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => setCreditPackages(prev => prev.filter((_, i) => i !== index))}
+                            >
+                              <Trash2 className="h-3 w-3 text-destructive" />
+                            </Button>
+                          </div>
+                        ))}
+                        {creditPackages.length === 0 && (
+                          <p className="text-sm text-muted-foreground text-center py-4">Nenhum pacote configurado. Clique em "Adicionar" para criar.</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <Button
+                      onClick={async () => {
+                        setSavingPricing(true);
+                        try {
+                          const validPackages = creditPackages.filter(p => p.credits > 0 && p.unitPrice > 0 && p.total > 0);
+                          if (validPackages.length === 0) {
+                            toast.error('Adicione pelo menos um pacote válido');
+                            return;
+                          }
+                          await (api as any).settings.update({
+                            reseller_price: parseFloat(resellerPrice) || 90,
+                            reseller_credits: parseInt(resellerCredits) || 5,
+                            credit_packages: validPackages.sort((a: any, b: any) => a.credits - b.credits),
+                          });
+                          toast.success('Valores atualizados com sucesso!');
+                        } catch (err: any) {
+                          toast.error(err.message || 'Erro ao salvar valores');
+                        } finally {
+                          setSavingPricing(false);
+                        }
+                      }}
+                      disabled={savingPricing}
+                      className="w-full"
+                    >
+                      {savingPricing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+                      Salvar Valores
                     </Button>
                   </CardContent>
                 </Card>

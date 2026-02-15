@@ -16,27 +16,20 @@ import { CreditCard, Tag, QrCode, Loader2, Clock, CheckCircle, XCircle, History,
 import ReactCanvasConfetti from 'react-canvas-confetti';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-// Fixed credit packages - NO custom input allowed
-// Base price is R$14, discounts increase with quantity
-
-// Section 1: Pacotes Populares (mais vendidos)
-const POPULAR_PACKAGES = [
+// Default packages (fallback)
+const DEFAULT_POPULAR = [
   { credits: 5, unitPrice: 14.00, total: 70 },
   { credits: 10, unitPrice: 14.00, total: 140 },
   { credits: 25, unitPrice: 13.50, total: 337.50 },
   { credits: 50, unitPrice: 13.00, total: 650 },
 ];
-
-// Section 2: Pacotes Intermediários
-const INTERMEDIATE_PACKAGES = [
+const DEFAULT_INTERMEDIATE = [
   { credits: 75, unitPrice: 12.50, total: 937.50 },
   { credits: 100, unitPrice: 12.00, total: 1200 },
   { credits: 150, unitPrice: 11.50, total: 1725 },
   { credits: 200, unitPrice: 10.00, total: 2000 },
 ];
-
-// Section 3: Grandes Volumes
-const LARGE_PACKAGES = [
+const DEFAULT_LARGE = [
   { credits: 250, unitPrice: 9.50, total: 2375 },
   { credits: 300, unitPrice: 9.00, total: 2700 },
   { credits: 400, unitPrice: 8.50, total: 3400 },
@@ -44,26 +37,28 @@ const LARGE_PACKAGES = [
   { credits: 1000, unitPrice: 7.00, total: 7000 },
 ];
 
-// All packages combined for slider functionality
-const CREDIT_PACKAGES = [...POPULAR_PACKAGES, ...INTERMEDIATE_PACKAGES, ...LARGE_PACKAGES].map((pkg, i) => ({
+const DEFAULT_ALL = [...DEFAULT_POPULAR, ...DEFAULT_INTERMEDIATE, ...DEFAULT_LARGE].map(pkg => ({
   ...pkg,
   popular: [50, 100, 200].includes(pkg.credits),
 }));
 
-const BASE_PRICE = 14; // Price without discount
-
 type CreditPackage = { credits: number; unitPrice: number; total: number; popular?: boolean };
 
-function calculateSavings(pkg: CreditPackage) {
-  const fullPrice = pkg.credits * BASE_PRICE;
+function splitPackages(all: CreditPackage[]) {
+  if (all.length <= 4) return { popular: all, intermediate: [], large: [] };
+  if (all.length <= 8) return { popular: all.slice(0, 4), intermediate: all.slice(4), large: [] };
+  return { popular: all.slice(0, 4), intermediate: all.slice(4, 8), large: all.slice(8) };
+}
+
+function calculateSavings(pkg: CreditPackage, basePrice: number) {
+  const fullPrice = pkg.credits * basePrice;
   const savings = fullPrice - pkg.total;
-  const percentOff = ((savings / fullPrice) * 100).toFixed(0);
+  const percentOff = fullPrice > 0 ? ((savings / fullPrice) * 100).toFixed(0) : '0';
   return { savings, percentOff };
 }
 
-// Get package index from slider value
-function getPackageFromSlider(value: number): CreditPackage {
-  return CREDIT_PACKAGES[Math.min(value, CREDIT_PACKAGES.length - 1)];
+function getPackageFromSlider(value: number, packages: CreditPackage[]): CreditPackage {
+  return packages[Math.min(value, packages.length - 1)] || packages[0];
 }
 
 interface PixPayment {
@@ -83,8 +78,10 @@ interface PaymentHistory {
 
 export default function Recarregar() {
   const { admin, role, credits, loading, updateAdmin } = useAuth();
+  const [allPackages, setAllPackages] = useState<CreditPackage[]>(DEFAULT_ALL);
+  const [basePrice, setBasePrice] = useState(14);
   const [sliderValue, setSliderValue] = useState(0);
-  const [selectedPackage, setSelectedPackage] = useState<CreditPackage>(CREDIT_PACKAGES[0]);
+  const [selectedPackage, setSelectedPackage] = useState<CreditPackage>(DEFAULT_ALL[0]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showPixModal, setShowPixModal] = useState(false);
   const [pixData, setPixData] = useState<PixPayment | null>(null);
@@ -94,6 +91,10 @@ export default function Recarregar() {
   const [timeRemaining, setTimeRemaining] = useState(600);
   const [paymentHistory, setPaymentHistory] = useState<PaymentHistory[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
+
+  const { popular: POPULAR_PACKAGES, intermediate: INTERMEDIATE_PACKAGES, large: LARGE_PACKAGES } = splitPackages(allPackages);
+  const CREDIT_PACKAGES = allPackages;
+  const BASE_PRICE = basePrice;
 
   const hasPlayedSound = useRef(false);
   const checkIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -159,9 +160,27 @@ export default function Recarregar() {
     }
   }, [admin]);
 
+  // Load packages from API
   useEffect(() => {
     if (admin) {
       fetchPaymentHistory();
+      // Load dynamic pricing
+      (api as any).settings?.get?.().then((settings: any) => {
+        if (settings?.credit_packages?.length > 0) {
+          const pkgs = settings.credit_packages.map((p: any) => ({
+            credits: p.credits,
+            unitPrice: p.unitPrice,
+            total: p.total,
+            popular: [50, 100, 200].includes(p.credits),
+          }));
+          setAllPackages(pkgs);
+          setSelectedPackage(pkgs[0]);
+          setSliderValue(0);
+          // Base price = highest unitPrice
+          const maxPrice = Math.max(...pkgs.map((p: any) => p.unitPrice));
+          setBasePrice(maxPrice);
+        }
+      }).catch(() => { /* use defaults */ });
     }
   }, [admin, fetchPaymentHistory]);
 
@@ -221,7 +240,7 @@ export default function Recarregar() {
   const handleSliderChange = (value: number[]) => {
     const newValue = value[0];
     setSliderValue(newValue);
-    setSelectedPackage(getPackageFromSlider(newValue));
+    setSelectedPackage(getPackageFromSlider(newValue, CREDIT_PACKAGES));
   };
 
   const handleSelectPackage = (pkg: typeof CREDIT_PACKAGES[0], index: number) => {
@@ -384,7 +403,7 @@ export default function Recarregar() {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <TooltipProvider>
                   {POPULAR_PACKAGES.map((pkg) => {
-                    const { savings, percentOff } = calculateSavings(pkg);
+                    const { savings, percentOff } = calculateSavings(pkg, BASE_PRICE);
                     const index = CREDIT_PACKAGES.findIndex(p => p.credits === pkg.credits);
                     return (
                       <Tooltip key={pkg.credits}>
@@ -443,7 +462,7 @@ export default function Recarregar() {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <TooltipProvider>
                   {INTERMEDIATE_PACKAGES.map((pkg) => {
-                    const { savings, percentOff } = calculateSavings(pkg);
+                    const { savings, percentOff } = calculateSavings(pkg, BASE_PRICE);
                     const index = CREDIT_PACKAGES.findIndex(p => p.credits === pkg.credits);
                     return (
                       <Tooltip key={pkg.credits}>
@@ -502,7 +521,7 @@ export default function Recarregar() {
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                 <TooltipProvider>
                   {LARGE_PACKAGES.map((pkg) => {
-                    const { savings, percentOff } = calculateSavings(pkg);
+                    const { savings, percentOff } = calculateSavings(pkg, BASE_PRICE);
                     const index = CREDIT_PACKAGES.findIndex(p => p.credits === pkg.credits);
                     const isPremium = pkg.credits === 1000;
                     
@@ -612,10 +631,10 @@ export default function Recarregar() {
                   <p className="text-2xl font-bold">
                     R$ {selectedPackage.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </p>
-                  {calculateSavings(selectedPackage).savings > 0 && (
+                  {calculateSavings(selectedPackage, BASE_PRICE).savings > 0 && (
                     <p className="text-xs font-medium flex items-center justify-end gap-1">
                       <TrendingDown className="h-3 w-3" />
-                      Economia: R$ {calculateSavings(selectedPackage).savings.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      Economia: R$ {calculateSavings(selectedPackage, BASE_PRICE).savings.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </p>
                   )}
                 </div>

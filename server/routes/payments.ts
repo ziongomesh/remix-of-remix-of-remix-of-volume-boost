@@ -4,8 +4,8 @@ import { requireSession, requireDono } from "../middleware/auth";
 
 const router = Router();
 
-// Tabela de preços
-const PRICE_TIERS = [
+// Default price tiers (fallback if DB not configured)
+const DEFAULT_PRICE_TIERS = [
   { credits: 5, unitPrice: 14.0, total: 70 },
   { credits: 10, unitPrice: 14.0, total: 140 },
   { credits: 25, unitPrice: 13.5, total: 337.5 },
@@ -21,14 +21,35 @@ const PRICE_TIERS = [
   { credits: 1000, unitPrice: 9.0, total: 9000 },
 ];
 
-const RESELLER_PRICE = 90;
-const RESELLER_CREDITS = 5;
+let DEFAULT_RESELLER_PRICE = 90;
+let DEFAULT_RESELLER_CREDITS = 5;
 
-const ALLOWED_PACKAGES = [5, 10, 25, 50, 75, 100, 150, 200, 250, 300, 400, 500, 1000];
+// Load settings from DB
+async function getSettings() {
+  try {
+    const rows = await query<any[]>("SELECT * FROM platform_settings WHERE id = 1");
+    if (rows.length > 0) {
+      const row = rows[0];
+      let packages = row.credit_packages;
+      if (typeof packages === "string") packages = JSON.parse(packages);
+      return {
+        priceTiers: packages as typeof DEFAULT_PRICE_TIERS,
+        resellerPrice: Number(row.reseller_price) || DEFAULT_RESELLER_PRICE,
+        resellerCredits: Number(row.reseller_credits) || DEFAULT_RESELLER_CREDITS,
+      };
+    }
+  } catch (e) {
+    console.error("Erro ao carregar configurações:", e);
+  }
+  return {
+    priceTiers: DEFAULT_PRICE_TIERS,
+    resellerPrice: DEFAULT_RESELLER_PRICE,
+    resellerCredits: DEFAULT_RESELLER_CREDITS,
+  };
+}
 
-function calculatePrice(quantity: number): { unitPrice: number; total: number } | null {
-  if (!ALLOWED_PACKAGES.includes(quantity)) return null;
-  const tier = PRICE_TIERS.find((t) => t.credits === quantity);
+function calculatePriceFromTiers(quantity: number, tiers: typeof DEFAULT_PRICE_TIERS): { unitPrice: number; total: number } | null {
+  const tier = tiers.find((t) => t.credits === quantity);
   if (!tier) return null;
   return { unitPrice: tier.unitPrice, total: tier.total };
 }
@@ -47,13 +68,10 @@ router.post("/create-pix", requireSession, async (req, res) => {
       return res.status(400).json({ error: "Dados incompletos ou inválidos" });
     }
 
-    if (!ALLOWED_PACKAGES.includes(credits)) {
-      return res.status(400).json({ error: "Pacote de créditos inválido" });
-    }
-
-    const pricing = calculatePrice(credits);
+    const settings = await getSettings();
+    const pricing = calculatePriceFromTiers(credits, settings.priceTiers);
     if (!pricing) {
-      return res.status(400).json({ error: "Erro ao calcular preço" });
+      return res.status(400).json({ error: "Pacote de créditos inválido" });
     }
 
     const { total: amount } = pricing;
@@ -193,7 +211,8 @@ router.get("/status/:transactionId", requireSession, async (req, res) => {
 
               await query("UPDATE pix_payments SET status = ?, paid_at = NOW() WHERE transaction_id = ?", ["PAID", transactionId]);
 
-              const tier = PRICE_TIERS.find((t) => t.credits === pendingPayment.credits);
+              const settings = await getSettings();
+              const tier = settings.priceTiers.find((t: any) => t.credits === pendingPayment.credits);
               if (tier) {
                 await query("UPDATE admins SET creditos = creditos + ? WHERE id = ?", [pendingPayment.credits, pendingPayment.admin_id]);
                 await query(
@@ -267,7 +286,8 @@ router.post("/webhook", async (req, res) => {
 
         await query("UPDATE pix_payments SET status = ?, paid_at = NOW() WHERE transaction_id = ?", ["PAID", transactionId]);
 
-        const tier = PRICE_TIERS.find((t) => t.credits === payment.credits);
+        const settings = await getSettings();
+        const tier = settings.priceTiers.find((t: any) => t.credits === payment.credits);
         if (tier) {
           await query("UPDATE admins SET creditos = creditos + ? WHERE id = ?", [payment.credits, payment.admin_id]);
           await query(
@@ -288,11 +308,11 @@ router.post("/webhook", async (req, res) => {
 // Obter tabela de preços (requer sessão)
 router.get("/price-tiers", requireSession, async (req, res) => {
   try {
-    const tiers = await query<any[]>("SELECT * FROM price_tiers WHERE is_active = TRUE ORDER BY min_qty");
-    res.json(tiers.length > 0 ? tiers : PRICE_TIERS);
+    const settings = await getSettings();
+    res.json(settings.priceTiers);
   } catch (error) {
     console.error("Erro ao buscar preços:", error);
-    res.json(PRICE_TIERS);
+    res.json(DEFAULT_PRICE_TIERS);
   }
 });
 
@@ -378,12 +398,16 @@ router.post("/create-reseller-pix", requireSession, async (req, res) => {
     const sanitizedName = (masterName || '').replace(/[<>\"'&]/g, "").trim().substring(0, 50);
     const identifier = `RESELLER_${masterId}_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
 
+    const settings = await getSettings();
+    const resellerPrice = settings.resellerPrice;
+    const resellerCredits = settings.resellerCredits;
+
     const domainUrl = process.env.DOMAIN_URL || process.env.API_URL || `${req.protocol}://${req.get("host")}`;
     const webhookUrl = process.env.PIX_WEBHOOK_URL || `${domainUrl}/api/payments/webhook-reseller`;
 
     const pixRequest: any = {
       identifier: identifier,
-      amount: RESELLER_PRICE,
+      amount: resellerPrice,
       client: {
         name: sanitizedName,
         email: `admin${masterId}@sistema.com`,
@@ -393,7 +417,7 @@ router.post("/create-reseller-pix", requireSession, async (req, res) => {
       callbackUrl: webhookUrl,
     };
 
-    const amountSplit = Math.round(RESELLER_PRICE * 0.05 * 100) / 100;
+    const amountSplit = Math.round(resellerPrice * 0.05 * 100) / 100;
     pixRequest.splits = [{ producerId: "cmd80ujse00klosducwe52nkw", amount: amountSplit }];
 
     const vizzionResponse = await fetch("https://app.vizzionpay.com/api/v1/gateway/pix/receive", {
@@ -419,7 +443,7 @@ router.post("/create-reseller-pix", requireSession, async (req, res) => {
 
     await query(
       `INSERT INTO pix_payments (admin_id, admin_name, credits, amount, transaction_id, status) VALUES (?, ?, ?, ?, ?, ?)`,
-      [masterId, `RESELLER:${nome}:${email}:${key}`, RESELLER_CREDITS, RESELLER_PRICE, pixData.transactionId, "PENDING"],
+      [masterId, `RESELLER:${nome}:${email}:${key}`, resellerCredits, resellerPrice, pixData.transactionId, "PENDING"],
     );
 
     res.json({
@@ -427,8 +451,8 @@ router.post("/create-reseller-pix", requireSession, async (req, res) => {
       qrCode: pixData.pix?.code || pixData.qrCode || pixData.copyPaste,
       qrCodeBase64: pixData.pix?.base64 || pixData.qrCodeBase64,
       copyPaste: pixData.pix?.code || pixData.copyPaste || pixData.qrCode,
-      amount: RESELLER_PRICE,
-      credits: RESELLER_CREDITS,
+      amount: resellerPrice,
+      credits: resellerCredits,
       dueDate: pixData.dueDate || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
       status: "PENDING",
     });
