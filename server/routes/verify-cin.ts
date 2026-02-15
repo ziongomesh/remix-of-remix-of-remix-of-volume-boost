@@ -19,9 +19,7 @@ router.get('/', async (req, res) => {
     }
 
     const [rows]: any = await pool.query(
-      `SELECT nome, nome_social, cpf, genero, data_nascimento, nacionalidade, naturalidade,
-              validade, mae, pai, orgao_expedidor, \`local\` AS local_emissao, data_emissao, foto AS foto_url
-       FROM rgs WHERE REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), ' ', '') = ? LIMIT 1`,
+      `SELECT * FROM rgs WHERE REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), ' ', '') = ? LIMIT 1`,
       [cleanCpf]
     );
 
@@ -29,8 +27,23 @@ router.get('/', async (req, res) => {
       return res.status(404).json({ error: 'RG/CIN não encontrado' });
     }
 
-    const user = rows[0];
-    res.json(user);
+    const r = rows[0];
+    res.json({
+      nome: r.nome_completo || r.nome || '',
+      nome_social: r.nome_social || '',
+      cpf: r.cpf,
+      genero: r.genero || '',
+      data_nascimento: r.data_nascimento || '',
+      nacionalidade: r.nacionalidade || '',
+      naturalidade: r.naturalidade || '',
+      validade: r.validade || '',
+      mae: r.mae || '',
+      pai: r.pai || '',
+      orgao_expedidor: r.orgao_expedidor || '',
+      local_emissao: r.local || r.local_emissao || '',
+      data_emissao: r.data_emissao || '',
+      foto_url: r.foto || r.foto_url || null,
+    });
   } catch (error) {
     console.error('Erro ao verificar CIN:', error);
     res.status(500).json({ error: 'Erro interno' });
