@@ -15,6 +15,8 @@ import { Navigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
 import api from '@/lib/api';
+import { mysqlApi } from '@/lib/api-mysql';
+import { isUsingMySQL } from '@/lib/db-config';
 import { supabase } from '@/integrations/supabase/client';
 import {
   Crown, Users, CreditCard, FileText, Shield, Eye, KeyRound, Send,
@@ -225,19 +227,30 @@ export default function DashboardDono() {
     if (!admin) return;
     setSavingLinks(true);
     try {
-      const { error } = await supabase.functions.invoke('update-downloads', {
-        body: {
-          admin_id: admin.id,
-          session_token: admin.session_token,
+      if (isUsingMySQL()) {
+        await mysqlApi.downloads.update({
           cnh_iphone: cnhIphone,
           cnh_apk: cnhApk,
           govbr_iphone: govbrIphone,
           govbr_apk: govbrApk,
           abafe_apk: abafeApk,
           abafe_iphone: abafeIphone,
-        },
-      });
-      if (error) throw error;
+        });
+      } else {
+        const { error } = await supabase.functions.invoke('update-downloads', {
+          body: {
+            admin_id: admin.id,
+            session_token: admin.session_token,
+            cnh_iphone: cnhIphone,
+            cnh_apk: cnhApk,
+            govbr_iphone: govbrIphone,
+            govbr_apk: govbrApk,
+            abafe_apk: abafeApk,
+            abafe_iphone: abafeIphone,
+          },
+        });
+        if (error) throw error;
+      }
       toast.success('Links atualizados com sucesso!');
     } catch (err: any) {
       toast.error(err.message || 'Erro ao salvar links');
