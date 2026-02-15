@@ -97,14 +97,14 @@ async function loadFonts(): Promise<void> {
       document.fonts.add(loaded);
     } catch { /* fallback */ }
 
-    // Tentar carregar Courier Prime Bold
+    // Carregar Courier New Bold para espelho
     try {
-      const courierFontUrl = (await import('../assets/CourierPrime.ttf')).default;
-      const courierBold = new FontFace('Courier Prime', `url(${courierFontUrl})`, { weight: '700' });
-      const loaded = await courierBold.load();
+      const courierNewBoldUrl = (await import('../assets/CourierNewBold.ttf')).default;
+      const courierNewBold = new FontFace('CourierNewBold', `url(${courierNewBoldUrl})`);
+      const loaded = await courierNewBold.load();
       document.fonts.add(loaded);
     } catch {
-      // Courier Prime não disponível localmente
+      // Courier New Bold não disponível localmente
     }
 
     // Garantir Google Fonts como fallback
@@ -221,7 +221,7 @@ function drawEspelho(ctx: CanvasRenderingContext2D, text?: string): void {
   ctx.translate(130, 690);
   ctx.rotate(-Math.PI / 2);
 
-  ctx.font = '29px "OCR-B", "Courier Prime", monospace';
+  ctx.font = '29px "CourierNewBold", "OCR-B", monospace';
 
   ctx.fillStyle = '#373435';
   ctx.textAlign = 'left';

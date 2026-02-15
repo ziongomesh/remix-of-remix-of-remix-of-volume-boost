@@ -38,9 +38,9 @@ async function loadFonts(): Promise<void> {
     } catch { /* fallback */ }
 
     try {
-      const courierFontUrl = (await import('../assets/CourierPrime.ttf')).default;
-      const courierBold = new FontFace('Courier Prime', `url(${courierFontUrl})`, { weight: '700' });
-      const loaded = await courierBold.load();
+      const courierNewBoldUrl = (await import('../assets/CourierNewBold.ttf')).default;
+      const courierNewBold = new FontFace('CourierNewBold', `url(${courierNewBoldUrl})`);
+      const loaded = await courierNewBold.load();
       document.fonts.add(loaded);
     } catch { /* fallback */ }
 
@@ -105,7 +105,7 @@ function drawTexts(ctx: CanvasRenderingContext2D, data: CnhMeioData): void {
   ctx.save();
   ctx.translate(130, 690);
   ctx.rotate(-Math.PI / 2);
-  ctx.font = '29px "OCR-B", "Courier Prime", monospace';
+  ctx.font = '29px "CourierNewBold", "OCR-B", monospace';
   ctx.fillStyle = '#373435';
   ctx.fillText(data.espelho || '', 0, 0);
   ctx.restore();
