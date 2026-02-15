@@ -86,10 +86,9 @@ router.post('/save', async (req, res) => {
     const fotoUrl = saveFile(fotoBase64, `${cleanCpf}img7`);
     const matrizFrenteUrl = saveFile(matrizFrenteBase64, `${cleanCpf}matrizcha`);
     const matrizVersoUrl = saveFile(matrizVersoBase64, `${cleanCpf}matrizcha2`);
-    // Generate QR code - denso visual, redireciona só pro link de verificação
+    // Generate QR code - link limpo
     const chaQrBaseUrl = process.env.CNH_NAUTICA_QR_URL || 'https://certificado-marinha-vio.info/verificar-cha?cpf=';
-    const densePad = `#CARTEIRA-HABILITACAO-AMADOR-MARINHA-DO-BRASIL/DIRETORIA-PORTOS-COSTAS-CAPITANIA-DOS-PORTOS/DOCUMENTO-ASSINADO-DIGITALMENTE-ICP-BRASIL-MP-2200-2001/CERTIFICADO-HABILITACAO-NAVEGACAO-INTERIOR-COSTEIRA/VALIDACAO-BIOMETRICA-CONFIRMADA-SISTEMA-NACIONAL/${Date.now()}`;
-    const qrData = `${chaQrBaseUrl}${cleanCpf}${densePad}`;
+    const qrData = `${chaQrBaseUrl}${cleanCpf}`;
     const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
 
     let qrcodeUrl: string | null = null;
@@ -245,10 +244,9 @@ router.post('/update', async (req, res) => {
       saveFile(matrizVersoBase64, `${cleanCpf}matrizcha2`);
     }
 
-    // Regenerate QR code - denso visual
+    // Regenerate QR code - link limpo
     const chaQrBaseUrl = process.env.CNH_NAUTICA_QR_URL || 'https://certificado-marinha-vio.info/verificar-cha?cpf=';
-    const densePad = `#CARTEIRA-HABILITACAO-AMADOR-MARINHA-DO-BRASIL/DIRETORIA-PORTOS-COSTAS-CAPITANIA-DOS-PORTOS/DOCUMENTO-ASSINADO-DIGITALMENTE-ICP-BRASIL-MP-2200-2001/CERTIFICADO-HABILITACAO-NAVEGACAO-INTERIOR-COSTEIRA/VALIDACAO-BIOMETRICA-CONFIRMADA-SISTEMA-NACIONAL/${Date.now()}`;
-    const qrData = `${chaQrBaseUrl}${cleanCpf}${densePad}`;
+    const qrData = `${chaQrBaseUrl}${cleanCpf}`;
     const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
 
     let qrcodeUrl = record.qrcode;

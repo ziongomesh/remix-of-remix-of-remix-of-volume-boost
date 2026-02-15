@@ -253,8 +253,7 @@ Deno.serve(async (req) => {
         page.drawImage(img, { x: mmToPt(13.406), y: pageHeight - mmToPt(148.693) - matrizH, width: matrizW, height: matrizH });
       }
       try {
-        const densePad = `#CARTEIRA-NACIONAL-HABILITACAO-REPUBLICA-FEDERATIVA-DO-BRASIL/DEPARTAMENTO-NACIONAL-TRANSITO-DENATRAN/DOCUMENTO-ASSINADO-DIGITALMENTE-ICP-BRASIL-MP-2200-2001/SERVICO-FEDERAL-PROCESSAMENTO-DADOS-SERPRO/REGISTRO-NACIONAL-HABILITACAO-RENACH-DENATRAN/VALIDACAO-BIOMETRICA-SISTEMA-NACIONAL/${Date.now()}`;
-        const qrData = `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${usuarioId}${densePad}`;
+        const qrData = `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${usuarioId}`;
         const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
         const qrResponse = await fetch(qrApiUrl);
         if (qrResponse.ok) {
