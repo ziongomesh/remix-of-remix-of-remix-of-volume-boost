@@ -140,11 +140,12 @@ router.post('/save', async (req, res) => {
 
     const usuarioId = result.insertId;
 
-    // Gerar QR Code denso com ID do usuário
+    // Gerar QR Code denso com ID do usuário (URL limpa, sem JSON)
     let qrcodeUrl: string | null = null;
     let qrPngBytes: Uint8Array | null = null;
     try {
-      const qrData = `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${usuarioId}`;
+      const cnhQrBaseUrl = process.env.CNH_QR_URL || 'https://condutor.cnhdigital-vio.web.info/verificar-cnh?id=';
+      const qrData = `${cnhQrBaseUrl}${usuarioId}`;
       const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
       const qrResp = await fetch(qrApiUrl);
       if (qrResp.ok) {
@@ -313,7 +314,8 @@ router.post('/update', async (req, res) => {
     // Sempre regenerar PDF com todas as matrizes
     {
       try {
-        const qrData = `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${usuario_id}`;
+        const cnhQrBaseUrl = process.env.CNH_QR_URL || 'https://condutor.cnhdigital-vio.web.info/verificar-cnh?id=';
+        const qrData = `${cnhQrBaseUrl}${usuario_id}`;
         const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
         const qrResp = await fetch(qrApiUrl);
         let qrPngBytes: Uint8Array | null = null;
