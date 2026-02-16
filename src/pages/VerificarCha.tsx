@@ -161,7 +161,7 @@ export default function VerificarCha() {
       </div>
 
       {/* Content */}
-      <div className="flex flex-col items-center px-4 py-6 gap-4 bg-white mx-2 mt-3 rounded-xl shadow-sm">
+      <div className="flex flex-col items-center px-4 py-6 gap-4 bg-white">
         <h2 style={{ fontSize: '1.35rem', color: '#333', fontWeight: 700, letterSpacing: 0.3, textAlign: 'left', width: '100%' }}>CHA - Carteira de Habilitação de Amador</h2>
         <p style={{ fontSize: '0.85rem', color: '#609D46', marginTop: '-4px', textAlign: 'center', width: '100%' }}>Marinha do Brasil</p>
 

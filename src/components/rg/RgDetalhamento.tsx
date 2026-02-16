@@ -41,12 +41,9 @@ export default function RgDetalhamento({ data }: RgDetalhamentoProps) {
     <div style={{
       fontFamily: '"Roboto", sans-serif',
       background: '#f5f5f5',
-      borderRadius: '12px',
       overflow: 'hidden',
-      maxWidth: '420px',
       width: '100%',
-      margin: '0 auto',
-      boxShadow: '0 2px 12px rgba(0,0,0,0.12)',
+      minHeight: '100vh',
     }}>
       {/* Header */}
       <div style={{
