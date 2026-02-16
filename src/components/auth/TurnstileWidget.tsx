@@ -23,9 +23,9 @@ declare global {
   }
 }
 
-const TURNSTILE_SITE_KEY = '0x4AAAAAACKP0Hudn-J9HsO3';
+const TURNSTILE_SITE_KEY = '0x4AAAAAABkSzfheUqPx3zru';
 // Set to true to enable Turnstile verification, false to disable
-export const TURNSTILE_ENABLED = false;
+export const TURNSTILE_ENABLED = true;
 
 export function TurnstileWidget({ onVerify, onExpire, onError }: TurnstileWidgetProps) {
   const containerRef = useRef<HTMLDivElement>(null);
