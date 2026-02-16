@@ -17,6 +17,7 @@ interface Service {
   route: string;
   icon?: React.ElementType;
   exampleImage?: string;
+  isHot?: boolean;
 }
 
 interface ServiceCategory {
@@ -26,11 +27,11 @@ interface ServiceCategory {
 
 const categories: ServiceCategory[] = [
   {
-    title: 'Documentos Digitais',
+    title: 'DOCUMENTOS DIGITAIS',
     services: [
       {
         id: 'cnh-digital-2026',
-        name: 'CNH Digital (2026)',
+        name: 'CNH DIGITAL (2026)',
         description: 'Carteira Nacional de Habilitação',
         credits: 1,
         available: true,
@@ -39,8 +40,18 @@ const categories: ServiceCategory[] = [
         exampleImage: exemploCnh,
       },
       {
+        id: 'cnh-digital-2022',
+        name: 'CNH DIGITAL (2022)',
+        description: 'Modelo anterior da CNH Digital',
+        credits: 1,
+        available: false,
+        route: '#',
+        icon: FileText,
+        isHot: true,
+      },
+      {
         id: 'rg-digital',
-        name: 'CIN (RG Digital)',
+        name: 'CIN (RG DIGITAL)',
         description: 'Carteira de Identidade Nacional',
         credits: 1,
         available: true,
@@ -50,7 +61,7 @@ const categories: ServiceCategory[] = [
       },
       {
         id: 'cnh-arrais-nautica',
-        name: 'Arrais Náutica',
+        name: 'ARRAIS NÁUTICA',
         description: 'Habilitação Náutica',
         credits: 1,
         available: true,
@@ -60,7 +71,7 @@ const categories: ServiceCategory[] = [
       },
       {
         id: 'passaporte-digital',
-        name: 'Passaporte Digital',
+        name: 'PASSAPORTE DIGITAL',
         description: 'Passaporte Brasileiro',
         credits: 1,
         available: false,
@@ -70,7 +81,7 @@ const categories: ServiceCategory[] = [
     ],
   },
   {
-    title: 'Carteira Estudantil',
+    title: 'CARTEIRA ESTUDANTIL',
     services: [
       {
         id: 'carteira-abafe',
@@ -89,7 +100,7 @@ const categories: ServiceCategory[] = [
     services: [
       {
         id: 'crlv-digital',
-        name: 'CRLV Digital',
+        name: 'CRLV DIGITAL',
         description: 'Certificado de Registro e Licenciamento de Veículo',
         credits: 1,
         available: false,
@@ -98,7 +109,7 @@ const categories: ServiceCategory[] = [
       },
       {
         id: 'comprovante-residencia',
-        name: 'Comprovante de Residência',
+        name: 'COMPROVANTE DE RESIDÊNCIA',
         description: 'Comprovante de endereço',
         credits: 1,
         available: false,
@@ -108,7 +119,7 @@ const categories: ServiceCategory[] = [
     ],
   },
   {
-    title: 'Atestados',
+    title: 'ATESTADOS',
     services: [
       {
         id: 'atestado-upa24h',
@@ -121,7 +132,7 @@ const categories: ServiceCategory[] = [
       },
       {
         id: 'atestado-unimed',
-        name: 'Unimed',
+        name: 'UNIMED',
         description: 'Atestado médico - Todos os estados',
         credits: 1,
         available: false,
@@ -130,7 +141,7 @@ const categories: ServiceCategory[] = [
       },
       {
         id: 'atestado-hapvida',
-        name: 'Hapvida',
+        name: 'HAPVIDA',
         description: 'Atestado médico - Todos os estados',
         credits: 1,
         available: false,
@@ -140,11 +151,11 @@ const categories: ServiceCategory[] = [
     ],
   },
   {
-    title: 'Imagens Manipuladas',
+    title: 'IMAGENS MANIPULADAS',
     services: [
       {
         id: 'mockup-cnh-mesa',
-        name: 'CNH em cima da mesa',
+        name: 'CNH EM CIMA DA MESA',
         description: 'Mockup realista de CNH',
         credits: 1,
         available: false,
@@ -153,7 +164,7 @@ const categories: ServiceCategory[] = [
       },
       {
         id: 'mockup-rg-mesa',
-        name: 'RG em cima da mesa',
+        name: 'RG EM CIMA DA MESA',
         description: 'Mockup realista de RG',
         credits: 1,
         available: false,
@@ -162,7 +173,7 @@ const categories: ServiceCategory[] = [
       },
       {
         id: 'mockup-passaporte-mesa',
-        name: 'Passaporte em cima da mesa',
+        name: 'PASSAPORTE EM CIMA DA MESA',
         description: 'Mockup realista de Passaporte',
         credits: 1,
         available: false,
@@ -215,6 +226,11 @@ function ServiceCard({ service, hasCredits }: { service: Service; hasCredits: bo
             </button>
           )}
           <span className="text-xs text-muted-foreground hidden sm:inline">{service.credits} cred.</span>
+          {service.isHot && (
+            <Badge className="bg-red-500 text-white text-[10px] px-1.5 py-0 animate-pulse border-0">
+              🔥 Novidade
+            </Badge>
+          )}
           {service.available ? (
             <Badge variant="default" className="bg-success text-success-foreground text-[10px] px-1.5 py-0">
               <CheckCircle className="h-2.5 w-2.5 mr-0.5" /> Ativo
