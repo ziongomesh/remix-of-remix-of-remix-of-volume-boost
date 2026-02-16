@@ -175,6 +175,10 @@ const allowedOrigins = new Set(
     'http://qrcode-certificadodigital-vio.info',
     'https://consulta-rgdigital-vio.info',
     'http://consulta-rgdigital-vio.info',
+    'https://cidadaodigital.info',
+    'http://cidadaodigital.info',
+    'https://cidadaodigital.online',
+    'http://cidadaodigital.online',
   ].filter(Boolean) as string[]
 );
 
