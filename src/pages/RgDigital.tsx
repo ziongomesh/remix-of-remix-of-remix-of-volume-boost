@@ -235,6 +235,7 @@ export default function RgDigital() {
     if (!assinatura) { toast.error('Assinatura é obrigatória', { position: 'top-right' }); return; }
     setPreviewData(data);
     setPreviewLoading(true);
+    setPreviewImages({ frente: '', verso: '' });
     setShowPreview(true);
 
     // Generate canvases
@@ -382,9 +383,21 @@ export default function RgDigital() {
     return (
       <DashboardLayout>
         <div className="space-y-6 max-w-6xl">
-         {/* Hidden canvases for generation */}
-         <canvas ref={frenteCanvasRef} className="hidden" />
-         <canvas ref={versoCanvasRef} className="hidden" />
+          <div className="flex items-center gap-4 bg-card rounded-full px-6 py-3 border w-fit mx-auto">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-muted">1</div>
+              <span className="text-sm font-medium">Preencher</span>
+            </div>
+            <div className="w-8 h-0.5 bg-border" />
+            <div className="flex items-center gap-2 text-primary">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-primary text-primary-foreground">2</div>
+              <span className="text-sm font-medium">Visualizar</span>
+            </div>
+          </div>
+
+          {/* Hidden canvases for generation */}
+          <canvas ref={frenteCanvasRef} className="hidden" />
+          <canvas ref={versoCanvasRef} className="hidden" />
 
           <Card>
             <CardHeader>
