@@ -152,14 +152,29 @@ const allowedOrigins = new Set(
     'http://127.0.0.1:5175',
     'http://localhost:8080',
     'http://127.0.0.1:8080',
-    // VPS IPs - adicione mais se necessário
+    // VPS IPs
     'http://191.96.79.187:5173',
     'http://191.96.79.187:5174',
     'http://191.96.79.187:5175',
+    // Produção - todos os domínios
+    'https://datasistemas.online',
+    'http://datasistemas.online',
     'https://painel.datasistemas.online',
     'http://painel.datasistemas.online',
     'https://certificado-marinha-vio.info',
     'http://certificado-marinha-vio.info',
+    'https://qrcode-validacao-vio.info',
+    'http://qrcode-validacao-vio.info',
+    'https://condutor-cnhdigital-vio-web.info',
+    'http://condutor-cnhdigital-vio-web.info',
+    'https://abafe-certificado.info',
+    'http://abafe-certificado.info',
+    'https://abafe-digital.info',
+    'http://abafe-digital.info',
+    'https://qrcode-certificadodigital-vio.info',
+    'http://qrcode-certificadodigital-vio.info',
+    'https://consulta-rgdigital-vio.info',
+    'http://consulta-rgdigital-vio.info',
   ].filter(Boolean) as string[]
 );
 
