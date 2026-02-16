@@ -189,14 +189,24 @@ router.get("/status/:transactionId", requireSession, async (req, res) => {
     if (payment.status === "PENDING" && publicKey && privateKey) {
       try {
         const vizzionResponse = await fetch(`https://app.vizzionpay.com/api/v1/gateway/pix/${transactionId}`, {
-          headers: { "x-public-key": publicKey, "x-secret-key": privateKey },
+          headers: { 
+            "Content-Type": "application/json",
+            "x-public-key": publicKey, 
+            "x-secret-key": privateKey,
+          },
         });
+
+        console.log(`[STATUS CHECK] VizzionPay response status: ${vizzionResponse.status}`);
 
         if (vizzionResponse.ok) {
           const vizzionData = await vizzionResponse.json();
+          console.log(`[STATUS CHECK] VizzionPay full response:`, JSON.stringify(vizzionData, null, 2));
 
+          // Extrair status de todos os caminhos possíveis da resposta
           const remoteStatus = vizzionData?.status || vizzionData?.transaction?.status || vizzionData?.data?.status || vizzionData?.data?.transaction?.status || vizzionData?.pix?.status;
           const remoteEvent = vizzionData?.event || vizzionData?.data?.event || vizzionData?.pix?.event;
+
+          console.log(`[STATUS CHECK] remoteStatus=${remoteStatus}, remoteEvent=${remoteEvent}`);
 
           const isPaid = remoteEvent === "TRANSACTION_PAID" || remoteStatus === "PAID" || remoteStatus === "COMPLETED" || remoteStatus === "paid" || remoteStatus === "completed" || remoteStatus === "CONFIRMED" || vizzionData?.paid === true;
 
