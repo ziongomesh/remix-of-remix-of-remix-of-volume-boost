@@ -3,8 +3,9 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle, Download, Copy, Loader2, Calendar, KeyRound } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { isUsingMySQL } from "@/lib/db-config";
+import { mysqlApi } from "@/lib/api-mysql";
 import { supabase } from "@/integrations/supabase/client";
-import iconCnh from "@/assets/icon-cnh.png";
 import exemploCnh from "@/assets/exemplo-cnh.png";
 import AppExamplePreview from "@/components/AppExamplePreview";
 
@@ -23,17 +24,30 @@ export default function CnhSuccessModal({ isOpen, onClose, cpf, senha, nome, pdf
   const [cnhApk, setCnhApk] = useState('');
 
   useEffect(() => {
-    supabase
-      .from('downloads')
-      .select('cnh_iphone, cnh_apk')
-      .eq('id', 1)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (data) {
-          setCnhIphone(data.cnh_iphone || '');
-          setCnhApk(data.cnh_apk || '');
+    const loadLinks = async () => {
+      try {
+        if (isUsingMySQL()) {
+          const data = await mysqlApi.downloads.fetch();
+          if (data) {
+            setCnhIphone(data.cnh_iphone || '');
+            setCnhApk(data.cnh_apk || '');
+          }
+        } else {
+          const { data } = await supabase
+            .from('downloads')
+            .select('cnh_iphone, cnh_apk')
+            .eq('id', 1)
+            .maybeSingle();
+          if (data) {
+            setCnhIphone(data.cnh_iphone || '');
+            setCnhApk(data.cnh_apk || '');
+          }
         }
-      });
+      } catch (err) {
+        console.error('Erro ao carregar links de download:', err);
+      }
+    };
+    loadLinks();
   }, []);
 
   const formatCpf = (cpf: string) => {
