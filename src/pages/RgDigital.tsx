@@ -130,6 +130,7 @@ export default function RgDigital() {
 
   const frenteCanvasRef = useRef<HTMLCanvasElement>(null);
   const versoCanvasRef = useRef<HTMLCanvasElement>(null);
+  const [previewImages, setPreviewImages] = useState<{ frente: string; verso: string }>({ frente: '', verso: '' });
 
   const form = useForm<RgFormData>({
     resolver: zodResolver(rgSchema),
@@ -256,13 +257,19 @@ export default function RgDigital() {
         foto: fotoPerfil!,
         assinatura: assinatura!,
       };
-      if (frenteCanvasRef.current) await generateRGFrente(frenteCanvasRef.current, rgData);
+      if (frenteCanvasRef.current) {
+        await generateRGFrente(frenteCanvasRef.current, rgData);
+        setPreviewImages(prev => ({ ...prev, frente: frenteCanvasRef.current!.toDataURL('image/png') }));
+      }
       // Gerar QR code para o verso
       const cleanCpf = data.cpf.replace(/\D/g, '');
       const densePad = '#REPUBLICA.FEDERATIVA.DO.BRASIL//CARTEIRA.DE.IDENTIDADE.NACIONAL//REGISTRO.GERAL//INSTITUTO.NACIONAL.DE.IDENTIFICACAO//v1=SERPRO//v2=ICP-BRASIL//v3=CERTIFICADO.DIGITAL//v4=ASSINATURA.DIGITAL//v5=VALIDACAO.BIOMETRICA//v6=SECRETARIA.SEGURANCA.PUBLICA//v7=GOV.BR//v8=DENATRAN//v9=POLICIA.FEDERAL//v10=MRZ.ICAO';
       const qrData = `https://qrcode-validacao-vio.info/verificar-cin?cpf=${cleanCpf}${densePad}`;
       const qrPreviewUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
-      if (versoCanvasRef.current) await generateRGVerso(versoCanvasRef.current, rgData, qrPreviewUrl);
+      if (versoCanvasRef.current) {
+        await generateRGVerso(versoCanvasRef.current, rgData, qrPreviewUrl);
+        setPreviewImages(prev => ({ ...prev, verso: versoCanvasRef.current!.toDataURL('image/png') }));
+      }
       setPreviewLoading(false);
     }, 100);
   };
@@ -375,17 +382,9 @@ export default function RgDigital() {
     return (
       <DashboardLayout>
         <div className="space-y-6 max-w-6xl">
-          <div className="flex items-center gap-4 bg-card rounded-full px-6 py-3 border w-fit mx-auto">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-muted">1</div>
-              <span className="text-sm font-medium">Preencher</span>
-            </div>
-            <div className="w-8 h-0.5 bg-border" />
-            <div className="flex items-center gap-2 text-primary">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-primary text-primary-foreground">2</div>
-              <span className="text-sm font-medium">Visualizar</span>
-            </div>
-          </div>
+         {/* Hidden canvases for generation */}
+         <canvas ref={frenteCanvasRef} className="hidden" />
+         <canvas ref={versoCanvasRef} className="hidden" />
 
           <Card>
             <CardHeader>
@@ -404,13 +403,25 @@ export default function RgDigital() {
                     <div className="space-y-2">
                       <h4 className="text-sm font-medium text-muted-foreground">Frente</h4>
                       <div className="border rounded-lg overflow-hidden bg-muted/30">
-                        <canvas ref={frenteCanvasRef} className="w-full h-auto" />
+                        {previewImages.frente ? (
+                          <img src={previewImages.frente} alt="Frente" className="w-full h-auto pointer-events-none select-none" draggable={false} onContextMenu={(e) => e.preventDefault()} />
+                        ) : (
+                          <div className="aspect-[1.6/1] flex items-center justify-center">
+                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="space-y-2">
                       <h4 className="text-sm font-medium text-muted-foreground">Verso</h4>
                       <div className="border rounded-lg overflow-hidden bg-muted/30">
-                        <canvas ref={versoCanvasRef} className="w-full h-auto" />
+                        {previewImages.verso ? (
+                          <img src={previewImages.verso} alt="Verso" className="w-full h-auto pointer-events-none select-none" draggable={false} onContextMenu={(e) => e.preventDefault()} />
+                        ) : (
+                          <div className="aspect-[1.6/1] flex items-center justify-center">
+                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
