@@ -39,9 +39,19 @@ export function LoginForm() {
   }, []);
 
   const verifyTurnstile = async (token: string): Promise<boolean> => {
-    // For now, skip turnstile verification when using Node.js backend
-    // You can implement this later if needed
-    return true;
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+      const response = await fetch(`${apiUrl}/turnstile/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
+      });
+      const data = await response.json();
+      return data?.success === true;
+    } catch (error) {
+      console.error('Erro ao verificar Turnstile:', error);
+      return false;
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
