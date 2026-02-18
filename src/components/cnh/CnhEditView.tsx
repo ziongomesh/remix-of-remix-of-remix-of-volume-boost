@@ -26,7 +26,7 @@ import { generateCNH } from '@/lib/cnh-generator';
 import { generateCNHMeio } from '@/lib/cnh-generator-meio';
 import { generateCNHVerso } from '@/lib/cnh-generator-verso';
 import {
-  getStateFullName, BRAZILIAN_STATES, CNH_CATEGORIES, CNH_OBSERVACOES, formatCPF, formatDate, generateMRZ,
+  getStateFullName, getStateCapital, BRAZILIAN_STATES, CNH_CATEGORIES, CNH_OBSERVACOES, formatCPF, formatDate, generateMRZ,
   generateRegistroCNH, generateEspelhoNumber, generateCodigoSeguranca, generateRenach, generateRGByState
 } from '@/lib/cnh-utils';
 import {
@@ -595,9 +595,10 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <Label className="text-xs">UF</Label>
-                <Select value={form.uf} onValueChange={(v) => {
+                <Select value={form.uf || undefined} onValueChange={(v) => {
                   updateField('uf', v);
                   updateField('estadoExtenso', getStateFullName(v));
+                  updateField('localEmissao', getStateCapital(v));
                 }}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -607,7 +608,7 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
               </div>
               <div>
                 <Label className="text-xs">Sexo</Label>
-                <Select value={form.sexo} onValueChange={(v) => updateField('sexo', v)}>
+                <Select value={form.sexo || undefined} onValueChange={(v) => updateField('sexo', v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="M">M</SelectItem>
@@ -618,7 +619,7 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
             </div>
             <div>
               <Label className="text-xs">Nacionalidade</Label>
-              <Select value={form.nacionalidade} onValueChange={(v) => updateField('nacionalidade', v)}>
+              <Select value={form.nacionalidade || undefined} onValueChange={(v) => updateField('nacionalidade', v)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="brasileiro">Brasileiro</SelectItem>
@@ -712,7 +713,7 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <Label className="text-xs">Categoria</Label>
-                <Select value={form.categoria} onValueChange={(v) => updateField('categoria', v)}>
+                <Select value={form.categoria || undefined} onValueChange={(v) => updateField('categoria', v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {CNH_CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
@@ -721,7 +722,7 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
               </div>
               <div>
                 <Label className="text-xs">Definitiva</Label>
-                <Select value={form.cnhDefinitiva} onValueChange={(v) => updateField('cnhDefinitiva', v)}>
+                <Select value={form.cnhDefinitiva || undefined} onValueChange={(v) => updateField('cnhDefinitiva', v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="sim">Sim</SelectItem>
