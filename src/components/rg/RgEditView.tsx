@@ -502,6 +502,12 @@ export default function RgEditView({ registro, onClose, onSaved }: RgEditViewPro
           </CardTitle>
         </CardHeader>
         <CardContent>
+          {regenerating && !previewUrls.frente ? (
+            <div className="flex items-center justify-center py-12 gap-2 text-muted-foreground">
+              <Loader2 className="h-5 w-5 animate-spin" />
+              <span className="text-sm">Gerando matrizes...</span>
+            </div>
+          ) : (
           <div className="grid grid-cols-2 gap-4">
             <div className="text-center">
               <p className="text-xs text-muted-foreground mb-2 flex items-center justify-center gap-1">
@@ -516,6 +522,7 @@ export default function RgEditView({ registro, onClose, onSaved }: RgEditViewPro
               {previewUrls.verso && <img src={previewUrls.verso} alt="Verso" className="w-full rounded border pointer-events-none select-none" draggable={false} onDragStart={(e) => e.preventDefault()} onContextMenu={(e) => e.preventDefault()} />}
             </div>
           </div>
+          )}
         </CardContent>
       </Card>
 

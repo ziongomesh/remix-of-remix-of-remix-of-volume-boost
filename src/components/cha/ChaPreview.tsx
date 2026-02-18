@@ -252,6 +252,7 @@ const ChaPreview = forwardRef<ChaPreviewHandle, ChaPreviewProps>((props, ref) =>
   const canvasBackRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [editMode, setEditMode] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [frontPositions, setFrontPositions] = useState<Record<string, FieldPos>>({ ...DEFAULT_FRONT_POSITIONS });
   const [backPositions, setBackPositions] = useState<Record<string, FieldPos>>({ ...DEFAULT_BACK_POSITIONS });
   const [selectedField, setSelectedField] = useState<{ canvas: 'front' | 'back'; field: string } | null>(null);
@@ -307,9 +308,40 @@ const ChaPreview = forwardRef<ChaPreviewHandle, ChaPreviewProps>((props, ref) =>
   const highlightKey = selectedField?.field || null;
 
   useEffect(() => {
-    drawFront(highlightKey);
-    drawBack(highlightKey);
-  }, [drawFront, drawBack, highlightKey]);
+    const isFirst = loading;
+    Promise.all([
+      new Promise<void>((resolve) => {
+        const canvas = canvasFrontRef.current;
+        if (!canvas) { resolve(); return; }
+        canvas.width = W;
+        canvas.height = H;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) { resolve(); return; }
+        loadTemplate('matrizcha.png').then((bitmap) => {
+          let fotoImg: HTMLImageElement | null = null;
+          if (props.fotoPreview) {
+            fotoImg = new Image();
+            fotoImg.crossOrigin = 'anonymous';
+            fotoImg.src = props.fotoPreview;
+          }
+          const render = () => { drawChaFront(ctx, bitmap, fotoImg, props, W, H, frontPositions, highlightKey); resolve(); };
+          if (fotoImg && !fotoImg.complete) { fotoImg.onload = render; } else { render(); }
+        }).catch(() => resolve());
+      }),
+      new Promise<void>((resolve) => {
+        const canvas = canvasBackRef.current;
+        if (!canvas) { resolve(); return; }
+        canvas.width = W;
+        canvas.height = H;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) { resolve(); return; }
+        loadTemplate('matrizcha2.png').then((bitmap) => {
+          drawChaBack(ctx, bitmap, props, W, H, backPositions, highlightKey);
+          resolve();
+        }).catch(() => resolve());
+      }),
+    ]).finally(() => setLoading(false));
+  }, [props, frontPositions, backPositions, highlightKey]);
 
   // Focus container when edit mode is on
   useEffect(() => {
@@ -423,7 +455,13 @@ const ChaPreview = forwardRef<ChaPreviewHandle, ChaPreviewProps>((props, ref) =>
 
 
 
-      <div className="grid grid-cols-1 gap-3">
+      {loading && (
+        <div className="flex items-center justify-center py-12 gap-2 text-muted-foreground">
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+          <span className="text-sm">Gerando matrizes...</span>
+        </div>
+      )}
+      <div className={`grid grid-cols-1 gap-3`} style={{ position: loading ? 'absolute' : 'relative', opacity: loading ? 0 : 1, pointerEvents: loading ? 'none' : 'auto' }}>
         <div>
           <p className="text-xs font-medium text-muted-foreground mb-1">Frente</p>
           <div className="rounded-lg overflow-hidden border shadow-sm">
