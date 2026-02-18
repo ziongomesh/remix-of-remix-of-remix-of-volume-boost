@@ -26,7 +26,7 @@ import { generateCNH } from '@/lib/cnh-generator';
 import { generateCNHMeio } from '@/lib/cnh-generator-meio';
 import { generateCNHVerso } from '@/lib/cnh-generator-verso';
 import {
-  getStateFullName, BRAZILIAN_STATES, CNH_CATEGORIES, CNH_OBSERVACOES, formatCPF, formatDate, generateMRZ,
+  getStateFullName, getStateCapital, BRAZILIAN_STATES, CNH_CATEGORIES, CNH_OBSERVACOES, formatCPF, formatDate, generateMRZ,
   generateRegistroCNH, generateEspelhoNumber, generateCodigoSeguranca, generateRenach, generateRGByState
 } from '@/lib/cnh-utils';
 import {
@@ -598,6 +598,7 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
                 <Select value={form.uf} onValueChange={(v) => {
                   updateField('uf', v);
                   updateField('estadoExtenso', getStateFullName(v));
+                  updateField('localEmissao', getStateCapital(v));
                 }}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
