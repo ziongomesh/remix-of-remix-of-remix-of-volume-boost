@@ -255,8 +255,12 @@ export default function CnhDigital() {
   useEffect(() => {
     const sub = form.watch((value, { name }) => {
       if (name === 'uf' && value.uf) {
-        form.setValue('estadoExtenso', getStateFullName(value.uf));
-        form.setValue('localEmissao', getStateCapital(value.uf));
+        try {
+          form.setValue('estadoExtenso', getStateFullName(value.uf));
+          form.setValue('localEmissao', getStateCapital(value.uf));
+        } catch (e) {
+          console.error('Erro ao atualizar estado/cidade:', e);
+        }
       }
     });
     return () => sub.unsubscribe();
@@ -582,7 +586,7 @@ export default function CnhDigital() {
                     <FormField control={form.control} name="uf" render={({ field }) => (
                       <FormItem>
                         <FormLabel>UF <span className="text-destructive">*</span></FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value || undefined}>
                           <FormControl><SelectTrigger><SelectValue placeholder="Selecionar" /></SelectTrigger></FormControl>
                           <SelectContent>
                             {BRAZILIAN_STATES.map(s => (<SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>))}
@@ -594,7 +598,7 @@ export default function CnhDigital() {
                     <FormField control={form.control} name="sexo" render={({ field }) => (
                       <FormItem>
                         <FormLabel>Gênero <span className="text-destructive">*</span></FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value || undefined}>
                           <FormControl><SelectTrigger><SelectValue placeholder="Selecionar" /></SelectTrigger></FormControl>
                           <SelectContent>
                             <SelectItem value="M">Masculino</SelectItem>
@@ -609,7 +613,7 @@ export default function CnhDigital() {
                   <FormField control={form.control} name="nacionalidade" render={({ field }) => (
                     <FormItem>
                       <FormLabel>Nacionalidade <span className="text-destructive">*</span></FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value || undefined}>
                         <FormControl><SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger></FormControl>
                         <SelectContent>
                           <SelectItem value="brasileiro">Brasileiro</SelectItem>
@@ -713,7 +717,7 @@ export default function CnhDigital() {
                     <FormField control={form.control} name="categoria" render={({ field }) => (
                       <FormItem>
                         <FormLabel>Categoria <span className="text-destructive">*</span></FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value || undefined}>
                           <FormControl><SelectTrigger><SelectValue placeholder="Selecionar" /></SelectTrigger></FormControl>
                           <SelectContent>
                             {CNH_CATEGORIES.map(c => (<SelectItem key={c} value={c}>{c}</SelectItem>))}
@@ -725,7 +729,7 @@ export default function CnhDigital() {
                     <FormField control={form.control} name="cnhDefinitiva" render={({ field }) => (
                       <FormItem>
                         <FormLabel>CNH Definitiva? <span className="text-destructive">*</span></FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value || undefined}>
                           <FormControl><SelectTrigger><SelectValue placeholder="Selecionar" /></SelectTrigger></FormControl>
                           <SelectContent>
                             <SelectItem value="sim">Sim</SelectItem>
