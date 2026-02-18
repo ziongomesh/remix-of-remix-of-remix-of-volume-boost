@@ -130,6 +130,7 @@ export default function HistoricoServicos() {
   const [editingNautica, setEditingNautica] = useState<NauticaRecord | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [renewingId, setRenewingId] = useState<string | null>(null);
+  const [expiringOpen, setExpiringOpen] = useState(false);
 
   const handleDeleteCnh = async (usuarioId: number) => {
     if (!admin) return;
@@ -499,15 +500,19 @@ export default function HistoricoServicos() {
           </Card>
         ) : (
           <>
-            {/* Serviços próximos a expirar */}
+            {/* Serviços próximos a expirar - collapsible, fechado por padrão */}
             {totalExpiring > 0 && (
               <Card className="border-orange-500/40 bg-orange-500/5">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm text-orange-600 dark:text-orange-400 flex items-center gap-2">
-                    <AlertTriangle className="h-4 w-4" /> Serviços Próximos a Expirar ({totalExpiring})
-                  </CardTitle>
+                <CardHeader className="pb-3 cursor-pointer" onClick={() => setExpiringOpen(!expiringOpen)}>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-sm text-orange-600 dark:text-orange-400 flex items-center gap-2">
+                      <AlertTriangle className="h-4 w-4" /> Serviços Próximos a Expirar ({totalExpiring})
+                    </CardTitle>
+                    {expiringOpen ? <ChevronUp className="h-4 w-4 text-orange-500" /> : <ChevronDown className="h-4 w-4 text-orange-500" />}
+                  </div>
                   <p className="text-xs text-muted-foreground">Estes serviços expiram em 5 dias ou menos. Renove por 1 crédito para +45 dias.</p>
                 </CardHeader>
+                {expiringOpen && (
                 <CardContent className="space-y-3">
                   {expiringCnhs.map(u => (
                     <CnhHistoryCard
@@ -551,6 +556,7 @@ export default function HistoricoServicos() {
                     />
                   ))}
                 </CardContent>
+                )}
               </Card>
             )}
 
