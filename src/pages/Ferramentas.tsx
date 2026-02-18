@@ -1,7 +1,7 @@
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ImageMinus, FileText, PenLine, Clock } from 'lucide-react';
+import { ImageMinus, FileText, PenLine, Clock, Palette } from 'lucide-react';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -28,6 +28,14 @@ const tools = [
     icon: PenLine,
     href: '/ferramentas/gerador-assinatura',
     color: 'text-purple-500',
+    available: true,
+  },
+  {
+    title: 'Converter Imagem',
+    description: 'Converta imagens para tons de cinza ou somente preto e branco',
+    icon: Palette,
+    href: '/ferramentas/converter-imagem',
+    color: 'text-emerald-500',
     available: true,
   },
 ];
