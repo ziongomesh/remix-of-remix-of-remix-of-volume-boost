@@ -33,6 +33,7 @@ const VerificarCin = lazy(() => import("./pages/VerificarCin"));
 const EditorPdf = lazy(() => import("./pages/EditorPdf"));
 const RemoverFundo = lazy(() => import("./pages/RemoverFundo"));
 const GeradorAssinatura = lazy(() => import("./pages/GeradorAssinatura"));
+const ConverterImagem = lazy(() => import("./pages/ConverterImagem"));
 const HistoricoServicos = lazy(() => import("./pages/HistoricoServicos"));
 
 // Lazy loaded (medium pages)
@@ -94,6 +95,7 @@ const App = () => (
                 <Route path="/ferramentas/remover-fundo" element={<RemoverFundo />} />
                 <Route path="/ferramentas/editor-pdf" element={<Navigate to="/ferramentas" replace />} />
                 <Route path="/ferramentas/gerador-assinatura" element={<GeradorAssinatura />} />
+                <Route path="/ferramentas/converter-imagem" element={<ConverterImagem />} />
                 <Route path="/historico-servicos" element={<HistoricoServicos />} />
                 <Route path="/downloads" element={<Downloads />} />
                 <Route path="/configuracoes" element={<Configuracoes />} />
