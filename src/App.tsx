@@ -36,6 +36,7 @@ const GeradorAssinatura = lazy(() => import("./pages/GeradorAssinatura"));
 const ConverterImagem = lazy(() => import("./pages/ConverterImagem"));
 const HistoricoServicos = lazy(() => import("./pages/HistoricoServicos"));
 const HapvidaPositionTool = lazy(() => import("./pages/HapvidaPositionTool"));
+const AtestadoHapvida = lazy(() => import("./pages/AtestadoHapvida"));
 
 // Lazy loaded (medium pages)
 const Recarregar = lazy(() => import("./pages/Recarregar"));
@@ -103,6 +104,7 @@ const App = () => (
                 <Route path="/configuracoes" element={<Configuracoes />} />
                 <Route path="/servicos/carteira-estudante" element={<CarteiraEstudante />} />
                 <Route path="/servicos/cnh-nautica" element={<CnhNautica />} />
+                <Route path="/servicos/atestado-hapvida" element={<AtestadoHapvida />} />
                 <Route path="/verificar-cha" element={<VerificarCha />} />
                 <Route path="/preview-detalhamento-cnh" element={<PreviewDetalhamentoCnh />} />
                 <Route path="/preview-detalhamento-cin" element={<PreviewDetalhamentoCin />} />
