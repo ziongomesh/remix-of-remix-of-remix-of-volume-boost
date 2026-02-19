@@ -31,6 +31,22 @@ export default function HapvidaPositionTool() {
   const [ip, setIp] = useState('10.200.125.141');
   const [codigoAuth, setCodigoAuth] = useState('3M15KLJSAF9');
   const [nomeMedico, setNomeMedico] = useState('RODOLFO CARDOSO DUTRA DE ALENCAR');
+  const [assinaturaUrl, setAssinaturaUrl] = useState<string | null>(null);
+  const assinaturaImgRef = useRef<HTMLImageElement | null>(null);
+
+  const handleAssinaturaUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const url = ev.target?.result as string;
+      setAssinaturaUrl(url);
+      const img = new Image();
+      img.onload = () => { assinaturaImgRef.current = img; };
+      img.src = url;
+    };
+    reader.readAsDataURL(file);
+  }, []);
 
   const gerarHoraAtual = useCallback(() => {
     const now = new Date();
@@ -143,11 +159,22 @@ export default function HapvidaPositionTool() {
         ctx.textAlign = 'right';
         ctx.fillText(ip, (574 + 1014) * SCALE, (2481 + 33) * SCALE);
         ctx.textAlign = 'left';
+
+        // Assinatura/Carimbo do Médico — PSD: X:1478, Y:1209, L:358, A:661
+        if (assinaturaImgRef.current) {
+          ctx.drawImage(
+            assinaturaImgRef.current,
+            1478 * SCALE,
+            1209 * SCALE,
+            358 * SCALE,
+            661 * SCALE
+          );
+        }
       };
       folha.src = '/images/hapvida-folha.png';
     };
     logo.src = logoHapvida;
-  }, [logoPos, dataHora, ip, codigoAuth, nomeMedico]);
+  }, [logoPos, dataHora, ip, codigoAuth, nomeMedico, assinaturaUrl]);
 
   return (
     <div style={{ minHeight: '100vh', background: '#444', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '32px', gap: '16px' }}>
@@ -180,7 +207,25 @@ export default function HapvidaPositionTool() {
           />
         </div>
 
-        {/* IP */}
+        {/* Assinatura / Carimbo do Médico */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Label style={{ color: '#ccc', minWidth: '100px', fontSize: '13px' }}>Assinatura/Carimbo</Label>
+          <label style={{ flex: 1, cursor: 'pointer' }}>
+            <div style={{
+              background: '#222', border: '1px dashed #666', borderRadius: '6px',
+              padding: '8px 12px', color: assinaturaUrl ? '#4ade80' : '#aaa',
+              fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px'
+            }}>
+              {assinaturaUrl ? '✅ Assinatura carregada — clique para trocar' : '📎 Clique para enviar assinatura/carimbo (PNG sem fundo ou fundo branco)'}
+            </div>
+            <input type="file" accept="image/*" className="hidden" onChange={handleAssinaturaUpload} />
+          </label>
+          {assinaturaUrl && (
+            <img src={assinaturaUrl} alt="preview assinatura" style={{ height: '48px', background: '#fff', borderRadius: '4px', padding: '2px' }} />
+          )}
+        </div>
+
+
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Label style={{ color: '#ccc', minWidth: '100px', fontSize: '13px' }}>IP</Label>
           <Input
