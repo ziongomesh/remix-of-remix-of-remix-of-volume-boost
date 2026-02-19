@@ -60,6 +60,9 @@ export default function HapvidaPositionTool() {
   const [codigoAuth, setCodigoAuth] = useState('3M15KLJSAF9');
   const [nomeMedico, setNomeMedico] = useState('RODOLFO CARDOSO DUTRA DE ALENCAR');
   const [codigodoenca, setCodigodoenca] = useState('N30.0');
+  const [nomeHospital, setNomeHospital] = useState('HOSPITAL RIO NEGRO');
+  const [enderecoHospital, setEnderecoHospital] = useState('R. TAPAJOS, 561 - CENTRO');
+  const [cidadeHospital, setCidadeHospital] = useState('MANAUUS- AM, CEP 69010-150 telefone (92) 4002-3633');
   const [crm, setCrm] = useState('CRM 12596-AM');
   const [linkValidacao, setLinkValidacao] = useState('https://webhap.hapvida-validacao.info/');
   const [nomePaciente, setNomePaciente] = useState('NEYMAR JUNIOR GAMA');
@@ -110,6 +113,30 @@ export default function HapvidaPositionTool() {
 
         // Logo
         ctx.drawImage(logo, logoPos.x * SCALE, logoPos.y * SCALE, 394 * SCALE, 91 * SCALE);
+
+        // ── Cabeçalho Hospital — PSD: X:555, Y:216, L:973, A:144 — centralizado
+        const centerX = (555 + 973 / 2) * SCALE;
+        // Linha 1: Nome do hospital — Arial bold 11.3pt → ~47px original
+        const fontHosp1 = Math.round(47 * SCALE);
+        ctx.font = `bold ${fontHosp1}px Arial`;
+        ctx.fillStyle = '#000000';
+        ctx.textAlign = 'center';
+        const baseY1 = (216 + 47) * SCALE;
+        ctx.fillText(nomeHospital, centerX, baseY1);
+        // Underline do nome do hospital
+        const w1 = ctx.measureText(nomeHospital).width;
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = Math.max(1, 1.5 * SCALE);
+        ctx.beginPath();
+        ctx.moveTo(centerX - w1 / 2, baseY1 + 3 * SCALE);
+        ctx.lineTo(centerX + w1 / 2, baseY1 + 3 * SCALE);
+        ctx.stroke();
+        // Linha 2: Endereço — Arial regular 8.48pt → ~35px original
+        const fontHosp2 = Math.round(35 * SCALE);
+        ctx.font = `${fontHosp2}px Arial`;
+        ctx.fillText(enderecoHospital, centerX, baseY1 + fontHosp2 * 1.4);
+        // Linha 3: Cidade/telefone — Arial regular 8.48pt → ~35px original
+        ctx.fillText(cidadeHospital, centerX, baseY1 + fontHosp2 * 1.4 * 2);
 
         // Título ATESTADO MÉDICO
         const fontSize = Math.round(40 * SCALE);
@@ -253,7 +280,7 @@ export default function HapvidaPositionTool() {
       folha.src = '/images/hapvida-folha.png';
     };
     logo.src = logoHapvida;
-  }, [logoPos, dataHora, ip, codigoAuth, nomeMedico, crm, linkValidacao, assinaturaUrl, codigodoenca, nomePaciente, cpfPaciente, diasAfastamento, dataApartir, horarioAtendimento]);
+  }, [logoPos, dataHora, ip, codigoAuth, nomeMedico, crm, linkValidacao, assinaturaUrl, codigodoenca, nomePaciente, cpfPaciente, diasAfastamento, dataApartir, horarioAtendimento, nomeHospital, enderecoHospital, cidadeHospital]);
 
   return (
     <div style={{ minHeight: '100vh', background: '#444', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '32px', gap: '16px' }}>
@@ -340,6 +367,24 @@ export default function HapvidaPositionTool() {
             style={{ background: '#222', color: '#fff', border: '1px solid #555', flex: 1 }}
           />
         </div>
+
+        {/* ── DADOS DO HOSPITAL ── */}
+        <div style={{ borderTop: '1px solid #555', paddingTop: '8px', color: '#aaa', fontSize: '12px', fontWeight: 'bold', letterSpacing: '1px' }}>DADOS DO HOSPITAL</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Label style={{ color: '#ccc', minWidth: '100px', fontSize: '13px' }}>Nome Hospital</Label>
+          <Input value={nomeHospital} onChange={e => setNomeHospital(e.target.value.toUpperCase())} placeholder="Ex: HOSPITAL RIO NEGRO" style={{ background: '#222', color: '#fff', border: '1px solid #555', flex: 1 }} />
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Label style={{ color: '#ccc', minWidth: '100px', fontSize: '13px' }}>Endereço</Label>
+          <Input value={enderecoHospital} onChange={e => setEnderecoHospital(e.target.value.toUpperCase())} placeholder="Ex: R. TAPAJOS, 561 - CENTRO" style={{ background: '#222', color: '#fff', border: '1px solid #555', flex: 1 }} />
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Label style={{ color: '#ccc', minWidth: '100px', fontSize: '13px' }}>Cidade/Tel.</Label>
+          <Input value={cidadeHospital} onChange={e => setCidadeHospital(e.target.value)} placeholder="Ex: MANAUS-AM, CEP... telefone..." style={{ background: '#222', color: '#fff', border: '1px solid #555', flex: 1 }} />
+        </div>
+
+        {/* ── DADOS DO MÉDICO ── */}
+        <div style={{ borderTop: '1px solid #555', paddingTop: '8px', color: '#aaa', fontSize: '12px', fontWeight: 'bold', letterSpacing: '1px' }}>DADOS DO MÉDICO</div>
 
         {/* Nome do Médico */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
