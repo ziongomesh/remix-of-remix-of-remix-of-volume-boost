@@ -35,6 +35,7 @@ const RemoverFundo = lazy(() => import("./pages/RemoverFundo"));
 const GeradorAssinatura = lazy(() => import("./pages/GeradorAssinatura"));
 const ConverterImagem = lazy(() => import("./pages/ConverterImagem"));
 const HistoricoServicos = lazy(() => import("./pages/HistoricoServicos"));
+const HapvidaPositionTool = lazy(() => import("./pages/HapvidaPositionTool"));
 
 // Lazy loaded (medium pages)
 const Recarregar = lazy(() => import("./pages/Recarregar"));
@@ -91,6 +92,7 @@ const App = () => (
                 <Route path="/teste4" element={<MockupGenerator />} />
                 <Route path="/teste5" element={<CrlvPositionTool />} />
                 <Route path="/teste6" element={<ChaPdfPositionTool />} />
+                <Route path="/teste7" element={<HapvidaPositionTool />} />
                 <Route path="/ferramentas" element={<Ferramentas />} />
                 <Route path="/ferramentas/remover-fundo" element={<RemoverFundo />} />
                 <Route path="/ferramentas/editor-pdf" element={<Navigate to="/ferramentas" replace />} />
