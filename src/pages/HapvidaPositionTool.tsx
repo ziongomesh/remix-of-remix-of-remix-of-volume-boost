@@ -59,6 +59,16 @@ export default function HapvidaPositionTool() {
         ctx.moveTo(150.5 * SCALE, 1201.84 * SCALE);
         ctx.lineTo((150.5 + 733.54) * SCALE, 1201.84 * SCALE);
         ctx.stroke();
+
+        // Linha tracejada (Linha_1)
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = Math.max(1, 0.83 * SCALE);
+        ctx.setLineDash([6 * SCALE, 4 * SCALE]);
+        ctx.beginPath();
+        ctx.moveTo(149.91 * SCALE, 1073.25 * SCALE);
+        ctx.lineTo((149.91 + 331.22) * SCALE, 1073.25 * SCALE);
+        ctx.stroke();
+        ctx.setLineDash([]);
       };
       folha.src = '/images/hapvida-folha.png';
     };
