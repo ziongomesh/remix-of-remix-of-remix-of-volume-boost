@@ -31,6 +31,7 @@ export default function HapvidaPositionTool() {
   const [ip, setIp] = useState('10.200.125.141');
   const [codigoAuth, setCodigoAuth] = useState('3M15KLJSAF9');
   const [nomeMedico, setNomeMedico] = useState('RODOLFO CARDOSO DUTRA DE ALENCAR');
+  const [codigodoenca, setCodigodoenca] = useState('N30.0');
   const [crm, setCrm] = useState('CRM 12596-AM');
   const [linkValidacao, setLinkValidacao] = useState('https://webhap.hapvida-validacao.info/');
   const [assinaturaUrl, setAssinaturaUrl] = useState<string | null>(null);
@@ -117,6 +118,13 @@ export default function HapvidaPositionTool() {
         ctx.textAlign = 'left';
         ctx.fillText('Código da Doença', 149 * SCALE, (1093 + 36) * SCALE);
 
+        // Valor Código da Doença — PSD: X:150, Y:1017, L:118, A:32 — 10.36pt Arial Regular → ~43px original
+        const fontCodigoValor = Math.round(43 * SCALE);
+        ctx.font = `${fontCodigoValor}px Arial`;
+        ctx.fillStyle = '#000000';
+        ctx.textAlign = 'left';
+        ctx.fillText(codigodoenca, 150 * SCALE, (1017 + 32) * SCALE);
+
         // Texto "Local e Data"
         const fontLocal = Math.round(28 * SCALE);
         ctx.font = `${fontLocal}px Arial`;
@@ -198,7 +206,7 @@ export default function HapvidaPositionTool() {
       folha.src = '/images/hapvida-folha.png';
     };
     logo.src = logoHapvida;
-  }, [logoPos, dataHora, ip, codigoAuth, nomeMedico, crm, linkValidacao, assinaturaUrl]);
+  }, [logoPos, dataHora, ip, codigoAuth, nomeMedico, crm, linkValidacao, assinaturaUrl, codigodoenca]);
 
   return (
     <div style={{ minHeight: '100vh', background: '#444', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '32px', gap: '16px' }}>
@@ -218,6 +226,17 @@ export default function HapvidaPositionTool() {
           <Button size="sm" onClick={gerarHoraAtual} style={{ whiteSpace: 'nowrap', background: '#555', color: '#fff' }}>
             ⏰ Hora Atual
           </Button>
+        </div>
+
+        {/* Código da Doença */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Label style={{ color: '#ccc', minWidth: '100px', fontSize: '13px' }}>Cód. Doença (CID)</Label>
+          <Input
+            value={codigodoenca}
+            onChange={e => setCodigodoenca(e.target.value.toUpperCase())}
+            placeholder="Ex: N30.0"
+            style={{ background: '#222', color: '#fff', border: '1px solid #555', flex: 1 }}
+          />
         </div>
 
         {/* Nome do Médico */}
