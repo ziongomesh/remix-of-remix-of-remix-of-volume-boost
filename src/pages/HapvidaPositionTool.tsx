@@ -135,6 +135,14 @@ export default function HapvidaPositionTool() {
         ctx.textAlign = 'left';
         ctx.fillText(crm, 149 * SCALE, (1564 + 33) * SCALE);
 
+        // Linha_4 — PSD: X:150.5, Y:1515.5, L:733.54, A:1.67
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = Math.max(1, 1.67 * SCALE);
+        ctx.beginPath();
+        ctx.moveTo(150.5 * SCALE, 1515.5 * SCALE);
+        ctx.lineTo((150.5 + 733.54) * SCALE, 1515.5 * SCALE);
+        ctx.stroke();
+
         // Texto "Aceito a Colocação do CID. Assinado us ___"
         // PSD: X:130, Y:1742, L:1238, A:43
         const fontAceito = Math.round(43 * SCALE);
