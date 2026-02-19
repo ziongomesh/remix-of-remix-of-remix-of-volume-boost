@@ -152,14 +152,14 @@ export default function HapvidaPositionTool() {
   const [diasAfastamento, setDiasAfastamento] = useState(1);
   const [dataApartir, setDataApartir] = useState('19/02/2026');
   const [horarioAtendimento, setHorarioAtendimento] = useState('12:32');
-  const [assinaturaUrl, setAssinaturaUrl] = useState<string | null>('/images/hapvida-carimbo-sample.png');
+  const [assinaturaUrl, setAssinaturaUrl] = useState<string | null>('/images/hapvida-carimbo-default.png');
   const assinaturaImgRef = useRef<HTMLImageElement | null>(null);
 
   // Pré-carrega o carimbo padrão na inicialização
   useEffect(() => {
     const img = new Image();
     img.onload = () => { assinaturaImgRef.current = img; };
-    img.src = '/images/hapvida-carimbo-sample.png';
+    img.src = '/images/hapvida-carimbo-default.png';
   }, []);
 
   const handleAssinaturaUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -365,6 +365,40 @@ export default function HapvidaPositionTool() {
             661 * SCALE
           );
         }
+
+        // ── MARCA D'ÁGUA PREVIEW ─────────────────────────────────────────────
+        const wmLines = ['PREVIEW', 'DATA SISTEMAS'];
+        const wmFontSize = Math.round(130 * SCALE);
+        ctx.save();
+        ctx.globalAlpha = 0.13;
+        ctx.fillStyle = '#000000';
+        ctx.font = `bold ${wmFontSize}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        // Diagonal repetida de cima-esquerda a baixo-direita
+        const step = Math.round(420 * SCALE);
+        for (let row = -1; row <= 4; row++) {
+          ctx.save();
+          const cx = CANVAS_W / 2;
+          const cy = (CANVAS_H / 5) * (row + 0.5);
+          ctx.translate(cx, cy);
+          ctx.rotate(-Math.PI / 5);
+          wmLines.forEach((line, i) => {
+            ctx.fillText(line, 0, (i - (wmLines.length - 1) / 2) * (wmFontSize * 1.2));
+          });
+          ctx.restore();
+          // Segunda coluna deslocada
+          ctx.save();
+          const cx2 = CANVAS_W / 2 + step * 0.6;
+          const cy2 = (CANVAS_H / 5) * row + step * 0.3;
+          ctx.translate(cx2, cy2);
+          ctx.rotate(-Math.PI / 5);
+          wmLines.forEach((line, i) => {
+            ctx.fillText(line, 0, (i - (wmLines.length - 1) / 2) * (wmFontSize * 1.2));
+          });
+          ctx.restore();
+        }
+        ctx.restore();
       };
       folha.src = '/images/hapvida-folha.png';
     };
@@ -537,12 +571,11 @@ export default function HapvidaPositionTool() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Label style={{ color: '#ccc', minWidth: '100px', fontSize: '13px' }}>Carimbo</Label>
           <label style={{ flex: 1, cursor: 'pointer' }}>
-            <div style={{ background: '#222', border: '1px dashed #666', borderRadius: '6px', padding: '8px 12px', color: assinaturaUrl ? '#4ade80' : '#aaa', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              {assinaturaUrl ? '✅ Carimbo carregado — clique para trocar' : '📎 Clique para enviar carimbo/assinatura (PNG sem fundo ou fundo branco)'}
+            <div style={{ background: '#222', border: '1px dashed #666', borderRadius: '6px', padding: '8px 12px', color: assinaturaUrl && assinaturaUrl !== '/images/hapvida-carimbo-default.png' ? '#4ade80' : '#aaa', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {assinaturaUrl && assinaturaUrl !== '/images/hapvida-carimbo-default.png' ? '✅ Carimbo personalizado — clique para trocar' : '📎 Carimbo padrão ativo — clique para substituir'}
             </div>
             <input type="file" accept="image/*" className="hidden" onChange={handleAssinaturaUpload} />
           </label>
-          {assinaturaUrl && <img src={assinaturaUrl} alt="carimbo" style={{ height: '48px', background: '#fff', borderRadius: '4px', padding: '2px' }} />}
         </div>
 
         {/* ── DADOS INFORMATIVOS ── */}
