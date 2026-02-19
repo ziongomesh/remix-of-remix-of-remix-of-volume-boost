@@ -29,7 +29,7 @@ export default function HapvidaPositionTool() {
         ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
         ctx.drawImage(folha, 0, 0, CANVAS_W, CANVAS_H);
         // Logo: escalar coordenadas originais para o canvas
-        ctx.drawImage(logo, logoPos.x * SCALE, logoPos.y * SCALE, 180 * SCALE, 60 * SCALE);
+        ctx.drawImage(logo, logoPos.x * SCALE, logoPos.y * SCALE, 394 * SCALE, 91 * SCALE);
       };
       folha.src = '/images/hapvida-folha.png';
     };
