@@ -24,6 +24,34 @@ function gerarCodigoAutenticacao() {
   return codigo;
 }
 
+const DIAS_EXTENSO: Record<number, string> = {
+  1: 'UM', 2: 'DOIS', 3: 'TRÊS', 4: 'QUATRO', 5: 'CINCO',
+  6: 'SEIS', 7: 'SETE', 8: 'OITO', 9: 'NOVE', 10: 'DEZ',
+  11: 'ONZE', 12: 'DOZE', 13: 'TREZE', 14: 'QUATORZE', 15: 'QUINZE',
+  20: 'VINTE', 30: 'TRINTA',
+};
+function diasPorExtenso(n: number): string {
+  return DIAS_EXTENSO[n] ?? String(n);
+}
+
+// Quebra texto em linhas respeitando largura máxima em pixels
+function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
+  const words = text.split(' ');
+  const lines: string[] = [];
+  let current = '';
+  for (const word of words) {
+    const test = current ? current + ' ' + word : word;
+    if (ctx.measureText(test).width > maxWidth && current) {
+      lines.push(current);
+      current = word;
+    } else {
+      current = test;
+    }
+  }
+  if (current) lines.push(current);
+  return lines;
+}
+
 export default function HapvidaPositionTool() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [logoPos] = useState({ x: 99, y: 250 });
@@ -34,6 +62,11 @@ export default function HapvidaPositionTool() {
   const [codigodoenca, setCodigodoenca] = useState('N30.0');
   const [crm, setCrm] = useState('CRM 12596-AM');
   const [linkValidacao, setLinkValidacao] = useState('https://webhap.hapvida-validacao.info/');
+  const [nomePaciente, setNomePaciente] = useState('NEYMAR JUNIOR GAMA');
+  const [cpfPaciente, setCpfPaciente] = useState('704.762.672-77');
+  const [diasAfastamento, setDiasAfastamento] = useState(1);
+  const [dataApartir, setDataApartir] = useState('19/02/2026');
+  const [horarioAtendimento, setHorarioAtendimento] = useState('12:32');
   const [assinaturaUrl, setAssinaturaUrl] = useState<string | null>(null);
   const assinaturaImgRef = useRef<HTMLImageElement | null>(null);
 
@@ -84,6 +117,20 @@ export default function HapvidaPositionTool() {
         ctx.fillStyle = '#000000';
         ctx.textAlign = 'left';
         ctx.fillText('ATESTADO MÉDICO', 798 * SCALE, (499 + 38) * SCALE);
+
+        // Corpo do atestado — PSD: X:133, Y:726, L:1815, A:192 — 10.36pt Arial Regular → ~43px original
+        const fontCorpo = Math.round(43 * SCALE);
+        ctx.font = `${fontCorpo}px Arial`;
+        ctx.fillStyle = '#000000';
+        ctx.textAlign = 'left';
+        const diasExt = diasPorExtenso(diasAfastamento);
+        const textoAtestado = `Atesto que atendi nesta data o (a) Sr (a) ${nomePaciente}, CPF ${cpfPaciente} ás ${horarioAtendimento}, sendo necessário o seu afastamento das atividades laborativas ou academicas por ${diasAfastamento} (${diasExt}) dia (s), apartir de ${dataApartir}, tendo como causa do atendimento o código abaixo:`;
+        const maxLargura = 1815 * SCALE;
+        const linhasAtestado = wrapText(ctx, textoAtestado, maxLargura);
+        const lineHeight = fontCorpo * 1.35;
+        linhasAtestado.forEach((linha, i) => {
+          ctx.fillText(linha, 133 * SCALE, (726 + fontCorpo) * SCALE + i * lineHeight);
+        });
 
         // Linha de rodapé
         ctx.strokeStyle = '#000000';
@@ -206,7 +253,7 @@ export default function HapvidaPositionTool() {
       folha.src = '/images/hapvida-folha.png';
     };
     logo.src = logoHapvida;
-  }, [logoPos, dataHora, ip, codigoAuth, nomeMedico, crm, linkValidacao, assinaturaUrl, codigodoenca]);
+  }, [logoPos, dataHora, ip, codigoAuth, nomeMedico, crm, linkValidacao, assinaturaUrl, codigodoenca, nomePaciente, cpfPaciente, diasAfastamento, dataApartir, horarioAtendimento]);
 
   return (
     <div style={{ minHeight: '100vh', background: '#444', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '32px', gap: '16px' }}>
@@ -227,6 +274,61 @@ export default function HapvidaPositionTool() {
             ⏰ Hora Atual
           </Button>
         </div>
+
+        {/* ── DADOS DO PACIENTE ── */}
+        <div style={{ borderTop: '1px solid #555', paddingTop: '8px', color: '#aaa', fontSize: '12px', fontWeight: 'bold', letterSpacing: '1px' }}>DADOS DO PACIENTE</div>
+
+        {/* Nome do Paciente */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Label style={{ color: '#ccc', minWidth: '100px', fontSize: '13px' }}>Nome</Label>
+          <Input
+            value={nomePaciente}
+            onChange={e => setNomePaciente(e.target.value.toUpperCase())}
+            placeholder="Ex: NEYMAR JUNIOR GAMA"
+            style={{ background: '#222', color: '#fff', border: '1px solid #555', flex: 1 }}
+          />
+        </div>
+
+        {/* CPF do Paciente */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Label style={{ color: '#ccc', minWidth: '100px', fontSize: '13px' }}>CPF</Label>
+          <Input
+            value={cpfPaciente}
+            onChange={e => setCpfPaciente(e.target.value)}
+            placeholder="Ex: 704.762.672-77"
+            style={{ background: '#222', color: '#fff', border: '1px solid #555', flex: 1 }}
+          />
+        </div>
+
+        {/* Dias de afastamento + data apartir + horário */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <Label style={{ color: '#ccc', minWidth: '100px', fontSize: '13px' }}>Dias afastamento</Label>
+          <Input
+            type="number"
+            min={1}
+            max={30}
+            value={diasAfastamento}
+            onChange={e => setDiasAfastamento(Number(e.target.value))}
+            style={{ background: '#222', color: '#fff', border: '1px solid #555', width: '70px' }}
+          />
+          <Label style={{ color: '#ccc', fontSize: '13px' }}>A partir de</Label>
+          <Input
+            value={dataApartir}
+            onChange={e => setDataApartir(e.target.value)}
+            placeholder="DD/MM/AAAA"
+            style={{ background: '#222', color: '#fff', border: '1px solid #555', width: '130px' }}
+          />
+          <Label style={{ color: '#ccc', fontSize: '13px' }}>Horário</Label>
+          <Input
+            value={horarioAtendimento}
+            onChange={e => setHorarioAtendimento(e.target.value)}
+            placeholder="HH:MM"
+            style={{ background: '#222', color: '#fff', border: '1px solid #555', width: '90px' }}
+          />
+        </div>
+
+        {/* ── DADOS DA DOENÇA ── */}
+        <div style={{ borderTop: '1px solid #555', paddingTop: '8px', color: '#aaa', fontSize: '12px', fontWeight: 'bold', letterSpacing: '1px' }}>DADOS DA DOENÇA</div>
 
         {/* Código da Doença */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
