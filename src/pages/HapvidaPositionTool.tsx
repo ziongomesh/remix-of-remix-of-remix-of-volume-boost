@@ -81,6 +81,18 @@ export default function HapvidaPositionTool() {
         const fontLocal = Math.round(28 * SCALE);
         ctx.font = `${fontLocal}px Arial`;
         ctx.fillText('Local e Data', 388 * SCALE, (1218 + 28) * SCALE);
+
+        // Rodapé: data/hora e IP (Arial Regular ~10.36pt → ~43px no original)
+        const fontRodape = Math.round(43 * SCALE);
+        ctx.font = `${fontRodape}px Arial`;
+        ctx.fillStyle = '#000000';
+        // Data/hora — alinhado à esquerda no X inicial
+        ctx.textAlign = 'left';
+        ctx.fillText('19/02/2026 12:32:14', 574 * SCALE, (2481 + 33) * SCALE);
+        // IP — alinhado à direita no fim do bloco
+        ctx.textAlign = 'right';
+        ctx.fillText('10.200.125.141', (574 + 1014) * SCALE, (2481 + 33) * SCALE);
+        ctx.textAlign = 'left';
       };
       folha.src = '/images/hapvida-folha.png';
     };
