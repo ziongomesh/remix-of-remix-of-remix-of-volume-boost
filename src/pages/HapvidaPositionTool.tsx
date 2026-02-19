@@ -398,34 +398,27 @@ export default function HapvidaPositionTool() {
           }
 
           // ── MARCA D'ÁGUA PREVIEW ─────────────────────────────────────────────
-          const wmLines = ['PREVIEW', 'DATA SISTEMAS'];
-          const wmFontSize = Math.round(130 * SCALE);
+          const wmText = 'PREVIEW - DATA SISTEMAS';
+          const wmFontSize = Math.round(90 * SCALE);
+          const wmAngle = -Math.PI / 6;
+          const wmSpacingX = CANVAS_W * 0.65;
+          const wmSpacingY = CANVAS_H * 0.18;
           ctx.save();
-          ctx.globalAlpha = 0.13;
+          ctx.globalAlpha = 0.10;
           ctx.fillStyle = '#000000';
           ctx.font = `bold ${wmFontSize}px Arial`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          const step = Math.round(420 * SCALE);
-          for (let row = -1; row <= 4; row++) {
-            ctx.save();
-            const cx = CANVAS_W / 2;
-            const cy = (CANVAS_H / 5) * (row + 0.5);
-            ctx.translate(cx, cy);
-            ctx.rotate(-Math.PI / 5);
-            wmLines.forEach((line, i) => {
-              ctx.fillText(line, 0, (i - (wmLines.length - 1) / 2) * (wmFontSize * 1.2));
-            });
-            ctx.restore();
-            ctx.save();
-            const cx2 = CANVAS_W / 2 + step * 0.6;
-            const cy2 = (CANVAS_H / 5) * row + step * 0.3;
-            ctx.translate(cx2, cy2);
-            ctx.rotate(-Math.PI / 5);
-            wmLines.forEach((line, i) => {
-              ctx.fillText(line, 0, (i - (wmLines.length - 1) / 2) * (wmFontSize * 1.2));
-            });
-            ctx.restore();
+          for (let row = -1; row <= 6; row++) {
+            for (let col = -1; col <= 2; col++) {
+              ctx.save();
+              const cx = col * wmSpacingX + (row % 2 === 0 ? 0 : wmSpacingX * 0.5);
+              const cy = row * wmSpacingY;
+              ctx.translate(cx, cy);
+              ctx.rotate(wmAngle);
+              ctx.fillText(wmText, 0, 0);
+              ctx.restore();
+            }
           }
           ctx.restore();
         };
