@@ -351,124 +351,6 @@ const CID_LIST: { codigo: string; descricao: string }[] = [
   { codigo: 'Z23', descricao: 'Necessidade de imunização contra doença bacteriana' },
   { codigo: 'Z76.9', descricao: 'Contato com serviços de saúde por razão não especificada' },
 ];
-  { codigo: 'A37.9', descricao: 'Coqueluche não especificada' },
-  { codigo: 'A90', descricao: 'Dengue (dengue clássica)' },
-  { codigo: 'A91', descricao: 'Febre hemorrágica pelo vírus do dengue' },
-  { codigo: 'B00.9', descricao: 'Infecção pelo vírus herpes simples não especificada' },
-  { codigo: 'B01.9', descricao: 'Varicela sem complicações (catapora)' },
-  { codigo: 'B02.9', descricao: 'Herpes zoster sem complicações (cobreiro)' },
-  { codigo: 'B19.9', descricao: 'Hepatite viral não especificada' },
-  { codigo: 'B34.9', descricao: 'Infecção viral não especificada' },
-  { codigo: 'B99', descricao: 'Doenças infecciosas não especificadas' },
-  { codigo: 'B01.9', descricao: 'Varicela sem complicações' },
-  { codigo: 'B34.9', descricao: 'Infecção viral não especificada' },
-  { codigo: 'B99', descricao: 'Doenças infecciosas não especificadas' },
-  { codigo: 'C34.9', descricao: 'Neoplasia maligna do brônquio ou pulmão não especificado' },
-  { codigo: 'C50.9', descricao: 'Neoplasia maligna da mama não especificada' },
-  { codigo: 'D50.9', descricao: 'Anemia por deficiência de ferro não especificada' },
-  { codigo: 'E03.9', descricao: 'Hipotireoidismo não especificado' },
-  { codigo: 'E05.9', descricao: 'Hipertireoidismo não especificado' },
-  { codigo: 'E10.9', descricao: 'Diabetes mellitus tipo 1 sem complicações' },
-  { codigo: 'E11.9', descricao: 'Diabetes mellitus tipo 2 sem complicações' },
-  { codigo: 'E14.9', descricao: 'Diabetes mellitus não especificado sem complicações' },
-  { codigo: 'E66.9', descricao: 'Obesidade não especificada' },
-  { codigo: 'E78.0', descricao: 'Hipercolesterolemia pura (colesterol alto)' },
-  { codigo: 'E78.5', descricao: 'Hiperlipidemia não especificada' },
-  { codigo: 'F32.0', descricao: 'Episódio depressivo leve' },
-  { codigo: 'F32.1', descricao: 'Episódio depressivo moderado' },
-  { codigo: 'F32.9', descricao: 'Episódio depressivo não especificado' },
-  { codigo: 'F41.1', descricao: 'Transtorno de ansiedade generalizada' },
-  { codigo: 'F41.9', descricao: 'Transtorno de ansiedade não especificado' },
-  { codigo: 'G43.0', descricao: 'Enxaqueca sem aura (dor de cabeça enxaqueca)' },
-  { codigo: 'G43.1', descricao: 'Enxaqueca com aura (dor de cabeça com aura)' },
-  { codigo: 'G43.9', descricao: 'Enxaqueca não especificada (dor de cabeça enxaqueca)' },
-  { codigo: 'G44.0', descricao: 'Síndrome de cefaleia em salvas (dor de cabeça em salvas)' },
-  { codigo: 'G44.2', descricao: 'Cefaleia tensional (dor de cabeça tensional)' },
-  { codigo: 'G44.9', descricao: 'Cefaleia não especificada (dor de cabeça)' },
-  { codigo: 'G54.2', descricao: 'Transtornos da raiz lombar não classificados em outro local' },
-  { codigo: 'H10.9', descricao: 'Conjuntivite não especificada' },
-  { codigo: 'H26.9', descricao: 'Catarata não especificada' },
-  { codigo: 'H40.9', descricao: 'Glaucoma não especificado' },
-  { codigo: 'H65.9', descricao: 'Otite média não supurativa não especificada' },
-  { codigo: 'H66.9', descricao: 'Otite média supurativa não especificada' },
-  { codigo: 'H81.1', descricao: 'Vertigem paroxística benigna (tontura)' },
-  { codigo: 'H93.1', descricao: 'Zumbido (tinido)' },
-  { codigo: 'I10', descricao: 'Hipertensão essencial (pressão alta)' },
-  { codigo: 'I11.9', descricao: 'Cardiopatia hipertensiva sem insuficiência cardíaca' },
-  { codigo: 'I20.9', descricao: 'Angina pectoris não especificada' },
-  { codigo: 'I21.9', descricao: 'Infarto agudo do miocárdio não especificado' },
-  { codigo: 'I25.9', descricao: 'Doença isquêmica crônica do coração não especificada' },
-  { codigo: 'I48', descricao: 'Fibrilação e flutter atrial (arritmia)' },
-  { codigo: 'I50.9', descricao: 'Insuficiência cardíaca não especificada' },
-  { codigo: 'I63.9', descricao: 'AVC isquêmico - infarto cerebral não especificado' },
-  { codigo: 'I64', descricao: 'Acidente vascular cerebral não especificado (AVC)' },
-  { codigo: 'I83.9', descricao: 'Varizes dos membros inferiores não especificadas' },
-  { codigo: 'J00', descricao: 'Rinofaringite aguda (resfriado comum)' },
-  { codigo: 'J01.9', descricao: 'Sinusite aguda não especificada' },
-  { codigo: 'J02.9', descricao: 'Faringite aguda não especificada' },
-  { codigo: 'J03.9', descricao: 'Amigdalite aguda não especificada' },
-  { codigo: 'J06.9', descricao: 'Infecção aguda das vias aéreas superiores não especificada' },
-  { codigo: 'J11.1', descricao: 'Influenza com outras manifestações respiratórias, vírus não identificado' },
-  { codigo: 'J18.9', descricao: 'Pneumonia não especificada' },
-  { codigo: 'J20.9', descricao: 'Bronquite aguda não especificada' },
-  { codigo: 'J30.4', descricao: 'Rinite alérgica não especificada' },
-  { codigo: 'J45.9', descricao: 'Asma não especificada' },
-  { codigo: 'K21.0', descricao: 'Doença de refluxo gastroesofágico com esofagite' },
-  { codigo: 'K25.9', descricao: 'Úlcera gástrica não especificada' },
-  { codigo: 'K29.7', descricao: 'Gastrite não especificada' },
-  { codigo: 'K35.9', descricao: 'Apendicite aguda não especificada' },
-  { codigo: 'K57.30', descricao: 'Doença diverticular do intestino grosso sem perfuração ou abscesso' },
-  { codigo: 'K59.0', descricao: 'Constipação intestinal' },
-  { codigo: 'K92.1', descricao: 'Melena' },
-  { codigo: 'L23.9', descricao: 'Dermatite alérgica de contato não especificada' },
-  { codigo: 'L50.9', descricao: 'Urticária não especificada' },
-  { codigo: 'M10.9', descricao: 'Gota não especificada' },
-  { codigo: 'M17.9', descricao: 'Gonartrose não especificada' },
-  { codigo: 'M19.9', descricao: 'Artrose não especificada' },
-  { codigo: 'M25.5', descricao: 'Dor articular' },
-  { codigo: 'M47.8', descricao: 'Outras espondiloartrose' },
-  { codigo: 'M54.2', descricao: 'Cervicalgia' },
-  { codigo: 'M54.4', descricao: 'Lumbago com ciática' },
-  { codigo: 'M54.5', descricao: 'Dor lombar baixa' },
-  { codigo: 'M54.59', descricao: 'Dor na coluna não especificada' },
-  { codigo: 'M54.9', descricao: 'Dorsalgia não especificada' },
-  { codigo: 'M62.9', descricao: 'Transtorno muscular não especificado' },
-  { codigo: 'M75.1', descricao: 'Síndrome do manguito rotador' },
-  { codigo: 'M79.3', descricao: 'Paniculite' },
-  { codigo: 'M79.7', descricao: 'Fibromialgia' },
-  { codigo: 'N10', descricao: 'Pielonefrite aguda (infecção renal)' },
-  { codigo: 'N20.0', descricao: 'Cálculo do rim (pedra no rim)' },
-  { codigo: 'N20.2', descricao: 'Cálculo do rim com cálculo do ureter' },
-  { codigo: 'N30.0', descricao: 'Cistite aguda (infecção urinária)' },
-  { codigo: 'N39.0', descricao: 'Infecção do trato urinário de localização não especificada' },
-  { codigo: 'N40', descricao: 'Hiperplasia da próstata' },
-  { codigo: 'N76.0', descricao: 'Vaginite aguda' },
-  { codigo: 'N92.1', descricao: 'Menstruação irregular com sangramento excessivo' },
-  { codigo: 'N94.6', descricao: 'Dismenorreia (cólica menstrual) não especificada' },
-  { codigo: 'O20.0', descricao: 'Ameaça de aborto' },
-  { codigo: 'R00.0', descricao: 'Taquicardia não especificada' },
-  { codigo: 'R05', descricao: 'Tosse' },
-  { codigo: 'R06.0', descricao: 'Dispneia (falta de ar)' },
-  { codigo: 'R07.4', descricao: 'Dor no peito não especificada' },
-  { codigo: 'R10.0', descricao: 'Dor abdominal aguda' },
-  { codigo: 'R10.4', descricao: 'Outras dores abdominais e as não especificadas' },
-  { codigo: 'R11', descricao: 'Náusea e vômitos' },
-  { codigo: 'R20.2', descricao: 'Parestesia cutânea (formigamento)' },
-  { codigo: 'R42', descricao: 'Tontura e vertigem' },
-  { codigo: 'R50.9', descricao: 'Febre não especificada' },
-  { codigo: 'R51', descricao: 'Cefaleia / dor de cabeça não especificada' },
-  { codigo: 'R52.9', descricao: 'Dor não especificada' },
-  { codigo: 'R53', descricao: 'Mal-estar e fadiga (cansaço)' },
-  { codigo: 'R55', descricao: 'Síncope e colapso (desmaio)' },
-  { codigo: 'R60.0', descricao: 'Edema localizado (inchaço)' },
-  { codigo: 'S00.9', descricao: 'Traumatismo superficial da cabeça não especificado' },
-  { codigo: 'S20.2', descricao: 'Contusão do tórax' },
-  { codigo: 'S60.9', descricao: 'Traumatismo superficial do punho e da mão' },
-  { codigo: 'S80.9', descricao: 'Traumatismo superficial da perna não especificado' },
-  { codigo: 'T14.9', descricao: 'Lesão não especificada' },
-  { codigo: 'Z00.0', descricao: 'Exame médico geral' },
-  { codigo: 'Z23', descricao: 'Necessidade de imunização contra doença bacteriana única' },
-];
 
 // Dimensões originais do PSD
 const ORIG_W = 2090;
@@ -519,6 +401,8 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number)
 }
 
 export default function HapvidaPositionTool() {
+  const [salvando, setSalvando] = useState(false);
+  const [savedMsg, setSavedMsg] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [logoPos] = useState({ x: 99, y: 250 });
   const [dataHora, setDataHora] = useState('19/02/2026 12:32:14');
@@ -540,6 +424,57 @@ export default function HapvidaPositionTool() {
   const [dataApartir, setDataApartir] = useState('19/02/2026');
   const [horarioAtendimento, setHorarioAtendimento] = useState('12:32');
   const [assinaturaUrl, setAssinaturaUrl] = useState<string | null>('/images/hapvida-carimbo-default.png');
+
+  const salvarAtestado = useCallback(async () => {
+    const stored = localStorage.getItem('admin');
+    if (!stored) { setSavedMsg('❌ Faça login primeiro'); return; }
+    const admin = JSON.parse(stored);
+    setSalvando(true);
+    setSavedMsg(null);
+    try {
+      const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:4000/api').replace(/\/+$/, '').replace(/\/api$/, '') + '/api';
+      const cidItem = CID_LIST.find(c => c.codigo === codigodoenca);
+      const resp = await fetch(`${API_URL}/hapvida/save`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Admin-Id': String(admin.id),
+          'X-Session-Token': admin.session_token,
+        },
+        body: JSON.stringify({
+          admin_id: admin.id,
+          session_token: admin.session_token,
+          nome_paciente: nomePaciente,
+          cpf_paciente: cpfPaciente,
+          dias_afastamento: diasAfastamento,
+          data_apartir: dataApartir,
+          horario_atendimento: horarioAtendimento,
+          codigo_doenca: codigodoenca,
+          descricao_doenca: cidItem?.descricao || null,
+          nome_hospital: nomeHospital,
+          endereco_hospital: enderecoHospital,
+          cidade_hospital: cidadeHospital,
+          nome_medico: nomeMedico,
+          crm,
+          codigo_autenticacao: codigoAuth,
+          data_hora: dataHora,
+          ip,
+          link_validacao: linkValidacao,
+        }),
+      });
+      const data = await resp.json();
+      if (resp.ok && data.success) {
+        setSavedMsg(`✅ Atestado salvo! ID: ${data.id}`);
+      } else {
+        setSavedMsg(`❌ ${data.error || 'Erro ao salvar'}`);
+      }
+    } catch (e: any) {
+      setSavedMsg(`❌ ${e.message}`);
+    } finally {
+      setSalvando(false);
+    }
+  }, [nomePaciente, cpfPaciente, diasAfastamento, dataApartir, horarioAtendimento, codigodoenca,
+      nomeHospital, enderecoHospital, cidadeHospital, nomeMedico, crm, codigoAuth, dataHora, ip, linkValidacao]);
 
   const handleAssinaturaUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -961,6 +896,22 @@ export default function HapvidaPositionTool() {
           <Button size="sm" onClick={() => setCodigoAuth(gerarCodigoAutenticacao())} style={{ whiteSpace: 'nowrap', background: '#555', color: '#fff' }}>
             🔀 Gerar Código
           </Button>
+        </div>
+
+        {/* ── SALVAR ── */}
+        <div style={{ borderTop: '1px solid #555', paddingTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <Button
+            onClick={salvarAtestado}
+            disabled={salvando}
+            style={{ background: salvando ? '#444' : '#16a34a', color: '#fff', fontWeight: 'bold', fontSize: '14px', padding: '10px 0', borderRadius: '6px', width: '100%', cursor: salvando ? 'not-allowed' : 'pointer' }}
+          >
+            {salvando ? '⏳ Salvando...' : '💾 Salvar Atestado no Banco'}
+          </Button>
+          {savedMsg && (
+            <div style={{ padding: '8px 12px', borderRadius: '6px', background: savedMsg.startsWith('✅') ? '#166534' : '#7f1d1d', color: '#fff', fontSize: '13px', textAlign: 'center' }}>
+              {savedMsg}
+            </div>
+          )}
         </div>
       </div>
 
