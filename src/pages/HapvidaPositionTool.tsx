@@ -1,11 +1,20 @@
 import { useEffect, useRef, useState } from 'react';
 import logoHapvida from '@/assets/logo-hapvida.png';
 
+// Dimensões originais do PSD
+const ORIG_W = 2090;
+const ORIG_H = 2734;
+
+// Canvas de exibição (proporcional)
 const CANVAS_W = 794;
-const CANVAS_H = 1123;
+const CANVAS_H = Math.round(794 * (ORIG_H / ORIG_W)); // ≈ 1038px
+
+// Escala para converter coordenadas originais → canvas
+const SCALE = CANVAS_W / ORIG_W;
 
 export default function HapvidaPositionTool() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  // Coordenadas no espaço original (2090×2734) → escalar para canvas
   const [logoPos] = useState({ x: 99, y: 250 });
 
   useEffect(() => {
@@ -19,7 +28,8 @@ export default function HapvidaPositionTool() {
       folha.onload = () => {
         ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
         ctx.drawImage(folha, 0, 0, CANVAS_W, CANVAS_H);
-        ctx.drawImage(logo, logoPos.x, logoPos.y, 180, 60);
+        // Logo: escalar coordenadas originais para o canvas
+        ctx.drawImage(logo, logoPos.x * SCALE, logoPos.y * SCALE, 180 * SCALE, 60 * SCALE);
       };
       folha.src = '/images/hapvida-folha.png';
     };
