@@ -150,8 +150,15 @@ export default function HapvidaPositionTool() {
   const [diasAfastamento, setDiasAfastamento] = useState(1);
   const [dataApartir, setDataApartir] = useState('19/02/2026');
   const [horarioAtendimento, setHorarioAtendimento] = useState('12:32');
-  const [assinaturaUrl, setAssinaturaUrl] = useState<string | null>(null);
+  const [assinaturaUrl, setAssinaturaUrl] = useState<string | null>('/images/hapvida-carimbo-sample.png');
   const assinaturaImgRef = useRef<HTMLImageElement | null>(null);
+
+  // Pré-carrega o carimbo padrão na inicialização
+  useEffect(() => {
+    const img = new Image();
+    img.onload = () => { assinaturaImgRef.current = img; };
+    img.src = '/images/hapvida-carimbo-sample.png';
+  }, []);
 
   const handleAssinaturaUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
