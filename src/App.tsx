@@ -87,13 +87,14 @@ const App = () => (
                 <Route path="/servicos/cnh-digital" element={<CnhDigital />} />
                 <Route path="/servicos/crlv-digital" element={<CrlvDigital />} />
                 <Route path="/servicos/rg-digital" element={<RgDigital />} />
-                <Route path="/teste" element={<PdfPositionTool />} />
-                <Route path="/teste2" element={<RgQrPositionTool />} />
-                <Route path="/teste3" element={<ChaPositionTool />} />
-                <Route path="/teste4" element={<MockupGenerator />} />
-                <Route path="/teste5" element={<CrlvPositionTool />} />
-                <Route path="/teste6" element={<ChaPdfPositionTool />} />
-                <Route path="/teste7" element={<HapvidaPositionTool />} />
+                {/* Rotas de teste desativadas */}
+                {/* <Route path="/teste" element={<PdfPositionTool />} /> */}
+                {/* <Route path="/teste2" element={<RgQrPositionTool />} /> */}
+                {/* <Route path="/teste3" element={<ChaPositionTool />} /> */}
+                {/* <Route path="/teste4" element={<MockupGenerator />} /> */}
+                {/* <Route path="/teste5" element={<CrlvPositionTool />} /> */}
+                {/* <Route path="/teste6" element={<ChaPdfPositionTool />} /> */}
+                {/* <Route path="/teste7" element={<HapvidaPositionTool />} /> */}
                 <Route path="/ferramentas" element={<Ferramentas />} />
                 <Route path="/ferramentas/remover-fundo" element={<RemoverFundo />} />
                 <Route path="/ferramentas/editor-pdf" element={<Navigate to="/ferramentas" replace />} />
