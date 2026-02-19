@@ -304,68 +304,28 @@ export default function HapvidaPositionTool() {
 
         {/* ── DADOS DO PACIENTE ── */}
         <div style={{ borderTop: '1px solid #555', paddingTop: '8px', color: '#aaa', fontSize: '12px', fontWeight: 'bold', letterSpacing: '1px' }}>DADOS DO PACIENTE</div>
-
-        {/* Nome do Paciente */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Label style={{ color: '#ccc', minWidth: '100px', fontSize: '13px' }}>Nome</Label>
-          <Input
-            value={nomePaciente}
-            onChange={e => setNomePaciente(e.target.value.toUpperCase())}
-            placeholder="Ex: NEYMAR JUNIOR GAMA"
-            style={{ background: '#222', color: '#fff', border: '1px solid #555', flex: 1 }}
-          />
+          <Input value={nomePaciente} onChange={e => setNomePaciente(e.target.value.toUpperCase())} placeholder="Ex: NEYMAR JUNIOR GAMA" style={{ background: '#222', color: '#fff', border: '1px solid #555', flex: 1 }} />
         </div>
-
-        {/* CPF do Paciente */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Label style={{ color: '#ccc', minWidth: '100px', fontSize: '13px' }}>CPF</Label>
-          <Input
-            value={cpfPaciente}
-            onChange={e => setCpfPaciente(e.target.value)}
-            placeholder="Ex: 704.762.672-77"
-            style={{ background: '#222', color: '#fff', border: '1px solid #555', flex: 1 }}
-          />
+          <Input value={cpfPaciente} onChange={e => setCpfPaciente(e.target.value)} placeholder="Ex: 704.762.672-77" style={{ background: '#222', color: '#fff', border: '1px solid #555', flex: 1 }} />
         </div>
-
-        {/* Dias de afastamento + data apartir + horário */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
           <Label style={{ color: '#ccc', minWidth: '100px', fontSize: '13px' }}>Dias afastamento</Label>
-          <Input
-            type="number"
-            min={1}
-            max={30}
-            value={diasAfastamento}
-            onChange={e => setDiasAfastamento(Number(e.target.value))}
-            style={{ background: '#222', color: '#fff', border: '1px solid #555', width: '70px' }}
-          />
+          <Input type="number" min={1} max={30} value={diasAfastamento} onChange={e => setDiasAfastamento(Number(e.target.value))} style={{ background: '#222', color: '#fff', border: '1px solid #555', width: '70px' }} />
           <Label style={{ color: '#ccc', fontSize: '13px' }}>A partir de</Label>
-          <Input
-            value={dataApartir}
-            onChange={e => setDataApartir(e.target.value)}
-            placeholder="DD/MM/AAAA"
-            style={{ background: '#222', color: '#fff', border: '1px solid #555', width: '130px' }}
-          />
+          <Input value={dataApartir} onChange={e => setDataApartir(e.target.value)} placeholder="DD/MM/AAAA" style={{ background: '#222', color: '#fff', border: '1px solid #555', width: '130px' }} />
           <Label style={{ color: '#ccc', fontSize: '13px' }}>Horário</Label>
-          <Input
-            value={horarioAtendimento}
-            onChange={e => setHorarioAtendimento(e.target.value)}
-            placeholder="HH:MM"
-            style={{ background: '#222', color: '#fff', border: '1px solid #555', width: '90px' }}
-          />
+          <Input value={horarioAtendimento} onChange={e => setHorarioAtendimento(e.target.value)} placeholder="HH:MM" style={{ background: '#222', color: '#fff', border: '1px solid #555', width: '90px' }} />
         </div>
 
         {/* ── DADOS DA DOENÇA ── */}
         <div style={{ borderTop: '1px solid #555', paddingTop: '8px', color: '#aaa', fontSize: '12px', fontWeight: 'bold', letterSpacing: '1px' }}>DADOS DA DOENÇA</div>
-
-        {/* Código da Doença */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Label style={{ color: '#ccc', minWidth: '100px', fontSize: '13px' }}>Cód. Doença (CID)</Label>
-          <Input
-            value={codigodoenca}
-            onChange={e => setCodigodoenca(e.target.value.toUpperCase())}
-            placeholder="Ex: N30.0"
-            style={{ background: '#222', color: '#fff', border: '1px solid #555', flex: 1 }}
-          />
+          <Input value={codigodoenca} onChange={e => setCodigodoenca(e.target.value.toUpperCase())} placeholder="Ex: N30.0" style={{ background: '#222', color: '#fff', border: '1px solid #555', flex: 1 }} />
         </div>
 
         {/* ── DADOS DO HOSPITAL ── */}
@@ -385,78 +345,34 @@ export default function HapvidaPositionTool() {
 
         {/* ── DADOS DO MÉDICO ── */}
         <div style={{ borderTop: '1px solid #555', paddingTop: '8px', color: '#aaa', fontSize: '12px', fontWeight: 'bold', letterSpacing: '1px' }}>DADOS DO MÉDICO</div>
-
-        {/* Nome do Médico */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Label style={{ color: '#ccc', minWidth: '100px', fontSize: '13px' }}>Nome do Médico</Label>
-          <Input
-            value={nomeMedico}
-            onChange={e => setNomeMedico(e.target.value.toUpperCase())}
-            placeholder="Ex: RODOLFO CARDOSO DUTRA DE ALENCAR"
-            style={{ background: '#222', color: '#fff', border: '1px solid #555', flex: 1 }}
-          />
+          <Label style={{ color: '#ccc', minWidth: '100px', fontSize: '13px' }}>Nome</Label>
+          <Input value={nomeMedico} onChange={e => setNomeMedico(e.target.value.toUpperCase())} placeholder="Ex: RODOLFO CARDOSO DUTRA DE ALENCAR" style={{ background: '#222', color: '#fff', border: '1px solid #555', flex: 1 }} />
         </div>
-
-        {/* CRM */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Label style={{ color: '#ccc', minWidth: '100px', fontSize: '13px' }}>CRM</Label>
-          <Input
-            value={crm}
-            onChange={e => setCrm(e.target.value.toUpperCase())}
-            placeholder="Ex: CRM 12596-AM"
-            style={{ background: '#222', color: '#fff', border: '1px solid #555', flex: 1 }}
-          />
+          <Input value={crm} onChange={e => setCrm(e.target.value.toUpperCase())} placeholder="Ex: CRM 12596-AM" style={{ background: '#222', color: '#fff', border: '1px solid #555', flex: 1 }} />
         </div>
-
-        {/* Assinatura / Carimbo do Médico */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Label style={{ color: '#ccc', minWidth: '100px', fontSize: '13px' }}>Assinatura/Carimbo</Label>
+          <Label style={{ color: '#ccc', minWidth: '100px', fontSize: '13px' }}>Carimbo</Label>
           <label style={{ flex: 1, cursor: 'pointer' }}>
-            <div style={{
-              background: '#222', border: '1px dashed #666', borderRadius: '6px',
-              padding: '8px 12px', color: assinaturaUrl ? '#4ade80' : '#aaa',
-              fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px'
-            }}>
-              {assinaturaUrl ? '✅ Assinatura carregada — clique para trocar' : '📎 Clique para enviar assinatura/carimbo (PNG sem fundo ou fundo branco)'}
+            <div style={{ background: '#222', border: '1px dashed #666', borderRadius: '6px', padding: '8px 12px', color: assinaturaUrl ? '#4ade80' : '#aaa', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {assinaturaUrl ? '✅ Carimbo carregado — clique para trocar' : '📎 Clique para enviar carimbo/assinatura (PNG sem fundo ou fundo branco)'}
             </div>
             <input type="file" accept="image/*" className="hidden" onChange={handleAssinaturaUpload} />
           </label>
-          {assinaturaUrl && (
-            <img src={assinaturaUrl} alt="preview assinatura" style={{ height: '48px', background: '#fff', borderRadius: '4px', padding: '2px' }} />
-          )}
+          {assinaturaUrl && <img src={assinaturaUrl} alt="carimbo" style={{ height: '48px', background: '#fff', borderRadius: '4px', padding: '2px' }} />}
         </div>
 
-        {/* Link de Validação */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Label style={{ color: '#ccc', minWidth: '100px', fontSize: '13px' }}>Link Validação</Label>
-          <Input
-            value={linkValidacao}
-            onChange={e => setLinkValidacao(e.target.value)}
-            placeholder="Ex: https://webhap.hapvida-validacao.info/"
-            style={{ background: '#222', color: '#fff', border: '1px solid #555', flex: 1, fontSize: '12px' }}
-          />
-        </div>
-
+        {/* ── DADOS INFORMATIVOS ── */}
+        <div style={{ borderTop: '1px solid #555', paddingTop: '8px', color: '#aaa', fontSize: '12px', fontWeight: 'bold', letterSpacing: '1px' }}>DADOS INFORMATIVOS</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Label style={{ color: '#ccc', minWidth: '100px', fontSize: '13px' }}>IP</Label>
-          <Input
-            value={ip}
-            onChange={e => setIp(e.target.value)}
-            placeholder="Ex: 10.200.125.141"
-            style={{ background: '#222', color: '#fff', border: '1px solid #555', flex: 1 }}
-          />
+          <Input value={ip} onChange={e => setIp(e.target.value)} placeholder="Ex: 10.200.125.141" style={{ background: '#222', color: '#fff', border: '1px solid #555', flex: 1 }} />
         </div>
-
-        {/* Código de Autenticação */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Label style={{ color: '#ccc', minWidth: '100px', fontSize: '13px' }}>Cód. Auth.</Label>
-          <Input
-            value={codigoAuth}
-            onChange={e => setCodigoAuth(e.target.value.toUpperCase())}
-            placeholder="Ex: 3M15KLJSAF9"
-            maxLength={16}
-            style={{ background: '#222', color: '#fff', border: '1px solid #555', flex: 1, fontFamily: 'monospace', letterSpacing: '2px' }}
-          />
+          <Input value={codigoAuth} onChange={e => setCodigoAuth(e.target.value.toUpperCase())} placeholder="Ex: 3M15KLJSAF9" maxLength={16} style={{ background: '#222', color: '#fff', border: '1px solid #555', flex: 1, fontFamily: 'monospace', letterSpacing: '2px' }} />
           <Button size="sm" onClick={() => setCodigoAuth(gerarCodigoAutenticacao())} style={{ whiteSpace: 'nowrap', background: '#555', color: '#fff' }}>
             🔀 Gerar Código
           </Button>
