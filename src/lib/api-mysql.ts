@@ -452,6 +452,14 @@ export const mysqlApi = {
       return { status: 'error', timestamp: new Date().toISOString() };
     }
   },
+
+  hapvida: {
+    save: async (data: any) => fetchAPI('/hapvida/save', { method: 'POST', body: JSON.stringify(data) }),
+    list: async (adminId: number, sessionToken: string) =>
+      fetchAPI('/hapvida/list', { method: 'POST', body: JSON.stringify({ admin_id: adminId, session_token: sessionToken }) }),
+    delete: async (adminId: number, sessionToken: string, atestadoId: number) =>
+      fetchAPI('/hapvida/delete', { method: 'POST', body: JSON.stringify({ admin_id: adminId, session_token: sessionToken, atestado_id: atestadoId }) }),
+  },
 };
 
 export default mysqlApi;
