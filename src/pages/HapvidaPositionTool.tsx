@@ -31,6 +31,7 @@ export default function HapvidaPositionTool() {
   const [ip, setIp] = useState('10.200.125.141');
   const [codigoAuth, setCodigoAuth] = useState('3M15KLJSAF9');
   const [nomeMedico, setNomeMedico] = useState('RODOLFO CARDOSO DUTRA DE ALENCAR');
+  const [crm, setCrm] = useState('CRM 12596-AM');
   const [assinaturaUrl, setAssinaturaUrl] = useState<string | null>(null);
   const assinaturaImgRef = useRef<HTMLImageElement | null>(null);
 
@@ -127,6 +128,12 @@ export default function HapvidaPositionTool() {
         ctx.textAlign = 'left';
         ctx.fillText(nomeMedico, 150 * SCALE, (1448 + 33) * SCALE);
 
+        // CRM — PSD: X:149, Y:1564, L:324, A:33 — 10.36pt Arial Regular → ~43px original
+        ctx.font = `${fontMedico}px Arial`;
+        ctx.fillStyle = '#000000';
+        ctx.textAlign = 'left';
+        ctx.fillText(crm, 149 * SCALE, (1564 + 33) * SCALE);
+
         // Texto "Aceito a Colocação do CID. Assinado us ___"
         // PSD: X:130, Y:1742, L:1238, A:43
         const fontAceito = Math.round(43 * SCALE);
@@ -174,7 +181,7 @@ export default function HapvidaPositionTool() {
       folha.src = '/images/hapvida-folha.png';
     };
     logo.src = logoHapvida;
-  }, [logoPos, dataHora, ip, codigoAuth, nomeMedico, assinaturaUrl]);
+  }, [logoPos, dataHora, ip, codigoAuth, nomeMedico, crm, assinaturaUrl]);
 
   return (
     <div style={{ minHeight: '100vh', background: '#444', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '32px', gap: '16px' }}>
@@ -203,6 +210,17 @@ export default function HapvidaPositionTool() {
             value={nomeMedico}
             onChange={e => setNomeMedico(e.target.value.toUpperCase())}
             placeholder="Ex: RODOLFO CARDOSO DUTRA DE ALENCAR"
+            style={{ background: '#222', color: '#fff', border: '1px solid #555', flex: 1 }}
+          />
+        </div>
+
+        {/* CRM */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Label style={{ color: '#ccc', minWidth: '100px', fontSize: '13px' }}>CRM</Label>
+          <Input
+            value={crm}
+            onChange={e => setCrm(e.target.value.toUpperCase())}
+            placeholder="Ex: CRM 12596-AM"
             style={{ background: '#222', color: '#fff', border: '1px solid #555', flex: 1 }}
           />
         </div>
