@@ -32,6 +32,7 @@ export default function HapvidaPositionTool() {
   const [codigoAuth, setCodigoAuth] = useState('3M15KLJSAF9');
   const [nomeMedico, setNomeMedico] = useState('RODOLFO CARDOSO DUTRA DE ALENCAR');
   const [crm, setCrm] = useState('CRM 12596-AM');
+  const [linkValidacao, setLinkValidacao] = useState('https://webhap.hapvida-validacao.info/');
   const [assinaturaUrl, setAssinaturaUrl] = useState<string | null>(null);
   const assinaturaImgRef = useRef<HTMLImageElement | null>(null);
 
@@ -155,6 +156,14 @@ export default function HapvidaPositionTool() {
         ctx.textAlign = 'left';
         ctx.fillText(`Solicitação da senha: ${dataHora}`, 132 * SCALE, (1875 + 33) * SCALE);
 
+        // Link de validação — PSD: X:133, Y:1987, L:835, A:91 — 10.36pt Arial Regular → ~43px original
+        // Linha 1: "Link para validação do Atestado Médico:"  Linha 2: URL
+        ctx.font = `${fontAuth}px Arial`;
+        ctx.fillStyle = '#000000';
+        ctx.textAlign = 'left';
+        ctx.fillText('Link para validação do Atestado Médico:', 133 * SCALE, (1987 + 33) * SCALE);
+        ctx.fillText(linkValidacao, 133 * SCALE, (1987 + 33 + 43) * SCALE);
+
         // Rodapé: data/hora e IP (Arial Regular ~10.36pt → ~43px no original)
         const fontRodape = Math.round(43 * SCALE);
         ctx.font = `${fontRodape}px Arial`;
@@ -181,7 +190,7 @@ export default function HapvidaPositionTool() {
       folha.src = '/images/hapvida-folha.png';
     };
     logo.src = logoHapvida;
-  }, [logoPos, dataHora, ip, codigoAuth, nomeMedico, crm, assinaturaUrl]);
+  }, [logoPos, dataHora, ip, codigoAuth, nomeMedico, crm, linkValidacao, assinaturaUrl]);
 
   return (
     <div style={{ minHeight: '100vh', background: '#444', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '32px', gap: '16px' }}>
@@ -243,6 +252,16 @@ export default function HapvidaPositionTool() {
           )}
         </div>
 
+        {/* Link de Validação */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Label style={{ color: '#ccc', minWidth: '100px', fontSize: '13px' }}>Link Validação</Label>
+          <Input
+            value={linkValidacao}
+            onChange={e => setLinkValidacao(e.target.value)}
+            placeholder="Ex: https://webhap.hapvida-validacao.info/"
+            style={{ background: '#222', color: '#fff', border: '1px solid #555', flex: 1, fontSize: '12px' }}
+          />
+        </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Label style={{ color: '#ccc', minWidth: '100px', fontSize: '13px' }}>IP</Label>
