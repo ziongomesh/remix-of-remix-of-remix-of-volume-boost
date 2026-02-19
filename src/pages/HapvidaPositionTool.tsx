@@ -82,6 +82,14 @@ export default function HapvidaPositionTool() {
         ctx.font = `${fontLocal}px Arial`;
         ctx.fillText('Local e Data', 388 * SCALE, (1218 + 28) * SCALE);
 
+        // Texto "Aceito a Colocação do CID. Assinado us ___"
+        // PSD: X:130, Y:1742, L:1238, A:43
+        const fontAceito = Math.round(43 * SCALE);
+        ctx.font = `${fontAceito}px Arial`;
+        ctx.fillStyle = '#000000';
+        ctx.textAlign = 'left';
+        ctx.fillText('Aceito a Colocação do CID. Assinado us ___________________', 130 * SCALE, (1742 + 33) * SCALE);
+
         // Rodapé: data/hora e IP (Arial Regular ~10.36pt → ~43px no original)
         const fontRodape = Math.round(43 * SCALE);
         ctx.font = `${fontRodape}px Arial`;
