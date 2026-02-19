@@ -12,6 +12,7 @@ import CnhSuccessModal from "./CnhSuccessModal";
 import CnhDetalhamento from "./CnhDetalhamento";
 import { cnhService } from "@/lib/cnh-service";
 import { playSuccessSound } from "@/lib/success-sound";
+import api from "@/lib/api";
 
 interface CnhPreviewProps {
   cnhData: any;
@@ -99,13 +100,31 @@ export default function CnhPreview({ cnhData, onClose, onSaveSuccess, onEdit, is
       return;
     }
 
-    // Verificar créditos
+    // Verificar créditos - buscar saldo atualizado do servidor para evitar dado desatualizado
     const adminStr = localStorage.getItem('admin');
     if (!adminStr) {
       toast.error('Sessão expirada. Faça login novamente.');
       return;
     }
     const admin = JSON.parse(adminStr);
+
+    // Atualizar créditos do servidor antes de verificar (evita problema de admin ficar muito tempo no formulário)
+    try {
+      if (admin.session_token) {
+        const freshBalance = await api.credits.getBalance(admin.id);
+        if (freshBalance !== null && freshBalance !== undefined) {
+          const credits = typeof freshBalance === 'object' ? (freshBalance as any).credits : freshBalance;
+          admin.creditos = credits;
+          // Atualizar localStorage com saldo real
+          const updatedAdmin = { ...JSON.parse(adminStr), creditos: credits };
+          localStorage.setItem('admin', JSON.stringify(updatedAdmin));
+        }
+      }
+    } catch (e) {
+      // Se falhar, usa o saldo local como fallback
+      console.warn('Não foi possível atualizar créditos antes de salvar:', e);
+    }
+
     if (admin.creditos <= 0) {
       toast.error('Créditos insuficientes para criar CNH.');
       return;
