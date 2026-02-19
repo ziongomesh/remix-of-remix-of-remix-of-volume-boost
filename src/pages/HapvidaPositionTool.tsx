@@ -76,6 +76,11 @@ export default function HapvidaPositionTool() {
         ctx.fillStyle = '#000000';
         ctx.textAlign = 'left';
         ctx.fillText('Código da Doença', 149 * SCALE, (1093 + 36) * SCALE);
+
+        // Texto "Local e Data"
+        const fontLocal = Math.round(28 * SCALE);
+        ctx.font = `${fontLocal}px Arial`;
+        ctx.fillText('Local e Data', 388 * SCALE, (1218 + 28) * SCALE);
       };
       folha.src = '/images/hapvida-folha.png';
     };
