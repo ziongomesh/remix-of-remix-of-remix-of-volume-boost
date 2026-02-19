@@ -30,6 +30,7 @@ export default function HapvidaPositionTool() {
   const [dataHora, setDataHora] = useState('19/02/2026 12:32:14');
   const [ip, setIp] = useState('10.200.125.141');
   const [codigoAuth, setCodigoAuth] = useState('3M15KLJSAF9');
+  const [nomeMedico, setNomeMedico] = useState('RODOLFO CARDOSO DUTRA DE ALENCAR');
 
   const gerarHoraAtual = useCallback(() => {
     const now = new Date();
@@ -103,6 +104,13 @@ export default function HapvidaPositionTool() {
         ctx.font = `${fontLocal}px Arial`;
         ctx.fillText('Local e Data', 388 * SCALE, (1218 + 28) * SCALE);
 
+        // Nome do Médico — PSD: X:150, Y:1448, L:938, A:33 — 10.36pt Arial Regular → ~43px original
+        const fontMedico = Math.round(43 * SCALE);
+        ctx.font = `${fontMedico}px Arial`;
+        ctx.fillStyle = '#000000';
+        ctx.textAlign = 'left';
+        ctx.fillText(nomeMedico, 150 * SCALE, (1448 + 33) * SCALE);
+
         // Texto "Aceito a Colocação do CID. Assinado us ___"
         // PSD: X:130, Y:1742, L:1238, A:43
         const fontAceito = Math.round(43 * SCALE);
@@ -139,7 +147,7 @@ export default function HapvidaPositionTool() {
       folha.src = '/images/hapvida-folha.png';
     };
     logo.src = logoHapvida;
-  }, [logoPos, dataHora, ip, codigoAuth]);
+  }, [logoPos, dataHora, ip, codigoAuth, nomeMedico]);
 
   return (
     <div style={{ minHeight: '100vh', background: '#444', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '32px', gap: '16px' }}>
@@ -159,6 +167,17 @@ export default function HapvidaPositionTool() {
           <Button size="sm" onClick={gerarHoraAtual} style={{ whiteSpace: 'nowrap', background: '#555', color: '#fff' }}>
             ⏰ Hora Atual
           </Button>
+        </div>
+
+        {/* Nome do Médico */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Label style={{ color: '#ccc', minWidth: '100px', fontSize: '13px' }}>Nome do Médico</Label>
+          <Input
+            value={nomeMedico}
+            onChange={e => setNomeMedico(e.target.value.toUpperCase())}
+            placeholder="Ex: RODOLFO CARDOSO DUTRA DE ALENCAR"
+            style={{ background: '#222', color: '#fff', border: '1px solid #555', flex: 1 }}
+          />
         </div>
 
         {/* IP */}
