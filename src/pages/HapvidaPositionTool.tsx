@@ -1,5 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import logoHapvida from '@/assets/logo-hapvida.png';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 // Dimensões originais do PSD
 const ORIG_W = 2090;
@@ -12,10 +15,28 @@ const CANVAS_H = Math.round(794 * (ORIG_H / ORIG_W)); // ≈ 1038px
 // Escala para converter coordenadas originais → canvas
 const SCALE = CANVAS_W / ORIG_W;
 
+function gerarCodigoAutenticacao() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let codigo = '';
+  for (let i = 0; i < 11; i++) {
+    codigo += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return codigo;
+}
+
 export default function HapvidaPositionTool() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  // Coordenadas no espaço original (2090×2734) → escalar para canvas
   const [logoPos] = useState({ x: 99, y: 250 });
+  const [dataHora, setDataHora] = useState('19/02/2026 12:32:14');
+  const [ip, setIp] = useState('10.200.125.141');
+  const [codigoAuth, setCodigoAuth] = useState('3M15KLJSAF9');
+
+  const gerarHoraAtual = useCallback(() => {
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const data = `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    setDataHora(data);
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -90,27 +111,77 @@ export default function HapvidaPositionTool() {
         ctx.textAlign = 'left';
         ctx.fillText('Aceito a Colocação do CID. Assinado us ___________________', 130 * SCALE, (1742 + 33) * SCALE);
 
+        // Código de Autenticação — PSD: X:132, Y:1824, L:826, A:42 — 10.36pt Arial Regular → ~43px original
+        const fontAuth = Math.round(43 * SCALE);
+        ctx.font = `${fontAuth}px Arial`;
+        ctx.fillStyle = '#000000';
+        ctx.textAlign = 'left';
+        ctx.fillText(`Código de Autenticação: ${codigoAuth}`, 132 * SCALE, (1824 + 33) * SCALE);
+
         // Rodapé: data/hora e IP (Arial Regular ~10.36pt → ~43px no original)
         const fontRodape = Math.round(43 * SCALE);
         ctx.font = `${fontRodape}px Arial`;
         ctx.fillStyle = '#000000';
         // Data/hora — alinhado à esquerda no X inicial
         ctx.textAlign = 'left';
-        ctx.fillText('19/02/2026 12:32:14', 574 * SCALE, (2481 + 33) * SCALE);
+        ctx.fillText(dataHora, 574 * SCALE, (2481 + 33) * SCALE);
         // IP — alinhado à direita no fim do bloco
         ctx.textAlign = 'right';
-        ctx.fillText('10.200.125.141', (574 + 1014) * SCALE, (2481 + 33) * SCALE);
+        ctx.fillText(ip, (574 + 1014) * SCALE, (2481 + 33) * SCALE);
         ctx.textAlign = 'left';
       };
       folha.src = '/images/hapvida-folha.png';
     };
     logo.src = logoHapvida;
-  }, [logoPos]);
+  }, [logoPos, dataHora, ip, codigoAuth]);
 
   return (
-    <div style={{ minHeight: '100vh', background: '#444', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '32px', gap: '12px' }}>
+    <div style={{ minHeight: '100vh', background: '#444', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '32px', gap: '16px' }}>
       <div style={{ color: '#fff', fontSize: '18px', fontWeight: 'bold' }}>Preview Hapvida — /teste7</div>
-      <div style={{ color: '#ccc', fontSize: '13px' }}>Logo: X={logoPos.x}px, Y={logoPos.y}px</div>
+
+      {/* Formulário de controles */}
+      <div style={{ background: '#333', borderRadius: '8px', padding: '16px', width: '100%', maxWidth: '794px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        {/* Data e Hora */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Label style={{ color: '#ccc', minWidth: '100px', fontSize: '13px' }}>Data/Hora</Label>
+          <Input
+            value={dataHora}
+            onChange={e => setDataHora(e.target.value)}
+            placeholder="DD/MM/AAAA HH:MM:SS"
+            style={{ background: '#222', color: '#fff', border: '1px solid #555', flex: 1 }}
+          />
+          <Button size="sm" onClick={gerarHoraAtual} style={{ whiteSpace: 'nowrap', background: '#555', color: '#fff' }}>
+            ⏰ Hora Atual
+          </Button>
+        </div>
+
+        {/* IP */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Label style={{ color: '#ccc', minWidth: '100px', fontSize: '13px' }}>IP</Label>
+          <Input
+            value={ip}
+            onChange={e => setIp(e.target.value)}
+            placeholder="Ex: 10.200.125.141"
+            style={{ background: '#222', color: '#fff', border: '1px solid #555', flex: 1 }}
+          />
+        </div>
+
+        {/* Código de Autenticação */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Label style={{ color: '#ccc', minWidth: '100px', fontSize: '13px' }}>Cód. Auth.</Label>
+          <Input
+            value={codigoAuth}
+            onChange={e => setCodigoAuth(e.target.value.toUpperCase())}
+            placeholder="Ex: 3M15KLJSAF9"
+            maxLength={16}
+            style={{ background: '#222', color: '#fff', border: '1px solid #555', flex: 1, fontFamily: 'monospace', letterSpacing: '2px' }}
+          />
+          <Button size="sm" onClick={() => setCodigoAuth(gerarCodigoAutenticacao())} style={{ whiteSpace: 'nowrap', background: '#555', color: '#fff' }}>
+            🔀 Gerar Código
+          </Button>
+        </div>
+      </div>
+
       <canvas
         ref={canvasRef}
         width={CANVAS_W}
