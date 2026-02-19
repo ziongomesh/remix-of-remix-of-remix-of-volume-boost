@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { getUnidadesPorUF, UF_LABELS, UFS_DISPONIVEIS } from '@/lib/hapvida-unidades';
 import logoHapvida from '@/assets/logo-hapvida.png';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -140,6 +141,7 @@ export default function HapvidaPositionTool() {
   const [codigoAuth, setCodigoAuth] = useState('3M15KLJSAF9');
   const [nomeMedico, setNomeMedico] = useState('RODOLFO CARDOSO DUTRA DE ALENCAR');
   const [codigodoenca, setCodigodoenca] = useState('N30.0');
+  const [ufSelecionada, setUfSelecionada] = useState('AM');
   const [nomeHospital, setNomeHospital] = useState('HOSPITAL RIO NEGRO');
   const [enderecoHospital, setEnderecoHospital] = useState('R. TAPAJOS, 561 - CENTRO');
   const [cidadeHospital, setCidadeHospital] = useState('MANAUUS- AM, CEP 69010-150 telefone (92) 4002-3633');
@@ -469,17 +471,57 @@ export default function HapvidaPositionTool() {
 
         {/* ── DADOS DO HOSPITAL ── */}
         <div style={{ borderTop: '1px solid #555', paddingTop: '8px', color: '#aaa', fontSize: '12px', fontWeight: 'bold', letterSpacing: '1px' }}>DADOS DO HOSPITAL</div>
+
+        {/* Seletor de Estado */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Label style={{ color: '#ccc', minWidth: '100px', fontSize: '13px' }}>Estado (UF)</Label>
+          <select
+            value={ufSelecionada}
+            onChange={e => setUfSelecionada(e.target.value)}
+            style={{ background: '#222', color: '#fff', border: '1px solid #555', borderRadius: '6px', padding: '6px 10px', flex: 1, fontSize: '13px' }}
+          >
+            {UFS_DISPONIVEIS.map(uf => (
+              <option key={uf} value={uf}>{uf} — {UF_LABELS[uf] ?? uf}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Seletor de Unidade */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Label style={{ color: '#ccc', minWidth: '100px', fontSize: '13px' }}>Unidade</Label>
+          <select
+            value={nomeHospital}
+            onChange={e => {
+              const unidade = getUnidadesPorUF(ufSelecionada).find(u => u.nome.toUpperCase() === e.target.value);
+              if (unidade) {
+                setNomeHospital(unidade.nome.toUpperCase());
+                setEnderecoHospital(unidade.endereco.toUpperCase());
+                setCidadeHospital(unidade.cidade.toUpperCase());
+              }
+            }}
+            style={{ background: '#222', color: '#fff', border: '1px solid #555', borderRadius: '6px', padding: '6px 10px', flex: 1, fontSize: '12px' }}
+          >
+            <option value="">— Selecione uma unidade —</option>
+            {getUnidadesPorUF(ufSelecionada).map(u => (
+              <option key={u.nome} value={u.nome.toUpperCase()}>
+                [{u.tipo.slice(0,3).toUpperCase()}] {u.nome}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Campos manuais (editáveis após seleção) */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Label style={{ color: '#ccc', minWidth: '100px', fontSize: '13px' }}>Nome Hospital</Label>
-          <Input value={nomeHospital} onChange={e => setNomeHospital(e.target.value.toUpperCase())} placeholder="Ex: HOSPITAL RIO NEGRO" style={{ background: '#222', color: '#fff', border: '1px solid #555', flex: 1 }} />
+          <Input value={nomeHospital} onChange={e => setNomeHospital(e.target.value.toUpperCase())} placeholder="Ex: HOSPITAL RIO NEGRO" style={{ background: '#1a1a1a', color: '#fff', border: '1px solid #444', flex: 1, fontSize: '12px' }} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Label style={{ color: '#ccc', minWidth: '100px', fontSize: '13px' }}>Endereço</Label>
-          <Input value={enderecoHospital} onChange={e => setEnderecoHospital(e.target.value.toUpperCase())} placeholder="Ex: R. TAPAJOS, 561 - CENTRO" style={{ background: '#222', color: '#fff', border: '1px solid #555', flex: 1 }} />
+          <Input value={enderecoHospital} onChange={e => setEnderecoHospital(e.target.value.toUpperCase())} placeholder="Ex: R. TAPAJOS, 561 - CENTRO" style={{ background: '#1a1a1a', color: '#fff', border: '1px solid #444', flex: 1, fontSize: '12px' }} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Label style={{ color: '#ccc', minWidth: '100px', fontSize: '13px' }}>Cidade/Tel.</Label>
-          <Input value={cidadeHospital} onChange={e => setCidadeHospital(e.target.value)} placeholder="Ex: MANAUS-AM, CEP... telefone..." style={{ background: '#222', color: '#fff', border: '1px solid #555', flex: 1 }} />
+          <Input value={cidadeHospital} onChange={e => setCidadeHospital(e.target.value)} placeholder="Ex: MANAUS-AM, CEP... telefone..." style={{ background: '#1a1a1a', color: '#fff', border: '1px solid #444', flex: 1, fontSize: '12px' }} />
         </div>
 
         {/* ── DADOS DO MÉDICO ── */}
