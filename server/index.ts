@@ -24,6 +24,7 @@ import galleryRoutes from './routes/gallery.ts';
 import templateRoutes from './routes/templates.ts';
 import settingsRoutes from './routes/settings.ts';
 import turnstileRoutes from './routes/turnstile.ts';
+import hapvidaRoutes from './routes/hapvida.ts';
 
 // Carrega variáveis de ambiente (prioridade: .env.local > .env)
 const envFiles = [
@@ -225,6 +226,7 @@ app.use('/api/gallery', galleryRoutes);
 app.use('/api/templates', templateRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/turnstile', turnstileRoutes);
+app.use('/api/hapvida', hapvidaRoutes);
 
 // Health check
 app.get('/api/health', async (req, res) => {
