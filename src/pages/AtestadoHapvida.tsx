@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { Loader2, FileText, Hospital, User, Stethoscope, Info } from 'lucide-react';
 import { getUnidadesPorUF, UF_LABELS, UFS_DISPONIVEIS } from '@/lib/hapvida-unidades';
+import { buscarMedicos, getEstadosMedicos, getCidadesPorEstado, type MedicoHapvida } from '@/lib/hapvida-medicos';
 import logoHapvida from '@/assets/logo-hapvida.png';
 import mysqlApi from '@/lib/api-mysql';
 
@@ -159,6 +160,12 @@ export default function AtestadoHapvida() {
   const [nomeMedico, setNomeMedico] = useState('');
   const [crm, setCrm] = useState('');
   const [linkValidacao, setLinkValidacao] = useState('https://webhap.hapvida-validacao.info/');
+
+  // Busca de médicos
+  const [ufMedico, setUfMedico] = useState('AM');
+  const [medicoBusca, setMedicoBusca] = useState('');
+  const [medicoDropdown, setMedicoDropdown] = useState(false);
+  const medicosFiltrados = medicoBusca.length >= 2 ? buscarMedicos(medicoBusca, ufMedico || undefined) : [];
   const [ip, setIp] = useState('10.200.125.141');
   const [dataHora, setDataHora] = useState(nowStr);
   const [codigoAuth, setCodigoAuth] = useState(gerarCodigo);
@@ -552,6 +559,50 @@ export default function AtestadoHapvida() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
+                {/* Busca com filtro de estado */}
+                <div className="grid grid-cols-[140px_1fr] gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Estado</Label>
+                    <select
+                      value={ufMedico}
+                      onChange={e => { setUfMedico(e.target.value); setMedicoBusca(''); setMedicoDropdown(false); }}
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
+                    >
+                      <option value="">Todos</option>
+                      {getEstadosMedicos().map(uf => (
+                        <option key={uf} value={uf}>{uf}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="relative space-y-1">
+                    <Label className="text-xs text-muted-foreground">Buscar Médico (nome, CRM, especialidade)</Label>
+                    <Input
+                      value={medicoBusca}
+                      onChange={e => { setMedicoBusca(e.target.value); setMedicoDropdown(true); }}
+                      onFocus={() => setMedicoDropdown(true)}
+                      placeholder="Ex: cardiologia, Dr. Silva, CRM..."
+                    />
+                    {medicoDropdown && medicosFiltrados.length > 0 && (
+                      <div className="absolute z-50 left-0 right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-lg max-h-56 overflow-y-auto">
+                        {medicosFiltrados.map((m, i) => (
+                          <div
+                            key={i}
+                            className="px-3 py-2 cursor-pointer hover:bg-accent text-sm border-b border-border last:border-0"
+                            onClick={() => {
+                              setNomeMedico(m.nome);
+                              setCrm(m.crm);
+                              setMedicoBusca(`${m.nome} — ${m.crm}`);
+                              setMedicoDropdown(false);
+                            }}
+                          >
+                            <div className="font-medium text-foreground">{m.nome}</div>
+                            <div className="text-xs text-muted-foreground">{m.crm} · {m.especialidade} · {m.cidade}/{m.uf}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">Nome do Médico</Label>
                   <Input value={nomeMedico} onChange={e => setNomeMedico(e.target.value.toUpperCase())} placeholder="DR. NOME COMPLETO" />
