@@ -118,6 +118,12 @@ export default function HapvidaPositionTool() {
         ctx.textAlign = 'left';
         ctx.fillText(`Código de Autenticação: ${codigoAuth}`, 132 * SCALE, (1824 + 33) * SCALE);
 
+        // Solicitação da senha — PSD: X:132, Y:1875, L:885, A:41 — 10.36pt Arial Regular → ~43px original
+        ctx.font = `${fontAuth}px Arial`;
+        ctx.fillStyle = '#000000';
+        ctx.textAlign = 'left';
+        ctx.fillText(`Solicitação da senha: ${dataHora}`, 132 * SCALE, (1875 + 33) * SCALE);
+
         // Rodapé: data/hora e IP (Arial Regular ~10.36pt → ~43px no original)
         const fontRodape = Math.round(43 * SCALE);
         ctx.font = `${fontRodape}px Arial`;
