@@ -4,6 +4,84 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
+// Lista CID-10 (seleção dos mais comuns)
+const CID_LIST: { codigo: string; descricao: string }[] = [
+  { codigo: 'A00.0', descricao: 'Cólera pelo Vibrio cholerae O:1, biotipo clássico' },
+  { codigo: 'A09', descricao: 'Diarreia e gastroenterite de origem infecciosa presumível' },
+  { codigo: 'A15.0', descricao: 'Tuberculose do pulmão, confirmada por exame baciloscópico' },
+  { codigo: 'B01.9', descricao: 'Varicela sem complicações' },
+  { codigo: 'B34.9', descricao: 'Infecção viral não especificada' },
+  { codigo: 'B99', descricao: 'Doenças infecciosas não especificadas' },
+  { codigo: 'C34.9', descricao: 'Neoplasia maligna do brônquio ou pulmão não especificado' },
+  { codigo: 'C50.9', descricao: 'Neoplasia maligna da mama não especificada' },
+  { codigo: 'D50.9', descricao: 'Anemia por deficiência de ferro não especificada' },
+  { codigo: 'E10.9', descricao: 'Diabetes mellitus tipo 1 sem complicações' },
+  { codigo: 'E11.9', descricao: 'Diabetes mellitus tipo 2 sem complicações' },
+  { codigo: 'E66.9', descricao: 'Obesidade não especificada' },
+  { codigo: 'F32.9', descricao: 'Episódio depressivo não especificado' },
+  { codigo: 'F41.1', descricao: 'Transtorno de ansiedade generalizada' },
+  { codigo: 'F41.9', descricao: 'Transtorno de ansiedade não especificado' },
+  { codigo: 'G43.9', descricao: 'Enxaqueca não especificada' },
+  { codigo: 'G44.2', descricao: 'Cefaleia tensional' },
+  { codigo: 'G54.2', descricao: 'Transtornos da raiz lombar não classificados em outro local' },
+  { codigo: 'H10.9', descricao: 'Conjuntivite não especificada' },
+  { codigo: 'I10', descricao: 'Hipertensão essencial (primária)' },
+  { codigo: 'I25.9', descricao: 'Doença isquêmica crônica do coração não especificada' },
+  { codigo: 'J00', descricao: 'Rinofaringite aguda (resfriado comum)' },
+  { codigo: 'J01.9', descricao: 'Sinusite aguda não especificada' },
+  { codigo: 'J02.9', descricao: 'Faringite aguda não especificada' },
+  { codigo: 'J03.9', descricao: 'Amigdalite aguda não especificada' },
+  { codigo: 'J06.9', descricao: 'Infecção aguda das vias aéreas superiores não especificada' },
+  { codigo: 'J11.1', descricao: 'Influenza com outras manifestações respiratórias, vírus não identificado' },
+  { codigo: 'J18.9', descricao: 'Pneumonia não especificada' },
+  { codigo: 'J20.9', descricao: 'Bronquite aguda não especificada' },
+  { codigo: 'J30.4', descricao: 'Rinite alérgica não especificada' },
+  { codigo: 'J45.9', descricao: 'Asma não especificada' },
+  { codigo: 'K21.0', descricao: 'Doença de refluxo gastroesofágico com esofagite' },
+  { codigo: 'K25.9', descricao: 'Úlcera gástrica não especificada' },
+  { codigo: 'K29.7', descricao: 'Gastrite não especificada' },
+  { codigo: 'K35.9', descricao: 'Apendicite aguda não especificada' },
+  { codigo: 'K57.30', descricao: 'Doença diverticular do intestino grosso sem perfuração ou abscesso' },
+  { codigo: 'K59.0', descricao: 'Constipação intestinal' },
+  { codigo: 'K92.1', descricao: 'Melena' },
+  { codigo: 'L23.9', descricao: 'Dermatite alérgica de contato não especificada' },
+  { codigo: 'L50.9', descricao: 'Urticária não especificada' },
+  { codigo: 'M10.9', descricao: 'Gota não especificada' },
+  { codigo: 'M17.9', descricao: 'Gonartrose não especificada' },
+  { codigo: 'M19.9', descricao: 'Artrose não especificada' },
+  { codigo: 'M25.5', descricao: 'Dor articular' },
+  { codigo: 'M47.8', descricao: 'Outras espondiloartrose' },
+  { codigo: 'M54.2', descricao: 'Cervicalgia' },
+  { codigo: 'M54.4', descricao: 'Lumbago com ciática' },
+  { codigo: 'M54.5', descricao: 'Dor lombar baixa' },
+  { codigo: 'M54.59', descricao: 'Dor na coluna não especificada' },
+  { codigo: 'M54.9', descricao: 'Dorsalgia não especificada' },
+  { codigo: 'M62.9', descricao: 'Transtorno muscular não especificado' },
+  { codigo: 'M75.1', descricao: 'Síndrome do manguito rotador' },
+  { codigo: 'M79.3', descricao: 'Paniculite' },
+  { codigo: 'M79.7', descricao: 'Fibromialgia' },
+  { codigo: 'N30.0', descricao: 'Cistite aguda' },
+  { codigo: 'N39.0', descricao: 'Infecção do trato urinário de localização não especificada' },
+  { codigo: 'N92.1', descricao: 'Menstruação irregular com sangramento excessivo' },
+  { codigo: 'O20.0', descricao: 'Ameaça de aborto' },
+  { codigo: 'R05', descricao: 'Tosse' },
+  { codigo: 'R06.0', descricao: 'Dispneia' },
+  { codigo: 'R07.4', descricao: 'Dor no peito não especificada' },
+  { codigo: 'R10.4', descricao: 'Outras dores abdominais e as não especificadas' },
+  { codigo: 'R11', descricao: 'Náusea e vômitos' },
+  { codigo: 'R50.9', descricao: 'Febre não especificada' },
+  { codigo: 'R51', descricao: 'Cefaleia' },
+  { codigo: 'R53', descricao: 'Mal-estar e fadiga' },
+  { codigo: 'R55', descricao: 'Síncope e colapso' },
+  { codigo: 'S00.9', descricao: 'Traumatismo superficial da cabeça não especificado' },
+  { codigo: 'S20.2', descricao: 'Contusão do tórax' },
+  { codigo: 'S60.9', descricao: 'Traumatismo superficial do punho e da mão' },
+  { codigo: 'S80.9', descricao: 'Traumatismo superficial da perna não especificado' },
+  { codigo: 'T14.9', descricao: 'Lesão não especificada' },
+  { codigo: 'Z00.0', descricao: 'Exame médico geral' },
+  { codigo: 'Z23', descricao: 'Necessidade de imunização contra doença bacteriana única' },
+];
+
 // Dimensões originais do PSD
 const ORIG_W = 2090;
 const ORIG_H = 2734;
@@ -56,6 +134,8 @@ export default function HapvidaPositionTool() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [logoPos] = useState({ x: 99, y: 250 });
   const [dataHora, setDataHora] = useState('19/02/2026 12:32:14');
+  const [cidBusca, setCidBusca] = useState('');
+  const [cidDropdownAberto, setCidDropdownAberto] = useState(false);
   const [ip, setIp] = useState('10.200.125.141');
   const [codigoAuth, setCodigoAuth] = useState('3M15KLJSAF9');
   const [nomeMedico, setNomeMedico] = useState('RODOLFO CARDOSO DUTRA DE ALENCAR');
@@ -323,9 +403,61 @@ export default function HapvidaPositionTool() {
 
         {/* ── DADOS DA DOENÇA ── */}
         <div style={{ borderTop: '1px solid #555', paddingTop: '8px', color: '#aaa', fontSize: '12px', fontWeight: 'bold', letterSpacing: '1px' }}>DADOS DA DOENÇA</div>
+        <div style={{ position: 'relative' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Label style={{ color: '#ccc', minWidth: '100px', fontSize: '13px' }}>Buscar Doença</Label>
+            <Input
+              value={cidBusca}
+              onChange={e => { setCidBusca(e.target.value); setCidDropdownAberto(true); }}
+              onFocus={() => setCidDropdownAberto(true)}
+              placeholder="Digite nome da doença ou código CID..."
+              style={{ background: '#222', color: '#fff', border: '1px solid #555', flex: 1 }}
+            />
+          </div>
+          {cidDropdownAberto && cidBusca.length >= 2 && (() => {
+            const busca = cidBusca.toLowerCase();
+            const filtrados = CID_LIST.filter(c =>
+              c.descricao.toLowerCase().includes(busca) || c.codigo.toLowerCase().includes(busca)
+            ).slice(0, 10);
+            if (filtrados.length === 0) return null;
+            return (
+              <div style={{
+                position: 'absolute', left: '108px', right: 0, top: '38px',
+                background: '#1a1a1a', border: '1px solid #666', borderRadius: '6px',
+                zIndex: 100, maxHeight: '260px', overflowY: 'auto', boxShadow: '0 4px 20px rgba(0,0,0,0.6)'
+              }}>
+                {filtrados.map(c => (
+                  <div
+                    key={c.codigo}
+                    onClick={() => {
+                      setCodigodoenca(c.codigo);
+                      setCidBusca(`${c.codigo} — ${c.descricao}`);
+                      setCidDropdownAberto(false);
+                    }}
+                    style={{
+                      padding: '8px 12px', cursor: 'pointer', borderBottom: '1px solid #333',
+                      display: 'flex', gap: '10px', alignItems: 'baseline',
+                      color: '#fff', fontSize: '13px',
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.background = '#2a2a2a')}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                  >
+                    <span style={{ color: '#4ade80', fontWeight: 'bold', minWidth: '60px', fontFamily: 'monospace' }}>{c.codigo}</span>
+                    <span style={{ color: '#ddd' }}>{c.descricao}</span>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
+        </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Label style={{ color: '#ccc', minWidth: '100px', fontSize: '13px' }}>Cód. Doença (CID)</Label>
-          <Input value={codigodoenca} onChange={e => setCodigodoenca(e.target.value.toUpperCase())} placeholder="Ex: N30.0" style={{ background: '#222', color: '#fff', border: '1px solid #555', flex: 1 }} />
+          <Label style={{ color: '#ccc', minWidth: '100px', fontSize: '13px' }}>Cód. Selecionado</Label>
+          <Input
+            value={codigodoenca}
+            onChange={e => setCodigodoenca(e.target.value.toUpperCase())}
+            placeholder="Ex: M54.59"
+            style={{ background: '#222', color: '#4ade80', border: '1px solid #555', flex: 1, fontFamily: 'monospace', fontWeight: 'bold', letterSpacing: '1px' }}
+          />
         </div>
 
         {/* ── DADOS DO HOSPITAL ── */}
