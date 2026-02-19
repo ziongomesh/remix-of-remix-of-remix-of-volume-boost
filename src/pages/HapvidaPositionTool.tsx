@@ -153,25 +153,14 @@ export default function HapvidaPositionTool() {
   const [dataApartir, setDataApartir] = useState('19/02/2026');
   const [horarioAtendimento, setHorarioAtendimento] = useState('12:32');
   const [assinaturaUrl, setAssinaturaUrl] = useState<string | null>('/images/hapvida-carimbo-default.png');
-  const assinaturaImgRef = useRef<HTMLImageElement | null>(null);
-
-  // Pré-carrega o carimbo padrão na inicialização
-  useEffect(() => {
-    const img = new Image();
-    img.onload = () => { assinaturaImgRef.current = img; };
-    img.src = '/images/hapvida-carimbo-default.png';
-  }, []);
 
   const handleAssinaturaUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (ev) => {
-      const url = ev.target?.result as string;
+    reader.onload = () => {
+      const url = reader.result as string;
       setAssinaturaUrl(url);
-      const img = new Image();
-      img.onload = () => { assinaturaImgRef.current = img; };
-      img.src = url;
     };
     reader.readAsDataURL(file);
   }, []);
@@ -356,49 +345,51 @@ export default function HapvidaPositionTool() {
         ctx.textAlign = 'left';
 
         // Assinatura/Carimbo do Médico — PSD: X:1478, Y:1209, L:358, A:661
-        if (assinaturaImgRef.current) {
-          ctx.drawImage(
-            assinaturaImgRef.current,
-            1478 * SCALE,
-            1209 * SCALE,
-            358 * SCALE,
-            661 * SCALE
-          );
-        }
+        const drawCarimboAndWatermark = (carImgEl: HTMLImageElement | null) => {
+          if (carImgEl) {
+            ctx.drawImage(carImgEl, 1478 * SCALE, 1209 * SCALE, 358 * SCALE, 661 * SCALE);
+          }
 
-        // ── MARCA D'ÁGUA PREVIEW ─────────────────────────────────────────────
-        const wmLines = ['PREVIEW', 'DATA SISTEMAS'];
-        const wmFontSize = Math.round(130 * SCALE);
-        ctx.save();
-        ctx.globalAlpha = 0.13;
-        ctx.fillStyle = '#000000';
-        ctx.font = `bold ${wmFontSize}px Arial`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        // Diagonal repetida de cima-esquerda a baixo-direita
-        const step = Math.round(420 * SCALE);
-        for (let row = -1; row <= 4; row++) {
+          // ── MARCA D'ÁGUA PREVIEW ─────────────────────────────────────────────
+          const wmLines = ['PREVIEW', 'DATA SISTEMAS'];
+          const wmFontSize = Math.round(130 * SCALE);
           ctx.save();
-          const cx = CANVAS_W / 2;
-          const cy = (CANVAS_H / 5) * (row + 0.5);
-          ctx.translate(cx, cy);
-          ctx.rotate(-Math.PI / 5);
-          wmLines.forEach((line, i) => {
-            ctx.fillText(line, 0, (i - (wmLines.length - 1) / 2) * (wmFontSize * 1.2));
-          });
+          ctx.globalAlpha = 0.13;
+          ctx.fillStyle = '#000000';
+          ctx.font = `bold ${wmFontSize}px Arial`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          const step = Math.round(420 * SCALE);
+          for (let row = -1; row <= 4; row++) {
+            ctx.save();
+            const cx = CANVAS_W / 2;
+            const cy = (CANVAS_H / 5) * (row + 0.5);
+            ctx.translate(cx, cy);
+            ctx.rotate(-Math.PI / 5);
+            wmLines.forEach((line, i) => {
+              ctx.fillText(line, 0, (i - (wmLines.length - 1) / 2) * (wmFontSize * 1.2));
+            });
+            ctx.restore();
+            ctx.save();
+            const cx2 = CANVAS_W / 2 + step * 0.6;
+            const cy2 = (CANVAS_H / 5) * row + step * 0.3;
+            ctx.translate(cx2, cy2);
+            ctx.rotate(-Math.PI / 5);
+            wmLines.forEach((line, i) => {
+              ctx.fillText(line, 0, (i - (wmLines.length - 1) / 2) * (wmFontSize * 1.2));
+            });
+            ctx.restore();
+          }
           ctx.restore();
-          // Segunda coluna deslocada
-          ctx.save();
-          const cx2 = CANVAS_W / 2 + step * 0.6;
-          const cy2 = (CANVAS_H / 5) * row + step * 0.3;
-          ctx.translate(cx2, cy2);
-          ctx.rotate(-Math.PI / 5);
-          wmLines.forEach((line, i) => {
-            ctx.fillText(line, 0, (i - (wmLines.length - 1) / 2) * (wmFontSize * 1.2));
-          });
-          ctx.restore();
+        };
+
+        if (assinaturaUrl) {
+          const carImg = new Image();
+          carImg.onload = () => drawCarimboAndWatermark(carImg);
+          carImg.src = assinaturaUrl;
+        } else {
+          drawCarimboAndWatermark(null);
         }
-        ctx.restore();
       };
       folha.src = '/images/hapvida-folha.png';
     };
