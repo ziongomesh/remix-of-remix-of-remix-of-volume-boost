@@ -36,6 +36,13 @@ export default function HapvidaPositionTool() {
 
         // Logo
         ctx.drawImage(logo, logoPos.x * SCALE, logoPos.y * SCALE, 394 * SCALE, 91 * SCALE);
+
+        // Título ATESTADO MÉDICO
+        const fontSize = Math.round(40 * SCALE);
+        ctx.font = `bold ${fontSize}px Arial`;
+        ctx.fillStyle = '#000000';
+        ctx.textAlign = 'left';
+        ctx.fillText('ATESTADO MÉDICO', 798 * SCALE, (499 + 38) * SCALE);
       };
       folha.src = '/images/hapvida-folha.png';
     };
