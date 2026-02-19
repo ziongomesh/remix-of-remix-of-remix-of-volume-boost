@@ -167,7 +167,7 @@ export default function HapvidaPositionTool() {
 
         // Valor Código da Doença — PSD: X:150, Y:1017, L:118, A:32 — 10.36pt Arial Regular → ~43px original
         const fontCodigoValor = Math.round(43 * SCALE);
-        ctx.font = `${fontCodigoValor}px Arial`;
+        ctx.font = `bold ${fontCodigoValor}px Arial`;
         ctx.fillStyle = '#000000';
         ctx.textAlign = 'left';
         ctx.fillText(codigodoenca, 150 * SCALE, (1017 + 32) * SCALE);
