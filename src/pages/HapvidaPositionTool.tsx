@@ -43,6 +43,14 @@ export default function HapvidaPositionTool() {
         ctx.fillStyle = '#000000';
         ctx.textAlign = 'left';
         ctx.fillText('ATESTADO MÉDICO', 798 * SCALE, (499 + 38) * SCALE);
+
+        // Linha de rodapé
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = Math.max(1, 4.3 * SCALE);
+        ctx.beginPath();
+        ctx.moveTo(102.69 * SCALE, 2461.97 * SCALE);
+        ctx.lineTo((102.69 + 1887.44) * SCALE, 2461.97 * SCALE);
+        ctx.stroke();
       };
       folha.src = '/images/hapvida-folha.png';
     };
