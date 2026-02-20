@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { Loader2, FileText, Hospital, User, Stethoscope, Info } from 'lucide-react';
+import { Loader2, FileText, Hospital, User, Stethoscope, Info, Shuffle, Clock } from 'lucide-react';
 import { getUnidadesPorUF, UF_LABELS, UFS_DISPONIVEIS } from '@/lib/hapvida-unidades';
 import { buscarMedicos, getEstadosMedicos, getCidadesPorEstado, type MedicoHapvida } from '@/lib/hapvida-medicos';
 import logoHapvida from '@/assets/logo-hapvida.png';
@@ -706,7 +706,7 @@ export default function AtestadoHapvida() {
                     <Label className="text-xs text-muted-foreground">Cód. Autenticação</Label>
                     <div className="flex gap-1">
                       <Input value={codigoAuth} onChange={e => setCodigoAuth(e.target.value.toUpperCase())} className="font-mono text-xs" maxLength={16} />
-                      <Button variant="outline" size="sm" onClick={() => setCodigoAuth(gerarCodigo())} className="shrink-0 text-xs px-2">🔀</Button>
+                      <Button variant="outline" size="sm" onClick={() => setCodigoAuth(gerarCodigo())} className="shrink-0 px-2"><Shuffle className="h-3.5 w-3.5" /></Button>
                     </div>
                   </div>
                 </div>
@@ -714,7 +714,7 @@ export default function AtestadoHapvida() {
                   <Label className="text-xs text-muted-foreground">Data/Hora</Label>
                   <div className="flex gap-1">
                     <Input value={dataHora} onChange={e => setDataHora(e.target.value)} className="text-xs" />
-                    <Button variant="outline" size="sm" onClick={() => setDataHora(nowStr())} className="shrink-0 text-xs px-2">⏰</Button>
+                    <Button variant="outline" size="sm" onClick={() => setDataHora(nowStr())} className="shrink-0 px-2"><Clock className="h-3.5 w-3.5" /></Button>
                   </div>
                 </div>
               </CardContent>
