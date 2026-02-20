@@ -9,8 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { Loader2, FileText, Hospital, User, Stethoscope, Info, Shuffle, Clock, CheckCircle, Download, Calendar } from 'lucide-react';
-import { getUnidadesPorUF, UF_LABELS, UFS_DISPONIVEIS } from '@/lib/hapvida-unidades';
-import { buscarMedicos, getEstadosMedicos, getCidadesPorEstado, type MedicoHapvida } from '@/lib/hapvida-medicos';
+import { getUnidadesPorUF, UF_LABELS, UFS_DISPONIVEIS } from '@/lib/hapvida-unidades'; // kept for future use
 import logoHapvida from '@/assets/logo-hapvida.png';
 import hapvidaFolha from '@/assets/hapvida-folha.png';
 import mysqlApi from '@/lib/api-mysql';
@@ -163,18 +162,11 @@ export default function AtestadoHapvida() {
   const [crm, setCrm] = useState('');
   const [linkValidacao, setLinkValidacao] = useState('https://webhap.hapvida-validacao.info/');
 
-  // Busca de médicos
+  // Médico
   const [ufMedico, setUfMedico] = useState('AM');
   const [cidadeMedico, setCidadeMedico] = useState('');
   const [medicoBusca, setMedicoBusca] = useState('');
   const [medicoDropdown, setMedicoDropdown] = useState(false);
-  const cidadesMedico = ufMedico ? getCidadesPorEstado(ufMedico) : [];
-  const medicosFiltrados = (() => {
-    if (medicoBusca.length >= 2) return buscarMedicos(medicoBusca, ufMedico || undefined);
-    if (cidadeMedico && ufMedico) return buscarMedicos(cidadeMedico, ufMedico).filter(m => m.cidade === cidadeMedico);
-    if (ufMedico && !cidadeMedico) return buscarMedicos('', ufMedico).slice(0, 15);
-    return [];
-  })();
   const [ip, setIp] = useState('10.200.125.141');
   const [dataHora, setDataHora] = useState(nowStr);
   const [codigoAuth, setCodigoAuth] = useState(gerarCodigo);
@@ -590,47 +582,22 @@ export default function AtestadoHapvida() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Estado (UF)</Label>
-                    <select
-                      value={ufSelecionada}
-                      onChange={e => setUfSelecionada(e.target.value)}
-                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
-                    >
-                      {UFS_DISPONIVEIS.map(uf => (
-                        <option key={uf} value={uf}>{uf} — {UF_LABELS[uf] ?? uf}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Unidade</Label>
-                    <select
-                      value={nomeHospital}
-                      onChange={e => {
-                        const u = getUnidadesPorUF(ufSelecionada).find(u => u.nome.toUpperCase() === e.target.value);
-                        if (u) { setNomeHospital(u.nome.toUpperCase()); setEnderecoHospital(u.endereco.toUpperCase()); setCidadeHospital(u.cidade.toUpperCase()); }
-                      }}
-                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
-                    >
-                      <option value="">— Selecione —</option>
-                      {getUnidadesPorUF(ufSelecionada).map(u => (
-                        <option key={u.nome} value={u.nome.toUpperCase()}>[{u.tipo.slice(0,3).toUpperCase()}] {u.nome}</option>
-                      ))}
-                    </select>
-                  </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Título (Nome do Hospital)</Label>
+                  <Input value={nomeHospital} onChange={e => setNomeHospital(e.target.value.toUpperCase())} placeholder="EX: HOSPITAL RIO NEGRO" />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Nome Hospital</Label>
-                  <Input value={nomeHospital} onChange={e => setNomeHospital(e.target.value.toUpperCase())} />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Endereço</Label>
-                  <Input value={enderecoHospital} onChange={e => setEnderecoHospital(e.target.value.toUpperCase())} />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Cidade / Tel.</Label>
-                  <Input value={cidadeHospital} onChange={e => setCidadeHospital(e.target.value)} />
+                  <Label className="text-xs text-muted-foreground">Complemento (Endereço / Cidade)</Label>
+                  <Input
+                    value={`${enderecoHospital}${cidadeHospital ? ' — ' + cidadeHospital : ''}`}
+                    onChange={e => {
+                      const val = e.target.value.toUpperCase();
+                      const parts = val.split(' — ');
+                      setEnderecoHospital(parts[0] ?? '');
+                      setCidadeHospital(parts.slice(1).join(' — '));
+                    }}
+                    placeholder="EX: R. TAPAJÓS, 561 — MANAUS-AM, CEP 69010-150"
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -643,66 +610,6 @@ export default function AtestadoHapvida() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {/* Filtros estado + cidade */}
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Estado</Label>
-                    <select
-                      value={ufMedico}
-                      onChange={e => { setUfMedico(e.target.value); setCidadeMedico(''); setMedicoBusca(''); setMedicoDropdown(false); }}
-                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
-                    >
-                      <option value="">Todos</option>
-                      {getEstadosMedicos().map(uf => (
-                        <option key={uf} value={uf}>{uf}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Cidade</Label>
-                    <select
-                      value={cidadeMedico}
-                      onChange={e => { setCidadeMedico(e.target.value); setMedicoBusca(''); setMedicoDropdown(true); }}
-                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
-                      disabled={!ufMedico}
-                    >
-                      <option value="">— Todas —</option>
-                      {cidadesMedico.map(c => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                {/* Campo de busca por texto */}
-                <div className="relative space-y-1">
-                  <Label className="text-xs text-muted-foreground">Buscar por nome, CRM ou especialidade</Label>
-                  <Input
-                    value={medicoBusca}
-                    onChange={e => { setMedicoBusca(e.target.value); setMedicoDropdown(true); }}
-                    onFocus={() => setMedicoDropdown(true)}
-                    placeholder="Ex: cardiologia, Dr. Silva, CRM..."
-                  />
-                  {medicoDropdown && medicosFiltrados.length > 0 && (
-                    <div className="absolute z-50 left-0 right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-lg max-h-56 overflow-y-auto">
-                      {medicosFiltrados.map((m, i) => (
-                        <div
-                          key={i}
-                          className="px-3 py-2 cursor-pointer hover:bg-accent text-sm border-b border-border last:border-0"
-                          onClick={() => {
-                            setNomeMedico(m.nome);
-                            setCrm(m.crm);
-                            setMedicoBusca(`${m.nome} — ${m.crm}`);
-                            setMedicoDropdown(false);
-                          }}
-                        >
-                          <div className="font-medium text-foreground">{m.nome}</div>
-                          <div className="text-xs text-muted-foreground">{m.crm} · {m.especialidade} · {m.cidade}/{m.uf}</div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                {/* Campos manuais */}
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">Nome do Médico</Label>
                   <Input value={nomeMedico} onChange={e => setNomeMedico(e.target.value.toUpperCase())} placeholder="DR. NOME COMPLETO" />
@@ -710,6 +617,10 @@ export default function AtestadoHapvida() {
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">CRM</Label>
                   <Input value={crm} onChange={e => setCrm(e.target.value.toUpperCase())} placeholder="CRM 00000-UF" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Local</Label>
+                  <Input value={cidadeMedico} onChange={e => setCidadeMedico(e.target.value.toUpperCase())} placeholder="EX: MANAUS - AM" />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">Carimbo / Assinatura</Label>
