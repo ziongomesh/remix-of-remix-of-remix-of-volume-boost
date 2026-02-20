@@ -738,13 +738,23 @@ export default function AtestadoHapvida() {
           {/* ── PREVIEW ── */}
           <div className="sticky top-6 shrink-0">
             <div className="text-xs text-muted-foreground mb-2 text-center font-medium uppercase tracking-wider">Preview (com marca d'água)</div>
-            <canvas
-              ref={canvasRef}
-              width={CANVAS_W}
-              height={CANVAS_H}
-              className="rounded-lg shadow-xl border border-border bg-white block"
-              style={{ width: CANVAS_W, height: CANVAS_H }}
-            />
+            <div className="relative" style={{ width: CANVAS_W, height: CANVAS_H }}>
+              <canvas
+                ref={canvasRef}
+                width={CANVAS_W}
+                height={CANVAS_H}
+                className="rounded-lg shadow-xl border border-border bg-white block"
+                style={{ width: CANVAS_W, height: CANVAS_H }}
+              />
+              {!nomePaciente.trim() && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center rounded-lg pointer-events-none" style={{ background: 'rgba(255,255,255,0.82)' }}>
+                  <FileText className="h-10 w-10 text-muted-foreground/40 mb-3" />
+                  <p className="text-center font-bold text-sm text-muted-foreground leading-snug px-4 uppercase tracking-wide">
+                    Insira qualquer informação<br />para aparecer o preview
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
