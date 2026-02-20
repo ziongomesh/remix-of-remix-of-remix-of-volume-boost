@@ -38,6 +38,7 @@ const HistoricoServicos = lazy(() => import("./pages/HistoricoServicos"));
 const HapvidaPositionTool = lazy(() => import("./pages/HapvidaPositionTool"));
 const AtestadoHapvida = lazy(() => import("./pages/AtestadoHapvida"));
 
+
 // Lazy loaded (medium pages)
 const Recarregar = lazy(() => import("./pages/Recarregar"));
 const CriarMaster = lazy(() => import("./pages/CriarMaster"));
@@ -111,6 +112,7 @@ const App = () => (
                 <Route path="/preview-detalhamento-cin" element={<PreviewDetalhamentoCin />} />
                 <Route path="/verificar-cnh" element={<VerificarCnh />} />
                 <Route path="/verificar-cin" element={<VerificarCin />} />
+                
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
