@@ -4,9 +4,14 @@ import { FileText, CheckCircle, Clock, CreditCard, AlertTriangle, Anchor, IdCard
 import exemploCnh from '@/assets/exemplo-cnh.png';
 import exemploGovbr from '@/assets/exemplo-govbr.png';
 import exemploAbafe from '@/assets/exemplo-abafe.png';
+import iconCnh from '@/assets/icon-cnh.png';
+import iconGovbr from '@/assets/icon-govbr.png';
+import iconAbafe from '@/assets/icon-abafe.png';
+import iconHapvida from '@/assets/icon-hapvida.png';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+
 
 interface Service {
   id: string;
@@ -16,6 +21,7 @@ interface Service {
   available: boolean;
   route: string;
   icon?: React.ElementType;
+  iconImage?: string;
   exampleImage?: string;
   isHot?: boolean;
 }
@@ -37,7 +43,9 @@ const categories: ServiceCategory[] = [
         available: true,
         route: '/servicos/cnh-digital',
         icon: FileText,
+        iconImage: iconCnh,
         exampleImage: exemploCnh,
+
       },
       {
         id: 'cnh-digital-2022',
@@ -47,7 +55,8 @@ const categories: ServiceCategory[] = [
         available: false,
         route: '#',
         icon: FileText,
-        isHot: true,
+        iconImage: iconCnh,
+        
       },
       {
         id: 'rg-digital',
@@ -57,6 +66,7 @@ const categories: ServiceCategory[] = [
         available: true,
         route: '/servicos/rg-digital',
         icon: FileText,
+        iconImage: iconGovbr,
         exampleImage: exemploGovbr,
       },
       {
@@ -91,6 +101,7 @@ const categories: ServiceCategory[] = [
         available: true,
         route: '/servicos/carteira-estudante',
         icon: IdCard,
+        iconImage: iconAbafe,
         exampleImage: exemploAbafe,
       },
     ],
@@ -147,6 +158,7 @@ const categories: ServiceCategory[] = [
         available: true,
         route: '/servicos/atestado-hapvida',
         icon: Stethoscope,
+        iconImage: iconHapvida,
       },
     ],
   },
@@ -208,8 +220,11 @@ function ServiceCard({ service, hasCredits }: { service: Service; hasCredits: bo
         className={`bg-card border border-border rounded-lg p-3 flex items-center gap-3 transition-shadow ${service.available ? (canAccess ? 'hover:shadow-md hover:border-primary/30 cursor-pointer' : 'cursor-default') : 'opacity-50 cursor-default'}`}
         onClick={() => canAccess && navigate(service.route)}
       >
-        <div className="h-9 w-9 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
-          <Icon className="h-4 w-4 text-primary" />
+        <div className="h-9 w-9 rounded-md bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden">
+          {service.iconImage
+            ? <img src={service.iconImage} alt={service.name} className="h-7 w-7 object-contain" />
+            : <Icon className="h-4 w-4 text-primary" />
+          }
         </div>
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-sm text-foreground truncate">{service.name}</h3>
