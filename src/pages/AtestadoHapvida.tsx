@@ -504,9 +504,9 @@ export default function AtestadoHapvida() {
           <p className="text-muted-foreground text-sm mt-1">Preencha os dados abaixo — o preview é atualizado em tempo real.</p>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-6 items-start">
+        <div className="flex flex-col gap-6">
           {/* ── FORMULÁRIO ── */}
-          <div className="w-full lg:flex-1 min-w-0 space-y-4">
+          <div className="w-full space-y-4">
 
             {/* Paciente */}
             <Card>
@@ -768,7 +768,7 @@ export default function AtestadoHapvida() {
           </div>
 
           {/* ── PREVIEW ── */}
-          <div className="w-full lg:sticky lg:top-6 lg:shrink-0 flex flex-col items-center gap-4">
+          <div className="w-full flex flex-col items-center gap-4">
             <div className="text-xs text-muted-foreground text-center font-medium uppercase tracking-wider">Preview (com marca d'água)</div>
             <div
               className="relative w-full overflow-x-auto"
@@ -816,8 +816,8 @@ export default function AtestadoHapvida() {
         <DialogContent className="max-w-md mx-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3">
-              <div className="p-2 bg-green-500 rounded-lg">
-                <CheckCircle className="w-5 h-5 text-white" />
+              <div className="p-2 bg-primary rounded-lg">
+                <CheckCircle className="w-5 h-5 text-primary-foreground" />
               </div>
               <div>
                 <span>Atestado Gerado!</span>
