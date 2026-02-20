@@ -414,7 +414,7 @@ export default function AtestadoHapvida() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `atestado-hapvida-${nomePaciente.replace(/\s+/g, '-').toLowerCase()}.pdf`;
+      a.download = 'hapvida.pdf';
       a.click();
       URL.revokeObjectURL(url);
 
