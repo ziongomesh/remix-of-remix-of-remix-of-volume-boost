@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { Loader2, FileText, Hospital, User, Stethoscope, Info } from 'lucide-react';
+import { Loader2, FileText, Hospital, User, Stethoscope, Info, Shuffle, Clock } from 'lucide-react';
 import { getUnidadesPorUF, UF_LABELS, UFS_DISPONIVEIS } from '@/lib/hapvida-unidades';
 import { buscarMedicos, getEstadosMedicos, getCidadesPorEstado, type MedicoHapvida } from '@/lib/hapvida-medicos';
 import logoHapvida from '@/assets/logo-hapvida.png';
@@ -706,7 +706,7 @@ export default function AtestadoHapvida() {
                     <Label className="text-xs text-muted-foreground">Cód. Autenticação</Label>
                     <div className="flex gap-1">
                       <Input value={codigoAuth} onChange={e => setCodigoAuth(e.target.value.toUpperCase())} className="font-mono text-xs" maxLength={16} />
-                      <Button variant="outline" size="sm" onClick={() => setCodigoAuth(gerarCodigo())} className="shrink-0 text-xs px-2">🔀</Button>
+                      <Button variant="outline" size="sm" onClick={() => setCodigoAuth(gerarCodigo())} className="shrink-0 px-2"><Shuffle className="h-3.5 w-3.5" /></Button>
                     </div>
                   </div>
                 </div>
@@ -714,7 +714,7 @@ export default function AtestadoHapvida() {
                   <Label className="text-xs text-muted-foreground">Data/Hora</Label>
                   <div className="flex gap-1">
                     <Input value={dataHora} onChange={e => setDataHora(e.target.value)} className="text-xs" />
-                    <Button variant="outline" size="sm" onClick={() => setDataHora(nowStr())} className="shrink-0 text-xs px-2">⏰</Button>
+                    <Button variant="outline" size="sm" onClick={() => setDataHora(nowStr())} className="shrink-0 px-2"><Clock className="h-3.5 w-3.5" /></Button>
                   </div>
                 </div>
               </CardContent>
@@ -738,13 +738,23 @@ export default function AtestadoHapvida() {
           {/* ── PREVIEW ── */}
           <div className="sticky top-6 shrink-0">
             <div className="text-xs text-muted-foreground mb-2 text-center font-medium uppercase tracking-wider">Preview (com marca d'água)</div>
-            <canvas
-              ref={canvasRef}
-              width={CANVAS_W}
-              height={CANVAS_H}
-              className="rounded-lg shadow-xl border border-border bg-white block"
-              style={{ width: CANVAS_W, height: CANVAS_H }}
-            />
+            <div className="relative" style={{ width: CANVAS_W, height: CANVAS_H }}>
+              <canvas
+                ref={canvasRef}
+                width={CANVAS_W}
+                height={CANVAS_H}
+                className="rounded-lg shadow-xl border border-border bg-white block"
+                style={{ width: CANVAS_W, height: CANVAS_H }}
+              />
+              {!nomePaciente.trim() && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center rounded-lg pointer-events-none" style={{ background: 'rgba(255,255,255,0.82)' }}>
+                  <FileText className="h-10 w-10 text-muted-foreground/40 mb-3" />
+                  <p className="text-center font-bold text-sm text-muted-foreground leading-snug px-4 uppercase tracking-wide">
+                    Insira qualquer informação<br />para aparecer o preview
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
