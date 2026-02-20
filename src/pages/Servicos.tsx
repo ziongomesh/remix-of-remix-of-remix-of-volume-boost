@@ -9,6 +9,7 @@ import iconGovbr from '@/assets/icon-govbr.png';
 import iconAbafe from '@/assets/icon-abafe.png';
 import iconHapvida from '@/assets/icon-hapvida.png';
 import iconCnh2022 from '@/assets/icon-cnh-2022.jpg';
+import iconMarinha from '@/assets/icon-marinha.png';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -78,6 +79,7 @@ const categories: ServiceCategory[] = [
         available: true,
         route: '/servicos/cnh-nautica',
         icon: Anchor,
+        iconImage: iconMarinha,
         exampleImage: exemploGovbr,
       },
       {
