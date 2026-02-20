@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { Loader2, CheckCircle2, XCircle, Search } from 'lucide-react';
-import { isUsingMySQL } from '@/lib/db-config';
+import { Loader2, XCircle, Search } from 'lucide-react';
 import logoHapvida from '@/assets/logo-hapvida.png';
 
 interface AtestadoData {
@@ -172,55 +171,62 @@ export default function VerificarHapvida() {
 
         {/* Resultado */}
         {data && (
-          <div style={{ background: '#fff', borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.12)', overflow: 'hidden' }}>
-            {/* Cabeçalho verde */}
-            <div style={{ background: '#2e7d32', padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 10 }}>
-              <CheckCircle2 size={22} color="#fff" />
-              <div>
-                <p style={{ color: '#fff', fontWeight: 700, fontSize: '1rem', margin: 0 }}>ATESTADO VÁLIDO</p>
-                <p style={{ color: '#a5d6a7', fontSize: '0.75rem', margin: 0 }}>Consultado às {consultaTime}</p>
+          <div style={{ background: '#fff', border: '1px solid #ccc', borderRadius: 4 }}>
+            <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1a5276', padding: '10px 16px', borderBottom: '1px solid #ccc', margin: 0 }}>
+              Autenticação de Atestado - Dados do Atestado
+            </h3>
+
+            <div style={{ padding: '12px 16px' }}>
+              {/* Caixa azul escuro */}
+              <div style={{ background: '#1a4f7a', padding: '10px 14px', marginBottom: 16 }}>
+                <p style={{ color: '#fff', fontWeight: 700, fontSize: '0.85rem', margin: 0 }}>
+                  INFORMACOES EM {formatDate(data.created_at)} {consultaTime}
+                </p>
               </div>
-            </div>
 
-            {/* Campos */}
-            <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-              {/* Paciente */}
-              <Section title="Dados do Paciente">
-                <Field label="Nome" value={data.nome_paciente} />
-                <Field label="CPF" value={formatCpf(data.cpf_paciente)} />
-                <FieldRow>
-                  <Field label="Afastamento" value={`${data.dias_afastamento} dia(s)`} />
-                  <Field label="A partir de" value={formatDate(data.data_apartir)} />
-                </FieldRow>
-                {data.horario_atendimento && <Field label="Horário de Atendimento" value={data.horario_atendimento} />}
-              </Section>
+              {/* Texto do atestado */}
+              <div style={{ fontFamily: 'Arial, sans-serif', fontSize: '0.82rem', lineHeight: 2, color: '#222' }}>
+                <p style={{ margin: 0 }}>
+                  <strong>ATESTADO EMITIDO PARA O BENEFICIARIO:</strong> {data.nome_paciente}
+                </p>
+                <p style={{ margin: 0 }}>
+                  <strong>PORTADOR DA CREDENCIAL:</strong> {formatCpf(data.cpf_paciente)}
+                </p>
+                <p style={{ margin: 0 }}>
+                  <strong>PELO MÉDICO:</strong> {data.nome_medico}{data.crm ? ` — ${data.crm}` : ''}
+                </p>
+                <p style={{ margin: 0 }}>
+                  <strong>LOCAL DE ATENDIMENTO:</strong> {data.nome_hospital}
+                </p>
+                <p style={{ margin: 0 }}>
+                  <strong>INICIO DA VALIDADE EM:</strong> {formatDate(data.data_apartir)}
+                </p>
+                <p style={{ margin: 0 }}>
+                  <strong>VÁLIDO POR:</strong> {data.dias_afastamento} DIA{data.dias_afastamento !== 1 ? 'S' : ''}
+                </p>
+              </div>
 
-              {/* CID */}
-              <Section title="Diagnóstico (CID-10)">
-                <Field label="Código CID" value={data.codigo_doenca} mono />
-                {data.descricao_doenca && <Field label="Descrição" value={data.descricao_doenca} />}
-              </Section>
+              <hr style={{ border: 'none', borderTop: '1px solid #ddd', margin: '16px 0' }} />
 
-              {/* Hospital */}
-              <Section title="Hospital / Unidade">
-                <Field label="Nome" value={data.nome_hospital} />
-                {data.endereco_hospital && <Field label="Endereço" value={data.endereco_hospital} />}
-                {data.cidade_hospital && <Field label="Cidade" value={data.cidade_hospital} />}
-              </Section>
-
-              {/* Médico */}
-              <Section title="Médico Responsável">
-                <Field label="Nome" value={data.nome_medico} />
-                {data.crm && <Field label="CRM" value={data.crm} />}
-              </Section>
-
-              {/* Autenticação */}
-              <Section title="Dados de Autenticação">
-                <Field label="Código" value={data.codigo_autenticacao} mono />
-                {data.data_hora && <Field label="Data / Hora" value={data.data_hora} />}
-                {data.ip && <Field label="IP de Emissão" value={data.ip} mono />}
-                <Field label="Data de Emissão" value={formatDate(data.created_at)} />
-              </Section>
+              {/* Botão Voltar */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <button
+                  onClick={() => { setData(null); setCodigo(''); setConsultaTime(''); }}
+                  style={{
+                    background: '#1a5276',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: 4,
+                    padding: '8px 24px',
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                    cursor: 'pointer',
+                    letterSpacing: 0.5,
+                  }}
+                >
+                  VOLTAR
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -237,40 +243,3 @@ export default function VerificarHapvida() {
   );
 }
 
-// ── Componentes auxiliares ─────────────────────────────────────────────────
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <p style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', color: '#e30613', letterSpacing: 1, marginBottom: 10, borderBottom: '1px solid #f0f0f0', paddingBottom: 4 }}>
-        {title}
-      </p>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {children}
-      </div>
-    </div>
-  );
-}
-
-function FieldRow({ children }: { children: React.ReactNode }) {
-  return <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>{children}</div>;
-}
-
-function Field({ label, value, mono }: { label: string; value: string | number | null | undefined; mono?: boolean }) {
-  return (
-    <div>
-      <p style={{ fontSize: '0.72rem', color: '#888', marginBottom: 2 }}>{label}</p>
-      <p style={{
-        fontSize: '0.9rem',
-        fontWeight: 700,
-        color: '#222',
-        fontFamily: mono ? 'monospace' : undefined,
-        borderBottom: '1px solid #eee',
-        paddingBottom: 4,
-        wordBreak: 'break-word',
-      }}>
-        {value || '—'}
-      </p>
-    </div>
-  );
-}
