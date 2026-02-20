@@ -154,7 +154,7 @@ const allowedOrigins = new Set(
     'https://qrcode-validacao-vio.info',
     'http://127.0.0.1:8080',
     // VPS IPs - adicione mais se necessário
-    'http://191.96.79.187:5173',
+    'http://localhost:8080',
     'http://191.96.79.187:5174',
     'https://abafe-digital.info',
     'https://painel.datasistemas.online',
