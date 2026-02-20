@@ -275,26 +275,34 @@ export default function AtestadoHapvida() {
 
           // Carimbo + marca d'água
           const finalRender = (carImg: HTMLImageElement | null) => {
-            // 1. Texto do médico rotacionado -22.39° (igual PSD)
+            // 1. Texto do médico rotacionado -22.39° (igual PSD) — tudo bold, title case
             if (nomeMedico || crm) {
               const fMed = Math.round(40*S);
               const lineH = fMed * 1.45;
-              const nomeDisplay = nomeMedico.startsWith('Dr') ? nomeMedico : `Dr. ${nomeMedico}`;
-              // Centro do grupo do texto (L:422, A:263, X:1400, Y:1356)
+
+              // Title case: primeira letra de cada palavra maiúscula
+              const toTitleCase = (str: string) =>
+                str.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+
+              const nomeRaw = nomeMedico.startsWith('Dr') ? nomeMedico : `Dr. ${nomeMedico}`;
+              const nomeDisplay = toTitleCase(nomeRaw);
+
               const centerX = (1400 + 422 / 2) * S;
               const centerY = (1356 + 263 / 2) * S;
               const angle = -22.39 * Math.PI / 180;
+
               ctx.save();
               ctx.translate(centerX, centerY);
               ctx.rotate(angle);
               ctx.fillStyle = '#000';
               ctx.textAlign = 'center';
               ctx.textBaseline = 'middle';
+
               ctx.font = `bold ${fMed}px Arial`;
               ctx.fillText(nomeDisplay, 0, -lineH);
-              ctx.font = `${fMed}px Arial`;
               ctx.fillText('Médico', 0, 0);
               ctx.fillText(crm, 0, lineH);
+
               ctx.restore();
             }
 
