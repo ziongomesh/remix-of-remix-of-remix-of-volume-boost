@@ -152,78 +152,75 @@ export default function VerificarHapvida() {
         <div className="content coluna_esquerda">
           <div className="ultimas_noticias">
 
-            {/* Título — idêntico ao .titulo h1 do original */}
+            {/* Título — .titulo h1 do stlhapvida.css: font-size 18, color #005389 */}
             <span className="titulo">
               <h1 style={{
                 fontFamily: 'Verdana, Arial, Helvetica, sans-serif',
-                fontSize: 18,
-                color: '#005389',
-                fontWeight: 'bold',
-                marginBottom: 16,
+                fontSize: 14,
+                color: '#333',
+                fontWeight: 'normal',
+                marginBottom: 12,
               }}>
                 Autenticação de Atestado - Exclusivo para Cliente Hap
               </h1>
             </span>
 
-            {/* ===== FORM / UI-DIALOG ===== */}
-            {/* Replicando exatamente a estrutura HTML do original com estilos do jquery-ui-custom.css */}
-            <div
-              style={{
-                position: 'relative',
-                overflow: 'hidden',
-                zIndex: 1000,
-                height: 'auto',
-                width: '100%',
-                maxWidth: 600,
-                display: 'block',
-                /* ui-widget-content: border #ddd, background #f8f8f8 */
-                border: '1px solid #dddddd',
-                background: '#f8f8f8',
-                color: '#333333',
-                /* ui-corner-all: border-radius 4px */
-                borderRadius: 4,
-              }}
-            >
-              {/* ui-dialog-titlebar ui-widget-header — border-bottom: 3px solid #005389 */}
+            {/* ===== UI-DIALOG — replicando exatamente o HTML original ===== */}
+            {/* div inline style do HTML: position:relative; overflow:hidden; z-index:1000; height:auto; width:600px */}
+            <div style={{
+              position: 'relative',
+              overflow: 'hidden',
+              zIndex: 1000,
+              height: 'auto',
+              width: '100%',
+              maxWidth: 600,
+              display: 'block',
+              /* ui-widget ui-widget-content ui-corner-all */
+              border: '1px solid #aaaaaa',
+              background: '#eeeeee',
+              color: '#333333',
+              borderRadius: 4,
+              fontFamily: 'Trebuchet MS, Tahoma, Verdana, Arial, sans-serif',
+              fontSize: '1.1em',
+            }}>
+              {/* ui-dialog-titlebar ui-widget-header ui-corner-all:
+                  border:0; font-weight:bold; border-bottom: 3px solid #005389; border-radius:0 */}
               <div style={{
-                borderBottom: '3px solid #005389',
-                padding: '8px 10px',
+                border: 0,
                 fontWeight: 'bold',
-                /* ui-helper-clearfix */
+                borderBottom: '3px solid #005389',
+                borderRadius: 0,
+                padding: '8px 10px',
                 overflow: 'hidden',
+                /* background do header jQuery UI smoothness: gradiente laranja */
+                background: 'linear-gradient(to bottom, #fdd58e 0%, #f6a828 100%)',
               }}>
-                <span style={{
-                  /* ui-dialog-title */
-                  fontFamily: 'Trebuchet MS, Tahoma, Verdana, Arial, sans-serif',
-                  fontSize: '1.1em',
-                  color: '#333',
-                }}>
+                <span style={{ fontSize: '1em', color: '#ffffff' }}>
                   Informe a senha e tenha todas as informações sobre o Atestado
                 </span>
               </div>
 
-              {/* ui-dialog-content ui-widget-content — id="dialog", font-size: 12px */}
-              <div style={{
-                padding: '16px 18px',
-                fontFamily: 'Trebuchet MS, Tahoma, Verdana, Arial, sans-serif',
+              {/* ui-dialog-content ui-widget-content — #dialog font-size:12px */}
+              <div id="dialog" style={{
+                /* ui-widget-content: border:1px solid #ddd, background:#eeeeee */
+                padding: '0 18px 10px',
                 fontSize: 12,
-                color: '#333',
-                /* ui-widget-content */
-                borderTop: 'none',
+                color: '#333333',
+                background: '#eeeeee',
               }}>
                 <p>&nbsp;</p>
                 <br />
-                <label style={{ fontWeight: 'bold' }}><b>SENHA DO ATESTADO:</b></label>
+                <label><b>SENHA DO ATESTADO:</b></label>
                 <br />
-                {/* input do .ultimas_noticias input: height 18, border #ccc, font-size 12, text-transform uppercase */}
+                {/* .ultimas_noticias input: height:18, padding:5px 0 0 4px, border:#ccc, font-size:12, text-transform:uppercase */}
                 <input
                   type="text"
                   value={senha}
                   onChange={e => setSenha(e.target.value.toUpperCase())}
                   onKeyDown={handleKeyDown}
+                  size={25}
                   maxLength={56}
                   style={{
-                    width: 195,
                     height: 18,
                     padding: '5px 0 0 4px',
                     color: '#585858',
@@ -233,7 +230,8 @@ export default function VerificarHapvida() {
                     textTransform: 'uppercase',
                     fontFamily: 'Verdana, Arial, Helvetica, sans-serif',
                     outline: 'none',
-                    boxSizing: 'content-box' as const,
+                    background: '#fff',
+                    width: 190,
                   }}
                 />
                 <br /><br />
@@ -243,48 +241,43 @@ export default function VerificarHapvida() {
                 )}
               </div>
 
-              {/* ui-dialog-buttonpane ui-widget-content */}
+              {/* ui-dialog-buttonpane ui-widget-content ui-helper-clearfix */}
               <div style={{
-                /* ui-widget-content */
                 borderTop: '1px solid #dddddd',
-                background: '#f8f8f8',
-                padding: '7px 10px',
-                /* ui-helper-clearfix */
+                background: '#eeeeee',
+                padding: '4px 10px 4px 0',
                 overflow: 'hidden',
                 textAlign: 'right',
               }}>
                 <div style={{ display: 'inline-block' }}>
-                  {/* ui-button ui-widget ui-state-default ui-corner-all */}
+                  {/* ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only */}
                   <button
                     onClick={handleConsultar}
                     disabled={loading}
                     style={{
                       fontFamily: 'Trebuchet MS, Tahoma, Verdana, Arial, sans-serif',
-                      fontSize: '1.1em',
+                      fontSize: '1em',
                       fontWeight: 'bold',
-                      /* ui-state-default: color #fff */
-                      color: loading ? '#aaa' : '#1c94c4',
-                      background: '#f6f6f6',
+                      color: '#ffffff',
+                      background: 'linear-gradient(to bottom, #ffffff 0%, #e6e6e6 100%)',
                       border: '1px solid #cccccc',
-                      /* ui-corner-all */
                       borderRadius: 4,
-                      padding: '5px 14px',
+                      padding: '4px 10px',
                       cursor: loading ? 'not-allowed' : 'pointer',
+                      margin: '4px 0',
                     }}
                     onMouseEnter={e => {
                       if (!loading) {
-                        (e.currentTarget as HTMLButtonElement).style.background = '#fdf5ce';
-                        (e.currentTarget as HTMLButtonElement).style.borderColor = '#fbcb09';
-                        (e.currentTarget as HTMLButtonElement).style.color = '#c77405';
+                        (e.currentTarget as HTMLButtonElement).style.background = '#f48120';
+                        (e.currentTarget as HTMLButtonElement).style.borderColor = '#f48120';
                       }
                     }}
                     onMouseLeave={e => {
-                      (e.currentTarget as HTMLButtonElement).style.background = '#f6f6f6';
+                      (e.currentTarget as HTMLButtonElement).style.background = 'linear-gradient(to bottom, #ffffff 0%, #e6e6e6 100%)';
                       (e.currentTarget as HTMLButtonElement).style.borderColor = '#cccccc';
-                      (e.currentTarget as HTMLButtonElement).style.color = '#1c94c4';
                     }}
                   >
-                    <span>{loading ? 'AGUARDE...' : 'CONSULTAR'}</span>
+                    <span style={{ color: '#333', fontWeight: 'bold' }}>{loading ? 'AGUARDE...' : 'CONSULTAR'}</span>
                   </button>
                 </div>
               </div>
