@@ -277,6 +277,29 @@ export default function AtestadoHapvida() {
           const finalRender = (carImg: HTMLImageElement | null) => {
             if (carImg) ctx.drawImage(carImg, 1478*S, 1209*S, 358*S, 661*S);
 
+            // Texto do médico sobre o carimbo (nome, Médico, CRM)
+            if (nomeMedico || crm) {
+              const carimboCX = (1478 + 358/2) * S;
+              const fMed = Math.round(28*S);
+              ctx.save();
+              ctx.fillStyle = '#000';
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'top';
+
+              // Nome do médico (bold)
+              ctx.font = `bold ${fMed}px Arial`;
+              const nomeDisplay = nomeMedico.startsWith('Dr') ? nomeMedico : `Dr. ${nomeMedico}`;
+              ctx.fillText(nomeDisplay, carimboCX, 1209*S);
+
+              // "Médico"
+              ctx.font = `${fMed}px Arial`;
+              ctx.fillText('Médico', carimboCX, (1209 + fMed*1.4)*S);
+
+              // CRM
+              ctx.fillText(crm, carimboCX, (1209 + fMed*1.4*2)*S);
+              ctx.restore();
+            }
+
             if (withWatermark) {
               const wmText = 'PREVIEW - DATA SISTEMAS';
               const wmFontSize = Math.round(90*S);
