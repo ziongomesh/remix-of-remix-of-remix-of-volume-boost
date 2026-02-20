@@ -33,6 +33,8 @@ export function TurnstileWidget({ onVerify, onExpire, onError }: TurnstileWidget
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
+    if (!TURNSTILE_ENABLED) return;
+
     // Load Turnstile script
     const existingScript = document.querySelector('script[src*="turnstile"]');
     if (!existingScript) {
@@ -81,6 +83,8 @@ export function TurnstileWidget({ onVerify, onExpire, onError }: TurnstileWidget
       }
     };
   }, [isLoaded, onVerify, onExpire, onError]);
+
+  if (!TURNSTILE_ENABLED) return null;
 
   return (
     <div 
