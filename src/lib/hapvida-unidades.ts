@@ -129,14 +129,25 @@ export const HAPVIDA_UNIDADES: HapvidaUnidade[] = [
   { nome: 'Hospital e Maternidade São José dos Campos', endereco: 'Rua Cândido Xavier de Almeida e Souza, 220 - Centro', cidade: 'São José dos Campos - SP', uf: 'SP', telefone: '(12) 4002-3633', tipo: 'Hospital' },
   { nome: 'Hospital e Maternidade Sorocaba', endereco: 'Rua Afonso Pena, 60 - Mangal', cidade: 'Sorocaba - SP', uf: 'SP', telefone: '(15) 4002-3633', tipo: 'Hospital' },
   { nome: 'Hospital e Maternidade Taubaté', endereco: 'Rua Quatro de Março, 360 - Centro', cidade: 'Taubaté - SP', uf: 'SP', telefone: '(12) 4002-3633', tipo: 'Hospital' },
+
+  // ─── PARANÁ (PR) ────────────────────────────────────────────────────────────
+  { nome: 'Clínica Batel', endereco: 'Av. do Batel, 1230 - Batel', cidade: 'Curitiba - PR', uf: 'PR', telefone: '(41) 4002-3633', tipo: 'Clínica' },
+  { nome: 'Clínica Cabral', endereco: 'R. Mateus Leme, 800 - Cabral', cidade: 'Curitiba - PR', uf: 'PR', telefone: '(41) 4002-3633', tipo: 'Clínica' },
+  { nome: 'Clínica Fazendinha', endereco: 'Av. Winston Churchill, 2300 - Fazendinha', cidade: 'Curitiba - PR', uf: 'PR', telefone: '(41) 4002-3633', tipo: 'Clínica' },
+  { nome: 'Clínica Londrina', endereco: 'Av. Saul Elkind, 1200 - Jardim Leonor', cidade: 'Londrina - PR', uf: 'PR', telefone: '(43) 4002-3633', tipo: 'Clínica' },
+  { nome: 'Clínica Maringá', endereco: 'Av. Colombo, 2800 - Zona 07', cidade: 'Maringá - PR', uf: 'PR', telefone: '(44) 4002-3633', tipo: 'Clínica' },
+  { nome: 'Clínica Cascavel', endereco: 'R. Pernambuco, 1500 - Centro', cidade: 'Cascavel - PR', uf: 'PR', telefone: '(45) 4002-3633', tipo: 'Clínica' },
+  { nome: 'Hospital e Maternidade Curitiba', endereco: 'Av. Iguaçu, 1285 - Rebouças', cidade: 'Curitiba - PR, CEP 80230-020', uf: 'PR', telefone: '(41) 4002-3633', tipo: 'Hospital' },
+  { nome: 'Hospital e Maternidade Londrina', endereco: 'R. Robert Koch, 60 - Espírito Santo', cidade: 'Londrina - PR', uf: 'PR', telefone: '(43) 4002-3633', tipo: 'Hospital' },
+  { nome: 'Hospital e Maternidade Maringá', endereco: 'Av. Mandacaru, 1300 - Mandacaru', cidade: 'Maringá - PR', uf: 'PR', telefone: '(44) 4002-3633', tipo: 'Hospital' },
 ];
 
 // Agrupa por estado
 export const UF_LABELS: Record<string, string> = {
   AL: 'Alagoas', AM: 'Amazonas', BA: 'Bahia', CE: 'Ceará',
   GO: 'Goiás', MA: 'Maranhão', MT: 'Mato Grosso', PA: 'Pará',
-  PB: 'Paraíba', PE: 'Pernambuco', PI: 'Piauí', RN: 'Rio Grande do Norte',
-  SE: 'Sergipe', SP: 'São Paulo', TO: 'Tocantins',
+  PB: 'Paraíba', PE: 'Pernambuco', PI: 'Piauí', PR: 'Paraná',
+  RN: 'Rio Grande do Norte', SE: 'Sergipe', SP: 'São Paulo', TO: 'Tocantins',
 };
 
 export function getUnidadesPorUF(uf: string): HapvidaUnidade[] {
