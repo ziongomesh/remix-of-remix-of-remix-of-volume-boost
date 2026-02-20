@@ -112,9 +112,9 @@ export default function VerificarHapvida() {
       </div>
 
       {/* ===== MAIN CONTENT ===== */}
-      {/* Área cinza clara centralizada */}
-      <div style={{ background: '#f5f5f5', padding: '30px 15px 40px' }}>
-        <div style={{ maxWidth: 680, margin: '0 auto', background: '#f0f0f0', padding: '20px 30px 30px', borderRadius: 2 }}>
+      {/* Área branca com caixa cinza centralizada — como no site original */}
+      <div style={{ background: '#fff', padding: '30px 15px 50px' }}>
+        <div style={{ maxWidth: 740, margin: '0 auto', background: '#ebebeb', padding: '20px 30px 30px' }}>
 
           {/* Título pequeno azul acima do dialog */}
           <p style={{ color: '#006EB6', fontSize: 12, fontWeight: 'bold', marginBottom: 8, fontFamily: 'Verdana, Arial, sans-serif' }}>
