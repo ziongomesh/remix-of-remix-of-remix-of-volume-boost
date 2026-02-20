@@ -676,6 +676,15 @@ export default function AtestadoHapvida() {
                     </div>
                     <input type="file" accept="image/*" className="hidden" onChange={handleUploadCarimbo} />
                   </label>
+                  {!carimboPadrao && (
+                    <button
+                      type="button"
+                      onClick={() => { setAssinaturaUrl('/images/hapvida-carimbo-default.png'); setCarimboPadrao(true); }}
+                      className="text-xs text-primary hover:underline mt-1"
+                    >
+                      ↩ Voltar ao carimbo da pesquisa
+                    </button>
+                  )}
                 </div>
               </CardContent>
             </Card>
