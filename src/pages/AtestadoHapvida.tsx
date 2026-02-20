@@ -676,10 +676,6 @@ export default function AtestadoHapvida() {
                     <Button variant="outline" size="sm" onClick={() => setDataHora(nowStr())} className="shrink-0 text-xs px-2">⏰</Button>
                   </div>
                 </div>
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Link de Validação</Label>
-                  <Input value={linkValidacao} onChange={e => setLinkValidacao(e.target.value)} className="text-xs" />
-                </div>
               </CardContent>
             </Card>
 
