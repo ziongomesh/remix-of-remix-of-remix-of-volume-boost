@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { Loader2, FileText, Hospital, User, Stethoscope, Info, Shuffle, Clock } from 'lucide-react';
+import { Loader2, FileText, Hospital, User, Stethoscope, Info, Shuffle, Clock, CheckCircle, Download, Calendar } from 'lucide-react';
 import { getUnidadesPorUF, UF_LABELS, UFS_DISPONIVEIS } from '@/lib/hapvida-unidades';
 import { buscarMedicos, getEstadosMedicos, getCidadesPorEstado, type MedicoHapvida } from '@/lib/hapvida-medicos';
 import logoHapvida from '@/assets/logo-hapvida.png';
@@ -180,6 +181,12 @@ export default function AtestadoHapvida() {
   const [assinaturaUrl, setAssinaturaUrl] = useState<string | null>('/images/hapvida-carimbo-default.png');
   const [carimboPadrao, setCarimboPadrao] = useState(true);
   const [criando, setCriando] = useState(false);
+
+  // Modal de sucesso
+  const [successModal, setSuccessModal] = useState(false);
+  const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
+  const [criadoEm, setCriadoEm] = useState('');
 
   // ── Render canvas sem marca d'água (para PDF) ──────────────────────────
   const renderCanvas = useCallback((
@@ -405,22 +412,40 @@ export default function AtestadoHapvida() {
       const imgBytes = await resp.arrayBuffer();
       const pdfDoc = await PDFDocument.create();
       const pngImg = await pdfDoc.embedPng(imgBytes);
-      // A4 portrait: 595 × 842 pts  (210mm × 297mm)
       const page = pdfDoc.addPage([595, 842]);
       page.drawImage(pngImg, { x: 0, y: 0, width: 595, height: 842 });
       const pdfBytes = await pdfDoc.save();
 
-      // 4. Download
+      // 4. Guardar blob para modal (não baixa automaticamente)
       const blob = new Blob([pdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'hapvida.pdf';
-      a.click();
-      URL.revokeObjectURL(url);
+      const previewUrl = URL.createObjectURL(blob);
+      const agora = new Date();
+      const criadoStr = agora.toLocaleString('pt-BR');
+
+      setPdfBlob(blob);
+      setPdfPreviewUrl(previewUrl);
+      setCriadoEm(criadoStr);
 
       await refreshCredits();
-      toast.success('✅ Atestado gerado e 1 crédito descontado!');
+
+      // 5. Limpar campos
+      setNomePaciente('');
+      setCpfPaciente('');
+      setDiasAfastamento(1);
+      setHorario(() => { const n = new Date(); const p=(x:number)=>String(x).padStart(2,'0'); return `${p(n.getHours())}:${p(n.getMinutes())}`; });
+      setCodigoCid('N30.0');
+      setCidBusca('');
+      setNomeMedico('');
+      setCrm('');
+      setMedicoBusca('');
+      setCidadeMedico('');
+      setCodigoAuth(gerarCodigo());
+      setDataHora(nowStr());
+      setAssinaturaUrl('/images/hapvida-carimbo-default.png');
+      setCarimboPadrao(true);
+
+      // 6. Abrir modal de sucesso
+      setSuccessModal(true);
     } catch (err: any) {
       toast.error(err?.message || 'Erro ao gerar atestado');
     } finally {
@@ -429,6 +454,25 @@ export default function AtestadoHapvida() {
   }, [admin, nomePaciente, cpfPaciente, diasAfastamento, dataApartir, horario,
       codigoCid, nomeHospital, enderecoHospital, cidadeHospital, nomeMedico, crm,
       codigoAuth, dataHora, ip, linkValidacao, renderCanvas, refreshCredits]);
+
+  const handleDownloadPdf = useCallback(() => {
+    if (!pdfBlob) return;
+    const url = URL.createObjectURL(pdfBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'hapvida.pdf';
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [pdfBlob]);
+
+  const handleCloseModal = useCallback(() => {
+    setSuccessModal(false);
+    if (pdfPreviewUrl) {
+      URL.revokeObjectURL(pdfPreviewUrl);
+      setPdfPreviewUrl(null);
+    }
+    setPdfBlob(null);
+  }, [pdfPreviewUrl]);
 
   const handleUploadCarimbo = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -766,6 +810,69 @@ export default function AtestadoHapvida() {
 
       {/* Canvas oculto para geração do PDF em alta resolução */}
       <canvas ref={hiResCanvasRef} style={{ display: 'none' }} />
+
+      {/* Modal de Sucesso */}
+      <Dialog open={successModal} onOpenChange={(open) => { if (!open) handleCloseModal(); }}>
+        <DialogContent className="max-w-md mx-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3">
+              <div className="p-2 bg-green-500 rounded-lg">
+                <CheckCircle className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <span>Atestado Gerado!</span>
+                <div className="text-sm text-muted-foreground font-normal mt-0.5">
+                  1 crédito descontado com sucesso
+                </div>
+              </div>
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            {/* Data de criação */}
+            <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg border border-border">
+              <Calendar className="h-4 w-4 text-primary shrink-0" />
+              <div>
+                <p className="text-xs text-muted-foreground">Criado em</p>
+                <p className="font-semibold text-sm">{criadoEm}</p>
+              </div>
+            </div>
+
+            {/* Preview miniatura do PDF */}
+            {pdfPreviewUrl && (
+              <div className="rounded-lg border border-border overflow-hidden bg-muted/30">
+                <p className="text-xs text-muted-foreground text-center py-1.5 border-b border-border font-medium uppercase tracking-wider">
+                  📄 PDF Gerado
+                </p>
+                <iframe
+                  src={pdfPreviewUrl}
+                  className="w-full"
+                  style={{ height: 320 }}
+                  title="Preview do Atestado"
+                />
+              </div>
+            )}
+
+            {/* Botão download */}
+            <Button
+              onClick={handleDownloadPdf}
+              className="w-full h-11 text-base font-bold"
+              size="lg"
+            >
+              <Download className="w-5 h-5 mr-2" />
+              Baixar PDF — hapvida.pdf
+            </Button>
+
+            <Button
+              onClick={handleCloseModal}
+              variant="outline"
+              className="w-full"
+            >
+              Fechar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }
