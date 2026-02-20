@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { X, Eye, Loader2, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { generateCNH } from "@/lib/cnh-generator";
+import { generateCNH, generateCNHPdfPage } from "@/lib/cnh-generator";
 import { generateCNHMeio } from "@/lib/cnh-generator-meio";
 import { generateCNHVerso } from "@/lib/cnh-generator-verso";
+
 import { toast } from "sonner";
 import { getStateFullName } from "@/lib/cnh-utils";
 import CnhSuccessModal from "./CnhSuccessModal";
@@ -136,7 +137,7 @@ export default function CnhPreview({ cnhData, onClose, onSaveSuccess, onEdit, is
     try {
       setCreationStep('Gerando imagens...');
 
-      // Usar os base64 já gerados nos previews (mais confiável que toDataURL no momento do save)
+      // Usar os base64 já gerados nos previews
       const cnhFrenteBase64 = previewUrl || canvasRef.current?.toDataURL('image/png') || '';
       const cnhMeioBase64 = previewMeioUrl || canvasMeioRef.current?.toDataURL('image/png') || '';
       const cnhVersoBase64 = previewVersoUrl || canvasVersoRef.current?.toDataURL('image/png') || '';
@@ -146,6 +147,17 @@ export default function CnhPreview({ cnhData, onClose, onSaveSuccess, onEdit, is
         meio: cnhMeioBase64.length,
         verso: cnhVersoBase64.length,
       });
+
+      // Gerar página A4 completa no cliente (base.png + 3 matrizes posicionadas)
+      setCreationStep('Montando PDF...');
+      let pdfPageBase64 = '';
+      try {
+        pdfPageBase64 = await generateCNHPdfPage(cnhFrenteBase64, cnhMeioBase64, cnhVersoBase64);
+        console.log('PDF page base64 length:', pdfPageBase64.length);
+      } catch (pdfErr) {
+        console.warn('Erro ao gerar página PDF no cliente:', pdfErr);
+      }
+
 
       // Converter foto para base64 se for File
       let fotoBase64 = '';
@@ -200,7 +212,9 @@ export default function CnhPreview({ cnhData, onClose, onSaveSuccess, onEdit, is
         cnhVersoBase64,
         fotoBase64,
         assinaturaBase64,
+        pdfBase64: pdfPageBase64,
       });
+
 
       // Sucesso
       setSuccessData({
