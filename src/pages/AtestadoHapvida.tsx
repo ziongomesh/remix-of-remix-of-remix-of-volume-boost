@@ -163,9 +163,16 @@ export default function AtestadoHapvida() {
 
   // Busca de médicos
   const [ufMedico, setUfMedico] = useState('AM');
+  const [cidadeMedico, setCidadeMedico] = useState('');
   const [medicoBusca, setMedicoBusca] = useState('');
   const [medicoDropdown, setMedicoDropdown] = useState(false);
-  const medicosFiltrados = medicoBusca.length >= 2 ? buscarMedicos(medicoBusca, ufMedico || undefined) : [];
+  const cidadesMedico = ufMedico ? getCidadesPorEstado(ufMedico) : [];
+  const medicosFiltrados = (() => {
+    if (medicoBusca.length >= 2) return buscarMedicos(medicoBusca, ufMedico || undefined);
+    if (cidadeMedico && ufMedico) return buscarMedicos(cidadeMedico, ufMedico).filter(m => m.cidade === cidadeMedico);
+    if (ufMedico && !cidadeMedico) return buscarMedicos('', ufMedico).slice(0, 15);
+    return [];
+  })();
   const [ip, setIp] = useState('10.200.125.141');
   const [dataHora, setDataHora] = useState(nowStr);
   const [codigoAuth, setCodigoAuth] = useState(gerarCodigo);
@@ -559,13 +566,13 @@ export default function AtestadoHapvida() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {/* Busca com filtro de estado */}
-                <div className="grid grid-cols-[140px_1fr] gap-2">
+                {/* Filtros estado + cidade */}
+                <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-1">
                     <Label className="text-xs text-muted-foreground">Estado</Label>
                     <select
                       value={ufMedico}
-                      onChange={e => { setUfMedico(e.target.value); setMedicoBusca(''); setMedicoDropdown(false); }}
+                      onChange={e => { setUfMedico(e.target.value); setCidadeMedico(''); setMedicoBusca(''); setMedicoDropdown(false); }}
                       className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
                     >
                       <option value="">Todos</option>
@@ -574,35 +581,51 @@ export default function AtestadoHapvida() {
                       ))}
                     </select>
                   </div>
-                  <div className="relative space-y-1">
-                    <Label className="text-xs text-muted-foreground">Buscar Médico (nome, CRM, especialidade)</Label>
-                    <Input
-                      value={medicoBusca}
-                      onChange={e => { setMedicoBusca(e.target.value); setMedicoDropdown(true); }}
-                      onFocus={() => setMedicoDropdown(true)}
-                      placeholder="Ex: cardiologia, Dr. Silva, CRM..."
-                    />
-                    {medicoDropdown && medicosFiltrados.length > 0 && (
-                      <div className="absolute z-50 left-0 right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-lg max-h-56 overflow-y-auto">
-                        {medicosFiltrados.map((m, i) => (
-                          <div
-                            key={i}
-                            className="px-3 py-2 cursor-pointer hover:bg-accent text-sm border-b border-border last:border-0"
-                            onClick={() => {
-                              setNomeMedico(m.nome);
-                              setCrm(m.crm);
-                              setMedicoBusca(`${m.nome} — ${m.crm}`);
-                              setMedicoDropdown(false);
-                            }}
-                          >
-                            <div className="font-medium text-foreground">{m.nome}</div>
-                            <div className="text-xs text-muted-foreground">{m.crm} · {m.especialidade} · {m.cidade}/{m.uf}</div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Cidade</Label>
+                    <select
+                      value={cidadeMedico}
+                      onChange={e => { setCidadeMedico(e.target.value); setMedicoBusca(''); setMedicoDropdown(true); }}
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
+                      disabled={!ufMedico}
+                    >
+                      <option value="">— Todas —</option>
+                      {cidadesMedico.map(c => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
+                {/* Campo de busca por texto */}
+                <div className="relative space-y-1">
+                  <Label className="text-xs text-muted-foreground">Buscar por nome, CRM ou especialidade</Label>
+                  <Input
+                    value={medicoBusca}
+                    onChange={e => { setMedicoBusca(e.target.value); setMedicoDropdown(true); }}
+                    onFocus={() => setMedicoDropdown(true)}
+                    placeholder="Ex: cardiologia, Dr. Silva, CRM..."
+                  />
+                  {medicoDropdown && medicosFiltrados.length > 0 && (
+                    <div className="absolute z-50 left-0 right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-lg max-h-56 overflow-y-auto">
+                      {medicosFiltrados.map((m, i) => (
+                        <div
+                          key={i}
+                          className="px-3 py-2 cursor-pointer hover:bg-accent text-sm border-b border-border last:border-0"
+                          onClick={() => {
+                            setNomeMedico(m.nome);
+                            setCrm(m.crm);
+                            setMedicoBusca(`${m.nome} — ${m.crm}`);
+                            setMedicoDropdown(false);
+                          }}
+                        >
+                          <div className="font-medium text-foreground">{m.nome}</div>
+                          <div className="text-xs text-muted-foreground">{m.crm} · {m.especialidade} · {m.cidade}/{m.uf}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                {/* Campos manuais */}
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">Nome do Médico</Label>
                   <Input value={nomeMedico} onChange={e => setNomeMedico(e.target.value.toUpperCase())} placeholder="DR. NOME COMPLETO" />

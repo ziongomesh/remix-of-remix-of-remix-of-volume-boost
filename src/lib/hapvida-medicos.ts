@@ -303,12 +303,12 @@ export function getCidadesPorEstado(uf: string): string[] {
   return cidades;
 }
 
-// Busca médicos por nome, CRM ou especialidade filtrando por estado (opcional)
+// Busca médicos por nome, CRM, especialidade ou cidade, filtrando por estado (opcional)
 export function buscarMedicos(termo: string, uf?: string): MedicoHapvida[] {
   const t = termo.toLowerCase().trim();
   return MEDICOS_HAPVIDA.filter(m => {
     const ufOk = !uf || m.uf === uf;
     const termoOk = !t || m.nome.toLowerCase().includes(t) || m.crm.toLowerCase().includes(t) || m.especialidade.toLowerCase().includes(t) || m.cidade.toLowerCase().includes(t);
     return ufOk && termoOk;
-  }).slice(0, 15);
+  });
 }
