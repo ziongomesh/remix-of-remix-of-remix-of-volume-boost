@@ -284,7 +284,10 @@ export default function AtestadoHapvida() {
               const toTitleCase = (str: string) =>
                 str.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
 
-              const nomeRaw = nomeMedico.startsWith('Dr') ? nomeMedico : `Dr. ${nomeMedico}`;
+              // Não duplicar Dr./Dra. se já vier no nome
+              const nomeLower = nomeMedico.trim().toLowerCase();
+              const jaTemPrefixo = nomeLower.startsWith('dr.') || nomeLower.startsWith('dra.');
+              const nomeRaw = jaTemPrefixo ? nomeMedico.trim() : `Dr. ${nomeMedico.trim()}`;
               const nomeDisplay = toTitleCase(nomeRaw);
 
               const centerX = (1400 + 422 / 2) * S;
