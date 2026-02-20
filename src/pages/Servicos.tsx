@@ -47,7 +47,7 @@ const categories: ServiceCategory[] = [
         available: false,
         route: '#',
         icon: FileText,
-        isHot: true,
+        
       },
       {
         id: 'rg-digital',
