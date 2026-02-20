@@ -1,6 +1,4 @@
 import { useState } from 'react';
-import { Loader2, XCircle, Search } from 'lucide-react';
-import logoHapvida from '@/assets/logo-hapvida.png';
 
 interface AtestadoData {
   id: number;
@@ -40,16 +38,16 @@ function formatDate(d: string | null): string {
 }
 
 export default function VerificarHapvida() {
-  const [codigo, setCodigo] = useState('');
+  const [senha, setSenha] = useState('');
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<AtestadoData | null>(null);
   const [error, setError] = useState('');
   const [consultaTime, setConsultaTime] = useState('');
 
   const handleConsultar = async () => {
-    const codigoLimpo = codigo.trim().toUpperCase();
+    const codigoLimpo = senha.trim().toUpperCase();
     if (!codigoLimpo) {
-      setError('Informe o código de autenticação.');
+      setError('Informe a senha do atestado.');
       return;
     }
 
@@ -89,157 +87,259 @@ export default function VerificarHapvida() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f5f5f5] font-[Roboto,sans-serif]" style={{ maxWidth: '100vw', overflowX: 'hidden' }}>
-      {/* Header Hapvida */}
-      <div style={{ background: '#e30613', padding: '0' }}>
-        <div style={{ background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '12px 16px', borderBottom: '3px solid #e30613' }}>
-          <img src={logoHapvida} alt="Hapvida" style={{ height: '40px', objectFit: 'contain' }} />
+    <div style={{ minWidth: 0, background: '#f5f5f5', minHeight: '100vh', fontFamily: 'Verdana, Arial, Helvetica, sans-serif', fontSize: 13, color: '#333' }}>
+
+      {/* HEADER */}
+      <div className="header" style={{ background: '#fff' }}>
+        {/* Logo centered */}
+        <div style={{ background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px 0', borderBottom: '1px solid #e1dfe3' }}>
+          <img
+            src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Hapvida_logo.svg/320px-Hapvida_logo.svg.png"
+            alt="Hapvida - Plano de Saúde"
+            style={{ height: 55, objectFit: 'contain' }}
+          />
         </div>
-        <div style={{ background: '#e30613', padding: '10px 16px', textAlign: 'center' }}>
-          <p style={{ color: '#fff', fontSize: '0.85rem', fontWeight: 600, margin: 0 }}>
-            Autenticação de Atestado Médico
-          </p>
+        {/* Menu azul */}
+        <div style={{ background: '#006EB6', borderBottom: '4px solid #005389' }}>
+          <div style={{ maxWidth: 1170, margin: '0 auto', display: 'flex', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex' }}>
+              {['Hapvida', 'Rede Exclusiva', 'Seja um Cliente'].map(item => (
+                <a key={item} href="#" style={{ color: '#fff', display: 'block', padding: '15px 18px', fontFamily: '"GloberBold", sans-serif', fontSize: 14, fontWeight: 'bold', textDecoration: 'none' }}>
+                  {item}
+                </a>
+              ))}
+            </div>
+            <div style={{ display: 'flex' }}>
+              {['Perguntas Frequentes', 'Marcar Consulta'].map(item => (
+                <a key={item} href="#" style={{ color: '#fff', display: 'block', padding: '15px 18px', fontFamily: '"GloberBold", sans-serif', fontSize: 14, fontWeight: 'bold', textDecoration: 'none' }}>
+                  {item}
+                </a>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Corpo */}
-      <div style={{ maxWidth: 480, margin: '0 auto', padding: '24px 16px' }}>
+      {/* MAIN CONTENT */}
+      <div className="main corpo" style={{ maxWidth: 1170, margin: '0 auto', padding: '20px 15px' }}>
+        <div style={{ background: '#fff', border: '1px solid #D5D5D5', padding: '20px 25px' }}>
 
-        {/* Card de consulta */}
-        <div style={{ background: '#fff', borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.12)', padding: '24px 20px', marginBottom: 20 }}>
-          <h2 style={{ fontSize: '1rem', fontWeight: 700, color: '#333', marginBottom: 6 }}>
-            Consultar Atestado
-          </h2>
-          <p style={{ fontSize: '0.8rem', color: '#666', marginBottom: 16, lineHeight: 1.5 }}>
-            Digite o <strong>Código de Autenticação</strong> impresso no rodapé do atestado médico para verificar sua autenticidade.
-          </p>
-
-          <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#555', display: 'block', marginBottom: 6 }}>
-            Código de Autenticação
-          </label>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <input
-              type="text"
-              value={codigo}
-              onChange={e => setCodigo(e.target.value.toUpperCase())}
-              onKeyDown={handleKeyDown}
-              placeholder="Ex: AB3K7XQLN2P"
-              maxLength={20}
-              style={{
-                flex: 1,
-                padding: '10px 12px',
-                border: '1.5px solid #ccc',
-                borderRadius: 6,
-                fontSize: '0.95rem',
-                fontFamily: 'monospace',
-                fontWeight: 700,
-                letterSpacing: 2,
-                outline: 'none',
-                textTransform: 'uppercase',
-              }}
-            />
-            <button
-              onClick={handleConsultar}
-              disabled={loading}
-              style={{
-                background: loading ? '#aaa' : '#e30613',
-                color: '#fff',
-                border: 'none',
-                borderRadius: 6,
-                padding: '10px 16px',
-                cursor: loading ? 'not-allowed' : 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-                fontWeight: 600,
-                fontSize: '0.9rem',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {loading ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
-              Consultar
-            </button>
+          {/* Title */}
+          <div style={{ borderBottom: '2px solid #006EB6', paddingBottom: 8, marginBottom: 20 }}>
+            <h1 style={{ fontSize: 16, color: '#333', fontWeight: 'bold', margin: 0 }}>
+              Autenticação de Atestado - Exclusivo para Cliente Hap
+            </h1>
           </div>
 
-          {error && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 14, padding: '10px 12px', background: '#fff5f5', border: '1px solid #ffcccc', borderRadius: 6 }}>
-              <XCircle size={18} color="#e30613" />
-              <span style={{ fontSize: '0.85rem', color: '#c0392b' }}>{error}</span>
+          {/* Dialog box - idêntico ao original */}
+          <div
+            className="ui-dialog ui-widget ui-widget-content ui-corner-all"
+            style={{
+              position: 'relative',
+              overflow: 'hidden',
+              zIndex: 1000,
+              height: 'auto',
+              width: '100%',
+              maxWidth: 600,
+              display: 'block',
+              border: '1px solid #aaaaaa',
+              borderRadius: 6,
+              background: '#fff',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+            }}
+          >
+            {/* Dialog title bar */}
+            <div style={{
+              background: 'linear-gradient(#e9e9e9, #d8d8d8)',
+              borderBottom: '1px solid #aaa',
+              padding: '8px 12px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}>
+              <span style={{ fontWeight: 'bold', fontSize: 13, color: '#333' }}>
+                Informe a senha e tenha todas as informações sobre o Atestado
+              </span>
+            </div>
+
+            {/* Dialog content */}
+            <div style={{ padding: '16px 20px' }}>
+              <br />
+              <label style={{ fontWeight: 'bold', fontSize: 12 }}>SENHA DO ATESTADO:</label>
+              <br /><br />
+              <input
+                type="text"
+                value={senha}
+                onChange={e => setSenha(e.target.value.toUpperCase())}
+                onKeyDown={handleKeyDown}
+                maxLength={56}
+                style={{
+                  width: 200,
+                  padding: '4px 6px',
+                  border: '1px solid #aaa',
+                  borderRadius: 3,
+                  fontSize: 13,
+                  fontFamily: 'monospace',
+                  letterSpacing: 1,
+                  textTransform: 'uppercase',
+                  outline: 'none',
+                }}
+              />
+              <br /><br />
+
+              {error && (
+                <p style={{ color: '#c0392b', fontSize: 12, marginBottom: 8 }}>{error}</p>
+              )}
+            </div>
+
+            {/* Dialog button pane */}
+            <div style={{
+              background: '#f5f5f5',
+              borderTop: '1px solid #ddd',
+              padding: '8px 12px',
+              display: 'flex',
+              justifyContent: 'flex-end',
+            }}>
+              <button
+                onClick={handleConsultar}
+                disabled={loading}
+                style={{
+                  padding: '6px 20px',
+                  background: loading ? '#aaa' : '#006EB6',
+                  color: '#fff',
+                  border: '1px solid #005a9a',
+                  borderRadius: 4,
+                  fontSize: 12,
+                  fontWeight: 'bold',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  fontFamily: 'Verdana, Arial, sans-serif',
+                  letterSpacing: 1,
+                }}
+              >
+                {loading ? 'AGUARDE...' : 'CONSULTAR'}
+              </button>
+            </div>
+          </div>
+
+          {/* RESULTADO */}
+          {data && (
+            <div style={{ marginTop: 24, maxWidth: 600, border: '1px solid #ccc', borderRadius: 4, background: '#fff' }}>
+              <h3 style={{ fontSize: 13, fontWeight: 'bold', color: '#1a5276', padding: '10px 16px', borderBottom: '1px solid #ccc', margin: 0 }}>
+                Autenticação de Atestado - Dados do Atestado
+              </h3>
+
+              <div style={{ padding: '12px 16px' }}>
+                {/* Caixa azul escuro */}
+                <div style={{ background: '#1a4f7a', padding: '10px 14px', marginBottom: 16 }}>
+                  <p style={{ color: '#fff', fontWeight: 'bold', fontSize: 12, margin: 0, textTransform: 'uppercase' }}>
+                    INFORMACOES EM {formatDate(data.created_at)} {consultaTime}
+                  </p>
+                </div>
+
+                {/* Dados */}
+                <div style={{ fontFamily: 'Arial, sans-serif', fontSize: 12, lineHeight: 2.2, color: '#222' }}>
+                  <p style={{ margin: 0 }}>
+                    <strong>ATESTADO EMITIDO PARA O BENEFICIARIO:</strong> {data.nome_paciente}
+                  </p>
+                  <p style={{ margin: 0 }}>
+                    <strong>PORTADOR DA CREDENCIAL:</strong> {formatCpf(data.cpf_paciente)}
+                  </p>
+                  <p style={{ margin: 0 }}>
+                    <strong>PELO MÉDICO:</strong> {data.nome_medico}{data.crm ? ` — ${data.crm}` : ''}
+                  </p>
+                  <p style={{ margin: 0 }}>
+                    <strong>LOCAL DE ATENDIMENTO:</strong> {data.nome_hospital}
+                  </p>
+                  <p style={{ margin: 0 }}>
+                    <strong>INICIO DA VALIDADE EM:</strong> {formatDate(data.data_apartir)}
+                  </p>
+                  <p style={{ margin: 0 }}>
+                    <strong>VÁLIDO POR:</strong> {data.dias_afastamento} DIA{data.dias_afastamento !== 1 ? 'S' : ''}
+                  </p>
+                </div>
+
+                <hr style={{ border: 'none', borderTop: '1px solid #ddd', margin: '16px 0' }} />
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <button
+                    onClick={() => { setData(null); setSenha(''); setConsultaTime(''); }}
+                    style={{
+                      background: '#1a5276',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: 3,
+                      padding: '6px 20px',
+                      fontWeight: 'bold',
+                      fontSize: 12,
+                      cursor: 'pointer',
+                      letterSpacing: 0.5,
+                      fontFamily: 'Verdana, Arial, sans-serif',
+                    }}
+                  >
+                    VOLTAR
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </div>
+      </div>
 
-        {/* Resultado */}
-        {data && (
-          <div style={{ background: '#fff', border: '1px solid #ccc', borderRadius: 4 }}>
-            <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1a5276', padding: '10px 16px', borderBottom: '1px solid #ccc', margin: 0 }}>
-              Autenticação de Atestado - Dados do Atestado
-            </h3>
-
-            <div style={{ padding: '12px 16px' }}>
-              {/* Caixa azul escuro */}
-              <div style={{ background: '#1a4f7a', padding: '10px 14px', marginBottom: 16 }}>
-                <p style={{ color: '#fff', fontWeight: 700, fontSize: '0.85rem', margin: 0 }}>
-                  INFORMACOES EM {formatDate(data.created_at)} {consultaTime}
-                </p>
-              </div>
-
-              {/* Texto do atestado */}
-              <div style={{ fontFamily: 'Arial, sans-serif', fontSize: '0.82rem', lineHeight: 2, color: '#222' }}>
-                <p style={{ margin: 0 }}>
-                  <strong>ATESTADO EMITIDO PARA O BENEFICIARIO:</strong> {data.nome_paciente}
-                </p>
-                <p style={{ margin: 0 }}>
-                  <strong>PORTADOR DA CREDENCIAL:</strong> {formatCpf(data.cpf_paciente)}
-                </p>
-                <p style={{ margin: 0 }}>
-                  <strong>PELO MÉDICO:</strong> {data.nome_medico}{data.crm ? ` — ${data.crm}` : ''}
-                </p>
-                <p style={{ margin: 0 }}>
-                  <strong>LOCAL DE ATENDIMENTO:</strong> {data.nome_hospital}
-                </p>
-                <p style={{ margin: 0 }}>
-                  <strong>INICIO DA VALIDADE EM:</strong> {formatDate(data.data_apartir)}
-                </p>
-                <p style={{ margin: 0 }}>
-                  <strong>VÁLIDO POR:</strong> {data.dias_afastamento} DIA{data.dias_afastamento !== 1 ? 'S' : ''}
-                </p>
-              </div>
-
-              <hr style={{ border: 'none', borderTop: '1px solid #ddd', margin: '16px 0' }} />
-
-              {/* Botão Voltar */}
-              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <button
-                  onClick={() => { setData(null); setCodigo(''); setConsultaTime(''); }}
-                  style={{
-                    background: '#1a5276',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: 4,
-                    padding: '8px 24px',
-                    fontWeight: 700,
-                    fontSize: '0.85rem',
-                    cursor: 'pointer',
-                    letterSpacing: 0.5,
-                  }}
-                >
-                  VOLTAR
-                </button>
-              </div>
-            </div>
+      {/* FOOTER */}
+      <footer style={{ background: '#f0f0f0', borderTop: '1px solid #ddd', marginTop: 40, padding: '30px 0 0' }}>
+        <div style={{ maxWidth: 1170, margin: '0 auto', padding: '0 15px', display: 'flex', flexWrap: 'wrap' as const, gap: 20 }}>
+          {/* Col 1 */}
+          <div style={{ flex: '1 1 200px' }}>
+            <h2 style={{ fontSize: 13, fontWeight: 'bold', color: '#333', marginBottom: 10, textTransform: 'uppercase' }}>Hapvida</h2>
+            <h4 style={{ fontSize: 11, color: '#555', marginBottom: 6 }}>Institucional</h4>
+            <ul style={{ listStyle: 'none', padding: 0 }}>
+              {['Hapvida', 'Rede Exclusiva', 'Atendimento ao Cliente', 'Assessoria de Imprensa', 'Trabalhe Conosco'].map(i => (
+                <li key={i}><a href="#" style={{ color: '#006eb6', fontSize: 11, textDecoration: 'none' }}>{i}</a></li>
+              ))}
+            </ul>
           </div>
-        )}
+          {/* Col 2 */}
+          <div style={{ flex: '1 1 260px' }}>
+            <h2 style={{ fontSize: 13, fontWeight: 'bold', color: '#333', marginBottom: 10, textTransform: 'uppercase' }}>Atendimento</h2>
+            <h4 style={{ fontSize: 11, color: '#555', marginBottom: 6 }}>Atendimento On-line</h4>
+            <ul style={{ listStyle: 'none', padding: 0, marginBottom: 10 }}>
+              {['Chat On-line', 'SAC', 'Deficientes Auditivos', 'Perguntas Frequentes', 'Fale Conosco'].map(i => (
+                <li key={i}><a href="#" style={{ color: '#006eb6', fontSize: 11, textDecoration: 'none' }}>{i}</a></li>
+              ))}
+            </ul>
+            <h4 style={{ fontSize: 11, color: '#555', marginBottom: 6 }}>Atendimento Telefônico</h4>
+            <ul style={{ listStyle: 'none', padding: 0 }}>
+              <li style={{ fontSize: 10, color: '#555', marginBottom: 3 }}>Call Center 24h (Capitais): 4002.3633 ou 4020.3633</li>
+              <li style={{ fontSize: 10, color: '#555', marginBottom: 3 }}>Call Center 24h (Pernambuco): 4002.2870</li>
+              <li style={{ fontSize: 10, color: '#555', marginBottom: 3 }}>SAC 24h: 0800 280 9130</li>
+              <li style={{ fontSize: 10, color: '#555', marginBottom: 3 }}>Ouvidoria (8h às 18h): 4020.9091</li>
+            </ul>
+          </div>
+          {/* Col 3 */}
+          <div style={{ flex: '1 1 200px' }}>
+            <h2 style={{ fontSize: 13, fontWeight: 'bold', color: '#333', marginBottom: 10, textTransform: 'uppercase' }}>Onde Encontrar</h2>
+            <h4 style={{ fontSize: 11, color: '#555', marginBottom: 6 }}>Endereço</h4>
+            <p style={{ fontSize: 10, color: '#555' }}>Av. Heráclito Graça, 406 Centro<br />CEP 60140-061 Fortaleza-CE</p>
+            <h4 style={{ fontSize: 11, color: '#555', margin: '10px 0 6px' }}>Continue Conectado</h4>
+            <ul style={{ listStyle: 'none', padding: 0 }}>
+              {['Facebook', 'Twitter'].map(i => (
+                <li key={i}><a href="#" style={{ color: '#006eb6', fontSize: 11, textDecoration: 'none' }}>{i}</a></li>
+              ))}
+            </ul>
+          </div>
+        </div>
 
-        {/* Footer */}
-        <div style={{ textAlign: 'center', marginTop: 24, padding: '0 16px' }}>
-          <p style={{ fontSize: '0.72rem', color: '#999', lineHeight: 1.6 }}>
-            Este portal verifica a autenticidade de atestados médicos emitidos pelo sistema.<br />
-            Em caso de dúvidas, entre em contato com a unidade emissora.
+        {/* Bottom footer */}
+        <div style={{ background: '#e0e0e0', marginTop: 20, padding: '12px 15px', textAlign: 'center' }}>
+          <p style={{ fontSize: 10, color: '#555', margin: 0 }}>
+            Hapvida Saúde (ANS 36.825-3) - Todos os direitos reservados &nbsp;|&nbsp;
+            <a href="#" style={{ color: '#006eb6', textDecoration: 'none' }}>Políticas de Privacidade</a>
+          </p>
+          <p style={{ fontSize: 10, color: '#888', marginTop: 4 }}>
+            Os Sistemas Online são compatíveis com os principais navegadores. Para melhor funcionamento mantenha seu navegador sempre atualizado.
           </p>
         </div>
-      </div>
+      </footer>
     </div>
   );
 }
-
