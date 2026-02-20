@@ -1,4 +1,10 @@
 import { useState } from 'react';
+import hapvidaLogo from '@/assets/hapvida-logo.gif';
+import maidaLogo from '@/assets/hapvida-maida.png';
+import minhaSaude from '@/assets/hapvida-minha-saude.jpg';
+import odonto from '@/assets/hapvida-odonto.png';
+import ansLogo from '@/assets/hapvida-ans.png';
+import ansSelo from '@/assets/hapvida-ans-selo.png';
 
 interface AtestadoData {
   id: number;
@@ -90,28 +96,24 @@ export default function VerificarHapvida() {
     <div style={{ minWidth: 0, background: '#f5f5f5', minHeight: '100vh', fontFamily: 'Verdana, Arial, Helvetica, sans-serif', fontSize: 13, color: '#333' }}>
 
       {/* HEADER */}
-      <div className="header" style={{ background: '#fff' }}>
-        {/* Logo centered */}
-        <div style={{ background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px 0', borderBottom: '1px solid #e1dfe3' }}>
-          <img
-            src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Hapvida_logo.svg/320px-Hapvida_logo.svg.png"
-            alt="Hapvida - Plano de Saúde"
-            style={{ height: 55, objectFit: 'contain' }}
-          />
+      <div style={{ background: '#fff' }}>
+        {/* Logo */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px 0', borderBottom: '1px solid #e1dfe3' }}>
+          <img src={hapvidaLogo} alt="Hapvida - Plano de Saúde" style={{ height: 60, objectFit: 'contain' }} />
         </div>
         {/* Menu azul */}
         <div style={{ background: '#006EB6', borderBottom: '4px solid #005389' }}>
-          <div style={{ maxWidth: 1170, margin: '0 auto', display: 'flex', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex' }}>
+          <div style={{ maxWidth: 1170, margin: '0 auto', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap' as const }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap' as const }}>
               {['Hapvida', 'Rede Exclusiva', 'Seja um Cliente'].map(item => (
-                <a key={item} href="#" style={{ color: '#fff', display: 'block', padding: '15px 18px', fontFamily: '"GloberBold", sans-serif', fontSize: 14, fontWeight: 'bold', textDecoration: 'none' }}>
+                <a key={item} href="#" style={{ color: '#fff', display: 'block', padding: '14px 16px', fontSize: 13, fontWeight: 'bold', textDecoration: 'none' }}>
                   {item}
                 </a>
               ))}
             </div>
-            <div style={{ display: 'flex' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap' as const }}>
               {['Perguntas Frequentes', 'Marcar Consulta'].map(item => (
-                <a key={item} href="#" style={{ color: '#fff', display: 'block', padding: '15px 18px', fontFamily: '"GloberBold", sans-serif', fontSize: 14, fontWeight: 'bold', textDecoration: 'none' }}>
+                <a key={item} href="#" style={{ color: '#fff', display: 'block', padding: '14px 16px', fontSize: 13, fontWeight: 'bold', textDecoration: 'none' }}>
                   {item}
                 </a>
               ))}
@@ -121,7 +123,7 @@ export default function VerificarHapvida() {
       </div>
 
       {/* MAIN CONTENT */}
-      <div className="main corpo" style={{ maxWidth: 1170, margin: '0 auto', padding: '20px 15px' }}>
+      <div style={{ maxWidth: 1170, margin: '0 auto', padding: '20px 15px' }}>
         <div style={{ background: '#fff', border: '1px solid #D5D5D5', padding: '20px 25px' }}>
 
           {/* Title */}
@@ -131,42 +133,36 @@ export default function VerificarHapvida() {
             </h1>
           </div>
 
-          {/* Dialog box - idêntico ao original */}
-          <div
-            className="ui-dialog ui-widget ui-widget-content ui-corner-all"
-            style={{
-              position: 'relative',
-              overflow: 'hidden',
-              zIndex: 1000,
-              height: 'auto',
-              width: '100%',
-              maxWidth: 600,
-              display: 'block',
-              border: '1px solid #aaaaaa',
-              borderRadius: 6,
-              background: '#fff',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-            }}
-          >
+          {/* Dialog box jQuery UI idêntico ao original */}
+          <div style={{
+            position: 'relative',
+            overflow: 'hidden',
+            height: 'auto',
+            width: '100%',
+            maxWidth: 600,
+            display: 'block',
+            border: '1px solid #aaaaaa',
+            borderRadius: 4,
+            background: '#fff',
+            boxShadow: '1px 1px 5px rgba(0,0,0,0.15)',
+          }}>
             {/* Dialog title bar */}
             <div style={{
-              background: 'linear-gradient(#e9e9e9, #d8d8d8)',
+              background: 'linear-gradient(to bottom, #efefef, #d8d8d8)',
               borderBottom: '1px solid #aaa',
-              padding: '8px 12px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
+              padding: '7px 10px',
             }}>
-              <span style={{ fontWeight: 'bold', fontSize: 13, color: '#333' }}>
+              <span style={{ fontWeight: 'bold', fontSize: 12, color: '#333' }}>
                 Informe a senha e tenha todas as informações sobre o Atestado
               </span>
             </div>
 
             {/* Dialog content */}
-            <div style={{ padding: '16px 20px' }}>
+            <div style={{ padding: '14px 18px' }}>
+              <p>&nbsp;</p>
               <br />
-              <label style={{ fontWeight: 'bold', fontSize: 12 }}>SENHA DO ATESTADO:</label>
-              <br /><br />
+              <label style={{ fontWeight: 'bold', fontSize: 12 }}><b>SENHA DO ATESTADO:</b></label>
+              <br />
               <input
                 type="text"
                 value={senha}
@@ -175,20 +171,21 @@ export default function VerificarHapvida() {
                 maxLength={56}
                 style={{
                   width: 200,
-                  padding: '4px 6px',
+                  padding: '3px 5px',
                   border: '1px solid #aaa',
-                  borderRadius: 3,
-                  fontSize: 13,
+                  borderRadius: 2,
+                  fontSize: 12,
                   fontFamily: 'monospace',
                   letterSpacing: 1,
                   textTransform: 'uppercase',
                   outline: 'none',
+                  marginTop: 4,
                 }}
               />
               <br /><br />
 
               {error && (
-                <p style={{ color: '#c0392b', fontSize: 12, marginBottom: 8 }}>{error}</p>
+                <p style={{ color: '#c0392b', fontSize: 11, margin: '0 0 8px' }}>{error}</p>
               )}
             </div>
 
@@ -196,7 +193,7 @@ export default function VerificarHapvida() {
             <div style={{
               background: '#f5f5f5',
               borderTop: '1px solid #ddd',
-              padding: '8px 12px',
+              padding: '7px 10px',
               display: 'flex',
               justifyContent: 'flex-end',
             }}>
@@ -204,16 +201,15 @@ export default function VerificarHapvida() {
                 onClick={handleConsultar}
                 disabled={loading}
                 style={{
-                  padding: '6px 20px',
-                  background: loading ? '#aaa' : '#006EB6',
-                  color: '#fff',
-                  border: '1px solid #005a9a',
-                  borderRadius: 4,
+                  padding: '5px 16px',
+                  background: loading ? '#ccc' : '#fff',
+                  color: '#333',
+                  border: '1px solid #aaa',
+                  borderRadius: 3,
                   fontSize: 12,
                   fontWeight: 'bold',
                   cursor: loading ? 'not-allowed' : 'pointer',
                   fontFamily: 'Verdana, Arial, sans-serif',
-                  letterSpacing: 1,
                 }}
               >
                 {loading ? 'AGUARDE...' : 'CONSULTAR'}
@@ -224,19 +220,17 @@ export default function VerificarHapvida() {
           {/* RESULTADO */}
           {data && (
             <div style={{ marginTop: 24, maxWidth: 600, border: '1px solid #ccc', borderRadius: 4, background: '#fff' }}>
-              <h3 style={{ fontSize: 13, fontWeight: 'bold', color: '#1a5276', padding: '10px 16px', borderBottom: '1px solid #ccc', margin: 0 }}>
+              <h3 style={{ fontSize: 12, fontWeight: 'bold', color: '#1a5276', padding: '10px 16px', borderBottom: '1px solid #ccc', margin: 0 }}>
                 Autenticação de Atestado - Dados do Atestado
               </h3>
 
               <div style={{ padding: '12px 16px' }}>
-                {/* Caixa azul escuro */}
                 <div style={{ background: '#1a4f7a', padding: '10px 14px', marginBottom: 16 }}>
-                  <p style={{ color: '#fff', fontWeight: 'bold', fontSize: 12, margin: 0, textTransform: 'uppercase' }}>
+                  <p style={{ color: '#fff', fontWeight: 'bold', fontSize: 11, margin: 0, textTransform: 'uppercase' }}>
                     INFORMACOES EM {formatDate(data.created_at)} {consultaTime}
                   </p>
                 </div>
 
-                {/* Dados */}
                 <div style={{ fontFamily: 'Arial, sans-serif', fontSize: 12, lineHeight: 2.2, color: '#222' }}>
                   <p style={{ margin: 0 }}>
                     <strong>ATESTADO EMITIDO PARA O BENEFICIARIO:</strong> {data.nome_paciente}
@@ -262,17 +256,16 @@ export default function VerificarHapvida() {
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                   <button
-                    onClick={() => { setData(null); setSenha(''); setConsultaTime(''); }}
+                    onClick={() => { setData(null); setSenha(''); setConsultaTime(''); setError(''); }}
                     style={{
-                      background: '#1a5276',
-                      color: '#fff',
-                      border: 'none',
+                      background: '#fff',
+                      color: '#333',
+                      border: '1px solid #aaa',
                       borderRadius: 3,
-                      padding: '6px 20px',
+                      padding: '5px 16px',
                       fontWeight: 'bold',
                       fontSize: 12,
                       cursor: 'pointer',
-                      letterSpacing: 0.5,
                       fontFamily: 'Verdana, Arial, sans-serif',
                     }}
                   >
@@ -286,58 +279,84 @@ export default function VerificarHapvida() {
       </div>
 
       {/* FOOTER */}
-      <footer style={{ background: '#f0f0f0', borderTop: '1px solid #ddd', marginTop: 40, padding: '30px 0 0' }}>
-        <div style={{ maxWidth: 1170, margin: '0 auto', padding: '0 15px', display: 'flex', flexWrap: 'wrap' as const, gap: 20 }}>
-          {/* Col 1 */}
-          <div style={{ flex: '1 1 200px' }}>
-            <h2 style={{ fontSize: 13, fontWeight: 'bold', color: '#333', marginBottom: 10, textTransform: 'uppercase' }}>Hapvida</h2>
-            <h4 style={{ fontSize: 11, color: '#555', marginBottom: 6 }}>Institucional</h4>
-            <ul style={{ listStyle: 'none', padding: 0 }}>
+      <footer style={{ background: '#f0f0f0', borderTop: '1px solid #ddd', marginTop: 40 }}>
+        <div style={{ maxWidth: 1170, margin: '0 auto', padding: '30px 15px 20px', display: 'flex', flexWrap: 'wrap' as const, gap: 20 }}>
+          {/* Col 1 - Hapvida */}
+          <div style={{ flex: '1 1 180px' }}>
+            <h2 style={{ fontSize: 12, fontWeight: 'bold', color: '#333', marginBottom: 10, textTransform: 'uppercase' }}>Hapvida</h2>
+            <h4 style={{ fontSize: 11, color: '#555', marginBottom: 6, fontWeight: 'bold' }}>Institucional</h4>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
               {['Hapvida', 'Rede Exclusiva', 'Atendimento ao Cliente', 'Assessoria de Imprensa', 'Trabalhe Conosco'].map(i => (
-                <li key={i}><a href="#" style={{ color: '#006eb6', fontSize: 11, textDecoration: 'none' }}>{i}</a></li>
+                <li key={i} style={{ marginBottom: 3 }}><a href="#" style={{ color: '#006eb6', fontSize: 11, textDecoration: 'none' }}>{i}</a></li>
               ))}
             </ul>
           </div>
-          {/* Col 2 */}
+
+          {/* Col 2 - Atendimento */}
           <div style={{ flex: '1 1 260px' }}>
-            <h2 style={{ fontSize: 13, fontWeight: 'bold', color: '#333', marginBottom: 10, textTransform: 'uppercase' }}>Atendimento</h2>
-            <h4 style={{ fontSize: 11, color: '#555', marginBottom: 6 }}>Atendimento On-line</h4>
-            <ul style={{ listStyle: 'none', padding: 0, marginBottom: 10 }}>
+            <h2 style={{ fontSize: 12, fontWeight: 'bold', color: '#333', marginBottom: 10, textTransform: 'uppercase' }}>Atendimento</h2>
+            <h4 style={{ fontSize: 11, color: '#555', marginBottom: 6, fontWeight: 'bold' }}>Atendimento On-line</h4>
+            <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 12px' }}>
               {['Chat On-line', 'SAC', 'Deficientes Auditivos', 'Perguntas Frequentes', 'Fale Conosco'].map(i => (
-                <li key={i}><a href="#" style={{ color: '#006eb6', fontSize: 11, textDecoration: 'none' }}>{i}</a></li>
+                <li key={i} style={{ marginBottom: 3 }}><a href="#" style={{ color: '#006eb6', fontSize: 11, textDecoration: 'none' }}>{i}</a></li>
               ))}
             </ul>
-            <h4 style={{ fontSize: 11, color: '#555', marginBottom: 6 }}>Atendimento Telefônico</h4>
-            <ul style={{ listStyle: 'none', padding: 0 }}>
+            <h4 style={{ fontSize: 11, color: '#555', marginBottom: 6, fontWeight: 'bold' }}>Atendimento Telefônico</h4>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
               <li style={{ fontSize: 10, color: '#555', marginBottom: 3 }}>Call Center 24h (Capitais): 4002.3633 ou 4020.3633</li>
               <li style={{ fontSize: 10, color: '#555', marginBottom: 3 }}>Call Center 24h (Pernambuco): 4002.2870</li>
-              <li style={{ fontSize: 10, color: '#555', marginBottom: 3 }}>SAC 24h: 0800 280 9130</li>
+              <li style={{ fontSize: 10, color: '#555', marginBottom: 3 }}>Call Center 24h (Interior e capitais): 0300 313 3633</li>
+              <li style={{ fontSize: 10, color: '#555', marginBottom: 3 }}>Marcações de consultas e exames: 6h às 22h</li>
+              <li style={{ fontSize: 10, color: '#555', marginBottom: 3 }}>SAC 24h (exclusivo para telefones fixos): 0800 280 9130</li>
               <li style={{ fontSize: 10, color: '#555', marginBottom: 3 }}>Ouvidoria (8h às 18h): 4020.9091</li>
             </ul>
           </div>
-          {/* Col 3 */}
-          <div style={{ flex: '1 1 200px' }}>
-            <h2 style={{ fontSize: 13, fontWeight: 'bold', color: '#333', marginBottom: 10, textTransform: 'uppercase' }}>Onde Encontrar</h2>
-            <h4 style={{ fontSize: 11, color: '#555', marginBottom: 6 }}>Endereço</h4>
-            <p style={{ fontSize: 10, color: '#555' }}>Av. Heráclito Graça, 406 Centro<br />CEP 60140-061 Fortaleza-CE</p>
-            <h4 style={{ fontSize: 11, color: '#555', margin: '10px 0 6px' }}>Continue Conectado</h4>
-            <ul style={{ listStyle: 'none', padding: 0 }}>
+
+          {/* Col 3 - Onde Encontrar */}
+          <div style={{ flex: '1 1 180px' }}>
+            <h2 style={{ fontSize: 12, fontWeight: 'bold', color: '#333', marginBottom: 10, textTransform: 'uppercase' }}>Onde Encontrar</h2>
+            <h4 style={{ fontSize: 11, color: '#555', marginBottom: 6, fontWeight: 'bold' }}>Endereço</h4>
+            <p style={{ fontSize: 10, color: '#555', margin: '0 0 12px', lineHeight: 1.6 }}>
+              Av. Heráclito Graça, 406 Centro<br />CEP 60140-061 Fortaleza-CE
+            </p>
+            <h4 style={{ fontSize: 11, color: '#555', marginBottom: 6, fontWeight: 'bold' }}>Continue Conectado</h4>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
               {['Facebook', 'Twitter'].map(i => (
-                <li key={i}><a href="#" style={{ color: '#006eb6', fontSize: 11, textDecoration: 'none' }}>{i}</a></li>
+                <li key={i} style={{ marginBottom: 3 }}><a href="#" style={{ color: '#006eb6', fontSize: 11, textDecoration: 'none' }}>{i}</a></li>
               ))}
             </ul>
           </div>
         </div>
 
+        {/* Parceiros */}
+        <div style={{ maxWidth: 1170, margin: '0 auto', padding: '0 15px 20px', display: 'flex', gap: 20, flexWrap: 'wrap' as const, alignItems: 'center' }}>
+          <a href="#"><img src={odonto} alt="Hapvida + Odonto" style={{ height: 50, objectFit: 'contain' }} /></a>
+          <a href="#"><img src={maidaLogo} alt="Maida Health" style={{ height: 50, objectFit: 'contain' }} /></a>
+          <a href="#"><img src={minhaSaude} alt="Minha Saúde Hapvida" style={{ height: 50, objectFit: 'contain' }} /></a>
+        </div>
+
         {/* Bottom footer */}
-        <div style={{ background: '#e0e0e0', marginTop: 20, padding: '12px 15px', textAlign: 'center' }}>
-          <p style={{ fontSize: 10, color: '#555', margin: 0 }}>
-            Hapvida Saúde (ANS 36.825-3) - Todos os direitos reservados &nbsp;|&nbsp;
-            <a href="#" style={{ color: '#006eb6', textDecoration: 'none' }}>Políticas de Privacidade</a>
-          </p>
-          <p style={{ fontSize: 10, color: '#888', marginTop: 4 }}>
-            Os Sistemas Online são compatíveis com os principais navegadores. Para melhor funcionamento mantenha seu navegador sempre atualizado.
-          </p>
+        <div style={{ background: '#e0e0e0', padding: '14px 15px' }}>
+          <div style={{ maxWidth: 1170, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' as const, gap: 10 }}>
+            <div>
+              <p style={{ fontSize: 10, color: '#555', margin: '0 0 4px' }}>
+                Hapvida Saúde (ANS 36.825-3) - Todos os direitos reservados
+              </p>
+              <a href="#" style={{ fontSize: 10, color: '#006eb6', textDecoration: 'none' }}>Políticas de Privacidade</a>
+              <br />
+              <a href="#" target="_blank" rel="noreferrer">
+                <img src={ansLogo} alt="ANS" style={{ height: 28, marginTop: 6, objectFit: 'contain' }} />
+              </a>
+            </div>
+            <div>
+              <img src={ansSelo} alt="ANS - Selo Hapvida" style={{ height: 36, objectFit: 'contain' }} />
+            </div>
+            <div style={{ maxWidth: 320 }}>
+              <p style={{ fontSize: 10, color: '#888', margin: 0, lineHeight: 1.5 }}>
+                Os Sistemas Online são compatíveis com os principais navegadores. Para melhor funcionamento mantenha seu navegador sempre atualizado.
+              </p>
+            </div>
+          </div>
         </div>
       </footer>
     </div>
