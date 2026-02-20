@@ -275,7 +275,7 @@ export default function AtestadoHapvida() {
 
           // Carimbo + marca d'água
           const finalRender = (carImg: HTMLImageElement | null) => {
-            if (carImg) ctx.drawImage(carImg, 1477*S, 1342*S, 437*S, 213*S);
+            if (carImg) ctx.drawImage(carImg, 1413*S, 1364*S, 394*S, 256*S);
 
             // Texto do médico — reto, alinhado à esquerda, acima da assinatura
             if (nomeMedico || crm) {
