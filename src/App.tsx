@@ -37,6 +37,7 @@ const ConverterImagem = lazy(() => import("./pages/ConverterImagem"));
 const HistoricoServicos = lazy(() => import("./pages/HistoricoServicos"));
 const HapvidaPositionTool = lazy(() => import("./pages/HapvidaPositionTool"));
 const AtestadoHapvida = lazy(() => import("./pages/AtestadoHapvida"));
+const VerificarHapvida = lazy(() => import("./pages/VerificarHapvida"));
 
 // Lazy loaded (medium pages)
 const Recarregar = lazy(() => import("./pages/Recarregar"));
@@ -111,6 +112,7 @@ const App = () => (
                 <Route path="/preview-detalhamento-cin" element={<PreviewDetalhamentoCin />} />
                 <Route path="/verificar-cnh" element={<VerificarCnh />} />
                 <Route path="/verificar-cin" element={<VerificarCin />} />
+                <Route path="/verificar-hapvida" element={<VerificarHapvida />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
