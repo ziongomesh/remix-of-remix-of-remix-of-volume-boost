@@ -282,16 +282,22 @@ export default function Servicos() {
           </div>
         )}
 
-        {categories.map((cat) => (
-          <div key={cat.title} className="space-y-2">
-            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{cat.title}</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-              {cat.services.map((service) => (
-                <ServiceCard key={service.id} service={service} hasCredits={hasCredits} />
-              ))}
+        {categories.map((cat) => {
+          const sorted = [
+            ...cat.services.filter(s => s.available),
+            ...cat.services.filter(s => !s.available),
+          ];
+          return (
+            <div key={cat.title} className="space-y-2">
+              <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{cat.title}</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                {sorted.map((service) => (
+                  <ServiceCard key={service.id} service={service} hasCredits={hasCredits} />
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </DashboardLayout>
   );
