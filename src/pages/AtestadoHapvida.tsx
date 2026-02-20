@@ -177,6 +177,7 @@ export default function AtestadoHapvida() {
   const [dataHora, setDataHora] = useState(nowStr);
   const [codigoAuth, setCodigoAuth] = useState(gerarCodigo);
   const [assinaturaUrl, setAssinaturaUrl] = useState<string | null>('/images/hapvida-carimbo-default.png');
+  const [carimboPadrao, setCarimboPadrao] = useState(true);
   const [criando, setCriando] = useState(false);
 
   // ── Render canvas sem marca d'água (para PDF) ──────────────────────────
@@ -275,42 +276,38 @@ export default function AtestadoHapvida() {
 
           // Carimbo + marca d'água
           const finalRender = (carImg: HTMLImageElement | null) => {
-            // 1. Texto do médico rotacionado -22.39° (igual PSD) — tudo bold, title case
-            if (nomeMedico || crm) {
-              const fMed = Math.round(40*S);
-              const lineH = fMed * 1.45;
-
-              // Title case: primeira letra de cada palavra maiúscula
-              const toTitleCase = (str: string) =>
-                str.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
-
-              // Não duplicar Dr./Dra. se já vier no nome
-              const nomeLower = nomeMedico.trim().toLowerCase();
-              const jaTemPrefixo = nomeLower.startsWith('dr.') || nomeLower.startsWith('dra.');
-              const nomeRaw = jaTemPrefixo ? nomeMedico.trim() : `Dr. ${nomeMedico.trim()}`;
-              const nomeDisplay = toTitleCase(nomeRaw);
-
-              const centerX = (1400 + 422 / 2) * S;
-              const centerY = (1356 + 263 / 2) * S;
-              const angle = -22.39 * Math.PI / 180;
-
-              ctx.save();
-              ctx.translate(centerX, centerY);
-              ctx.rotate(angle);
-              ctx.fillStyle = '#000';
-              ctx.textAlign = 'center';
-              ctx.textBaseline = 'middle';
-
-              ctx.font = `bold ${fMed}px Arial`;
-              ctx.fillText(nomeDisplay, 0, -lineH);
-              ctx.fillText('Médico', 0, 0);
-              ctx.fillText(crm, 0, lineH);
-
-              ctx.restore();
+            if (carimboPadrao) {
+              // Carimbo padrão: texto do médico rotacionado + carimbo por cima
+              if (nomeMedico || crm) {
+                const fMed = Math.round(40*S);
+                const lineH = fMed * 1.45;
+                const toTitleCase = (str: string) =>
+                  str.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+                const nomeLower = nomeMedico.trim().toLowerCase();
+                const jaTemPrefixo = nomeLower.startsWith('dr.') || nomeLower.startsWith('dra.');
+                const nomeRaw = jaTemPrefixo ? nomeMedico.trim() : `Dr. ${nomeMedico.trim()}`;
+                const nomeDisplay = toTitleCase(nomeRaw);
+                const centerX = (1400 + 422 / 2) * S;
+                const centerY = (1356 + 263 / 2) * S;
+                const angle = -22.39 * Math.PI / 180;
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(angle);
+                ctx.fillStyle = '#000';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.font = `bold ${fMed}px Arial`;
+                ctx.fillText(nomeDisplay, 0, -lineH);
+                ctx.fillText('Médico', 0, 0);
+                ctx.fillText(crm, 0, lineH);
+                ctx.restore();
+              }
+              // Carimbo padrão redimensionado
+              if (carImg) ctx.drawImage(carImg, 1413*S, 1364*S, 394*S, 256*S);
+            } else {
+              // Carimbo personalizado: sem texto do médico, imagem no tamanho real
+              if (carImg) ctx.drawImage(carImg, 1413*S, 1364*S, carImg.naturalWidth*S, carImg.naturalHeight*S);
             }
-
-            // 2. Assinatura por cima do texto (X:1413, Y:1364, W:394, H:256)
-            if (carImg) ctx.drawImage(carImg, 1413*S, 1364*S, 394*S, 256*S);
 
             if (withWatermark) {
               const wmText = 'PREVIEW - DATA SISTEMAS';
@@ -353,7 +350,7 @@ export default function AtestadoHapvida() {
     });
   }, [nomePaciente, cpfPaciente, horario, diasAfastamento, dataApartir, codigoCid,
       nomeHospital, enderecoHospital, cidadeHospital, nomeMedico, crm,
-      codigoAuth, dataHora, linkValidacao, ip, assinaturaUrl]);
+      codigoAuth, dataHora, linkValidacao, ip, assinaturaUrl, carimboPadrao]);
 
   // ── Preview (com marca d'água) ─────────────────────────────────────────
   useEffect(() => {
@@ -436,7 +433,7 @@ export default function AtestadoHapvida() {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = () => setAssinaturaUrl(reader.result as string);
+    reader.onload = () => { setAssinaturaUrl(reader.result as string); setCarimboPadrao(false); };
     reader.readAsDataURL(file);
   }, []);
 
