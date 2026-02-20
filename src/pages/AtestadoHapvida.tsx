@@ -277,26 +277,58 @@ export default function AtestadoHapvida() {
           const finalRender = (carImg: HTMLImageElement | null) => {
             if (carImg) ctx.drawImage(carImg, 1478*S, 1209*S, 358*S, 661*S);
 
-            // Texto do médico sobre o carimbo (nome, Médico, CRM)
+            // Efeito carimbo do médico (sobre a assinatura)
             if (nomeMedico || crm) {
+              const INK = '#1a3580'; // azul tinta de carimbo
               const carimboCX = (1478 + 358/2) * S;
-              const fMed = Math.round(28*S);
+              const carimboY = 1215 * S;
+              const fMed = Math.round(30*S);
+              const lineH = fMed * 1.45;
+              const nomeDisplay = nomeMedico.startsWith('Dr') ? nomeMedico : `Dr. ${nomeMedico}`;
+
               ctx.save();
-              ctx.fillStyle = '#000';
               ctx.textAlign = 'center';
               ctx.textBaseline = 'top';
 
-              // Nome do médico (bold)
+              // Mede largura máxima para o box do carimbo
               ctx.font = `bold ${fMed}px Arial`;
-              const nomeDisplay = nomeMedico.startsWith('Dr') ? nomeMedico : `Dr. ${nomeMedico}`;
-              ctx.fillText(nomeDisplay, carimboCX, 1209*S);
-
-              // "Médico"
+              const w1 = ctx.measureText(nomeDisplay).width;
               ctx.font = `${fMed}px Arial`;
-              ctx.fillText('Médico', carimboCX, (1209 + fMed*1.4)*S);
+              const w2 = ctx.measureText('Médico').width;
+              const w3 = ctx.measureText(crm).width;
+              const maxW = Math.max(w1, w2, w3);
+              const padX = 18*S; const padY = 12*S;
+              const boxX = carimboCX - maxW/2 - padX;
+              const boxY = carimboY - padY;
+              const boxW = maxW + padX*2;
+              const boxH = lineH*3 + padY*2;
 
-              // CRM
-              ctx.fillText(crm, carimboCX, (1209 + fMed*1.4*2)*S);
+              // Sombra azul espalhada (simula ink bleed)
+              ctx.shadowColor = INK;
+              ctx.shadowBlur = 3*S;
+
+              // Borda dupla do carimbo
+              ctx.strokeStyle = INK;
+              ctx.lineWidth = Math.max(1, 3.5*S);
+              ctx.strokeRect(boxX, boxY, boxW, boxH);
+              ctx.lineWidth = Math.max(1, 1.2*S);
+              ctx.strokeRect(boxX + 5*S, boxY + 5*S, boxW - 10*S, boxH - 10*S);
+
+              // Textos
+              ctx.fillStyle = INK;
+
+              // Linha 1 - Nome (bold)
+              ctx.font = `bold ${fMed}px Arial`;
+              ctx.fillText(nomeDisplay, carimboCX, carimboY);
+
+              // Linha 2 - Médico
+              ctx.font = `${fMed}px Arial`;
+              ctx.fillText('Médico', carimboCX, carimboY + lineH);
+
+              // Linha 3 - CRM
+              ctx.font = `bold ${fMed}px Arial`;
+              ctx.fillText(crm, carimboCX, carimboY + lineH*2);
+
               ctx.restore();
             }
 
