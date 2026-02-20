@@ -451,18 +451,18 @@ export default function AtestadoHapvida() {
 
   return (
     <DashboardLayout>
-      <div className="p-6 max-w-[1600px] mx-auto">
+      <div className="p-4 md:p-6 max-w-[1600px] mx-auto">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
             <Hospital className="h-7 w-7 text-primary" />
             Atestado Médico Hapvida
           </h1>
-          <p className="text-muted-foreground text-sm mt-1">Preencha os dados ao lado — o preview é atualizado em tempo real.</p>
+          <p className="text-muted-foreground text-sm mt-1">Preencha os dados abaixo — o preview é atualizado em tempo real.</p>
         </div>
 
-        <div className="flex gap-6 items-start">
+        <div className="flex flex-col lg:flex-row gap-6 items-start">
           {/* ── FORMULÁRIO ── */}
-          <div className="flex-1 min-w-0 space-y-4">
+          <div className="w-full lg:flex-1 min-w-0 space-y-4">
 
             {/* Paciente */}
             <Card>
@@ -721,31 +721,21 @@ export default function AtestadoHapvida() {
               </CardContent>
             </Card>
 
-            {/* Botão criar */}
-            <Button
-              size="lg"
-              className="w-full text-base font-bold h-12"
-              onClick={criarAtestado}
-              disabled={criando}
-            >
-              {criando ? (
-                <><Loader2 className="h-5 w-5 animate-spin mr-2" /> Gerando atestado...</>
-              ) : (
-                '📄 Criar Atestado — 1 crédito'
-              )}
-            </Button>
           </div>
 
           {/* ── PREVIEW ── */}
-          <div className="sticky top-6 shrink-0">
-            <div className="text-xs text-muted-foreground mb-2 text-center font-medium uppercase tracking-wider">Preview (com marca d'água)</div>
-            <div className="relative" style={{ width: CANVAS_W, height: CANVAS_H }}>
+          <div className="w-full lg:sticky lg:top-6 lg:shrink-0 flex flex-col items-center gap-4">
+            <div className="text-xs text-muted-foreground text-center font-medium uppercase tracking-wider">Preview (com marca d'água)</div>
+            <div
+              className="relative w-full overflow-x-auto"
+              style={{ maxWidth: CANVAS_W }}
+            >
               <canvas
                 ref={canvasRef}
                 width={CANVAS_W}
                 height={CANVAS_H}
-                className="rounded-lg shadow-xl border border-border bg-white block"
-                style={{ width: CANVAS_W, height: CANVAS_H }}
+                className="rounded-lg shadow-xl border border-border bg-white block mx-auto"
+                style={{ width: '100%', maxWidth: CANVAS_W, height: 'auto', aspectRatio: `${CANVAS_W} / ${CANVAS_H}` }}
               />
               {!nomePaciente.trim() && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center rounded-lg pointer-events-none" style={{ background: 'rgba(255,255,255,0.82)' }}>
@@ -756,6 +746,20 @@ export default function AtestadoHapvida() {
                 </div>
               )}
             </div>
+
+            {/* Botão Gerar */}
+            <Button
+              size="lg"
+              className="w-full max-w-sm text-base font-bold h-12"
+              onClick={criarAtestado}
+              disabled={criando}
+            >
+              {criando ? (
+                <><Loader2 className="h-5 w-5 animate-spin mr-2" /> Gerando atestado...</>
+              ) : (
+                '📄 Criar Atestado — 1 crédito'
+              )}
+            </Button>
           </div>
         </div>
       </div>
