@@ -11,6 +11,7 @@ import { Loader2, FileText, Hospital, User, Stethoscope, Info, Shuffle, Clock } 
 import { getUnidadesPorUF, UF_LABELS, UFS_DISPONIVEIS } from '@/lib/hapvida-unidades';
 import { buscarMedicos, getEstadosMedicos, getCidadesPorEstado, type MedicoHapvida } from '@/lib/hapvida-medicos';
 import logoHapvida from '@/assets/logo-hapvida.png';
+import hapvidaFolha from '@/assets/hapvida-folha.png';
 import mysqlApi from '@/lib/api-mysql';
 
 // ── CID-10 list (abridged import from HapvidaPositionTool) ─────────────────
@@ -344,7 +345,7 @@ export default function AtestadoHapvida() {
             finalRender(null);
           }
         };
-        folha.src = '/images/hapvida-folha.png';
+        folha.src = hapvidaFolha;
       };
       logo.src = logoHapvida;
     });
