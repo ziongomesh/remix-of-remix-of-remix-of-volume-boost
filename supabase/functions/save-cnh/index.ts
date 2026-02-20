@@ -51,7 +51,10 @@ Deno.serve(async (req) => {
       cnhVersoBase64,
       fotoBase64,
       assinaturaBase64,
+      // PDF page montado no cliente (base.png + 3 matrizes)
+      pdfBase64,
     } = body;
+
 
     // Validar sessão
     const { data: validSession } = await supabase.rpc("is_valid_admin", {
@@ -201,75 +204,20 @@ Deno.serve(async (req) => {
 
     const usuarioId = insertedCnh.id;
 
-    // Gerar PDF com base.png + matrizes posicionadas + QR code
+    // Gerar PDF e QR code
     let pdfUrl: string | null = null;
     let qrcodeUrl: string | null = null;
     try {
-      const pageWidth = 595.28;
-      const pageHeight = 841.89;
-      const pdfDoc = await PDFDocument.create();
-      const page = pdfDoc.addPage([pageWidth, pageHeight]);
-
-      const baseUrl = `${Deno.env.get("SUPABASE_URL")}/storage/v1/object/public/uploads/templates/base.png`;
-      const baseResponse = await fetch(baseUrl);
-      if (baseResponse.ok) {
-        const baseBytes = new Uint8Array(await baseResponse.arrayBuffer());
-        const baseImg = await pdfDoc.embedPng(baseBytes);
-        page.drawImage(baseImg, { x: 0, y: 0, width: pageWidth, height: pageHeight });
-      }
-
-      const embedBase64 = async (b64: string) => {
-        const clean = b64.replace(/^data:image\/\w+;base64,/, "");
-        const bytes = Uint8Array.from(atob(clean), (c) => c.charCodeAt(0));
-        try { return await pdfDoc.embedPng(bytes); } catch { return await pdfDoc.embedJpg(bytes); }
-      };
-
-      const mmToPt = (mm: number) => mm * 2.834645669;
-      const matrizW = mmToPt(85.000);
-      const matrizH = mmToPt(55.000);
-      const qrSize = mmToPt(75);
-
-      console.log("PDF matrices check:", {
-        hasFrente: !!cnhFrenteBase64 && cnhFrenteBase64.length > 100,
-        hasMeio: !!cnhMeioBase64 && cnhMeioBase64.length > 100,
-        hasVerso: !!cnhVersoBase64 && cnhVersoBase64.length > 100,
-      });
-
-      // Matriz 1 (Frente)
-      if (cnhFrenteBase64 && cnhFrenteBase64.length > 100) {
-        const img = await embedBase64(cnhFrenteBase64);
-        page.drawImage(img, { x: mmToPt(13.406), y: pageHeight - mmToPt(21.595) - matrizH, width: matrizW, height: matrizH });
-      }
-
-      // Matriz 2 (Meio)
-      if (cnhMeioBase64 && cnhMeioBase64.length > 100) {
-        const img = await embedBase64(cnhMeioBase64);
-        page.drawImage(img, { x: mmToPt(13.406), y: pageHeight - mmToPt(84.691) - matrizH, width: matrizW, height: matrizH });
-      }
-
-      // Matriz 3 (Verso)
-      if (cnhVersoBase64 && cnhVersoBase64.length > 100) {
-        const img = await embedBase64(cnhVersoBase64);
-        page.drawImage(img, { x: mmToPt(13.406), y: pageHeight - mmToPt(148.693) - matrizH, width: matrizW, height: matrizH });
-      }
+      // Gerar QR code
       try {
         const qrData = `https://qrcode-certificadodigital-vio.info//conta.gov/app/informacoes_usuario.php?id=${usuarioId}`;
         const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
         const qrResponse = await fetch(qrApiUrl);
         if (qrResponse.ok) {
           const qrBytes = new Uint8Array(await qrResponse.arrayBuffer());
-          const qrImg = await pdfDoc.embedPng(qrBytes);
-          page.drawImage(qrImg, {
-            x: mmToPt(118.276),
-            y: pageHeight - mmToPt(35.975) - qrSize,
-            width: qrSize,
-            height: qrSize,
-          });
-
           const qrPath = `${cleanCpf}qrimg5.png`;
           await supabase.storage.from("uploads").upload(qrPath, qrBytes, {
-            contentType: "image/png",
-            upsert: true,
+            contentType: "image/png", upsert: true,
           });
           const { data: qrUrlData } = supabase.storage.from("uploads").getPublicUrl(qrPath);
           qrcodeUrl = qrUrlData?.publicUrl || null;
@@ -278,23 +226,30 @@ Deno.serve(async (req) => {
         console.error("QR code error:", qrErr);
       }
 
-      const pdfBytes = await pdfDoc.save();
-      const pdfPath = `CNH-e_${cleanCpf}.pdf`;
+      // Usar pdfBase64 gerado no cliente (página A4 completa com matrizes já posicionadas)
+      if (pdfBase64 && pdfBase64.length > 100) {
+        const pdfDoc = await PDFDocument.create();
+        const page = pdfDoc.addPage([595.28, 841.89]);
 
-      const { error: pdfError } = await supabase.storage
-        .from("uploads")
-        .upload(pdfPath, pdfBytes, {
-          contentType: "application/pdf",
-          upsert: true,
+        const cleanB64 = pdfBase64.replace(/^data:image\/\w+;base64,/, "");
+        const imgBytes = Uint8Array.from(atob(cleanB64), (c) => c.charCodeAt(0));
+        const fullPageImg = await pdfDoc.embedPng(imgBytes);
+        page.drawImage(fullPageImg, { x: 0, y: 0, width: 595.28, height: 841.89 });
+
+        const pdfBytes = await pdfDoc.save();
+        const pdfPath = `CNH-e_${cleanCpf}.pdf`;
+        const { error: pdfError } = await supabase.storage.from("uploads").upload(pdfPath, pdfBytes, {
+          contentType: "application/pdf", upsert: true,
         });
-
-      if (!pdfError) {
-        const { data: pdfUrlData } = supabase.storage.from("uploads").getPublicUrl(pdfPath);
-        pdfUrl = pdfUrlData?.publicUrl || null;
+        if (!pdfError) {
+          const { data: pdfUrlData } = supabase.storage.from("uploads").getPublicUrl(pdfPath);
+          pdfUrl = pdfUrlData?.publicUrl || null;
+        }
       }
     } catch (pdfErr) {
       console.error("PDF generation error:", pdfErr);
     }
+
 
     // Atualizar registro com QR code e PDF
     await supabase

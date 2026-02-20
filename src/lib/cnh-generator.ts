@@ -77,7 +77,6 @@ function readFileAsDataURL(file: File): Promise<string> {
 
 async function loadFonts(): Promise<void> {
   try {
-    // Tentar carregar Asul do assets
     try {
       const asulFontUrl = (await import('../assets/Asul.ttf')).default;
       const asulRegular = new FontFace('Asul', `url(${asulFontUrl})`, { weight: '400' });
@@ -86,10 +85,9 @@ async function loadFonts(): Promise<void> {
       document.fonts.add(loadedR);
       document.fonts.add(loadedB);
     } catch {
-      // Asul não disponível localmente, usar fallback
+      // Asul não disponível localmente
     }
 
-    // Carregar OCR-B para espelho
     try {
       const ocrBFontUrl = (await import('../assets/OCR-B.otf')).default;
       const ocrBFont = new FontFace('OCR-B', `url(${ocrBFontUrl})`);
@@ -97,17 +95,13 @@ async function loadFonts(): Promise<void> {
       document.fonts.add(loaded);
     } catch { /* fallback */ }
 
-    // Carregar Courier New Bold para espelho
     try {
       const courierNewBoldUrl = (await import('../assets/CourierNewBold.ttf')).default;
       const courierNewBold = new FontFace('CourierNewBold', `url(${courierNewBoldUrl})`);
       const loaded = await courierNewBold.load();
       document.fonts.add(loaded);
-    } catch {
-      // Courier New Bold não disponível localmente
-    }
+    } catch { /* fallback */ }
 
-    // Garantir Google Fonts como fallback
     if (!document.querySelector('link[href*="Asul"]')) {
       const link = document.createElement('link');
       link.rel = 'stylesheet';
@@ -220,9 +214,7 @@ function drawEspelho(ctx: CanvasRenderingContext2D, text?: string): void {
   ctx.save();
   ctx.translate(130, 690);
   ctx.rotate(-Math.PI / 2);
-
   ctx.font = '39px "CourierNewBold", "OCR-B", monospace';
-
   ctx.fillStyle = '#373435';
   ctx.textAlign = 'left';
   ctx.textBaseline = 'alphabetic';
@@ -235,20 +227,87 @@ export async function generateCNH(
   data: CnhData,
   cnhDefinitiva: string = 'sim'
 ): Promise<void> {
-  const ctx = canvas.getContext('2d');
-  if (!ctx) throw new Error('Could not get canvas context');
-
+  await loadFonts();
   canvas.width = CNH_CONFIG.width;
   canvas.height = CNH_CONFIG.height;
-
-  await loadFonts();
+  const ctx = canvas.getContext('2d')!;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  const cnhTipo = data.cnhDefinitiva || cnhDefinitiva;
-  await drawTemplate(ctx, cnhTipo);
+  await drawTemplate(ctx, cnhDefinitiva);
   await drawTexts(ctx, data);
   await drawImages(ctx, data);
   drawEspelho(ctx, data.espelho);
+}
+
+/**
+ * Gera a página A4 completa do PDF da CNH no cliente.
+ * Coloca base.png + 3 matrizes nas posições exatas.
+ * Retorna base64 (data URL PNG) para envio ao backend que converte em PDF.
+ */
+export async function generateCNHPdfPage(
+  cnhFrenteBase64: string,
+  cnhMeioBase64: string,
+  cnhVersoBase64: string
+): Promise<string> {
+  // A4 a 150dpi: 1240x1754px
+  const A4_W = 1240;
+  const A4_H = 1754;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = A4_W;
+  canvas.height = A4_H;
+  const ctx = canvas.getContext('2d')!;
+
+  // Fundo branco
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(0, 0, A4_W, A4_H);
+
+  // Tentar carregar base.png do servidor protegido (fundo do A4)
+  try {
+    const baseBitmap = await loadTemplate('base.png');
+    ctx.drawImage(baseBitmap, 0, 0, A4_W, A4_H);
+  } catch {
+    console.warn('base.png não carregado, usando fundo branco');
+  }
+
+  const loadImg = (src: string): Promise<HTMLImageElement> =>
+    new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = src;
+    });
+
+  // Conversão mm→px proporcionais ao canvas A4
+  const mmToPx  = (mm: number) => (mm / 210) * A4_W;
+  const mmToPxH = (mm: number) => (mm / 297) * A4_H;
+
+  // Tamanho da matriz: 85mm x 55mm (mesmas do edge function)
+  const matrizW = mmToPx(85);
+  const matrizH = mmToPxH(55);
+  const matrizX = mmToPx(13.406);
+
+  // Posições Y das 3 matrizes (espelha coordenadas do edge function save-cnh)
+  const frenteY = mmToPxH(21.595);
+  const meioY   = mmToPxH(84.691);
+  const versoY  = mmToPxH(148.693);
+
+  const drawMatrix = async (b64: string, x: number, y: number, w: number, h: number) => {
+    if (!b64 || b64.length < 100) return;
+    try {
+      const img = await loadImg(b64);
+      ctx.drawImage(img, x, y, w, h);
+    } catch (e) {
+      console.warn('Erro ao desenhar matriz no PDF:', e);
+    }
+  };
+
+  await Promise.all([
+    drawMatrix(cnhFrenteBase64, matrizX, frenteY, matrizW, matrizH),
+    drawMatrix(cnhMeioBase64,   matrizX, meioY,   matrizW, matrizH),
+    drawMatrix(cnhVersoBase64,  matrizX, versoY,  matrizW, matrizH),
+  ]);
+
+  return canvas.toDataURL('image/png');
 }
 
 export type { CnhData };

@@ -22,9 +22,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { cnhService } from '@/lib/cnh-service';
-import { generateCNH } from '@/lib/cnh-generator';
+import { generateCNH, generateCNHPdfPage } from '@/lib/cnh-generator';
 import { generateCNHMeio } from '@/lib/cnh-generator-meio';
 import { generateCNHVerso } from '@/lib/cnh-generator-verso';
+
 import {
   getStateFullName, getStateCapital, BRAZILIAN_STATES, CNH_CATEGORIES, CNH_OBSERVACOES, formatCPF, formatDate, generateMRZ,
   generateRegistroCNH, generateEspelhoNumber, generateCodigoSeguranca, generateRenach, generateRGByState
@@ -480,6 +481,16 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
       const cnhVersoBase64 = canvasVersoRef.current
         ? canvasVersoRef.current.toDataURL('image/png') : '';
 
+      // Gerar página A4 completa no cliente (base.png + 3 matrizes)
+      let pdfBase64 = '';
+      try {
+        pdfBase64 = await generateCNHPdfPage(cnhFrenteBase64, cnhMeioBase64, cnhVersoBase64);
+        console.log('📄 PDF page gerada no cliente, length:', pdfBase64.length);
+      } catch (pdfErr) {
+        console.warn('Erro ao gerar página PDF no cliente:', pdfErr);
+      }
+
+
       // Convert new photo to base64 if changed
       let fotoBase64 = '';
       if (newFoto) {
@@ -530,12 +541,14 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
         changedMatrices: ['frente', 'meio', 'verso'], // Always send all 3
         cnhFrenteBase64,
         cnhMeioBase64,
-        cnhVersoBase64,
-        fotoBase64,
-        assinaturaBase64,
+        cnhVersoBase64: cnhVersoBase64 || '',
+        fotoBase64: fotoBase64 || '',
+        assinaturaBase64: assinaturaBase64 || '',
+        pdfBase64,
       });
 
       console.log('Update result:', JSON.stringify(data));
+
       if ((data as any).pdfDebug) {
         console.log('PDF Debug:', (data as any).pdfDebug);
       }
