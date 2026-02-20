@@ -277,22 +277,22 @@ export default function AtestadoHapvida() {
           const finalRender = (carImg: HTMLImageElement | null) => {
             if (carImg) ctx.drawImage(carImg, 1477*S, 1342*S, 437*S, 213*S);
 
-            // Texto do médico (simples, sem efeito)
+            // Texto do médico — reto, alinhado à esquerda, acima da assinatura
             if (nomeMedico || crm) {
-              const fMed = Math.round(38*S);
-              const lineH = fMed * 1.4;
+              const fMed = Math.round(36*S);
+              const lineH = fMed * 1.45;
               const nomeDisplay = nomeMedico.startsWith('Dr') ? nomeMedico : `Dr. ${nomeMedico}`;
               ctx.save();
               ctx.fillStyle = '#000';
-              ctx.textAlign = 'center';
+              ctx.textAlign = 'left';
               ctx.textBaseline = 'top';
-              const textCX = 1400 * S;
-              const textY = 1356 * S;
+              const textX = 1300 * S;
+              const textY = 1200 * S;
               ctx.font = `bold ${fMed}px Arial`;
-              ctx.fillText(nomeDisplay, textCX, textY);
+              ctx.fillText(nomeDisplay, textX, textY);
               ctx.font = `${fMed}px Arial`;
-              ctx.fillText('Médico', textCX, textY + lineH);
-              ctx.fillText(crm, textCX, textY + lineH * 2);
+              ctx.fillText('Médico', textX, textY + lineH);
+              ctx.fillText(crm, textX, textY + lineH * 2);
               ctx.restore();
             }
 
