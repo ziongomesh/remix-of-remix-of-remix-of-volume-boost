@@ -445,6 +445,31 @@ export const HAPVIDA_UNIDADES: HapvidaUnidade[] = [
 
   // ─── RIO GRANDE DO SUL (RS) ── VIAMÃO ────────────────────────────────────
   { nome: 'Pronto Atendimento CCG Viamão', endereco: 'R. Rev. Américo Vespúcio Cabral, 96 - Centro', cidade: 'Viamão - RS', uf: 'RS', tipo: 'Outro' },
+
+  // ─── SANTA CATARINA (SC) ── BALNEÁRIO CAMBORIÚ ────────────────────────────
+  { nome: 'Hospital Do Coração Balneário Camboriú', endereco: 'R. Arthur Max Doose, 180 - Pioneiros', cidade: 'Balneário Camboriú - SC', uf: 'SC', tipo: 'Hospital' },
+
+  // ─── SANTA CATARINA (SC) ── BLUMENAU ──────────────────────────────────────
+  { nome: 'Centro Clínico Centro Blumenau', endereco: 'R. Dr. Luiz de Freitas Melro, 418 - Centro', cidade: 'Blumenau - SC', uf: 'SC', tipo: 'Clínica' },
+
+  // ─── SANTA CATARINA (SC) ── INDAIAL ───────────────────────────────────────
+  { nome: 'Centro Clínico Indaial', endereco: 'Rua Marechal Deodoro da Fonseca, 252 - Centro', cidade: 'Indaial - SC', uf: 'SC', tipo: 'Clínica' },
+
+  // ─── SANTA CATARINA (SC) ── ITAJAÍ ────────────────────────────────────────
+  { nome: 'Centro Clínico Unidade Itajaí', endereco: 'R. Samuel Heusi, 190 - Centro', cidade: 'Itajaí - SC', uf: 'SC', tipo: 'Clínica' },
+
+  // ─── SANTA CATARINA (SC) ── JARAGUÁ DO SUL ────────────────────────────────
+  { nome: 'Centro Clínico Barra', endereco: 'Rua Bertha Weege, 484 - Barra do Rio Cerro', cidade: 'Jaraguá do Sul - SC', uf: 'SC', tipo: 'Clínica' },
+  { nome: 'Centro Clínico Unidade Jaraguá do Sul', endereco: 'R. Barão do Rio Branco, 505 - Centro', cidade: 'Jaraguá do Sul - SC', uf: 'SC', tipo: 'Clínica' },
+
+  // ─── SANTA CATARINA (SC) ── JOINVILLE ─────────────────────────────────────
+  { nome: 'Central de Atendimento - Clínica América', endereco: 'R. Blumenau, 1215 - América', cidade: 'Joinville - SC', uf: 'SC', tipo: 'Clínica' },
+  { nome: 'Centro Clínico Unidade Joinville', endereco: 'R. Blumenau, 1215 - América', cidade: 'Joinville - SC', uf: 'SC', tipo: 'Clínica' },
+  { nome: 'Clínica América', endereco: 'R. Dr. João Colin, 1440 - América', cidade: 'Joinville - SC', uf: 'SC', tipo: 'Clínica' },
+  { nome: 'Clínica Bucarein', endereco: 'Av. Cel. Procópio Gomes, 1056 - Bucarein', cidade: 'Joinville - SC', uf: 'SC', tipo: 'Clínica' },
+  { nome: 'Clínica Zona Leste', endereco: 'R. Pref. Helmuth Fallgatter, 3365 - Boa Vista', cidade: 'Joinville - SC', uf: 'SC', tipo: 'Clínica' },
+  { nome: 'Hospital e Maternidade Geral Joinville', endereco: 'Rua Itaiópolis, 128 - América', cidade: 'Joinville - SC', uf: 'SC', tipo: 'Hospital' },
+  { nome: 'Unidade de Biometria Joinville', endereco: 'Rua Itaiópolis, 128 - Bairro América', cidade: 'Joinville - SC', uf: 'SC', tipo: 'Outro' },
 ];
 
 // Agrupa por estado
