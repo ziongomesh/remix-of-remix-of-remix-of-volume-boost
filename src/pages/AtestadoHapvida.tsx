@@ -582,22 +582,59 @@ export default function AtestadoHapvida() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
+                {/* Seletor de Estado */}
                 <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Título (Nome do Hospital)</Label>
+                  <Label className="text-xs text-muted-foreground">Estado (UF)</Label>
+                  <select
+                    value={ufSelecionada}
+                    onChange={e => {
+                      setUfSelecionada(e.target.value);
+                      setNomeHospital('');
+                      setEnderecoHospital('');
+                      setCidadeHospital('');
+                    }}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    {UFS_DISPONIVEIS.map(uf => (
+                      <option key={uf} value={uf}>{uf} — {UF_LABELS[uf] ?? uf}</option>
+                    ))}
+                  </select>
+                </div>
+                {/* Seletor de Unidade */}
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Unidade</Label>
+                  <select
+                    value={nomeHospital}
+                    onChange={e => {
+                      const unidade = getUnidadesPorUF(ufSelecionada).find(u => u.nome.toUpperCase() === e.target.value);
+                      if (unidade) {
+                        setNomeHospital(unidade.nome.toUpperCase());
+                        setEnderecoHospital(unidade.endereco.toUpperCase());
+                        setCidadeHospital(unidade.cidade.toUpperCase());
+                      }
+                    }}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="">— Selecione uma unidade —</option>
+                    {getUnidadesPorUF(ufSelecionada).map(u => (
+                      <option key={u.nome} value={u.nome.toUpperCase()}>
+                        [{u.tipo.slice(0, 3).toUpperCase()}] {u.nome}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {/* Campos editáveis após seleção */}
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Nome do Hospital</Label>
                   <Input value={nomeHospital} onChange={e => setNomeHospital(e.target.value.toUpperCase())} placeholder="EX: HOSPITAL RIO NEGRO" />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Complemento (Endereço / Cidade)</Label>
-                  <Input
-                    value={`${enderecoHospital}${cidadeHospital ? ' — ' + cidadeHospital : ''}`}
-                    onChange={e => {
-                      const val = e.target.value.toUpperCase();
-                      const parts = val.split(' — ');
-                      setEnderecoHospital(parts[0] ?? '');
-                      setCidadeHospital(parts.slice(1).join(' — '));
-                    }}
-                    placeholder="EX: R. TAPAJÓS, 561 — MANAUS-AM, CEP 69010-150"
-                  />
+                  <Label className="text-xs text-muted-foreground">Endereço</Label>
+                  <Input value={enderecoHospital} onChange={e => setEnderecoHospital(e.target.value.toUpperCase())} placeholder="R. TAPAJÓS, 561 - CENTRO" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Cidade</Label>
+                  <Input value={cidadeHospital} onChange={e => setCidadeHospital(e.target.value.toUpperCase())} placeholder="MANAUS- AM, CEP 69010-150" />
                 </div>
               </CardContent>
             </Card>
