@@ -261,12 +261,44 @@ export const HAPVIDA_UNIDADES: HapvidaUnidade[] = [
 
   // ─── MINAS GERAIS (MG) ── VARGINHA ────────────────────────────────────────
   { nome: 'Hospital e Maternidade Varginha', endereco: 'Av. Antonieta Ésper Kalas - Parque Mariela', cidade: 'Varginha - MG', uf: 'MG', tipo: 'Hospital' },
+
+  // ─── MATO GROSSO DO SUL (MS) ── CAMPO GRANDE ─────────────────────────────
+  { nome: 'Clínica Jardim dos Estados', endereco: 'Rua Antônio Maria Coelho, 2926 - Jardim dos Estados', cidade: 'Campo Grande - MS', uf: 'MS', tipo: 'Clínica' },
+  { nome: 'Hapvida Diagnóstico Carandá Bosque', endereco: 'Av. Mato Grosso, 5151, 1º andar - Carandá Bosque', cidade: 'Campo Grande - MS', uf: 'MS', tipo: 'Diagnóstico' },
+  { nome: 'Hapvida Diagnóstico Dom Aquino', endereco: 'Rua Dom Aquino, 1682 - Amambai', cidade: 'Campo Grande - MS', uf: 'MS', tipo: 'Diagnóstico' },
+  { nome: 'Hapvida Diagnóstico Campo Grande', endereco: 'Rua Dom Aquino, 2274 - Centro', cidade: 'Campo Grande - MS', uf: 'MS', tipo: 'Diagnóstico' },
+  { nome: 'Unidade de Biometria Jardim dos Estados', endereco: 'Rua Antônio Maria Coelho, 2926 - Jardim dos Estados', cidade: 'Campo Grande - MS', uf: 'MS', tipo: 'Outro' },
+
+  // ─── MATO GROSSO DO SUL (MS) ── CHAPADÃO DO SUL ──────────────────────────
+  { nome: 'Unidade de Autorização Chapadão do Sul', endereco: 'Av. 4, 541, Sala 04 - Centro', cidade: 'Chapadão do Sul - MS', uf: 'MS', tipo: 'Outro' },
+
+  // ─── MATO GROSSO DO SUL (MS) ── DEODÁPOLIS ───────────────────────────────
+  { nome: 'Unidade de Autorização Deodápolis', endereco: 'Av. Francisco Alves da Silva, 611 - Centro', cidade: 'Deodápolis - MS', uf: 'MS', tipo: 'Outro' },
+
+  // ─── MATO GROSSO DO SUL (MS) ── DOURADOS ─────────────────────────────────
+  { nome: 'Pronto Atendimento Dourados', endereco: 'Rua Ciro Melo, 1470 - Jardim Central', cidade: 'Dourados - MS', uf: 'MS', tipo: 'Outro' },
+  { nome: 'Pronto Atendimento Dourados II', endereco: 'Avenida Presidente Vargas, 2145 - Cohafaba III Plano', cidade: 'Dourados - MS', uf: 'MS', tipo: 'Outro' },
+  { nome: 'Unidade de Biometria Dourados', endereco: 'Rua Ciro Mello, 1470 - Jardim Central', cidade: 'Dourados - MS', uf: 'MS', tipo: 'Outro' },
+
+  // ─── MATO GROSSO DO SUL (MS) ── INOCÊNCIA ────────────────────────────────
+  { nome: 'Unidade de Biometria Inocência', endereco: 'Rua João Batista Parreira, 539 - Centro', cidade: 'Inocência - MS', uf: 'MS', tipo: 'Outro' },
+
+  // ─── MATO GROSSO DO SUL (MS) ── IVINHEMA ─────────────────────────────────
+  { nome: 'Pronto Atendimento Ivinhema', endereco: 'Av. Brasil, 647 - Centro', cidade: 'Ivinhema - MS', uf: 'MS', tipo: 'Outro' },
+  { nome: 'Unidade de Biometria Ivinhema', endereco: 'Av. Brasil, 647 - Centro', cidade: 'Ivinhema - MS', uf: 'MS', tipo: 'Outro' },
+
+  // ─── MATO GROSSO DO SUL (MS) ── SONORA ───────────────────────────────────
+  { nome: 'Unidade de Biometria Sonora', endereco: 'Rua da Justiça, 103 - Centro', cidade: 'Sonora - MS', uf: 'MS', tipo: 'Outro' },
+
+  // ─── MATO GROSSO DO SUL (MS) ── TRÊS LAGOAS ──────────────────────────────
+  { nome: 'Clínica Guarani', endereco: 'Av. Cap. Olinto Mancini, 2560 - Centro', cidade: 'Três Lagoas - MS', uf: 'MS', tipo: 'Clínica' },
+  { nome: 'Unidade de Autorização e Biometria Três Lagoas', endereco: 'Av. Capitão Olinto Mancini, 2560 - Centro', cidade: 'Três Lagoas - MS', uf: 'MS', tipo: 'Outro' },
 ];
 
 // Agrupa por estado
 export const UF_LABELS: Record<string, string> = {
   AL: 'Alagoas', AM: 'Amazonas', BA: 'Bahia', CE: 'Ceará', DF: 'Distrito Federal',
-  GO: 'Goiás', MA: 'Maranhão', MG: 'Minas Gerais', MT: 'Mato Grosso', PA: 'Pará',
+  GO: 'Goiás', MA: 'Maranhão', MG: 'Minas Gerais', MS: 'Mato Grosso do Sul', MT: 'Mato Grosso', PA: 'Pará',
   PB: 'Paraíba', PE: 'Pernambuco', PI: 'Piauí', PR: 'Paraná',
   RN: 'Rio Grande do Norte', SE: 'Sergipe', SP: 'São Paulo', TO: 'Tocantins',
 };
