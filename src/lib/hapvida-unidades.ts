@@ -46,6 +46,11 @@ export const HAPVIDA_UNIDADES: HapvidaUnidade[] = [
   { nome: 'Diagnóstico Alagoinhas', endereco: 'Tv. Dr. Dantas Bião, 254-284 - Alagoinhas Velha', cidade: 'Alagoinhas - BA', uf: 'BA', tipo: 'Diagnóstico' },
   { nome: 'Hospital e Maternidade Cetro', endereco: 'Rua Elvira Dórea, 1 - Centro', cidade: 'Alagoinhas - BA', uf: 'BA', tipo: 'Hospital' },
   { nome: 'Unidade de Autorização Alagoinhas', endereco: 'Travessa Dantas Bião, 254 - Alagoinhas Velha', cidade: 'Alagoinhas - BA', uf: 'BA', tipo: 'Outro' },
+  { nome: 'Clínica Camaçari', endereco: 'Av. Dr. Manoel Mercês, S/n - Mangueiral', cidade: 'Camaçari - BA', uf: 'BA', tipo: 'Clínica' },
+  { nome: 'Diagnóstico Dois de Maio', endereco: 'Rua Dois de Maio, 7 - Centro', cidade: 'Camaçari - BA', uf: 'BA', tipo: 'Diagnóstico' },
+  { nome: 'Hapvida Diagnóstico Hospital Semed', endereco: 'Rua Francisco Drumond, 238 - Centro', cidade: 'Camaçari - BA', uf: 'BA', tipo: 'Diagnóstico' },
+  { nome: 'Hospital Semed', endereco: 'Rua Francisco Drumond, 238 - Centro', cidade: 'Camaçari - BA', uf: 'BA', tipo: 'Hospital' },
+  { nome: 'Unidade de Biometria Camaçari', endereco: 'Av. Dr. Manoel Mercês, S/n - Mangueiral', cidade: 'Camaçari - BA', uf: 'BA', tipo: 'Outro' },
 
   { nome: 'Clínica Antônio Sales', endereco: 'Av. Antônio Sales, 2238 - Dionísio Torres', cidade: 'Fortaleza - CE', uf: 'CE', tipo: 'Clínica' },
   { nome: 'Clínica Barão de Studart', endereco: 'Av. Barão de Studart, 2260 - Dionísio Torres', cidade: 'Fortaleza - CE', uf: 'CE', tipo: 'Clínica' },
