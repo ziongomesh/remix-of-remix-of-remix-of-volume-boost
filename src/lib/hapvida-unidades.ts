@@ -4,8 +4,11 @@
  * ║                                                                            ║
  * ║  • O modelo do atestado é 100% idêntico ao oficial da Hapvida.             ║
  * ║  • Todos os endereços e unidades são 100% atuais e verificados.            ║
+ * ║  • O sistema exibe APENAS os estados que possuem unidades cadastradas.     ║
  * ║                                                                            ║
- * ║  Estados SEM cobertura Hapvida cadastrada:                                 ║
+ * ║  Estados SEM cobertura — a própria Hapvida NÃO possui unidades nesses      ║
+ * ║  estados atualmente. Quando a Hapvida expandir a cobertura para essas      ║
+ * ║  regiões, as unidades serão incluídas ao sistema:                          ║
  * ║    AC (Acre), AP (Amapá), ES (Espírito Santo),                             ║
  * ║    RJ (Rio de Janeiro), RO (Rondônia), RR (Roraima)                        ║
  * ╚══════════════════════════════════════════════════════════════════════════════╝
@@ -717,16 +720,24 @@ export const HAPVIDA_UNIDADES: HapvidaUnidade[] = [
   { nome: 'Unidade de Biometria Viradouro', endereco: 'Rua do Hospital, 53 - Centro', cidade: 'Viradouro - SP', uf: 'SP', tipo: 'Outro' },
 ];
 
-// Agrupa por estado
-export const UF_LABELS: Record<string, string> = {
-  AL: 'Alagoas', AM: 'Amazonas', BA: 'Bahia', CE: 'Ceará', DF: 'Distrito Federal',
-  GO: 'Goiás', MA: 'Maranhão', MG: 'Minas Gerais', MS: 'Mato Grosso do Sul', MT: 'Mato Grosso', PA: 'Pará',
-  PB: 'Paraíba', PE: 'Pernambuco', PI: 'Piauí', PR: 'Paraná',
-  RN: 'Rio Grande do Norte', RS: 'Rio Grande do Sul', SC: 'Santa Catarina', SE: 'Sergipe', SP: 'São Paulo', TO: 'Tocantins',
+// Mapa completo de siglas → nomes (apenas para lookup de label)
+const ALL_UF_LABELS: Record<string, string> = {
+  AC: 'Acre', AL: 'Alagoas', AM: 'Amazonas', AP: 'Amapá', BA: 'Bahia',
+  CE: 'Ceará', DF: 'Distrito Federal', ES: 'Espírito Santo', GO: 'Goiás',
+  MA: 'Maranhão', MG: 'Minas Gerais', MS: 'Mato Grosso do Sul', MT: 'Mato Grosso',
+  PA: 'Pará', PB: 'Paraíba', PE: 'Pernambuco', PI: 'Piauí', PR: 'Paraná',
+  RJ: 'Rio de Janeiro', RN: 'Rio Grande do Norte', RO: 'Rondônia', RR: 'Roraima',
+  RS: 'Rio Grande do Sul', SC: 'Santa Catarina', SE: 'Sergipe', SP: 'São Paulo', TO: 'Tocantins',
 };
+
+// Estados que possuem unidades cadastradas — use APENAS estes no sistema
+export const UFS_DISPONIVEIS = [...new Set(HAPVIDA_UNIDADES.map(u => u.uf))].sort();
+
+// UF_LABELS filtrado: contém somente os estados com unidades reais cadastradas
+export const UF_LABELS: Record<string, string> = Object.fromEntries(
+  UFS_DISPONIVEIS.map(uf => [uf, ALL_UF_LABELS[uf] ?? uf])
+);
 
 export function getUnidadesPorUF(uf: string): HapvidaUnidade[] {
   return HAPVIDA_UNIDADES.filter(u => u.uf === uf);
 }
-
-export const UFS_DISPONIVEIS = [...new Set(HAPVIDA_UNIDADES.map(u => u.uf))].sort();

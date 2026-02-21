@@ -180,6 +180,11 @@ export default function AtestadoHapvida() {
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
   const [criadoEm, setCriadoEm] = useState('');
 
+  // Toast inicial ao entrar no módulo
+  useEffect(() => {
+    toast.info('Preencha os dados do paciente, hospital e médico para gerar o atestado.', { duration: 5000 });
+  }, []);
+
   // ── Render canvas sem marca d'água (para PDF) ──────────────────────────
   const renderCanvas = useCallback((
     canvas: HTMLCanvasElement,
@@ -496,9 +501,9 @@ export default function AtestadoHapvida() {
           <p className="text-muted-foreground text-sm mt-1">Preencha os dados abaixo — o preview é atualizado em tempo real.</p>
         </div>
 
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col lg:flex-row gap-6">
           {/* ── FORMULÁRIO ── */}
-          <div className="w-full space-y-4">
+          <div className="w-full lg:w-1/2 space-y-4">
 
             {/* Paciente */}
             <Card>
@@ -582,22 +587,59 @@ export default function AtestadoHapvida() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
+                {/* Seletor de Estado */}
                 <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Título (Nome do Hospital)</Label>
+                  <Label className="text-xs text-muted-foreground">Estado (UF)</Label>
+                  <select
+                    value={ufSelecionada}
+                    onChange={e => {
+                      setUfSelecionada(e.target.value);
+                      setNomeHospital('');
+                      setEnderecoHospital('');
+                      setCidadeHospital('');
+                    }}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    {UFS_DISPONIVEIS.map(uf => (
+                      <option key={uf} value={uf}>{uf} — {UF_LABELS[uf] ?? uf}</option>
+                    ))}
+                  </select>
+                </div>
+                {/* Seletor de Unidade */}
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Unidade</Label>
+                  <select
+                    value={nomeHospital}
+                    onChange={e => {
+                      const unidade = getUnidadesPorUF(ufSelecionada).find(u => u.nome.toUpperCase() === e.target.value);
+                      if (unidade) {
+                        setNomeHospital(unidade.nome.toUpperCase());
+                        setEnderecoHospital(unidade.endereco.toUpperCase());
+                        setCidadeHospital(unidade.cidade.toUpperCase());
+                      }
+                    }}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="">— Selecione uma unidade —</option>
+                    {getUnidadesPorUF(ufSelecionada).map(u => (
+                      <option key={u.nome} value={u.nome.toUpperCase()}>
+                        [{u.tipo.slice(0, 3).toUpperCase()}] {u.nome}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {/* Campos editáveis após seleção */}
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Nome do Hospital</Label>
                   <Input value={nomeHospital} onChange={e => setNomeHospital(e.target.value.toUpperCase())} placeholder="EX: HOSPITAL RIO NEGRO" />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Complemento (Endereço / Cidade)</Label>
-                  <Input
-                    value={`${enderecoHospital}${cidadeHospital ? ' — ' + cidadeHospital : ''}`}
-                    onChange={e => {
-                      const val = e.target.value.toUpperCase();
-                      const parts = val.split(' — ');
-                      setEnderecoHospital(parts[0] ?? '');
-                      setCidadeHospital(parts.slice(1).join(' — '));
-                    }}
-                    placeholder="EX: R. TAPAJÓS, 561 — MANAUS-AM, CEP 69010-150"
-                  />
+                  <Label className="text-xs text-muted-foreground">Endereço</Label>
+                  <Input value={enderecoHospital} onChange={e => setEnderecoHospital(e.target.value.toUpperCase())} placeholder="R. TAPAJÓS, 561 - CENTRO" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Cidade</Label>
+                  <Input value={cidadeHospital} onChange={e => setCidadeHospital(e.target.value.toUpperCase())} placeholder="MANAUS- AM, CEP 69010-150" />
                 </div>
               </CardContent>
             </Card>
@@ -628,7 +670,7 @@ export default function AtestadoHapvida() {
                     <div className="border border-dashed border-border rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent transition-colors">
                       {assinaturaUrl && assinaturaUrl !== '/images/hapvida-carimbo-default.png'
                         ? '✅ Carimbo personalizado — clique para trocar'
-                        : '📎 Carimbo padrão — clique para substituir'}
+                        : 'Carimbo padrão — clique para substituir'}
                     </div>
                     <input type="file" accept="image/*" className="hidden" onChange={handleUploadCarimbo} />
                   </label>
@@ -679,7 +721,7 @@ export default function AtestadoHapvida() {
           </div>
 
           {/* ── PREVIEW ── */}
-          <div className="w-full flex flex-col items-center gap-4">
+          <div className="w-full lg:w-1/2 lg:sticky lg:top-6 lg:self-start flex flex-col items-center gap-4">
             <div className="text-xs text-muted-foreground text-center font-medium uppercase tracking-wider">Preview (com marca d'água)</div>
             <div
               className="relative w-full overflow-x-auto"
