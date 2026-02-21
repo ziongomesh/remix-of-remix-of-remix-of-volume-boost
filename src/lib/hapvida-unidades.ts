@@ -181,6 +181,18 @@ export const HAPVIDA_UNIDADES: HapvidaUnidade[] = [
   // ─── GOIÁS (GO) ── RIO VERDE ──────────────────────────────────────────────
   { nome: 'Clínica Rio Verde', endereco: 'Rua Rosulino Ferreira Guimarães, 1082, Qd. 0006, Lt. 22 - Centro', cidade: 'Rio Verde - GO', uf: 'GO', tipo: 'Clínica' },
   { nome: 'Pronto Atendimento Rio Verde', endereco: 'Avenida Eurico Veloso do Carmo, 1800 - Setor Central', cidade: 'Rio Verde - GO', uf: 'GO', tipo: 'Outro' },
+
+  // ─── MARANHÃO (MA) ── SÃO LUÍS ───────────────────────────────────────────
+  { nome: 'Clínica Holandeses', endereco: 'Avenida dos Holandeses, 6940 - Calhau', cidade: 'São Luís - MA', uf: 'MA', tipo: 'Clínica' },
+  { nome: 'Clínica Lia Varella', endereco: 'Av. Senador Vitorino, 1956 - Areinha', cidade: 'São Luís - MA', uf: 'MA', tipo: 'Clínica' },
+  { nome: 'Clínica São Luís Centro', endereco: 'Av. Guaxenduba, 260 - Centro', cidade: 'São Luís - MA', uf: 'MA', tipo: 'Clínica' },
+  { nome: 'Clínica São Luís Fátima', endereco: 'Rua Armando Vieira da Silva, S/N - Bairro de Fátima', cidade: 'São Luís - MA', uf: 'MA', tipo: 'Clínica' },
+  { nome: 'Hospital e Maternidade Guarás', endereco: 'Rua Armando Vieira da Silva, S/N - Bairro de Fátima', cidade: 'São Luís - MA', uf: 'MA', tipo: 'Hospital' },
+  { nome: 'Laboratório Cohab', endereco: 'Avenida Jerônimo Albuquerque, 619 - Cohab', cidade: 'São Luís - MA', uf: 'MA', tipo: 'Diagnóstico' },
+  { nome: 'Laboratório Lia Varella', endereco: 'Av. Senador Vitorino, 1956 - Areinha', cidade: 'São Luís - MA', uf: 'MA', tipo: 'Diagnóstico' },
+  { nome: 'Unidade de Autorização Cohab', endereco: 'Avenida Jerônimo de Albuquerque, 619 - Cohab', cidade: 'São Luís - MA', uf: 'MA', tipo: 'Outro' },
+  { nome: 'Unidade de Autorização e Biometria São Luís', endereco: 'Avenida Kennedy, 1620 - Fátima', cidade: 'São Luís - MA', uf: 'MA', tipo: 'Outro' },
+  { nome: 'Unidade de Cadastro São Luís', endereco: 'Av. Guaxenduba, 260 - Centro', cidade: 'São Luís - MA', uf: 'MA', tipo: 'Outro' },
 ];
 
 // Agrupa por estado
