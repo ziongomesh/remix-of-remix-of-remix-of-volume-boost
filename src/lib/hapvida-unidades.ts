@@ -470,6 +470,238 @@ export const HAPVIDA_UNIDADES: HapvidaUnidade[] = [
   { nome: 'Clínica Zona Leste', endereco: 'R. Pref. Helmuth Fallgatter, 3365 - Boa Vista', cidade: 'Joinville - SC', uf: 'SC', tipo: 'Clínica' },
   { nome: 'Hospital e Maternidade Geral Joinville', endereco: 'Rua Itaiópolis, 128 - América', cidade: 'Joinville - SC', uf: 'SC', tipo: 'Hospital' },
   { nome: 'Unidade de Biometria Joinville', endereco: 'Rua Itaiópolis, 128 - Bairro América', cidade: 'Joinville - SC', uf: 'SC', tipo: 'Outro' },
+
+  // ─── SÃO PAULO (SP) ── AMERICANA ─────────────────────────────────────────
+  { nome: 'Hapvida Diagnóstico Americana', endereco: 'Rua Domingos Nardini, 65 - Vila Medon', cidade: 'Americana - SP', uf: 'SP', tipo: 'Diagnóstico' },
+  { nome: 'Hapvida Diagnóstico Paulista', endereco: 'Av. Paulista, Jardim, 1267 - Nossa Sra. de Fatima', cidade: 'Americana - SP', uf: 'SP', tipo: 'Diagnóstico' },
+  { nome: 'Hospital São Lucas Americana', endereco: 'Av. Brasil, 263 - Vila Medon', cidade: 'Americana - SP', uf: 'SP', tipo: 'Hospital' },
+  { nome: 'Qualivida Americana', endereco: 'Rua Fortunato Basseto, 157 - Vila Medon', cidade: 'Americana - SP', uf: 'SP', tipo: 'Outro' },
+
+  // ─── SÃO PAULO (SP) ── AMÉRICO BRASILIENSE ───────────────────────────────
+  { nome: 'Pronto Atendimento Américo Brasiliense', endereco: 'R. Maria Mendes, 69 - Vila Cerqueira', cidade: 'Américo Brasiliense - SP', uf: 'SP', tipo: 'Outro' },
+  { nome: 'Unidade de Biometria Américo Brasiliense', endereco: 'Rua Maria Mendes, 69 - Vila Cerqueira', cidade: 'Américo Brasiliense - SP', uf: 'SP', tipo: 'Outro' },
+
+  // ─── SÃO PAULO (SP) ── ARARAQUARA ────────────────────────────────────────
+  { nome: 'Clínica 9 de julho', endereco: 'R. Nove de Julho, 5 - Jardim Nova América', cidade: 'Araraquara - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Clínica Hospital Araraquara', endereco: 'Av. José Bonifácio, 569 - Centro', cidade: 'Araraquara - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Clínica Jardim Primavera', endereco: 'Av. Joaquim Alves, 58 - Jardim Primavera', cidade: 'Araraquara - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Hospital e Maternidade Araraquara', endereco: 'Av. José Bonifácio, 569 - Centro', cidade: 'Araraquara - SP', uf: 'SP', tipo: 'Hospital' },
+  { nome: 'Unidade de Biometria Araraquara', endereco: 'Rua Gonçalves Dias, 561, Shopping Lupo - 1º andar - Amadeu Furtado', cidade: 'Araraquara - SP', uf: 'SP', tipo: 'Outro' },
+
+  // ─── SÃO PAULO (SP) ── ARUJÁ ─────────────────────────────────────────────
+  { nome: 'Centro Clínico Arujá', endereco: 'Av. João Manoel, S/N - Centro Histórico', cidade: 'Arujá - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Hapvida Diagnóstico Arujá', endereco: 'Al. Nassima Jorge Miguel, 70 - Center Ville', cidade: 'Arujá - SP', uf: 'SP', tipo: 'Diagnóstico' },
+
+  // ─── SÃO PAULO (SP) ── ASSIS ─────────────────────────────────────────────
+  { nome: 'Unidade de Biometria Assis', endereco: 'Rua Victor C. Romano, 97, Sala 01 - Jardim Europa', cidade: 'Assis - SP', uf: 'SP', tipo: 'Outro' },
+
+  // ─── SÃO PAULO (SP) ── BARRA BONITA ──────────────────────────────────────
+  { nome: 'Pronto Atendimento Barra Bonita', endereco: 'R. Manoel D Almeida Camargo, 135 - Vila Operaria', cidade: 'Barra Bonita - SP', uf: 'SP', tipo: 'Outro' },
+  { nome: 'Unidade de Biometria Barra Bonita', endereco: "Rua Manoel D'Almeida Camargo, 135 - Vila Operária", cidade: 'Barra Bonita - SP', uf: 'SP', tipo: 'Outro' },
+
+  // ─── SÃO PAULO (SP) ── BARRETOS ──────────────────────────────────────────
+  { nome: 'Hapvida Diagnóstico Jardim Alvorada', endereco: 'Av. Quarenta e Três, 780 - Jardim Alvorada', cidade: 'Barretos - SP', uf: 'SP', tipo: 'Diagnóstico' },
+  { nome: 'Pronto Atendimento de Barretos', endereco: 'Av. Eng. Necker Carvalho de Camargo, 1701 - América', cidade: 'Barretos - SP', uf: 'SP', tipo: 'Outro' },
+  { nome: 'Unidade de Biometria Barretos', endereco: 'Av. 43, 780 - Jardim Alvorada', cidade: 'Barretos - SP', uf: 'SP', tipo: 'Outro' },
+
+  // ─── SÃO PAULO (SP) ── BARUERI ───────────────────────────────────────────
+  { nome: 'Centro Clínico Alphaville', endereco: 'Alameda Amazonas, 329 - Alphaville Industrial', cidade: 'Barueri - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Hapvida Diagnóstico Alphaville', endereco: 'Alameda Amazonas, 329 - Alphaville Industrial', cidade: 'Barueri - SP', uf: 'SP', tipo: 'Diagnóstico' },
+  { nome: 'Pronto Atendimento Barueri', endereco: 'Rua Campos Sales, 118 - Centro', cidade: 'Barueri - SP', uf: 'SP', tipo: 'Outro' },
+
+  // ─── SÃO PAULO (SP) ── BAURU ─────────────────────────────────────────────
+  { nome: 'Clínica Diagnóstico Rio Branco', endereco: 'Rua Rio Branco, 12-40 - Centro', cidade: 'Bauru - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Clínica Rodrigues de Abreu', endereco: 'Praça Rodrigues de Abreu, 338 - Centro', cidade: 'Bauru - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Hapvida Diagnóstico Nações Unidas', endereco: 'Av. Nações Unidas, 17-27 - Vila Santo Antônio', cidade: 'Bauru - SP', uf: 'SP', tipo: 'Diagnóstico' },
+  { nome: 'Hapvida Diagnóstico Rio Branco', endereco: 'Rua Gustavo Maciel, 15-15 - Centro', cidade: 'Bauru - SP', uf: 'SP', tipo: 'Diagnóstico' },
+  { nome: 'Hospital Bauru', endereco: 'Rua Agenor Meira, 11-27 - Centro', cidade: 'Bauru - SP', uf: 'SP', tipo: 'Hospital' },
+  { nome: 'Hospital e Maternidade Bauru', endereco: 'Rua Gustavo Maciel, 15 - Centro', cidade: 'Bauru - SP', uf: 'SP', tipo: 'Hospital' },
+  { nome: 'Unidade de Biometria Bauru', endereco: 'Av. Nações Unidas, 17-27 - Vila Santo Antônio', cidade: 'Bauru - SP', uf: 'SP', tipo: 'Outro' },
+
+  // ─── SÃO PAULO (SP) ── CAIEIRAS ──────────────────────────────────────────
+  { nome: 'Centro Clínico Caieiras', endereco: 'R. Ambrosina do Carmo Buonaguide, 157/159 - Centro', cidade: 'Caieiras - SP', uf: 'SP', tipo: 'Clínica' },
+
+  // ─── SÃO PAULO (SP) ── CAJAMAR ───────────────────────────────────────────
+  { nome: 'Centro Clínico Polvilho', endereco: 'Avenida Tenente Marques, 1795 - Jardim São Luiz', cidade: 'Cajamar - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Hapvida Diagnóstico Polvilho', endereco: 'Av. Ten. Marques, 1795 - Jardim São Luiz', cidade: 'Cajamar - SP', uf: 'SP', tipo: 'Diagnóstico' },
+
+  // ─── SÃO PAULO (SP) ── CAJURU ────────────────────────────────────────────
+  { nome: 'Hapvida Diagnóstico Cajuru', endereco: 'Rua Major Palma, 410, Sala 08 - Centro', cidade: 'Cajuru - SP', uf: 'SP', tipo: 'Diagnóstico' },
+
+  // ─── SÃO PAULO (SP) ── CAMPINAS ──────────────────────────────────────────
+  { nome: 'Centro Clínico Andrade Neves I', endereco: 'Rua Marechal Deodoro, 134 - Centro', cidade: 'Campinas - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Centro Clínico Andrade Neves II', endereco: 'Av. Andrade Neves, 1300 - Centro', cidade: 'Campinas - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Centro Clínico Itapura', endereco: 'Av. Barão de Itapura, 2642 - Jardim Guanabara', cidade: 'Campinas - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Clínica e Diagnóstico Campinas', endereco: 'Av. João Jorge, 370 - Vila Industrial', cidade: 'Campinas - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Hapvida Diagnóstico Campinas', endereco: 'Rua Prefeito Passos, 295 - Jardim Guanabara', cidade: 'Campinas - SP', uf: 'SP', tipo: 'Diagnóstico' },
+  { nome: 'Hospital e Maternidade Renascença de Campinas', endereco: 'Av. Barão de Itapura, 1444 - Jardim Guanabara', cidade: 'Campinas - SP', uf: 'SP', tipo: 'Hospital' },
+  { nome: 'Qualivida Campinas', endereco: 'Av. Barão de Itapura, 1356 - Vila Itapura', cidade: 'Campinas - SP', uf: 'SP', tipo: 'Outro' },
+
+  // ─── SÃO PAULO (SP) ── CAPIVARI ──────────────────────────────────────────
+  { nome: 'Clínica Vila Santa – Clínica Capivari', endereco: 'Av. Brigadeiro Faria Lima, 40 - Bela Vista', cidade: 'Capivari - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Pronto Atendimento Capivari', endereco: 'Praça Dr. Mário Dias de Aguiar, 1 - Centro', cidade: 'Capivari - SP', uf: 'SP', tipo: 'Outro' },
+  { nome: 'Unidade de Biometria Capivari', endereco: 'Praça Mario Dias Aguiar, 01 - Centro', cidade: 'Capivari - SP', uf: 'SP', tipo: 'Outro' },
+
+  // ─── SÃO PAULO (SP) ── CARAPICUÍBA ───────────────────────────────────────
+  { nome: 'Centro Clínico Carapicuíba', endereco: 'Avenida Tâmara, 311 - Centro', cidade: 'Carapicuíba - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Hapvida Diagnóstico Carapicuíba', endereco: 'Rua Atílio Tolaine, altura nº 30 - Av. Tâmara, 311', cidade: 'Carapicuíba - SP', uf: 'SP', tipo: 'Diagnóstico' },
+
+  // ─── SÃO PAULO (SP) ── JUNDIAÍ ───────────────────────────────────────────
+  { nome: 'Centro Clínico Jundiaí', endereco: 'Rua São Bento, 41 - Centro', cidade: 'Jundiaí - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Centro Oftalmológico de Jundiaí', endereco: 'Rua São Bento, 41 - Centro', cidade: 'Jundiaí - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Espaço Notrelife 50+ Jundiaí', endereco: 'Rua São Bento, 41 - Centro', cidade: 'Jundiaí - SP', uf: 'SP', tipo: 'Outro' },
+  { nome: 'Hapvida Diagnóstico Jundiaí', endereco: 'R. São Bento, 41 - Centro', cidade: 'Jundiaí - SP', uf: 'SP', tipo: 'Diagnóstico' },
+  { nome: 'Hospital e Maternidade Paulo Sacramento', endereco: 'R. Quinze de Novembro, 865 - Centro', cidade: 'Jundiaí - SP', uf: 'SP', tipo: 'Hospital' },
+  { nome: 'Qualivida Jundiaí', endereco: 'Rua São Bento, 41 - Centro', cidade: 'Jundiaí - SP', uf: 'SP', tipo: 'Outro' },
+
+  // ─── SÃO PAULO (SP) ── LINS ──────────────────────────────────────────────
+  { nome: 'Hospital e Maternidade Lins', endereco: 'Av. Nicolau Zarvos, 1640 - Jardim Aeroporto', cidade: 'Lins - SP', uf: 'SP', tipo: 'Hospital' },
+  { nome: 'Unidade de Biometria Lins', endereco: 'Rua Pedro de Toledo, 265 - Centro', cidade: 'Lins - SP', uf: 'SP', tipo: 'Outro' },
+
+  // ─── SÃO PAULO (SP) ── SANTA RITA DO PASSA QUATRO ─────────────────────────
+  { nome: 'Clínica Santa Rita', endereco: 'Rua Duque de Caxias, 341 - Centro', cidade: 'Santa Rita do Passa Quatro - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Unidade de Biometria Santa Rita do Passa Quatro', endereco: 'Rua Inácio Ribeiro, 423 - Centro', cidade: 'Santa Rita do Passa Quatro - SP', uf: 'SP', tipo: 'Outro' },
+
+  // ─── SÃO PAULO (SP) ── SANTA ROSA DE VITERBO ─────────────────────────────
+  { nome: 'Hapvida Diagnóstico Monte Alto', endereco: 'Rua Bahia, 133 - Jardim Boa Vista', cidade: 'Santa Rosa de Viterbo - SP', uf: 'SP', tipo: 'Diagnóstico' },
+  { nome: 'Pronto Atendimento Santa Rosa', endereco: 'R. Dr. Mario Carneiro da Cunha, 949 - Monte Alto', cidade: 'Santa Rosa de Viterbo - SP', uf: 'SP', tipo: 'Outro' },
+  { nome: 'Unidade de Biometria Santa Rosa de Viterbo', endereco: 'Rua Mario Carneiro da Cunha, 949 - Monte Alto', cidade: 'Santa Rosa de Viterbo - SP', uf: 'SP', tipo: 'Outro' },
+
+  // ─── SÃO PAULO (SP) ── SANTO ANDRÉ ───────────────────────────────────────
+  { nome: 'Centro Clínico IPSA', endereco: 'Rua Prefeito Justino Paixão, 85 - Centro', cidade: 'Santo André - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Centro Clínico Santa Paula', endereco: 'Av. Doutor Augusto De Toledo, 540 - Santa Paula', cidade: 'Santo André - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Centro Clínico Santo André 2', endereco: 'Avenida Dom Pedro II, 2213 - Bairro Jardim', cidade: 'Santo André - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Centro Clínico Santo André 3', endereco: 'Rua General Glicério, 477 - Centro', cidade: 'Santo André - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Diagnóstico Santo André - Adhemar de Barros', endereco: 'Rua Gertrudes de Lima, 771 - Vila Assunção', cidade: 'Santo André - SP', uf: 'SP', tipo: 'Diagnóstico' },
+  { nome: 'Hapvida Diagnóstico Santo André - XV de Novembro', endereco: 'Av. Quinze de Novembro, 512 - Centro', cidade: 'Santo André - SP', uf: 'SP', tipo: 'Diagnóstico' },
+  { nome: 'Espaço Notrelife 50+ ABC', endereco: 'Rua Gertrudes de Lima, 771 - Vila Assunção', cidade: 'Santo André - SP', uf: 'SP', tipo: 'Outro' },
+  { nome: 'Unidade Avançada Santo André', endereco: 'R. Gertrudes de Lima, 771 - Vila Assunção', cidade: 'Santo André - SP', uf: 'SP', tipo: 'Outro' },
+
+  // ─── SÃO PAULO (SP) ── SANTOS ────────────────────────────────────────────
+  { nome: 'Centro Clínico Frei Galvão - Unidade Santos', endereco: 'Rua Doutor Heitor de Moraes, 15 - Boqueirão', cidade: 'Santos - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Hapvida Diagnóstico Santos', endereco: 'Rua Dr. Heitor de Moraes, 15 - Boqueirão', cidade: 'Santos - SP', uf: 'SP', tipo: 'Diagnóstico' },
+  { nome: 'Hospital Frei Galvão', endereco: 'Rua Dr. Heitor de Moraes, 19/23 - Boqueirão', cidade: 'Santos - SP', uf: 'SP', tipo: 'Hospital' },
+  { nome: 'Qualivida - Baixada Santista', endereco: 'Rua Doutor Heitor de Moraes, 19 - Boqueirão', cidade: 'Santos - SP', uf: 'SP', tipo: 'Outro' },
+
+  // ─── SÃO PAULO (SP) ── SÃO BERNARDO DO CAMPO ─────────────────────────────
+  { nome: 'CASE - ABC', endereco: 'Rua Bering, 71 A - Jardim do Mar', cidade: 'São Bernardo do Campo - SP', uf: 'SP', tipo: 'Outro' },
+  { nome: 'Centro Clínico São Bernardo 1', endereco: 'Rua Paulo Kruger, 68 - Centro', cidade: 'São Bernardo do Campo - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Centro Clínico São Bernardo 3', endereco: 'Rua General Osório, 245/247 - Centro', cidade: 'São Bernardo do Campo - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Centro Clínico São Bernardo 4', endereco: 'Rua Armando Sales de Oliveira, 120 - Centro', cidade: 'São Bernardo do Campo - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Centro de Oncologia ABC', endereco: 'Avenida Lucas Nogueira Garcez, 442 - Centro', cidade: 'São Bernardo do Campo - SP', uf: 'SP', tipo: 'Outro' },
+  { nome: 'Centro Médico ABC', endereco: 'Avenida Francisco Prestes Maia, 1547 - Centro', cidade: 'São Bernardo do Campo - SP', uf: 'SP', tipo: 'Outro' },
+  { nome: 'Centro Oftalmológico Hapvida', endereco: 'Avenida Lucas Nogueira Garcez, 735 - Centro', cidade: 'São Bernardo do Campo - SP', uf: 'SP', tipo: 'Outro' },
+  { nome: 'Hapvida Diagnóstico SBC - Prestes Maia', endereco: 'Avenida Prestes Maia, 1547 - Centro', cidade: 'São Bernardo do Campo - SP', uf: 'SP', tipo: 'Diagnóstico' },
+  { nome: 'Hapvida Diagnóstico SBC - Lucas Garcéz', endereco: 'Avenida Lucas Nogueira Garcéz, 442 - Centro', cidade: 'São Bernardo do Campo - SP', uf: 'SP', tipo: 'Diagnóstico' },
+  { nome: 'Hapvida Diagnóstico SBC - Banda', endereco: 'Rua Banda, 44 - Jardim do Mar', cidade: 'São Bernardo do Campo - SP', uf: 'SP', tipo: 'Diagnóstico' },
+  { nome: 'Hapvida Diagnóstico SBC - Benedito Montenegro', endereco: 'Rua Benedito Montenegro, 52 - Centro', cidade: 'São Bernardo do Campo - SP', uf: 'SP', tipo: 'Diagnóstico' },
+  { nome: 'Hospital e Maternidade NotreCare ABC', endereco: 'Avenida Pereira Barreto, 846 - Baeta Neves', cidade: 'São Bernardo do Campo - SP', uf: 'SP', tipo: 'Hospital' },
+  { nome: 'Hospital Intermédica ABC', endereco: 'R. Aurélia Salazar Jorge, 303 - Rudge Ramos', cidade: 'São Bernardo do Campo - SP', uf: 'SP', tipo: 'Hospital' },
+  { nome: 'Hospital São Bernardo', endereco: 'Av. Lucas Nogueira Garcez, 400 - Jardim do Mar', cidade: 'São Bernardo do Campo - SP', uf: 'SP', tipo: 'Hospital' },
+  { nome: 'NotreLabs São Bernardo do Campo - Atlântica', endereco: 'Rua Atlântica, 121 - Jardim do Mar', cidade: 'São Bernardo do Campo - SP', uf: 'SP', tipo: 'Diagnóstico' },
+  { nome: 'Núcleo de Terapias Integradas ABC', endereco: 'Avenida Índico, 684 - Jardim do Mar', cidade: 'São Bernardo do Campo - SP', uf: 'SP', tipo: 'Outro' },
+  { nome: 'Qualivida - ABC', endereco: 'Rua Banda, 37 - Jardim do Mar', cidade: 'São Bernardo do Campo - SP', uf: 'SP', tipo: 'Outro' },
+
+  // ─── SÃO PAULO (SP) ── SÃO CAETANO DO SUL ────────────────────────────────
+  { nome: 'Centro Médico São Caetano', endereco: 'Avenida Dr. Augusto de Toledo, 538 - Santa Paula', cidade: 'São Caetano do Sul - SP', uf: 'SP', tipo: 'Outro' },
+
+  // ─── SÃO PAULO (SP) ── SÃO CARLOS ────────────────────────────────────────
+  { nome: 'Hapvida Diagnóstico Centro São Carlos', endereco: 'Rua Nove de Julho, 2075 - Centro', cidade: 'São Carlos - SP', uf: 'SP', tipo: 'Diagnóstico' },
+  { nome: 'Pronto Atendimento São Carlos', endereco: 'Rua Paulino Botelho de Abreu Sampaio, 800 - Jardim Bethânia', cidade: 'São Carlos - SP', uf: 'SP', tipo: 'Outro' },
+  { nome: 'Unidade de Biometria São Carlos', endereco: 'Rua Paulino Botelho de Abreu Sampaio, 800 - Jardim Bethânia', cidade: 'São Carlos - SP', uf: 'SP', tipo: 'Outro' },
+
+  // ─── SÃO PAULO (SP) ── SÃO JOSÉ DO RIO PRETO ─────────────────────────────
+  { nome: 'Hospital São José do Rio Preto', endereco: 'Av. Anísio Haddad, 7195 - Jardim Aclimação', cidade: 'São José do Rio Preto - SP', uf: 'SP', tipo: 'Hospital' },
+
+  // ─── SÃO PAULO (SP) ── SÃO JOSÉ DOS CAMPOS ───────────────────────────────
+  { nome: 'Clínica Centro Médico de Especialidades', endereco: 'Praça Elza Ferreira Rahal, 83 - Centro', cidade: 'São José dos Campos - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Clínica Pró Infância', endereco: 'Av. Eng. Francisco José Longo, 862 - Jardim São Dimas', cidade: 'São José dos Campos - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Hapvida Diagnóstico Acácias', endereco: 'Rua Taubaté, 101 - Vila Nair', cidade: 'São José dos Campos - SP', uf: 'SP', tipo: 'Diagnóstico' },
+  { nome: 'Hapvida Diagnóstico Vicentina Aranha', endereco: 'Avenida Nove de Julho, 331 - Jardim Apolo', cidade: 'São José dos Campos - SP', uf: 'SP', tipo: 'Diagnóstico' },
+  { nome: 'Hospital Pró Infância - Pronto Atendimento', endereco: 'Av. Eng. Francisco José Longo, 862 - Jardim São Dimas', cidade: 'São José dos Campos - SP', uf: 'SP', tipo: 'Hospital' },
+  { nome: 'São José Saúde Unidade de Autorização', endereco: 'Praça Melvin Jones, 07 - Jardim São Dimas', cidade: 'São José dos Campos - SP', uf: 'SP', tipo: 'Outro' },
+  { nome: 'Unidade de Biometria São José dos Campos', endereco: 'Praça Melvin Jones, 7 - Jardim São Dimas', cidade: 'São José dos Campos - SP', uf: 'SP', tipo: 'Outro' },
+
+  // ─── SÃO PAULO (SP) ── SÃO PAULO (CAPITAL) ───────────────────────────────
+  { nome: 'Centro Clínico Anália Franco', endereco: 'Rua Acuruí, 493 - Vila Formosa', cidade: 'São Paulo - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Centro Clínico Barra Funda', endereco: 'Av. Francisco Matarazzo, 612 - Água Branca', cidade: 'São Paulo - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Centro Clínico Belém', endereco: 'Rua Cesário Alvim, 174 - Belenzinho', cidade: 'São Paulo - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Centro Clínico Itaquera', endereco: 'Av. Itaquera, 7426 - Vila Carmosina', cidade: 'São Paulo - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Centro Clínico Lapa', endereco: 'R. George Smith, 287 - Lapa', cidade: 'São Paulo - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Centro Clínico Pompeia', endereco: 'Av. Pompéia, 1165 - Perdizes', cidade: 'São Paulo - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Centro Clínico Santana', endereco: 'Av. Cruzeiro do Sul, 2977 - Santana', cidade: 'São Paulo - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Centro Clínico São Miguel', endereco: 'Rua Tenente Luis Fernando Lobo, 51 - São Miguel Paulista', cidade: 'São Paulo - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Centro Clínico Tatuapé', endereco: 'Rua Platina, 215 - Tatuapé', cidade: 'São Paulo - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Centro Clínico Zona Norte', endereco: 'Av. Nova Cantareira, 229 - Tucuruvi', cidade: 'São Paulo - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Centro Clínico Zona Oeste', endereco: 'R. Dr. Edson de Melo, 357 - Vila Maria', cidade: 'São Paulo - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Centro Clínico Zona Sul', endereco: 'Avenida João Dias, 76/96 - Santo Amaro', cidade: 'São Paulo - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Centro de Fisioterapia - Higienópolis', endereco: 'R. São Vicente de Paulo, 463 - Santa Cecilia', cidade: 'São Paulo - SP', uf: 'SP', tipo: 'Outro' },
+  { nome: 'Centro de Oncologia São Paulo', endereco: 'Av. Angélica, 381 - Santa Cecilia', cidade: 'São Paulo - SP', uf: 'SP', tipo: 'Outro' },
+  { nome: 'Centro Médico São Gabriel', endereco: 'Av. Amador Bueno da Veiga, 195 - Penha de França', cidade: 'São Paulo - SP', uf: 'SP', tipo: 'Outro' },
+  { nome: 'Clínica de Terapias Integradas Hospital Salvalus', endereco: 'Rua Hipódromo, 987 - Mooca', cidade: 'São Paulo - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Clínica Jaú', endereco: 'Rua Rangel Pestana, 917 - Centro', cidade: 'São Paulo - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Hapvida Diagnóstico Barra Funda', endereco: 'Av. Francisco Matarazzo, 612 - Água Branca', cidade: 'São Paulo - SP', uf: 'SP', tipo: 'Diagnóstico' },
+  { nome: 'Hapvida Diagnóstico Unidade Avançada Salvalus', endereco: 'Rua Hipódromo, 987 - Mooca', cidade: 'São Paulo - SP', uf: 'SP', tipo: 'Diagnóstico' },
+  { nome: 'Hapvida Diagnóstico Angélica', endereco: 'Avenida Angélica, 1045 - Higienópolis', cidade: 'São Paulo - SP', uf: 'SP', tipo: 'Diagnóstico' },
+  { nome: 'Hapvida Diagnóstico Angélica - Ressonância Magnética', endereco: 'Av. Angélica, 1.023 - Higienópolis', cidade: 'São Paulo - SP', uf: 'SP', tipo: 'Diagnóstico' },
+  { nome: 'Hapvida Diagnóstico Belém', endereco: 'Rua Cesário Alvim, 174 - Belenzinho', cidade: 'São Paulo - SP', uf: 'SP', tipo: 'Diagnóstico' },
+  { nome: 'Hapvida Diagnóstico Hermínio Lemos', endereco: 'Rua Hermínio Lemos, 385 - Cambuci', cidade: 'São Paulo - SP', uf: 'SP', tipo: 'Diagnóstico' },
+  { nome: 'Hapvida Diagnóstico Itaquera', endereco: 'R. Santa Cruz do Piauí, 17 - Itaquera', cidade: 'São Paulo - SP', uf: 'SP', tipo: 'Diagnóstico' },
+  { nome: 'Hapvida Diagnóstico Penha', endereco: 'Av. Amador Bueno da Veiga, 195 - Penha de França', cidade: 'São Paulo - SP', uf: 'SP', tipo: 'Diagnóstico' },
+  { nome: 'Hapvida Diagnóstico Santana', endereco: 'Av. Cruzeiro do Sul, 2977 - Santana', cidade: 'São Paulo - SP', uf: 'SP', tipo: 'Diagnóstico' },
+  { nome: 'Hapvida Diagnóstico Tatuapé - Bom Sucesso', endereco: 'R. Bom Sucesso, 348 - Cidade Mãe do Céu', cidade: 'São Paulo - SP', uf: 'SP', tipo: 'Diagnóstico' },
+  { nome: 'Hapvida Diagnóstico Tatuapé - ICEM', endereco: 'R. Icém, 57 - Tatuapé', cidade: 'São Paulo - SP', uf: 'SP', tipo: 'Diagnóstico' },
+  { nome: 'Hospital Bosque Saúde', endereco: 'Av. Bosque da Saúde, 1926 - Saúde', cidade: 'São Paulo - SP', uf: 'SP', tipo: 'Hospital' },
+  { nome: 'Hospital e Maternidade Nossa Senhora do Rosário', endereco: 'R. Dr. Edson de Melo, 357 - Vila Maria', cidade: 'São Paulo - SP', uf: 'SP', tipo: 'Hospital' },
+
+  // ─── SÃO PAULO (SP) ── SÃO VICENTE ───────────────────────────────────────
+  { nome: 'Centro Clínico Frei Galvão - São Vicente', endereco: 'Avenida Presidente Wilson, 199 - Itararé', cidade: 'São Vicente - SP', uf: 'SP', tipo: 'Clínica' },
+
+  // ─── SÃO PAULO (SP) ── SERTÃOZINHO ───────────────────────────────────────
+  { nome: 'Clínica Barão do Rio Branco', endereco: 'Rua Barão do Rio Branco, 2069 - Jardim Alexandre Balbo', cidade: 'Sertãozinho - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Hospital Netto Campelo', endereco: 'R. Elpídio Gomes, 785 - Centro', cidade: 'Sertãozinho - SP', uf: 'SP', tipo: 'Hospital' },
+  { nome: 'Unidade de Biometria Sertãozinho', endereco: 'Rua Barão do Rio Branco, 2069 - Jardim Lopes da Silva', cidade: 'Sertãozinho - SP', uf: 'SP', tipo: 'Outro' },
+
+  // ─── SÃO PAULO (SP) ── SOROCABA ──────────────────────────────────────────
+  { nome: 'Centro Clínico Itavuvu', endereco: 'Av. Itavuvu, 155 - Vila Olímpia', cidade: 'Sorocaba - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Centro Clínico Modelo', endereco: 'Rua Mauro Marques da Silva, 195 - Vila Trujillo', cidade: 'Sorocaba - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Centro Clínico Penha', endereco: 'R. Miranda Azevedo, 58 - Centro', cidade: 'Sorocaba - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Centro Clínico Rodrigues Pacheco', endereco: 'Rua Rodrigues Pacheco, 204 - Vila Amélia', cidade: 'Sorocaba - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Centro Clínico Trujillo I', endereco: 'Av. Dr. Armando Sales de Oliveira, 290 - Vila Trujillo', cidade: 'Sorocaba - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Centro Clínico Trujillo II', endereco: 'Av. Dr. Armando Sales de Oliveira, 150 - Vila Trujillo', cidade: 'Sorocaba - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Clínica Santa Clara', endereco: 'R. Santa Clara, 162 - Centro', cidade: 'Sorocaba - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Espaço Notrelife 50+ Sorocaba', endereco: 'Rua Quinze de Novembro, 464 - Centro', cidade: 'Sorocaba - SP', uf: 'SP', tipo: 'Outro' },
+  { nome: 'Hapvida Diagnóstico Ipanema', endereco: 'Avenida Ipanema, 532 - Vila Nova Sorocaba', cidade: 'Sorocaba - SP', uf: 'SP', tipo: 'Diagnóstico' },
+  { nome: 'Hospital e Maternidade Modelo', endereco: 'R. Afonso Pedrazzi, 180 - Vila Trujillo', cidade: 'Sorocaba - SP', uf: 'SP', tipo: 'Hospital' },
+  { nome: 'Hospital NotreCare Sorocaba', endereco: 'R. Rodrigues Pacheco, 145 - Centro', cidade: 'Sorocaba - SP', uf: 'SP', tipo: 'Hospital' },
+  { nome: 'Qualivida Sorocaba', endereco: 'R. Domingos Fernandes, 198 - Vila Trujillo', cidade: 'Sorocaba - SP', uf: 'SP', tipo: 'Outro' },
+
+  // ─── SÃO PAULO (SP) ── SUMARÉ ────────────────────────────────────────────
+  { nome: 'Hapvida Diagnóstico Sumaré', endereco: 'Rua Máximo Biondo, 310 - Centro', cidade: 'Sumaré - SP', uf: 'SP', tipo: 'Diagnóstico' },
+
+  // ─── SÃO PAULO (SP) ── SUZANO ────────────────────────────────────────────
+  { nome: 'Centro Clínico Suzano', endereco: 'R. Nelson Pacheco, 663 - Centro', cidade: 'Suzano - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Hapvida Diagnóstico Suzano', endereco: 'Rua Campos Salles, 663 - Centro', cidade: 'Suzano - SP', uf: 'SP', tipo: 'Diagnóstico' },
+  { nome: 'Núcleo de Terapias Integradas Suzano', endereco: 'R. Nelson Pacheco, 663 - Centro', cidade: 'Suzano - SP', uf: 'SP', tipo: 'Outro' },
+
+  // ─── SÃO PAULO (SP) ── TABOÃO DA SERRA ───────────────────────────────────
+  { nome: 'Centro Médico Taboão da Serra', endereco: 'Estrada São Francisco, 1200 - Jardim Henriqueta', cidade: 'Taboão da Serra - SP', uf: 'SP', tipo: 'Outro' },
+  { nome: 'Hapvida Diagnóstico Taboão da Serra', endereco: 'Estr. São Francisco, 1200 - Vila Sonia do Taboão', cidade: 'Taboão da Serra - SP', uf: 'SP', tipo: 'Diagnóstico' },
+  { nome: 'Hospital e Maternidade Family', endereco: 'Rua João Santucci, 270 - Vila Santa Luzia', cidade: 'Taboão da Serra - SP', uf: 'SP', tipo: 'Hospital' },
+
+  // ─── SÃO PAULO (SP) ── TAMBAÚ ────────────────────────────────────────────
+  { nome: 'Unidade de Biometria Tambaú', endereco: 'Rua Coronel Manoel de Souza Meireles, 20 - Centro', cidade: 'Tambaú - SP', uf: 'SP', tipo: 'Outro' },
+
+  // ─── SÃO PAULO (SP) ── VARGEM GRANDE DO SUL ──────────────────────────────
+  { nome: 'Clínica Vargem Grande do Sul', endereco: 'Praça Nossa Senhora Aparecida, 61 - Nossa Sra. Aparecida', cidade: 'Vargem Grande do Sul - SP', uf: 'SP', tipo: 'Clínica' },
+  { nome: 'Unidade de Biometria Vargem Grande do Sul', endereco: 'Praça Nossa Sra. Aparecida, 61 - Jardim Paraíso', cidade: 'Vargem Grande do Sul - SP', uf: 'SP', tipo: 'Outro' },
+
+  // ─── SÃO PAULO (SP) ── VÁRZEA PAULISTA ───────────────────────────────────
+  { nome: 'Hapvida Diagnóstico Várzea Paulista', endereco: 'Av. Fernão Dias Paes Leme, 1670 - Vila Santa Terezinha', cidade: 'Várzea Paulista - SP', uf: 'SP', tipo: 'Diagnóstico' },
+
+  // ─── SÃO PAULO (SP) ── VIRADOURO ─────────────────────────────────────────
+  { nome: 'Pronto Atendimento de Viradouro', endereco: 'Rua do Hospital, 53 - Centro', cidade: 'Viradouro - SP', uf: 'SP', tipo: 'Outro' },
+  { nome: 'Unidade de Biometria Viradouro', endereco: 'Rua do Hospital, 53 - Centro', cidade: 'Viradouro - SP', uf: 'SP', tipo: 'Outro' },
 ];
 
 // Agrupa por estado
@@ -477,7 +709,7 @@ export const UF_LABELS: Record<string, string> = {
   AL: 'Alagoas', AM: 'Amazonas', BA: 'Bahia', CE: 'Ceará', DF: 'Distrito Federal',
   GO: 'Goiás', MA: 'Maranhão', MG: 'Minas Gerais', MS: 'Mato Grosso do Sul', MT: 'Mato Grosso', PA: 'Pará',
   PB: 'Paraíba', PE: 'Pernambuco', PI: 'Piauí', PR: 'Paraná',
-  RN: 'Rio Grande do Norte', SE: 'Sergipe', SP: 'São Paulo', TO: 'Tocantins',
+  RN: 'Rio Grande do Norte', RS: 'Rio Grande do Sul', SC: 'Santa Catarina', SE: 'Sergipe', SP: 'São Paulo', TO: 'Tocantins',
 };
 
 export function getUnidadesPorUF(uf: string): HapvidaUnidade[] {
