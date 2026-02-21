@@ -323,6 +323,22 @@ export const HAPVIDA_UNIDADES: HapvidaUnidade[] = [
   // ─── PARÁ (PA) ── PARAUAPEBAS ─────────────────────────────────────────────
   { nome: 'Clínica Rio Azul', endereco: 'Rua H, 248 - União', cidade: 'Parauapebas - PA', uf: 'PA', tipo: 'Clínica' },
   { nome: 'Hospital das Clínicas e Maternidade de Parauapebas', endereco: 'Rua H, 248 - União', cidade: 'Parauapebas - PA', uf: 'PA', tipo: 'Hospital' },
+
+  // ─── PARAÍBA (PB) ── CAMPINA GRANDE ───────────────────────────────────────
+  { nome: 'Clínica Campinense', endereco: 'Rua Doutor Severino Ribeiro Cruz, 277 - Centro', cidade: 'Campina Grande - PB', uf: 'PB', tipo: 'Clínica' },
+  { nome: 'Hapvida Diagnósticos Centro', endereco: 'Rua Doutor Severino Ribeiro Cruz, 277 - Centro', cidade: 'Campina Grande - PB', uf: 'PB', tipo: 'Diagnóstico' },
+  { nome: 'Pronto Atendimento Campinense', endereco: 'Rua Severino Ribeiro Cruz, 265 - Centro', cidade: 'Campina Grande - PB', uf: 'PB', tipo: 'Outro' },
+  { nome: 'Pronto Atendimento Centro Campina Grande', endereco: 'Rua Doutor Severino Ribeiro Cruz, 277 - Centro', cidade: 'Campina Grande - PB', uf: 'PB', tipo: 'Outro' },
+  { nome: 'Unidade de Biometria e Autorização Campina Grande', endereco: 'Rua Severino Cruz, 277 - Centro', cidade: 'Campina Grande - PB', uf: 'PB', tipo: 'Outro' },
+  { nome: 'Unidade de Cadastro Campina Grande', endereco: 'Rua Doutor Severino Cruz, 265 - Centro', cidade: 'Campina Grande - PB', uf: 'PB', tipo: 'Outro' },
+
+  // ─── PARAÍBA (PB) ── JOÃO PESSOA ──────────────────────────────────────────
+  { nome: 'Centro Diagnóstico por Imagem João Pessoa', endereco: 'Av. Júlia Freire, 1058 - Expedicionários', cidade: 'João Pessoa - PB', uf: 'PB', tipo: 'Diagnóstico' },
+  { nome: 'Clínica Ariano Suassuna', endereco: 'Av. Presidente Epitácio Pessoa, 3160 - Tambauzinho', cidade: 'João Pessoa - PB', uf: 'PB', tipo: 'Clínica' },
+  { nome: 'Clínica João Pessoa', endereco: 'Rua Treze de Maio, 73 - Centro', cidade: 'João Pessoa - PB', uf: 'PB', tipo: 'Clínica' },
+  { nome: 'Hospital e Maternidade da Paraíba', endereco: 'Av. Júlia Freire, 1058 - Expedicionários', cidade: 'João Pessoa - PB', uf: 'PB', tipo: 'Hospital' },
+  { nome: 'Laboratório Expedicionários', endereco: 'Avenida Júlia Freire, 1058 - Expedicionários', cidade: 'João Pessoa - PB', uf: 'PB', tipo: 'Diagnóstico' },
+  { nome: 'Unidade de Autorização, Cadastro e Biometria Expedicionários', endereco: 'Avenida Júlia Freire, 1058 - Expedicionários', cidade: 'João Pessoa - PB', uf: 'PB', tipo: 'Outro' },
 ];
 
 // Agrupa por estado
