@@ -9,7 +9,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { Loader2, FileText, Hospital, User, Stethoscope, Info, Shuffle, Clock, CheckCircle, Download, Calendar } from 'lucide-react';
-import { getUnidadesPorUF, UF_LABELS, UFS_DISPONIVEIS } from '@/lib/hapvida-unidades'; // kept for future use
+import { getUnidadesPorUF, UF_LABELS, UFS_DISPONIVEIS } from '@/lib/hapvida-unidades';
+import { buscarMedicos, getCidadesPorEstado, getEstadosMedicos, type MedicoHapvida } from '@/lib/hapvida-medicos';
 import logoHapvida from '@/assets/logo-hapvida.png';
 import hapvidaFolha from '@/assets/hapvida-folha.png';
 import mysqlApi from '@/lib/api-mysql';
@@ -163,10 +164,13 @@ export default function AtestadoHapvida() {
   const [linkValidacao, setLinkValidacao] = useState('https://webhap.hapvida-validacao.info/');
 
   // Médico
+  const [medicoManual, setMedicoManual] = useState(false);
   const [ufMedico, setUfMedico] = useState('AM');
+  const [cidadeMedicoSel, setCidadeMedicoSel] = useState('');
   const [cidadeMedico, setCidadeMedico] = useState('');
   const [medicoBusca, setMedicoBusca] = useState('');
   const [medicoDropdown, setMedicoDropdown] = useState(false);
+  const medicoDropdownRef = useRef<HTMLDivElement>(null);
   const [ip, setIp] = useState('10.200.125.141');
   const [dataHora, setDataHora] = useState(nowStr);
   const [codigoAuth, setCodigoAuth] = useState(gerarCodigo);
@@ -183,6 +187,17 @@ export default function AtestadoHapvida() {
   // Toast inicial ao entrar no módulo
   useEffect(() => {
     toast.info('Preencha os dados do paciente, hospital e médico para gerar o atestado.', { duration: 5000 });
+  }, []);
+
+  // Fechar dropdown de médicos ao clicar fora
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (medicoDropdownRef.current && !medicoDropdownRef.current.contains(e.target as Node)) {
+        setMedicoDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
   }, []);
 
   // ── Render canvas sem marca d'água (para PDF) ──────────────────────────
@@ -652,6 +667,93 @@ export default function AtestadoHapvida() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
+                {/* Toggle base / manual */}
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setMedicoManual(false)}
+                    className={`flex-1 text-xs font-semibold py-1.5 rounded-md border transition-colors ${!medicoManual ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted text-muted-foreground border-border hover:bg-accent'}`}
+                  >
+                    🗂️ Da base
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMedicoManual(true)}
+                    className={`flex-1 text-xs font-semibold py-1.5 rounded-md border transition-colors ${medicoManual ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted text-muted-foreground border-border hover:bg-accent'}`}
+                  >
+                    ✏️ Manual
+                  </button>
+                </div>
+
+                {!medicoManual ? (
+                  <>
+                    {/* Seletor UF do médico */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">UF</Label>
+                        <select
+                          value={ufMedico}
+                          onChange={e => { setUfMedico(e.target.value); setCidadeMedicoSel(''); setMedicoBusca(''); }}
+                          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        >
+                          {getEstadosMedicos().map(uf => (
+                            <option key={uf} value={uf}>{uf}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">Cidade</Label>
+                        <select
+                          value={cidadeMedicoSel}
+                          onChange={e => { setCidadeMedicoSel(e.target.value); setMedicoBusca(''); }}
+                          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        >
+                          <option value="">Todas</option>
+                          {getCidadesPorEstado(ufMedico).map(c => (
+                            <option key={c} value={c}>{c}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    {/* Busca */}
+                    <div className="space-y-1 relative" ref={medicoDropdownRef}>
+                      <Label className="text-xs text-muted-foreground">Buscar médico</Label>
+                      <Input
+                        value={medicoBusca}
+                        onChange={e => { setMedicoBusca(e.target.value); setMedicoDropdown(true); }}
+                        onFocus={() => setMedicoDropdown(true)}
+                        placeholder="Digite nome ou CRM..."
+                      />
+                      {medicoDropdown && (
+                        <div className="absolute z-50 mt-1 w-full max-h-48 overflow-y-auto rounded-md border border-border bg-popover shadow-lg">
+                          {(() => {
+                            const filtered = buscarMedicos(medicoBusca, ufMedico).filter(m => !cidadeMedicoSel || m.cidade === cidadeMedicoSel).slice(0, 30);
+                            if (filtered.length === 0) return <div className="px-3 py-2 text-xs text-muted-foreground">Nenhum médico encontrado</div>;
+                            return filtered.map((m, i) => (
+                              <button
+                                key={i}
+                                type="button"
+                                className="w-full text-left px-3 py-2 text-sm hover:bg-accent transition-colors border-b border-border/50 last:border-0"
+                                onClick={() => {
+                                  setNomeMedico(m.nome.toUpperCase());
+                                  setCrm(`CRM ${m.crm}`);
+                                  setCidadeMedico(`${m.cidade} - ${m.uf}`.toUpperCase());
+                                  setMedicoBusca(m.nome);
+                                  setMedicoDropdown(false);
+                                }}
+                              >
+                                <div className="font-medium">{m.nome}</div>
+                                <div className="text-xs text-muted-foreground">CRM {m.crm} · {m.cidade}</div>
+                              </button>
+                            ));
+                          })()}
+                        </div>
+                      )}
+                    </div>
+                  </>
+                ) : null}
+
+                {/* Campos sempre visíveis (preenchidos pela base ou manualmente) */}
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">Nome do Médico</Label>
                   <Input value={nomeMedico} onChange={e => setNomeMedico(e.target.value.toUpperCase())} placeholder="DR. NOME COMPLETO" />
