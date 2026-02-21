@@ -643,19 +643,20 @@ export default function AtestadoHapvida() {
                     ))}
                   </select>
                 </div>
-                {/* Campos editáveis após seleção */}
+                {/* Campos somente leitura após seleção */}
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">Nome do Hospital</Label>
-                  <Input value={nomeHospital} onChange={e => setNomeHospital(e.target.value.toUpperCase())} placeholder="EX: HOSPITAL RIO NEGRO" />
+                  <Input value={nomeHospital} readOnly className="opacity-60 cursor-not-allowed" placeholder="Selecione uma unidade acima" />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">Endereço</Label>
-                  <Input value={enderecoHospital} onChange={e => setEnderecoHospital(e.target.value.toUpperCase())} placeholder="R. TAPAJÓS, 561 - CENTRO" />
+                  <Input value={enderecoHospital} readOnly className="opacity-60 cursor-not-allowed" placeholder="—" />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">Cidade</Label>
-                  <Input value={cidadeHospital} onChange={e => setCidadeHospital(e.target.value.toUpperCase())} placeholder="MANAUS- AM, CEP 69010-150" />
+                  <Input value={cidadeHospital} readOnly className="opacity-60 cursor-not-allowed" placeholder="—" />
                 </div>
+                <p className="text-xs text-muted-foreground italic mt-1">⚠️ Esse local é oficial e exato.</p>
               </CardContent>
             </Card>
 
@@ -742,6 +743,7 @@ export default function AtestadoHapvida() {
                   </>
                 ) : null}
 
+                <p className="text-xs text-muted-foreground italic">ℹ️ Esse médico é da região e não exato da Hapvida. Se quiser, coloque um de sua preferência.</p>
                 {/* Campos sempre visíveis (preenchidos pela base ou manualmente) */}
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">Nome do Médico</Label>
