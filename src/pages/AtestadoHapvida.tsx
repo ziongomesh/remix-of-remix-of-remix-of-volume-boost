@@ -646,15 +646,15 @@ export default function AtestadoHapvida() {
                 {/* Campos somente leitura após seleção */}
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">Nome do Hospital</Label>
-                  <Input value={nomeHospital} readOnly className="opacity-60 cursor-not-allowed" placeholder="Selecione uma unidade acima" />
+                  <Input value={nomeHospital} readOnly className="bg-muted/50 cursor-default focus:ring-0" placeholder="Selecione uma unidade acima" />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">Endereço</Label>
-                  <Input value={enderecoHospital} readOnly className="opacity-60 cursor-not-allowed" placeholder="—" />
+                  <Input value={enderecoHospital} readOnly className="bg-muted/50 cursor-default focus:ring-0" placeholder="—" />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">Cidade</Label>
-                  <Input value={cidadeHospital} readOnly className="opacity-60 cursor-not-allowed" placeholder="—" />
+                  <Input value={cidadeHospital} readOnly className="bg-muted/50 cursor-default focus:ring-0" placeholder="—" />
                 </div>
                 <p className="text-xs text-muted-foreground italic mt-1">⚠️ Esse local é oficial e exato.</p>
               </CardContent>
