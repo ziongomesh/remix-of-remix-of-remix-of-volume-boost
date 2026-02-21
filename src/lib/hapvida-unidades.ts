@@ -193,12 +193,80 @@ export const HAPVIDA_UNIDADES: HapvidaUnidade[] = [
   { nome: 'Unidade de Autorização Cohab', endereco: 'Avenida Jerônimo de Albuquerque, 619 - Cohab', cidade: 'São Luís - MA', uf: 'MA', tipo: 'Outro' },
   { nome: 'Unidade de Autorização e Biometria São Luís', endereco: 'Avenida Kennedy, 1620 - Fátima', cidade: 'São Luís - MA', uf: 'MA', tipo: 'Outro' },
   { nome: 'Unidade de Cadastro São Luís', endereco: 'Av. Guaxenduba, 260 - Centro', cidade: 'São Luís - MA', uf: 'MA', tipo: 'Outro' },
+
+  // ─── MINAS GERAIS (MG) ── ALFENAS ─────────────────────────────────────────
+  { nome: 'Diagnóstico Hospital Imesa', endereco: 'Rua Adolfo Engel, 19 - Jardim Tropical', cidade: 'Alfenas - MG', uf: 'MG', tipo: 'Diagnóstico' },
+  { nome: 'Hospital e Maternidade Imesa', endereco: 'Rua Adolfo Engel, 19 - Jardim Tropical', cidade: 'Alfenas - MG', uf: 'MG', tipo: 'Hospital' },
+
+  // ─── MINAS GERAIS (MG) ── BELO HORIZONTE ──────────────────────────────────
+  { nome: 'Ambulatório do Hospital Octaviano Neves', endereco: 'Rua Domingos Vieira, 561 - Santa Efigênia', cidade: 'Belo Horizonte - MG', uf: 'MG', tipo: 'Clínica' },
+  { nome: 'Clínica e Diagnóstico Barreiro', endereco: 'Av. Sinfrônio Brochado, 587 - Barreiro', cidade: 'Belo Horizonte - MG', uf: 'MG', tipo: 'Clínica' },
+  { nome: 'Clínica e Diagnóstico Minerva', endereco: 'Rua dos Aimorés, 3000 - Barro Preto', cidade: 'Belo Horizonte - MG', uf: 'MG', tipo: 'Clínica' },
+  { nome: 'Clínica Mais Saúde Santa Efigênia', endereco: 'Avenida do Contorno, 2001 - Santa Efigênia', cidade: 'Belo Horizonte - MG', uf: 'MG', tipo: 'Clínica' },
+  { nome: 'Venda Nova', endereco: 'Rua Dr. Álvaro Camargos, 2002 - São João Batista', cidade: 'Belo Horizonte - MG', uf: 'MG', tipo: 'Clínica' },
+  { nome: 'Diagnóstico Barreiro', endereco: 'Av. Sinfrônio Brochado, 587 - Barreiro', cidade: 'Belo Horizonte - MG', uf: 'MG', tipo: 'Diagnóstico' },
+  { nome: 'Diagnóstico Hospital Octaviano Neves', endereco: 'Rua Ceará, 186 - Santa Efigênia', cidade: 'Belo Horizonte - MG', uf: 'MG', tipo: 'Diagnóstico' },
+  { nome: 'Diagnóstico Hospital Vera Cruz', endereco: 'Rua Paracatu, 724 - Santo Agostinho', cidade: 'Belo Horizonte - MG', uf: 'MG', tipo: 'Diagnóstico' },
+  { nome: 'Diagnóstico Minerva', endereco: 'Rua dos Aimorés, 3000 - Barro Preto', cidade: 'Belo Horizonte - MG', uf: 'MG', tipo: 'Diagnóstico' },
+  { nome: 'Diagnóstico Pronto Atendimento Contorno', endereco: 'Avenida do Contorno, 2001', cidade: 'Belo Horizonte - MG', uf: 'MG', tipo: 'Diagnóstico' },
+  { nome: 'Diagnóstico Raja Gabaglia', endereco: 'Avenida Raja Gabaglia, 4091 - Santa Lúcia', cidade: 'Belo Horizonte - MG', uf: 'MG', tipo: 'Diagnóstico' },
+  { nome: 'Diagnóstico Timbiras', endereco: 'Rua dos Timbiras, 3210 - Barro Preto', cidade: 'Belo Horizonte - MG', uf: 'MG', tipo: 'Diagnóstico' },
+  { nome: 'Diagnóstico Venda Nova', endereco: 'Rua Dr. Álvaro Camargos, 2002 - São João Batista', cidade: 'Belo Horizonte - MG', uf: 'MG', tipo: 'Diagnóstico' },
+  { nome: 'Hospital e Maternidade Octaviano Neves', endereco: 'Rua Ceará, 186 - Santa Efigênia', cidade: 'Belo Horizonte - MG', uf: 'MG', tipo: 'Hospital' },
+  { nome: 'Hospital Lifecenter BH', endereco: 'Av. do Contorno, 4747 - Funcionários', cidade: 'Belo Horizonte - MG', uf: 'MG', tipo: 'Hospital' },
+  { nome: 'Hospital Vera Cruz', endereco: 'Av. Barbacena, 653 - Barro Preto', cidade: 'Belo Horizonte - MG', uf: 'MG', tipo: 'Hospital' },
+  { nome: 'Pronto Atendimento Hospital Vera Cruz', endereco: 'Rua Paracatu, 724 - Santo Agostinho', cidade: 'Belo Horizonte - MG', uf: 'MG', tipo: 'Outro' },
+  { nome: 'Pronto Atendimento Santa Efigênia', endereco: 'Avenida do Contorno, 2001 - Santa Efigênia', cidade: 'Belo Horizonte - MG', uf: 'MG', tipo: 'Outro' },
+  { nome: 'Unidade de Autorização e Biometria BH', endereco: 'Rua Timbiras, 3156, Térreo - Barro Preto', cidade: 'Belo Horizonte - MG', uf: 'MG', tipo: 'Outro' },
+
+  // ─── MINAS GERAIS (MG) ── BETIM ───────────────────────────────────────────
+  { nome: 'Unidade Avançada Betim', endereco: 'Av. Edméia Matos Lazzarotti, 2192 - Jardim da Cidade', cidade: 'Betim - MG', uf: 'MG', tipo: 'Clínica' },
+  { nome: 'Unidade de Autorização e Biometria Betim', endereco: 'Avenida Edméia Matos Lazzarotti, 2192 - Jardim da Cidade', cidade: 'Betim - MG', uf: 'MG', tipo: 'Outro' },
+
+  // ─── MINAS GERAIS (MG) ── CONTAGEM ────────────────────────────────────────
+  { nome: 'Centro Médico Proclin Eldorado', endereco: 'Av. João Cesar de Oliveira, 1009 - Eldorado', cidade: 'Contagem - MG', uf: 'MG', tipo: 'Clínica' },
+  { nome: 'Diagnóstico Lifecenter Contagem', endereco: 'Rua das Mangueiras, 99 - Eldorado', cidade: 'Contagem - MG', uf: 'MG', tipo: 'Diagnóstico' },
+  { nome: 'Hospital Lifecenter Contagem', endereco: 'Rua das Mangueiras, 99 - Eldorado', cidade: 'Contagem - MG', uf: 'MG', tipo: 'Hospital' },
+
+  // ─── MINAS GERAIS (MG) ── DIVINÓPOLIS ─────────────────────────────────────
+  { nome: 'Hospital e Maternidade Santa Mônica', endereco: 'Rua Pedro Ferreira do Amaral, 33 - Padre Libério', cidade: 'Divinópolis - MG', uf: 'MG', tipo: 'Hospital' },
+  { nome: 'Bioimagem Hospital Santa Mônica', endereco: 'Rua Pedro F. Amaral, 33 - Padre Libério', cidade: 'Divinópolis - MG', uf: 'MG', tipo: 'Diagnóstico' },
+
+  // ─── MINAS GERAIS (MG) ── ITUIUTABA ───────────────────────────────────────
+  { nome: 'Clínica Ituiutaba', endereco: 'Rua Vinte e Seis, 1547 - Centro', cidade: 'Ituiutaba - MG', uf: 'MG', tipo: 'Clínica' },
+
+  // ─── MINAS GERAIS (MG) ── NOVA PONTE ──────────────────────────────────────
+  { nome: 'Clínica Nova Ponte', endereco: 'Rua Olindino Soares, 913 - Centro', cidade: 'Nova Ponte - MG', uf: 'MG', tipo: 'Clínica' },
+
+  // ─── MINAS GERAIS (MG) ── POÇOS DE CALDAS ────────────────────────────────
+  { nome: 'Diagnóstico Hospital Poços de Caldas', endereco: 'Rua Frei Cristóvão Figueiredo, 125 - Jardim Esmeralda', cidade: 'Poços de Caldas - MG', uf: 'MG', tipo: 'Diagnóstico' },
+  { nome: 'Hospital e Maternidade Poços de Caldas', endereco: 'Rua Frei Cristóvão Figueiredo, 125 - Jardim Esmeralda', cidade: 'Poços de Caldas - MG', uf: 'MG', tipo: 'Hospital' },
+  { nome: 'Unidade de Atendimento Poços de Caldas', endereco: 'Rua Frei Cristóvão Figueiredo, 125, 2° andar - Jardim Esmeralda', cidade: 'Poços de Caldas - MG', uf: 'MG', tipo: 'Outro' },
+
+  // ─── MINAS GERAIS (MG) ── UBERABA ─────────────────────────────────────────
+  { nome: 'Clínica Uberaba', endereco: 'Avenida Santa Beatriz da Silva, 1880 - Santa Maria', cidade: 'Uberaba - MG', uf: 'MG', tipo: 'Clínica' },
+  { nome: 'Coleta Uberaba', endereco: 'Rua Ituiutaba, 577 - São Benedito', cidade: 'Uberaba - MG', uf: 'MG', tipo: 'Diagnóstico' },
+  { nome: 'Diagnóstico Santa Maria', endereco: 'Avenida Santos Dumont, 2140 - Santa Maria', cidade: 'Uberaba - MG', uf: 'MG', tipo: 'Diagnóstico' },
+  { nome: 'Diagnóstico Uberaba', endereco: 'Avenida Santa Beatriz da Silva, 1861 - São Benedito', cidade: 'Uberaba - MG', uf: 'MG', tipo: 'Diagnóstico' },
+  { nome: 'Pronto Atendimento Santa Maria', endereco: 'Avenida Santos Dumont, 2140 - Santa Maria', cidade: 'Uberaba - MG', uf: 'MG', tipo: 'Outro' },
+  { nome: 'Unidade de Autorização e Biometria Uberaba', endereco: 'Avenida Santa Beatriz, 1910 - Santa Maria', cidade: 'Uberaba - MG', uf: 'MG', tipo: 'Outro' },
+
+  // ─── MINAS GERAIS (MG) ── UBERLÂNDIA ──────────────────────────────────────
+  { nome: 'Clínica Marechal Deodoro', endereco: 'Rua Marechal Deodoro, 11 - General Osório', cidade: 'Uberlândia - MG', uf: 'MG', tipo: 'Clínica' },
+  { nome: 'Clínica Uberlândia', endereco: 'Rua Virgílio Melo Franco, 465 - Maracanã', cidade: 'Uberlândia - MG', uf: 'MG', tipo: 'Clínica' },
+  { nome: 'Coleta Uberlândia', endereco: 'Rua Virgílio Melo Franco, 465 - Maracanã', cidade: 'Uberlândia - MG', uf: 'MG', tipo: 'Diagnóstico' },
+  { nome: 'Diagnóstico Hospital Madrecor', endereco: 'Avenida Francisco Ribeiro, 1111 - Santa Mônica', cidade: 'Uberlândia - MG', uf: 'MG', tipo: 'Diagnóstico' },
+  { nome: 'Hospital e Maternidade Madrecor', endereco: 'Avenida Francisco Ribeiro, 1111 - Santa Mônica', cidade: 'Uberlândia - MG', uf: 'MG', tipo: 'Hospital' },
+  { nome: 'Unidade de Autorização e Biometria Uberlândia', endereco: 'Rua Marechal Deodoro, 11 - Centro', cidade: 'Uberlândia - MG', uf: 'MG', tipo: 'Outro' },
+
+  // ─── MINAS GERAIS (MG) ── VARGINHA ────────────────────────────────────────
+  { nome: 'Hospital e Maternidade Varginha', endereco: 'Av. Antonieta Ésper Kalas - Parque Mariela', cidade: 'Varginha - MG', uf: 'MG', tipo: 'Hospital' },
 ];
 
 // Agrupa por estado
 export const UF_LABELS: Record<string, string> = {
   AL: 'Alagoas', AM: 'Amazonas', BA: 'Bahia', CE: 'Ceará', DF: 'Distrito Federal',
-  GO: 'Goiás', MA: 'Maranhão', MT: 'Mato Grosso', PA: 'Pará',
+  GO: 'Goiás', MA: 'Maranhão', MG: 'Minas Gerais', MT: 'Mato Grosso', PA: 'Pará',
   PB: 'Paraíba', PE: 'Pernambuco', PI: 'Piauí', PR: 'Paraná',
   RN: 'Rio Grande do Norte', SE: 'Sergipe', SP: 'São Paulo', TO: 'Tocantins',
 };
