@@ -339,6 +339,62 @@ export const HAPVIDA_UNIDADES: HapvidaUnidade[] = [
   { nome: 'Hospital e Maternidade da Paraíba', endereco: 'Av. Júlia Freire, 1058 - Expedicionários', cidade: 'João Pessoa - PB', uf: 'PB', tipo: 'Hospital' },
   { nome: 'Laboratório Expedicionários', endereco: 'Avenida Júlia Freire, 1058 - Expedicionários', cidade: 'João Pessoa - PB', uf: 'PB', tipo: 'Diagnóstico' },
   { nome: 'Unidade de Autorização, Cadastro e Biometria Expedicionários', endereco: 'Avenida Júlia Freire, 1058 - Expedicionários', cidade: 'João Pessoa - PB', uf: 'PB', tipo: 'Outro' },
+
+  // ─── PERNAMBUCO (PE) ── CABO DE SANTO AGOSTINHO ───────────────────────────
+  { nome: 'Clínica Cabo', endereco: 'Av. Pres. Vargas, 428 - Centro', cidade: 'Cabo de Santo Agostinho - PE', uf: 'PE', tipo: 'Clínica' },
+  { nome: 'Hapvida Diagnóstico Centro Cabo', endereco: 'Av. Presidente Vargas, 428 - Centro', cidade: 'Cabo de Santo Agostinho - PE', uf: 'PE', tipo: 'Diagnóstico' },
+  { nome: 'Hospital do Cabo', endereco: 'Av. Pres. Vargas, 428 - Centro', cidade: 'Cabo de Santo Agostinho - PE', uf: 'PE', tipo: 'Hospital' },
+  { nome: 'Laboratório Centro Cabo', endereco: 'Av. Presidente Vargas, 428 - Centro', cidade: 'Cabo de Santo Agostinho - PE', uf: 'PE', tipo: 'Diagnóstico' },
+  { nome: 'Pronto Atendimento Cabo', endereco: 'Av. Pres. Vargas, 428 - Centro', cidade: 'Cabo de Santo Agostinho - PE', uf: 'PE', tipo: 'Outro' },
+  { nome: 'Unidade de Biometria Cabo', endereco: 'Avenida Presidente Vargas, 428', cidade: 'Cabo de Santo Agostinho - PE', uf: 'PE', tipo: 'Outro' },
+
+  // ─── PERNAMBUCO (PE) ── GOIANA ────────────────────────────────────────────
+  { nome: 'Pronto Atendimento Goiana', endereco: 'Av. Marechal Deodoro da Fonseca, 234 - Centro', cidade: 'Goiana - PE', uf: 'PE', tipo: 'Outro' },
+
+  // ─── PERNAMBUCO (PE) ── JABOATÃO DOS GUARARAPES ───────────────────────────
+  { nome: 'Clínica Piedade', endereco: 'Av. Bernardo Vieira de Melo, 788 - Piedade', cidade: 'Jaboatão dos Guararapes - PE', uf: 'PE', tipo: 'Clínica' },
+
+  // ─── PERNAMBUCO (PE) ── OLINDA ────────────────────────────────────────────
+  { nome: 'Clínica Duarte Coelho', endereco: 'Av. Pres. Getúlio Vargas, 1351 - Bairro Novo', cidade: 'Olinda - PE', uf: 'PE', tipo: 'Clínica' },
+  { nome: 'Clínica Olinda', endereco: 'Av. Getúlio Vargas, 514 - Bairro Novo', cidade: 'Olinda - PE', uf: 'PE', tipo: 'Clínica' },
+  { nome: 'Unidade de Fisioterapia Olinda', endereco: 'Av. Getúlio Vargas, 481 - Bairro Novo', cidade: 'Olinda - PE', uf: 'PE', tipo: 'Outro' },
+
+  // ─── PERNAMBUCO (PE) ── PAULISTA ──────────────────────────────────────────
+  { nome: 'Hapvida Diagnóstico Paulista', endereco: 'Rua Epitácio Pessoa, 231 - Centro', cidade: 'Paulista - PE', uf: 'PE', tipo: 'Diagnóstico' },
+  { nome: 'Pronto Atendimento Paulista', endereco: 'Rua Milton de Souza Lopes, 84 - Centro', cidade: 'Paulista - PE', uf: 'PE', tipo: 'Outro' },
+
+  // ─── PERNAMBUCO (PE) ── RECIFE ────────────────────────────────────────────
+  { nome: 'Clínica Barão de Itamaracá', endereco: 'Rua Barão de Itamaracá, 142 - Espinheiro', cidade: 'Recife - PE', uf: 'PE', tipo: 'Clínica' },
+  { nome: 'Centro de Diagnóstico por Imagem Boa Vista', endereco: 'Rua Edson Álvares, 370 - Casa Forte', cidade: 'Recife - PE', uf: 'PE', tipo: 'Diagnóstico' },
+  { nome: 'Clínica Boa Viagem', endereco: 'Rua Dálhia, 95 - Setúbal', cidade: 'Recife - PE', uf: 'PE', tipo: 'Clínica' },
+  { nome: 'Clínica Boa Vista', endereco: 'Avenida Manoel Borba, 737 - Boa Vista', cidade: 'Recife - PE', uf: 'PE', tipo: 'Clínica' },
+  { nome: 'Clínica Casa Forte', endereco: 'Rua Edson Álvares, 370 - Casa Forte', cidade: 'Recife - PE', uf: 'PE', tipo: 'Clínica' },
+  { nome: 'Clínica Conselheiro Aguiar', endereco: 'Av. Conselheiro Aguiar, 3763 - Boa Viagem', cidade: 'Recife - PE', uf: 'PE', tipo: 'Clínica' },
+  { nome: 'Clínica Epaminondas', endereco: 'Rua Epaminondas de Melo, 177 - Derby', cidade: 'Recife - PE', uf: 'PE', tipo: 'Clínica' },
+  { nome: 'Clínica Espinheiro', endereco: 'R. Dr. José Luiz da Silveira Barros, 122 - Espinheiro', cidade: 'Recife - PE', uf: 'PE', tipo: 'Clínica' },
+  { nome: 'Clínica Graças', endereco: 'Rua da Hora, 543 - Espinheiro', cidade: 'Recife - PE', uf: 'PE', tipo: 'Clínica' },
+  { nome: 'Clínica Mário Domingues', endereco: 'R. Mário Domingues, 152 - Boa Vista', cidade: 'Recife - PE', uf: 'PE', tipo: 'Clínica' },
+  { nome: 'Clínica Pedro da Hora', endereco: 'Rua da Hora, 366 - Espinheiro', cidade: 'Recife - PE', uf: 'PE', tipo: 'Clínica' },
+  { nome: 'Clínica Recife', endereco: 'Rua do Espinheiro, 119 - Espinheiro', cidade: 'Recife - PE', uf: 'PE', tipo: 'Clínica' },
+  { nome: 'Clínica Zona Sul', endereco: 'Rua João Cardoso Aires, 647 - Setúbal', cidade: 'Recife - PE', uf: 'PE', tipo: 'Clínica' },
+  { nome: 'Fisioterapia Parque Amorim', endereco: 'Rua Fernandes Vieira, 675 - Boa Vista', cidade: 'Recife - PE', uf: 'PE', tipo: 'Outro' },
+  { nome: 'Hapvida Diagnóstico Zona Sul', endereco: 'Rua João Cardoso Aires, 647 - Setúbal', cidade: 'Recife - PE', uf: 'PE', tipo: 'Diagnóstico' },
+  { nome: 'Hapvida Diagnósticos Casa Forte', endereco: 'Rua Edson Álvares, 370 - Casa Forte', cidade: 'Recife - PE', uf: 'PE', tipo: 'Diagnóstico' },
+  { nome: 'Hapvida Diagnósticos Iputinga', endereco: 'Av. Prof. Moraes Rego, 314 - Iputinga', cidade: 'Recife - PE', uf: 'PE', tipo: 'Diagnóstico' },
+  { nome: 'Hospital Ariano Suassuna', endereco: 'Av. Gov. Agamenon Magalhães, 4623 - Ilha do Leite', cidade: 'Recife - PE', uf: 'PE', tipo: 'Hospital' },
+  { nome: 'Hospital Capibaribe', endereco: 'Rua Paissandu, 767 - Boa Vista', cidade: 'Recife - PE', uf: 'PE', tipo: 'Hospital' },
+  { nome: 'Hospital Casa Forte', endereco: 'Rua Edson Álvares, 370 - Casa Forte', cidade: 'Recife - PE', uf: 'PE', tipo: 'Hospital' },
+  { nome: 'Hospital e Maternidade Vasco Lucena', endereco: 'Rua do Progresso, 47 - Boa Vista', cidade: 'Recife - PE', uf: 'PE', tipo: 'Hospital' },
+  { nome: 'Hospital Ilha do Leite', endereco: 'Rua Dr. João Asfora, 35 - Ilha do Leite', cidade: 'Recife - PE', uf: 'PE', tipo: 'Hospital' },
+  { nome: 'Hospital Mandacaru', endereco: 'Avenida Gov. Agamenon Magalhães, 3621 - Torreão', cidade: 'Recife - PE', uf: 'PE', tipo: 'Hospital' },
+  { nome: 'Laboratório Agamenon Magalhães', endereco: 'Av. Agamenon Magalhães, 107 - Boa Vista', cidade: 'Recife - PE', uf: 'PE', tipo: 'Diagnóstico' },
+  { nome: 'Laboratório Boa Vista', endereco: 'Rua Paissandu, 767 - Boa Vista', cidade: 'Recife - PE', uf: 'PE', tipo: 'Diagnóstico' },
+  { nome: 'Laboratório Caxangá', endereco: 'Av. Prof. Moraes Rego, 314 - Iputinga', cidade: 'Recife - PE', uf: 'PE', tipo: 'Diagnóstico' },
+  { nome: 'Laboratório Centro Recife', endereco: 'Rua Milton de Souza Lopes, 84 - Centro', cidade: 'Recife - PE', uf: 'PE', tipo: 'Diagnóstico' },
+  { nome: 'Laboratório Ilha do Leite', endereco: 'Rua Dr. João Asfora, 65 - Ilha do Leite', cidade: 'Recife - PE', uf: 'PE', tipo: 'Diagnóstico' },
+  { nome: 'Laboratório Paissandú', endereco: 'Rua do Paissandú, 738 - Boa Vista', cidade: 'Recife - PE', uf: 'PE', tipo: 'Diagnóstico' },
+  { nome: 'Laboratório Parque Amorim', endereco: 'Rua Fernandes Vieira, 699 - Boa Vista', cidade: 'Recife - PE', uf: 'PE', tipo: 'Diagnóstico' },
+  { nome: 'Laboratório Zona Sul', endereco: 'Rua João Cardoso Aires, 647 - Boa Viagem', cidade: 'Recife - PE', uf: 'PE', tipo: 'Diagnóstico' },
 ];
 
 // Agrupa por estado
