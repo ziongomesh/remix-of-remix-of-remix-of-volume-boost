@@ -496,9 +496,9 @@ export default function AtestadoHapvida() {
           <p className="text-muted-foreground text-sm mt-1">Preencha os dados abaixo — o preview é atualizado em tempo real.</p>
         </div>
 
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col lg:flex-row gap-6">
           {/* ── FORMULÁRIO ── */}
-          <div className="w-full space-y-4">
+          <div className="w-full lg:w-1/2 space-y-4">
 
             {/* Paciente */}
             <Card>
@@ -716,7 +716,7 @@ export default function AtestadoHapvida() {
           </div>
 
           {/* ── PREVIEW ── */}
-          <div className="w-full flex flex-col items-center gap-4">
+          <div className="w-full lg:w-1/2 lg:sticky lg:top-6 lg:self-start flex flex-col items-center gap-4">
             <div className="text-xs text-muted-foreground text-center font-medium uppercase tracking-wider">Preview (com marca d'água)</div>
             <div
               className="relative w-full overflow-x-auto"
