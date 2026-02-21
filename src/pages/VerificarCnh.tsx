@@ -22,6 +22,20 @@ export default function VerificarCnh() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Alterar título e favicon da aba
+  useEffect(() => {
+    document.title = 'Vio';
+    const link = document.querySelector("link[rel~='icon']") as HTMLLinkElement | null;
+    if (link) {
+      link.href = '/images/vio-icon.jpg';
+    } else {
+      const newLink = document.createElement('link');
+      newLink.rel = 'icon';
+      newLink.href = '/images/vio-icon.jpg';
+      document.head.appendChild(newLink);
+    }
+  }, []);
+
   useEffect(() => {
     if (!id) {
       setError("ID não informado.");
