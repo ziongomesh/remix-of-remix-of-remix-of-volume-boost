@@ -399,6 +399,31 @@ export const HAPVIDA_UNIDADES: HapvidaUnidade[] = [
   // ─── PIAUÍ (PI) ── TERESINA ──────────────────────────────────────────────
   { nome: 'Clínica Teresina', endereco: 'Av. Honório de Paiva, 383 - Primeiro Piso - Centro', cidade: 'Teresina - PI', uf: 'PI', tipo: 'Clínica' },
   { nome: 'Hospital e Maternidade Rio Poty', endereco: 'Rua Lucídio Freitas, 2070 - Marquês de Paranaguá', cidade: 'Teresina - PI', uf: 'PI', tipo: 'Hospital' },
+
+  // ─── RIO GRANDE DO NORTE (RN) ── MOSSORÓ ─────────────────────────────────
+  { nome: 'Clínica Rodolfo Fernandes', endereco: 'Avenida Diocesana, 260 - Nova Betânia', cidade: 'Mossoró - RN', uf: 'RN', tipo: 'Clínica' },
+  { nome: 'Hapvida Diagnósticos Hospital Celina Guimarães', endereco: 'Rua Eduardo Medeiros, 284 - Nova Betânia', cidade: 'Mossoró - RN', uf: 'RN', tipo: 'Diagnóstico' },
+  { nome: 'Hospital e Maternidade Celina Guimarães', endereco: 'Rua Eduardo Medeiros, 284 - Nova Betânia', cidade: 'Mossoró - RN', uf: 'RN', tipo: 'Hospital' },
+  { nome: 'Unidade de Autorização e Biometria Mossoró', endereco: 'Avenida Augusto Severo, 273 - Centro', cidade: 'Mossoró - RN', uf: 'RN', tipo: 'Outro' },
+  { nome: 'Unidade de Biometria Mossoró', endereco: 'Av. Diocesana, 260 - Nova Betânia', cidade: 'Mossoró - RN', uf: 'RN', tipo: 'Outro' },
+  { nome: 'Unidade de Cadastro Mossoró', endereco: 'Avenida Alberto Maranhão, 1505 - Centro', cidade: 'Mossoró - RN', uf: 'RN', tipo: 'Outro' },
+
+  // ─── RIO GRANDE DO NORTE (RN) ── NATAL ───────────────────────────────────
+  { nome: 'Clínica Complexo Alecrim', endereco: 'Rua Presidente Quaresma, 967 - Alecrim', cidade: 'Natal - RN', uf: 'RN', tipo: 'Clínica' },
+  { nome: 'Clínica Felipe Camarão', endereco: 'Rua Felipe Camarão, 417 - Cidade Alta', cidade: 'Natal - RN', uf: 'RN', tipo: 'Clínica' },
+  { nome: 'Clínica Potengi', endereco: 'Av. Dr. João Medeiros Filho, 301 - Igapó', cidade: 'Natal - RN', uf: 'RN', tipo: 'Clínica' },
+  { nome: 'Clínica Tirol', endereco: 'Av. Hermes da Fonseca, 1052 - Tirol', cidade: 'Natal - RN', uf: 'RN', tipo: 'Clínica' },
+  { nome: 'Clínica Zona Norte', endereco: 'Av. Bacharel Tomaz Landim, 1022 - Igapó', cidade: 'Natal - RN', uf: 'RN', tipo: 'Clínica' },
+  { nome: 'Clínica Zona Sul', endereco: 'Av. Sen. Salgado Filho, 4420 - Candelária', cidade: 'Natal - RN', uf: 'RN', tipo: 'Clínica' },
+  { nome: 'Hapvida Diagnóstico Alecrim', endereco: 'Rua Presidente Quaresma, 967 - Alecrim', cidade: 'Natal - RN', uf: 'RN', tipo: 'Diagnóstico' },
+  { nome: 'Hospital Antônio Prudente', endereco: 'Av. Presidente Quaresma, 930 - Bairro Alecrim', cidade: 'Natal - RN', uf: 'RN', tipo: 'Hospital' },
+  { nome: 'Laboratório Zona Norte', endereco: 'Av. Bacharel Tomaz Landim, 1022 - Igapó', cidade: 'Natal - RN', uf: 'RN', tipo: 'Diagnóstico' },
+  { nome: 'Laboratório Zona Sul', endereco: 'Av. Alameda das Acácias, 4421 - Neópolis', cidade: 'Natal - RN', uf: 'RN', tipo: 'Diagnóstico' },
+  { nome: 'Pronto Atendimento Zona Norte', endereco: 'Av. Bel. Tomaz Landim, 1022 - São Gonçalo do Amarante', cidade: 'Natal - RN', uf: 'RN', tipo: 'Outro' },
+  { nome: 'Unidade de Autorização e Biometria', endereco: 'Avenida Presidente Quaresma, 967 - Alecrim', cidade: 'Natal - RN', uf: 'RN', tipo: 'Outro' },
+  { nome: 'Unidade de Autorização Natal', endereco: 'Avenida João Medeiros Filho, 301 - Igapó', cidade: 'Natal - RN', uf: 'RN', tipo: 'Outro' },
+  { nome: 'Unidade de Autorização Natal II', endereco: 'Alameda das Acácia, 4421 - Neopólis', cidade: 'Natal - RN', uf: 'RN', tipo: 'Outro' },
+  { nome: 'Unidade de Biometria', endereco: 'Av. Bacharel Tomaz Landim, 1022 - Igapó', cidade: 'Natal - RN', uf: 'RN', tipo: 'Outro' },
 ];
 
 // Agrupa por estado
