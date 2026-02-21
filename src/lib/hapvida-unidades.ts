@@ -127,11 +127,23 @@ export const HAPVIDA_UNIDADES: HapvidaUnidade[] = [
   { nome: 'Pronto Atendimento Pacajus', endereco: 'Rua Naide Costa Menezes, 525 - Centro', cidade: 'Pacajus - CE', uf: 'CE', tipo: 'Outro' },
   { nome: 'Clínica Hapvida Pecém', endereco: 'Av. Antônio Brasileiro, 131 - Pecém', cidade: 'São Gonçalo do Amarante - CE', uf: 'CE', tipo: 'Clínica' },
   { nome: 'Pronto Atendimento Pecém', endereco: 'Av. Antônio Brasileiro, 131 - Pecém', cidade: 'São Gonçalo do Amarante - CE', uf: 'CE', tipo: 'Outro' },
+
+  // ─── DISTRITO FEDERAL (DF) ─────────────────────────────────────────────────
+  { nome: 'Clínica Asa Sul', endereco: 'ST SHCS CR QD 515 - Bloco B, 14 - Asa Sul', cidade: 'Brasília - DF', uf: 'DF', tipo: 'Clínica' },
+  { nome: 'Clínica Gama', endereco: 'Quadra EQ 47-49 Projeção 4, Setor Central - Gama', cidade: 'Brasília - DF', uf: 'DF', tipo: 'Clínica' },
+  { nome: 'Clínica Taguatinga Norte', endereco: 'SHN Área Especial 4 – Loja 12 - Taguatinga Norte', cidade: 'Brasília - DF', uf: 'DF', tipo: 'Clínica' },
+  { nome: 'Clínica Taguatinga Sul', endereco: 'Quadra 05, Rua 312, Lotes 10 e 12, S/N - Areal (Águas Claras)', cidade: 'Brasília - DF', uf: 'DF', tipo: 'Clínica' },
+  { nome: 'Hapvida Diagnóstico Gama', endereco: 'Quadra EQ 47-49 Projeção 4, Setor Central - Gama', cidade: 'Brasília - DF', uf: 'DF', tipo: 'Diagnóstico' },
+  { nome: 'Hapvida Diagnóstico Hospital Brasiliense', endereco: 'SEPS Q 713/913 - Asa Sul', cidade: 'Brasília - DF', uf: 'DF', tipo: 'Diagnóstico' },
+  { nome: 'Hapvida Diagnóstico Taguatinga Norte', endereco: 'SHN Área Especial 4 – Loja 12 - Taguatinga Norte', cidade: 'Brasília - DF', uf: 'DF', tipo: 'Diagnóstico' },
+  { nome: 'Hospital e Maternidade Brasiliense', endereco: 'SEPS Q 713/913 - Asa Sul', cidade: 'Brasília - DF', uf: 'DF', tipo: 'Hospital' },
+  { nome: 'Unidade de Autorização, Biometria e Negociação Taguatinga', endereco: 'Quadra S5, Rua 312 - Taguatinga Sul', cidade: 'Brasília - DF', uf: 'DF', tipo: 'Outro' },
+  { nome: 'Unidade de Autorização, Biometria e Negociação Asa Sul', endereco: 'SEPS Q 713/913 - Asa Sul', cidade: 'Brasília - DF', uf: 'DF', tipo: 'Outro' },
 ];
 
 // Agrupa por estado
 export const UF_LABELS: Record<string, string> = {
-  AL: 'Alagoas', AM: 'Amazonas', BA: 'Bahia', CE: 'Ceará',
+  AL: 'Alagoas', AM: 'Amazonas', BA: 'Bahia', CE: 'Ceará', DF: 'Distrito Federal',
   GO: 'Goiás', MA: 'Maranhão', MT: 'Mato Grosso', PA: 'Pará',
   PB: 'Paraíba', PE: 'Pernambuco', PI: 'Piauí', PR: 'Paraná',
   RN: 'Rio Grande do Norte', SE: 'Sergipe', SP: 'São Paulo', TO: 'Tocantins',
