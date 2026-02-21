@@ -115,6 +115,18 @@ export const HAPVIDA_UNIDADES: HapvidaUnidade[] = [
   { nome: 'Hospital Antônio Prudente', endereco: 'Avenida Aguanambi, 1827 - Bairro de Fátima', cidade: 'Fortaleza - CE', uf: 'CE', tipo: 'Hospital' },
   { nome: 'Hospital e Maternidade Eugênia Pinheiro', endereco: 'Av. Heráclito Graça, 500 - Centro', cidade: 'Fortaleza - CE', uf: 'CE', tipo: 'Hospital' },
   { nome: 'Hospital Luís França', endereco: 'Avenida Heráclito Graça, 100 - Centro', cidade: 'Fortaleza - CE', uf: 'CE', tipo: 'Hospital' },
+  { nome: 'Clínica Padre Cícero', endereco: 'Rua Padre Cícero, 3996 - São José', cidade: 'Juazeiro do Norte - CE', uf: 'CE', tipo: 'Clínica' },
+  { nome: 'Hospital Geral e Maternidade Padre Cícero', endereco: 'Avenida Padre Cícero, 2481 - Triângulo', cidade: 'Juazeiro do Norte - CE', uf: 'CE', tipo: 'Hospital' },
+  { nome: 'Unidade de Autorização e Cadastro Juazeiro', endereco: 'Rua Padre Cícero, 3996 - Centro', cidade: 'Juazeiro do Norte - CE', uf: 'CE', tipo: 'Outro' },
+  { nome: 'Unidade de Biometria Juazeiro', endereco: 'Rua Padre Cícero, 529 - Centro', cidade: 'Juazeiro do Norte - CE', uf: 'CE', tipo: 'Outro' },
+  { nome: 'Unidade de Biometria Juazeiro II', endereco: 'Rua São José, 836 - Centro', cidade: 'Juazeiro do Norte - CE', uf: 'CE', tipo: 'Outro' },
+  { nome: 'Clínica Maracanaú', endereco: 'Avenida Parque Comercial, S/N - Distrito Industrial', cidade: 'Maracanaú - CE', uf: 'CE', tipo: 'Clínica' },
+  { nome: 'Hapvida Diagnóstico Ana Lima', endereco: 'Avenida Parque Comercial, S/N - Pajuçara', cidade: 'Maracanaú - CE', uf: 'CE', tipo: 'Diagnóstico' },
+  { nome: 'Hospital e Maternidade Ana Lima', endereco: 'Avenida Parque Comercial, S/N - Pajuçara', cidade: 'Maracanaú - CE', uf: 'CE', tipo: 'Hospital' },
+  { nome: 'Unidade de Autorização Maracanaú', endereco: 'Avenida Parque Comercial S/N - Distrito Industrial', cidade: 'Maracanaú - CE', uf: 'CE', tipo: 'Outro' },
+  { nome: 'Pronto Atendimento Pacajus', endereco: 'Rua Naide Costa Menezes, 525 - Centro', cidade: 'Pacajus - CE', uf: 'CE', tipo: 'Outro' },
+  { nome: 'Clínica Hapvida Pecém', endereco: 'Av. Antônio Brasileiro, 131 - Pecém', cidade: 'São Gonçalo do Amarante - CE', uf: 'CE', tipo: 'Clínica' },
+  { nome: 'Pronto Atendimento Pecém', endereco: 'Av. Antônio Brasileiro, 131 - Pecém', cidade: 'São Gonçalo do Amarante - CE', uf: 'CE', tipo: 'Outro' },
 ];
 
 // Agrupa por estado
