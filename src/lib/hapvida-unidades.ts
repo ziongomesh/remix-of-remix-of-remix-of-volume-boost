@@ -301,6 +301,28 @@ export const HAPVIDA_UNIDADES: HapvidaUnidade[] = [
   { nome: 'Diagnóstico Jardim Guanabara', endereco: 'Rua Fernando Corrêa da Costa, 2256 - Jardim Guanabara', cidade: 'Rondonópolis - MT', uf: 'MT', tipo: 'Diagnóstico' },
   { nome: 'Pronto Atendimento Rondonópolis', endereco: 'Rua Agostinho de Figueiredo, 60 - Jardim Guanabara', cidade: 'Rondonópolis - MT', uf: 'MT', tipo: 'Outro' },
   { nome: 'Unidade de Autorização e Biometria Vila Marinópolis', endereco: 'Rua Fernando Correa da Costa, 1538 - Vila Marinópolis', cidade: 'Rondonópolis - MT', uf: 'MT', tipo: 'Outro' },
+
+  // ─── PARÁ (PA) ── BELÉM ───────────────────────────────────────────────────
+  { nome: 'Central de Atendimento Belém', endereco: 'Tv. Mauriti, 2736 - Marco', cidade: 'Belém - PA', uf: 'PA', tipo: 'Outro' },
+  { nome: 'Clínica Augusto Montenegro', endereco: 'Rodovia Augusto Montenegro Km5, 55 - Parque Verde', cidade: 'Belém - PA', uf: 'PA', tipo: 'Clínica' },
+  { nome: 'Clínica Batista Campos', endereco: 'Travessa Padre Eutíquio, 1983', cidade: 'Belém - PA', uf: 'PA', tipo: 'Clínica' },
+  { nome: 'Clínica Conselheiro', endereco: 'Avenida Conselheiro Furtado, 1885 - Cremação', cidade: 'Belém - PA', uf: 'PA', tipo: 'Clínica' },
+  { nome: 'Clínica Lomas Valentinas', endereco: 'Travessa Lomás Valentina, 1140', cidade: 'Belém - PA', uf: 'PA', tipo: 'Clínica' },
+  { nome: 'Clínica Marco', endereco: 'Avenida Rômulo Maiorana, 1662 - Marco', cidade: 'Belém - PA', uf: 'PA', tipo: 'Clínica' },
+  { nome: 'Clínica Mundurucus', endereco: 'Rua dos Mundurucus, 2313 - Batista Campos', cidade: 'Belém - PA', uf: 'PA', tipo: 'Clínica' },
+  { nome: 'Hapvida Diagnóstico Hospital RioMar', endereco: 'Travessa Antônio Baena, 527 - Marco', cidade: 'Belém - PA', uf: 'PA', tipo: 'Diagnóstico' },
+  { nome: 'Hapvida Diagnóstico Lomas', endereco: 'Tv. Lomas Valentina, 1186', cidade: 'Belém - PA', uf: 'PA', tipo: 'Diagnóstico' },
+  { nome: 'Hapvida Diagnóstico Nazaré', endereco: 'Av. Alcindo Cacela, 1581 - Nazaré', cidade: 'Belém - PA', uf: 'PA', tipo: 'Diagnóstico' },
+  { nome: 'Hospital e Maternidade Rio Mar', endereco: 'Travessa Antônio Baena, 527 - Marco', cidade: 'Belém - PA', uf: 'PA', tipo: 'Hospital' },
+  { nome: 'Hospital Layr Maia', endereco: 'Av. Alcindo Cacela, 1581 - Nazaré', cidade: 'Belém - PA', uf: 'PA', tipo: 'Hospital' },
+  { nome: 'Laboratório Batista Campos', endereco: 'Tv. Padre Eutíquio, 1983', cidade: 'Belém - PA', uf: 'PA', tipo: 'Diagnóstico' },
+  { nome: 'Pronto Atendimento Ananindeua', endereco: 'BR 316 - Km 2, 90 - Guanabara', cidade: 'Belém - PA', uf: 'PA', tipo: 'Outro' },
+  { nome: 'Unidade de Autorização e Cadastro Pedreira', endereco: 'Travessa Lomas Valentina, 1176 - Pedreira', cidade: 'Belém - PA', uf: 'PA', tipo: 'Outro' },
+  { nome: 'Unidade de Biometria Pedreira', endereco: 'Travessa Lomas Valentina, 1140 - Pedreira', cidade: 'Belém - PA', uf: 'PA', tipo: 'Outro' },
+
+  // ─── PARÁ (PA) ── PARAUAPEBAS ─────────────────────────────────────────────
+  { nome: 'Clínica Rio Azul', endereco: 'Rua H, 248 - União', cidade: 'Parauapebas - PA', uf: 'PA', tipo: 'Clínica' },
+  { nome: 'Hospital das Clínicas e Maternidade de Parauapebas', endereco: 'Rua H, 248 - União', cidade: 'Parauapebas - PA', uf: 'PA', tipo: 'Hospital' },
 ];
 
 // Agrupa por estado
