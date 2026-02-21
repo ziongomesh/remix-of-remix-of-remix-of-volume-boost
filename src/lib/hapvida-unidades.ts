@@ -41,7 +41,12 @@ export const HAPVIDA_UNIDADES: HapvidaUnidade[] = [
   { nome: 'Unidade de Autorização, Cadastro e Biometria Manaus', endereco: 'Av. João Valério, 606 - São Geraldo', cidade: 'Manaus - AM', uf: 'AM', tipo: 'Outro' },
   { nome: 'Unidade de Biometria e Autorização', endereco: 'Avenida Duque de Caxias, 1905 - Praça 14 de Janeiro', cidade: 'Manaus - AM', uf: 'AM', tipo: 'Outro' },
 
-  { nome: 'Clínica Aldeota', endereco: 'Av. Senador Virgílio Távora, 1815 - Aldeota', cidade: 'Fortaleza - CE', uf: 'CE', tipo: 'Clínica' },
+  // ─── BAHIA (BA) ─────────────────────────────────────────────────────────────
+  { nome: 'Clínica Alagoinhas', endereco: 'Travessa Dr. Dantas Bião, 254-284 - Jardim Petrolar', cidade: 'Alagoinhas - BA', uf: 'BA', tipo: 'Clínica' },
+  { nome: 'Diagnóstico Alagoinhas', endereco: 'Tv. Dr. Dantas Bião, 254-284 - Alagoinhas Velha', cidade: 'Alagoinhas - BA', uf: 'BA', tipo: 'Diagnóstico' },
+  { nome: 'Hospital e Maternidade Cetro', endereco: 'Rua Elvira Dórea, 1 - Centro', cidade: 'Alagoinhas - BA', uf: 'BA', tipo: 'Hospital' },
+  { nome: 'Unidade de Autorização Alagoinhas', endereco: 'Travessa Dantas Bião, 254 - Alagoinhas Velha', cidade: 'Alagoinhas - BA', uf: 'BA', tipo: 'Outro' },
+
   { nome: 'Clínica Antônio Sales', endereco: 'Av. Antônio Sales, 2238 - Dionísio Torres', cidade: 'Fortaleza - CE', uf: 'CE', tipo: 'Clínica' },
   { nome: 'Clínica Barão de Studart', endereco: 'Av. Barão de Studart, 2260 - Dionísio Torres', cidade: 'Fortaleza - CE', uf: 'CE', tipo: 'Clínica' },
   { nome: 'Clínica Conjunto Ceará', endereco: 'Av. Ministro Albuquerque Lima, 1421 - Conjunto Ceará 3ª etapa', cidade: 'Fortaleza - CE', uf: 'CE', tipo: 'Clínica' },
