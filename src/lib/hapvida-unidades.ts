@@ -4,8 +4,11 @@
  * ║                                                                            ║
  * ║  • O modelo do atestado é 100% idêntico ao oficial da Hapvida.             ║
  * ║  • Todos os endereços e unidades são 100% atuais e verificados.            ║
+ * ║  • O sistema exibe APENAS os estados que possuem unidades cadastradas.     ║
  * ║                                                                            ║
- * ║  Estados SEM cobertura Hapvida cadastrada:                                 ║
+ * ║  Estados SEM cobertura — a própria Hapvida NÃO possui unidades nesses      ║
+ * ║  estados atualmente. Quando a Hapvida expandir a cobertura para essas      ║
+ * ║  regiões, as unidades serão incluídas ao sistema:                          ║
  * ║    AC (Acre), AP (Amapá), ES (Espírito Santo),                             ║
  * ║    RJ (Rio de Janeiro), RO (Rondônia), RR (Roraima)                        ║
  * ╚══════════════════════════════════════════════════════════════════════════════╝
