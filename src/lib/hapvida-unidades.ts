@@ -424,6 +424,27 @@ export const HAPVIDA_UNIDADES: HapvidaUnidade[] = [
   { nome: 'Unidade de Autorização Natal', endereco: 'Avenida João Medeiros Filho, 301 - Igapó', cidade: 'Natal - RN', uf: 'RN', tipo: 'Outro' },
   { nome: 'Unidade de Autorização Natal II', endereco: 'Alameda das Acácia, 4421 - Neopólis', cidade: 'Natal - RN', uf: 'RN', tipo: 'Outro' },
   { nome: 'Unidade de Biometria', endereco: 'Av. Bacharel Tomaz Landim, 1022 - Igapó', cidade: 'Natal - RN', uf: 'RN', tipo: 'Outro' },
+
+  // ─── RIO GRANDE DO SUL (RS) ── CANOAS ────────────────────────────────────
+  { nome: 'Pronto Atendimento CCG Canoas', endereco: 'Av. Boqueirão, 33 - Igara', cidade: 'Canoas - RS', uf: 'RS', tipo: 'Outro' },
+
+  // ─── RIO GRANDE DO SUL (RS) ── GRAVATAÍ ──────────────────────────────────
+  { nome: 'Pronto Atendimento CCG Gravataí', endereco: 'Av. José Loureiro da Silva, 1843 - Centro', cidade: 'Gravataí - RS', uf: 'RS', tipo: 'Outro' },
+
+  // ─── RIO GRANDE DO SUL (RS) ── GUAÍBA ────────────────────────────────────
+  { nome: 'Pronto Atendimento CCG Guaíba', endereco: 'R. Vinte De Setembro, 370 - Centro', cidade: 'Guaíba - RS', uf: 'RS', tipo: 'Outro' },
+
+  // ─── RIO GRANDE DO SUL (RS) ── NOVO HAMBURGO ─────────────────────────────
+  { nome: 'Pronto Atendimento CCG Novo Hamburgo', endereco: 'R. David Canabarro, 30 - Centro', cidade: 'Novo Hamburgo - RS', uf: 'RS', tipo: 'Outro' },
+
+  // ─── RIO GRANDE DO SUL (RS) ── PORTO ALEGRE ──────────────────────────────
+  { nome: 'Hospital Humaniza', endereco: 'R. Ramiro Barcelos, 621 - Independência', cidade: 'Porto Alegre - RS', uf: 'RS', tipo: 'Hospital' },
+
+  // ─── RIO GRANDE DO SUL (RS) ── SÃO LEOPOLDO ──────────────────────────────
+  { nome: 'Pronto Atendimento CCG São Leopoldo', endereco: 'Av. João Alberto, 313 - Centro', cidade: 'São Leopoldo - RS', uf: 'RS', tipo: 'Outro' },
+
+  // ─── RIO GRANDE DO SUL (RS) ── VIAMÃO ────────────────────────────────────
+  { nome: 'Pronto Atendimento CCG Viamão', endereco: 'R. Rev. Américo Vespúcio Cabral, 96 - Centro', cidade: 'Viamão - RS', uf: 'RS', tipo: 'Outro' },
 ];
 
 // Agrupa por estado
