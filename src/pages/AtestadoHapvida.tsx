@@ -180,6 +180,11 @@ export default function AtestadoHapvida() {
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
   const [criadoEm, setCriadoEm] = useState('');
 
+  // Toast inicial ao entrar no módulo
+  useEffect(() => {
+    toast.info('Preencha os dados do paciente, hospital e médico para gerar o atestado.', { duration: 5000 });
+  }, []);
+
   // ── Render canvas sem marca d'água (para PDF) ──────────────────────────
   const renderCanvas = useCallback((
     canvas: HTMLCanvasElement,
