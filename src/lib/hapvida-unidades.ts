@@ -8,6 +8,14 @@ export interface HapvidaUnidade {
 }
 
 export const HAPVIDA_UNIDADES: HapvidaUnidade[] = [
+  // ─── ALAGOAS (AL) ───────────────────────────────────────────────────────────
+  { nome: 'Clínica Fernandes Lima', endereco: 'Avenida Fernandes Lima, 139 - Farol', cidade: 'Maceió - AL', uf: 'AL', tipo: 'Clínica' },
+  { nome: 'Clínica Oldemburgo Paranhos', endereco: 'Rua Oldemburgo da Silva Paranhos, 55 - Farol', cidade: 'Maceió - AL', uf: 'AL', tipo: 'Clínica' },
+  { nome: 'Diagnóstico Hospital Maceió', endereco: 'Avenida Presidente Getúlio Vargas, 300 - Serraria', cidade: 'Maceió - AL', uf: 'AL', tipo: 'Diagnóstico' },
+  { nome: 'Hapvida Diagnóstico Maceió', endereco: 'Rua Oldemburgo da Silva Paranhos, 55 - Farol', cidade: 'Maceió - AL', uf: 'AL', tipo: 'Diagnóstico' },
+  { nome: 'Hospital e Maternidade Maceió', endereco: 'Avenida Presidente Getúlio Vargas, 300 - Serraria', cidade: 'Maceió - AL', uf: 'AL', tipo: 'Hospital' },
+  { nome: 'Unidade de Autorização, Cadastro e Biometria Maceió', endereco: 'R. Comendador Palmeira, 623 - Farol', cidade: 'Maceió - AL', uf: 'AL', tipo: 'Outro' },
+
   // ─── CEARÁ (CE) ─────────────────────────────────────────────────────────────
   { nome: 'Clínica Aldeota', endereco: 'Av. Senador Virgílio Távora, 1815 - Aldeota', cidade: 'Fortaleza - CE', uf: 'CE', tipo: 'Clínica' },
   { nome: 'Clínica Antônio Sales', endereco: 'Av. Antônio Sales, 2238 - Dionísio Torres', cidade: 'Fortaleza - CE', uf: 'CE', tipo: 'Clínica' },
