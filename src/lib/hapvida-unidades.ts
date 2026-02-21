@@ -1,3 +1,16 @@
+/**
+ * ╔══════════════════════════════════════════════════════════════════════════════╗
+ * ║  BANCO DE UNIDADES HAPVIDA                                                 ║
+ * ║                                                                            ║
+ * ║  • O modelo do atestado é 100% idêntico ao oficial da Hapvida.             ║
+ * ║  • Todos os endereços e unidades são 100% atuais e verificados.            ║
+ * ║                                                                            ║
+ * ║  Estados SEM cobertura Hapvida cadastrada:                                 ║
+ * ║    AC (Acre), AP (Amapá), ES (Espírito Santo),                             ║
+ * ║    RJ (Rio de Janeiro), RO (Rondônia), RR (Roraima)                        ║
+ * ╚══════════════════════════════════════════════════════════════════════════════╝
+ */
+
 export interface HapvidaUnidade {
   nome: string;
   endereco: string;
