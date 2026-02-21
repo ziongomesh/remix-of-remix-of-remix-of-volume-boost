@@ -139,6 +139,48 @@ export const HAPVIDA_UNIDADES: HapvidaUnidade[] = [
   { nome: 'Hospital e Maternidade Brasiliense', endereco: 'SEPS Q 713/913 - Asa Sul', cidade: 'Brasília - DF', uf: 'DF', tipo: 'Hospital' },
   { nome: 'Unidade de Autorização, Biometria e Negociação Taguatinga', endereco: 'Quadra S5, Rua 312 - Taguatinga Sul', cidade: 'Brasília - DF', uf: 'DF', tipo: 'Outro' },
   { nome: 'Unidade de Autorização, Biometria e Negociação Asa Sul', endereco: 'SEPS Q 713/913 - Asa Sul', cidade: 'Brasília - DF', uf: 'DF', tipo: 'Outro' },
+
+  // ─── GOIÁS (GO) ── ANÁPOLIS ────────────────────────────────────────────────
+  { nome: 'Clínica Rio João Leite', endereco: 'Avenida Senador José Lourenço Dias, 594 - Centro', cidade: 'Anápolis - GO', uf: 'GO', tipo: 'Clínica' },
+  { nome: 'Clínica Setor Central Anápolis', endereco: 'Rua Coronel Batista, 83 - Setor Central', cidade: 'Anápolis - GO', uf: 'GO', tipo: 'Clínica' },
+  { nome: 'Hapvida Diagnóstico Anápolis', endereco: 'Rua Coronel Batista, 83B - Setor Central', cidade: 'Anápolis - GO', uf: 'GO', tipo: 'Diagnóstico' },
+  { nome: 'Pronto Atendimento Anápolis', endereco: 'Rua Coronel Batista, 29 - Setor Central', cidade: 'Anápolis - GO', uf: 'GO', tipo: 'Outro' },
+  { nome: 'Unidade de Autorização Anápolis', endereco: 'Av. Senador Lourenço Dias, 631 - Centro', cidade: 'Anápolis - GO', uf: 'GO', tipo: 'Outro' },
+
+  // ─── GOIÁS (GO) ── APARECIDA DE GOIÂNIA ───────────────────────────────────
+  { nome: 'Clínica Mineira de Aparecida', endereco: 'Avenida Mineira, Qd. 07, Lt. 13 - Jardim Nova Era', cidade: 'Aparecida de Goiânia - GO', uf: 'GO', tipo: 'Clínica' },
+  { nome: 'Diagnóstico Vila Aparecida', endereco: 'Avenida Jaguarão, R. L-11, Qd. 23, S/N - Vila Brasília', cidade: 'Aparecida de Goiânia - GO', uf: 'GO', tipo: 'Diagnóstico' },
+
+  // ─── GOIÁS (GO) ── EDEIA ──────────────────────────────────────────────────
+  { nome: 'Pronto Atendimento Edeia', endereco: 'Av. Presidente Kennedy, 276, Qd. 06, Lt. 02 - Setor Alegrete', cidade: 'Edeia - GO', uf: 'GO', tipo: 'Outro' },
+
+  // ─── GOIÁS (GO) ── GOIÂNIA ────────────────────────────────────────────────
+  { nome: 'Hospital América', endereco: 'Alameda Coronel Joaquim Bastos, 120, Qd. 216, Lt. 6-E - Setor Marista', cidade: 'Goiânia - GO', uf: 'GO', tipo: 'Hospital' },
+  { nome: 'Hospital Jardim América', endereco: 'Avenida T-63 - Jardim América', cidade: 'Goiânia - GO', uf: 'GO', tipo: 'Hospital' },
+  { nome: 'Hospital Promed', endereco: 'Rua C-184, 401, Qd. 453, Lt. 01-05 - Jardim América', cidade: 'Goiânia - GO', uf: 'GO', tipo: 'Hospital' },
+  { nome: 'Clínica Setor dos Funcionários', endereco: 'Rua P-16, 690 - Setor dos Funcionários', cidade: 'Goiânia - GO', uf: 'GO', tipo: 'Clínica' },
+  { nome: 'Clínica Areião', endereco: 'Rua 1.138, 312, Qd. 253, Lt. 03 - Setor Marista', cidade: 'Goiânia - GO', uf: 'GO', tipo: 'Clínica' },
+  { nome: 'Clínica de Cardiologia Jardim América', endereco: 'Rua C-139, Qd. 321, Lt. 14, Casa 01 - Jardim América', cidade: 'Goiânia - GO', uf: 'GO', tipo: 'Clínica' },
+  { nome: 'Clínica Rio Araguaia', endereco: 'Avenida T-1, Qd. 74, Lt. 08 - Setor Bueno', cidade: 'Goiânia - GO', uf: 'GO', tipo: 'Clínica' },
+  { nome: 'Clínica Setor Bueno', endereco: 'Avenida T-2, 2787, Qd. 98, Lt. 4 - Setor Bueno', cidade: 'Goiânia - GO', uf: 'GO', tipo: 'Clínica' },
+  { nome: 'Clínica Setor Sul', endereco: 'Rua 96, 27, Qd. F-13, Lt. 01 - Setor Sul', cidade: 'Goiânia - GO', uf: 'GO', tipo: 'Clínica' },
+  { nome: 'Clínica C-147', endereco: 'Rua C-139, 874, Qd. 321, Lt. 12 - Jardim América', cidade: 'Goiânia - GO', uf: 'GO', tipo: 'Clínica' },
+  { nome: 'Clínica Nova Suíça', endereco: 'Rua C-267, S/N, Qd. 603, Lt. 13 - Nova Suíça', cidade: 'Goiânia - GO', uf: 'GO', tipo: 'Clínica' },
+  { nome: 'Clínica Avenida 85', endereco: 'Avenida 85, Qd. G-21, 2138 - Setor Marista', cidade: 'Goiânia - GO', uf: 'GO', tipo: 'Clínica' },
+  { nome: 'Clínica C-139', endereco: 'C-139, Qd. 322, Lt. 13/15, 820 - Jardim América', cidade: 'Goiânia - GO', uf: 'GO', tipo: 'Clínica' },
+  { nome: 'Hapvida Diagnóstico Goiânia', endereco: 'Rua C-149, 1400 - Jardim América', cidade: 'Goiânia - GO', uf: 'GO', tipo: 'Diagnóstico' },
+  { nome: 'Laboratório Jardim América', endereco: 'Rua C-148, 1289 - Jardim América', cidade: 'Goiânia - GO', uf: 'GO', tipo: 'Diagnóstico' },
+  { nome: 'Centro de Imagem Jardim América', endereco: 'Rua C-148, esq. T-63, 1280 - Jardim América', cidade: 'Goiânia - GO', uf: 'GO', tipo: 'Diagnóstico' },
+  { nome: 'Pronto Atendimento Cora Coralina', endereco: 'Avenida Anhanguera, 11231 - Esplanada dos Anicuns', cidade: 'Goiânia - GO', uf: 'GO', tipo: 'Outro' },
+  { nome: 'Unidade de Autorização Goiânia', endereco: 'Av. T-9, 1910 - Jardim América', cidade: 'Goiânia - GO', uf: 'GO', tipo: 'Outro' },
+  { nome: 'Unidade de Cadastro Goiânia', endereco: 'Avenida T-63, Qd. 589, Lt. 2, S/N - Nova Suíça', cidade: 'Goiânia - GO', uf: 'GO', tipo: 'Outro' },
+
+  // ─── GOIÁS (GO) ── QUIRINÓPOLIS ───────────────────────────────────────────
+  { nome: 'Hospital Quirinópolis', endereco: 'Av. Lázaro Xavier, 21 - Centro', cidade: 'Quirinópolis - GO', uf: 'GO', tipo: 'Hospital' },
+
+  // ─── GOIÁS (GO) ── RIO VERDE ──────────────────────────────────────────────
+  { nome: 'Clínica Rio Verde', endereco: 'Rua Rosulino Ferreira Guimarães, 1082, Qd. 0006, Lt. 22 - Centro', cidade: 'Rio Verde - GO', uf: 'GO', tipo: 'Clínica' },
+  { nome: 'Pronto Atendimento Rio Verde', endereco: 'Avenida Eurico Veloso do Carmo, 1800 - Setor Central', cidade: 'Rio Verde - GO', uf: 'GO', tipo: 'Outro' },
 ];
 
 // Agrupa por estado
