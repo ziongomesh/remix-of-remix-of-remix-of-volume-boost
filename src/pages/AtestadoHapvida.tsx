@@ -665,7 +665,7 @@ export default function AtestadoHapvida() {
                     <div className="border border-dashed border-border rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent transition-colors">
                       {assinaturaUrl && assinaturaUrl !== '/images/hapvida-carimbo-default.png'
                         ? '✅ Carimbo personalizado — clique para trocar'
-                        : '📎 Carimbo padrão — clique para substituir'}
+                        : 'Carimbo padrão — clique para substituir'}
                     </div>
                     <input type="file" accept="image/*" className="hidden" onChange={handleUploadCarimbo} />
                   </label>
