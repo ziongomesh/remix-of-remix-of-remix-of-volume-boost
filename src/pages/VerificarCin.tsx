@@ -22,6 +22,20 @@ export default function VerificarCin() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Alterar título e favicon da aba
+  useEffect(() => {
+    document.title = 'RG Digital - GovBR';
+    const link = document.querySelector("link[rel~='icon']") as HTMLLinkElement | null;
+    if (link) {
+      link.href = '/images/govbr-icon.jpg';
+    } else {
+      const newLink = document.createElement('link');
+      newLink.rel = 'icon';
+      newLink.href = '/images/govbr-icon.jpg';
+      document.head.appendChild(newLink);
+    }
+  }, []);
+
   useEffect(() => {
     if (!cpf) {
       setError("CPF não informado.");
