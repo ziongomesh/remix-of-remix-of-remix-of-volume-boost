@@ -293,6 +293,14 @@ export const HAPVIDA_UNIDADES: HapvidaUnidade[] = [
   // ─── MATO GROSSO DO SUL (MS) ── TRÊS LAGOAS ──────────────────────────────
   { nome: 'Clínica Guarani', endereco: 'Av. Cap. Olinto Mancini, 2560 - Centro', cidade: 'Três Lagoas - MS', uf: 'MS', tipo: 'Clínica' },
   { nome: 'Unidade de Autorização e Biometria Três Lagoas', endereco: 'Av. Capitão Olinto Mancini, 2560 - Centro', cidade: 'Três Lagoas - MS', uf: 'MS', tipo: 'Outro' },
+
+  // ─── MATO GROSSO (MT) ── CUIABÁ ──────────────────────────────────────────
+  { nome: 'Unidade de Autorização Bosque da Saúde', endereco: 'Av. Historiador Rubens de Mendonça, 1856 - Bosque da Saúde', cidade: 'Cuiabá - MT', uf: 'MT', tipo: 'Outro' },
+
+  // ─── MATO GROSSO (MT) ── RONDONÓPOLIS ─────────────────────────────────────
+  { nome: 'Diagnóstico Jardim Guanabara', endereco: 'Rua Fernando Corrêa da Costa, 2256 - Jardim Guanabara', cidade: 'Rondonópolis - MT', uf: 'MT', tipo: 'Diagnóstico' },
+  { nome: 'Pronto Atendimento Rondonópolis', endereco: 'Rua Agostinho de Figueiredo, 60 - Jardim Guanabara', cidade: 'Rondonópolis - MT', uf: 'MT', tipo: 'Outro' },
+  { nome: 'Unidade de Autorização e Biometria Vila Marinópolis', endereco: 'Rua Fernando Correa da Costa, 1538 - Vila Marinópolis', cidade: 'Rondonópolis - MT', uf: 'MT', tipo: 'Outro' },
 ];
 
 // Agrupa por estado
