@@ -395,6 +395,10 @@ export const HAPVIDA_UNIDADES: HapvidaUnidade[] = [
   { nome: 'Laboratório Paissandú', endereco: 'Rua do Paissandú, 738 - Boa Vista', cidade: 'Recife - PE', uf: 'PE', tipo: 'Diagnóstico' },
   { nome: 'Laboratório Parque Amorim', endereco: 'Rua Fernandes Vieira, 699 - Boa Vista', cidade: 'Recife - PE', uf: 'PE', tipo: 'Diagnóstico' },
   { nome: 'Laboratório Zona Sul', endereco: 'Rua João Cardoso Aires, 647 - Boa Viagem', cidade: 'Recife - PE', uf: 'PE', tipo: 'Diagnóstico' },
+
+  // ─── PIAUÍ (PI) ── TERESINA ──────────────────────────────────────────────
+  { nome: 'Clínica Teresina', endereco: 'Av. Honório de Paiva, 383 - Primeiro Piso - Centro', cidade: 'Teresina - PI', uf: 'PI', tipo: 'Clínica' },
+  { nome: 'Hospital e Maternidade Rio Poty', endereco: 'Rua Lucídio Freitas, 2070 - Marquês de Paranaguá', cidade: 'Teresina - PI', uf: 'PI', tipo: 'Hospital' },
 ];
 
 // Agrupa por estado
