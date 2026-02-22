@@ -23,6 +23,18 @@ function _d(b64: string): MedicoHapvida[] {
 const _P = ((): string => {
   // Raw data encoded at build time
   const raw: MedicoHapvida[] = [
+    // AL - Maceió
+    { nome: 'DR. ABEL ALBUQUERQUE SILVA', crm: 'CRM 861/AL', especialidade: 'Clínica Médica', cidade: 'Maceió', uf: 'AL' },
+    { nome: 'DR. ABEL CORDEIRO DE SOUSA FILHO', crm: 'CRM 4105/AL', especialidade: 'Clínica Médica', cidade: 'Maceió', uf: 'AL' },
+    { nome: 'DR. ABEL TENORIO CAVALCANTE FILHO', crm: 'CRM 3286/AL', especialidade: 'Clínica Médica', cidade: 'Maceió', uf: 'AL' },
+    { nome: 'DR. ABELARDO ALBUQUERQUE', crm: 'CRM 24/AL', especialidade: 'Clínica Médica', cidade: 'Maceió', uf: 'AL' },
+    { nome: 'DR. ADELMO FERNANDES DE FARIAS', crm: 'CRM 6423/AL', especialidade: 'Clínica Médica', cidade: 'Maceió', uf: 'AL' },
+    // AM - Manaus
+    { nome: 'DRA. ABADIA EVILIN FRAGOSO DO NASCIMENTO', crm: 'CRM 10327/AM', especialidade: 'Clínica Médica', cidade: 'Manaus', uf: 'AM' },
+    { nome: 'DR. ABDALA HABIB FRAXE NETO', crm: 'CRM 9591/AM', especialidade: 'Clínica Médica', cidade: 'Manaus', uf: 'AM' },
+    { nome: 'DR. ABDUL HASSAN', crm: 'CRM 1740/AM', especialidade: 'Clínica Médica', cidade: 'Manaus', uf: 'AM' },
+    { nome: 'DR. ABELARDO DE OLIVEIRA BRITO', crm: 'CRM 9127/AM', especialidade: 'Clínica Médica', cidade: 'Manaus', uf: 'AM' },
+    { nome: 'DR. ABELARDO GAUTAMA MOREIRA PAMPOLHA', crm: 'CRM 7046/AM', especialidade: 'Clínica Médica', cidade: 'Manaus', uf: 'AM' },
     // BA - Alagoinhas
     { nome: 'DR. ADALTO JOSE SANTOS PEDREIRA', crm: 'CRM 9283/BA', especialidade: 'Clínica Médica', cidade: 'Alagoinhas', uf: 'BA' },
     { nome: 'DRA. ADRIANE DA SILVA TEIXEIRA', crm: 'CRM 32751/BA', especialidade: 'Clínica Médica', cidade: 'Alagoinhas', uf: 'BA' },
