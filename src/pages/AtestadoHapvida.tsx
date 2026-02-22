@@ -790,6 +790,9 @@ export default function AtestadoHapvida() {
                     </div>
                     <input type="file" accept="image/*" className="hidden" onChange={handleUploadCarimbo} />
                   </label>
+                  <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                    ⚠️ Ao inserir um carimbo, preencha os dados do médico acima (Nome, CRM e Local) com as informações que constam no carimbo.
+                  </p>
                   {!carimboPadrao && (
                     <button
                       type="button"
