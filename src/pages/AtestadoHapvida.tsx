@@ -156,6 +156,7 @@ export default function AtestadoHapvida() {
   const [cidDropdown, setCidDropdown] = useState(false);
   const [codigoCid, setCodigoCid] = useState('N30.0');
   const [ufSelecionada, setUfSelecionada] = useState('AM');
+  const [cidadeUnidadeSel, setCidadeUnidadeSel] = useState('');
   const [nomeHospital, setNomeHospital] = useState('HOSPITAL RIO NEGRO');
   const [enderecoHospital, setEnderecoHospital] = useState('R. TAPAJOS, 561 - CENTRO');
   const [cidadeHospital, setCidadeHospital] = useState('MANAUS- AM, CEP 69010-150');
@@ -609,6 +610,7 @@ export default function AtestadoHapvida() {
                     value={ufSelecionada}
                     onChange={e => {
                       setUfSelecionada(e.target.value);
+                      setCidadeUnidadeSel('');
                       setNomeHospital('');
                       setEnderecoHospital('');
                       setCidadeHospital('');
@@ -617,6 +619,25 @@ export default function AtestadoHapvida() {
                   >
                     {UFS_DISPONIVEIS.map(uf => (
                       <option key={uf} value={uf}>{uf} — {UF_LABELS[uf] ?? uf}</option>
+                    ))}
+                  </select>
+                </div>
+                {/* Seletor de Cidade */}
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Cidade</Label>
+                  <select
+                    value={cidadeUnidadeSel}
+                    onChange={e => {
+                      setCidadeUnidadeSel(e.target.value);
+                      setNomeHospital('');
+                      setEnderecoHospital('');
+                      setCidadeHospital('');
+                    }}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="">— Todas as cidades —</option>
+                    {[...new Set(getUnidadesPorUF(ufSelecionada).map(u => u.cidade))].sort().map(c => (
+                      <option key={c} value={c}>{c}</option>
                     ))}
                   </select>
                 </div>
@@ -636,11 +657,13 @@ export default function AtestadoHapvida() {
                     className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                   >
                     <option value="">— Selecione uma unidade —</option>
-                    {getUnidadesPorUF(ufSelecionada).map(u => (
-                      <option key={u.nome} value={u.nome.toUpperCase()}>
-                        [{u.tipo.slice(0, 3).toUpperCase()}] {u.nome}
-                      </option>
-                    ))}
+                    {getUnidadesPorUF(ufSelecionada)
+                      .filter(u => !cidadeUnidadeSel || u.cidade === cidadeUnidadeSel)
+                      .map(u => (
+                        <option key={u.nome} value={u.nome.toUpperCase()}>
+                          [{u.tipo.slice(0, 3).toUpperCase()}] {u.nome}
+                        </option>
+                      ))}
                   </select>
                 </div>
                 {/* Campos somente leitura após seleção */}
