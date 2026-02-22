@@ -23,6 +23,72 @@ function _d(b64: string): MedicoHapvida[] {
 const _P = ((): string => {
   // Raw data encoded at build time
   const raw: MedicoHapvida[] = [
+    // BA - Alagoinhas
+    { nome: 'DR. ADALTO JOSE SANTOS PEDREIRA', crm: 'CRM 9283/BA', especialidade: 'Clínica Médica', cidade: 'Alagoinhas', uf: 'BA' },
+    { nome: 'DRA. ADRIANE DA SILVA TEIXEIRA', crm: 'CRM 32751/BA', especialidade: 'Clínica Médica', cidade: 'Alagoinhas', uf: 'BA' },
+    { nome: 'DRA. ADRIELE TAIANE DOS SANTOS SOUZA', crm: 'CRM 36961/BA', especialidade: 'Clínica Médica', cidade: 'Alagoinhas', uf: 'BA' },
+    { nome: 'DR. ALEXANDRE OLIVEIRA FARO', crm: 'CRM 28429/BA', especialidade: 'Clínica Médica', cidade: 'Alagoinhas', uf: 'BA' },
+    { nome: 'DR. ALEXSANDRO NASCIMENTO OLIVEIRA', crm: 'CRM 28489/BA', especialidade: 'Clínica Médica', cidade: 'Alagoinhas', uf: 'BA' },
+    // BA - Camaçari
+    { nome: 'DR. ADERBAL DANTAS DA SILVA JUNIOR', crm: 'CRM 43767/BA', especialidade: 'Clínica Médica', cidade: 'Camaçari', uf: 'BA' },
+    { nome: 'DRA. ADRIANA RAMOS FERNANDES LESSA', crm: 'CRM 20262/BA', especialidade: 'Clínica Médica', cidade: 'Camaçari', uf: 'BA' },
+    { nome: 'DRA. ADRIANA RODRIGUES LAURENTINO', crm: 'CRM 40263/BA', especialidade: 'Clínica Médica', cidade: 'Camaçari', uf: 'BA' },
+    { nome: 'DRA. AIDE QUEIROZ LISBOA', crm: 'CRM 11489/BA', especialidade: 'Clínica Médica', cidade: 'Camaçari', uf: 'BA' },
+    { nome: 'DR. ALEXANDRE DE CAMPOS FARIA', crm: 'CRM 16184/BA', especialidade: 'Clínica Médica', cidade: 'Camaçari', uf: 'BA' },
+    // BA - Candeias
+    { nome: 'DRA. CARINA GONÇALVES LOBO', crm: 'CRM 39189/BA', especialidade: 'Clínica Médica', cidade: 'Candeias', uf: 'BA' },
+    { nome: 'DR. CLEBER SANTOS DE SANTANA', crm: 'CRM 17796/BA', especialidade: 'Clínica Médica', cidade: 'Candeias', uf: 'BA' },
+    { nome: 'DRA. FERNANDA SANTOS MENDES', crm: 'CRM 46934/BA', especialidade: 'Clínica Médica', cidade: 'Candeias', uf: 'BA' },
+    { nome: 'DR. ÍCARO FERREIRA DA SILVA', crm: 'CRM 44642/BA', especialidade: 'Clínica Médica', cidade: 'Candeias', uf: 'BA' },
+    { nome: 'DR. LIBNI MONTEIRO AMORIM', crm: 'CRM 43072/BA', especialidade: 'Clínica Médica', cidade: 'Candeias', uf: 'BA' },
+    // BA - Catu
+    { nome: 'DR. ALEX JOSE SILVA FREITAS', crm: 'CRM 11513/BA', especialidade: 'Clínica Médica', cidade: 'Catu', uf: 'BA' },
+    { nome: 'DR. ANSELMO LOPES DE ARAUJO', crm: 'CRM 8162/BA', especialidade: 'Clínica Médica', cidade: 'Catu', uf: 'BA' },
+    { nome: 'DR. ANTONIO CARLOS GOES', crm: 'CRM 2003/BA', especialidade: 'Clínica Médica', cidade: 'Catu', uf: 'BA' },
+    { nome: 'DR. ANTONIO RUBENS NUNES VIEIRA', crm: 'CRM 1329/BA', especialidade: 'Clínica Médica', cidade: 'Catu', uf: 'BA' },
+    { nome: 'DRA. CARINE VILARINS DE SOUZA', crm: 'CRM 35754/BA', especialidade: 'Clínica Médica', cidade: 'Catu', uf: 'BA' },
+    // BA - Cruz das Almas
+    { nome: 'DRA. ADRIANA VIDAL', crm: 'CRM 14946/BA', especialidade: 'Clínica Médica', cidade: 'Cruz das Almas', uf: 'BA' },
+    { nome: 'DR. ALAN ALMEIDA DA SILVA', crm: 'CRM 33242/BA', especialidade: 'Clínica Médica', cidade: 'Cruz das Almas', uf: 'BA' },
+    { nome: 'DR. ALEXSANDRO ASSIS DE OLIVEIRA', crm: 'CRM 49394/BA', especialidade: 'Clínica Médica', cidade: 'Cruz das Almas', uf: 'BA' },
+    { nome: 'DR. ANDRE FELIPE DA SILVA GRANJA', crm: 'CRM 36981/BA', especialidade: 'Clínica Médica', cidade: 'Cruz das Almas', uf: 'BA' },
+    { nome: 'DRA. ANNA PAULA MATOS DE JESUS', crm: 'CRM 42094/BA', especialidade: 'Clínica Médica', cidade: 'Cruz das Almas', uf: 'BA' },
+    // BA - Dias d'Ávila
+    { nome: 'DRA. BEATRIZ PREISSLER VIEIRA', crm: 'CRM 19090/BA', especialidade: 'Clínica Médica', cidade: "Dias d'Ávila", uf: 'BA' },
+    { nome: 'DR. CARLOS ALBERTO SEIDEL MENELLI', crm: 'CRM 19855/BA', especialidade: 'Clínica Médica', cidade: "Dias d'Ávila", uf: 'BA' },
+    { nome: 'DRA. INDIRA DA SILVA OLIVEIRA DE SOUSA', crm: 'CRM 15230/BA', especialidade: 'Clínica Médica', cidade: "Dias d'Ávila", uf: 'BA' },
+    { nome: 'DR. JOSE CARLOS ORTUNO ORTUNO', crm: 'CRM 300-33625/BA', especialidade: 'Clínica Médica', cidade: "Dias d'Ávila", uf: 'BA' },
+    { nome: 'DRA. MARIEN DIAZ BRING', crm: 'CRM 38944/BA', especialidade: 'Clínica Médica', cidade: "Dias d'Ávila", uf: 'BA' },
+    // BA - Feira de Santana
+    { nome: 'DR. ABILIO PEREIRA DE ARAÚJO', crm: 'CRM 12960/BA', especialidade: 'Clínica Médica', cidade: 'Feira de Santana', uf: 'BA' },
+    { nome: 'DR. ABIMAEL OLIVEIRA SILVA', crm: 'CRM 35816/BA', especialidade: 'Clínica Médica', cidade: 'Feira de Santana', uf: 'BA' },
+    { nome: 'DR. ABRAÃO DE MELO BARBOSA', crm: 'CRM 29394/BA', especialidade: 'Clínica Médica', cidade: 'Feira de Santana', uf: 'BA' },
+    { nome: 'DR. ABRAÃO DOS SANTOS SOUZA', crm: 'CRM 33340/BA', especialidade: 'Clínica Médica', cidade: 'Feira de Santana', uf: 'BA' },
+    { nome: 'DR. ADAILTON CARNEIRO ROCHA', crm: 'CRM 19888/BA', especialidade: 'Clínica Médica', cidade: 'Feira de Santana', uf: 'BA' },
+    // BA - Lauro de Freitas
+    { nome: 'DR. ABRÃO ELIAS KHOURI', crm: 'CRM 32407/BA', especialidade: 'Clínica Médica', cidade: 'Lauro de Freitas', uf: 'BA' },
+    { nome: 'DR. ADÔNIS BEZERRA CAVALCANTE FILHO', crm: 'CRM 43115-P/BA', especialidade: 'Clínica Médica', cidade: 'Lauro de Freitas', uf: 'BA' },
+    { nome: 'DRA. ADRIANA ANDRADE MONTE', crm: 'CRM 11528/BA', especialidade: 'Clínica Médica', cidade: 'Lauro de Freitas', uf: 'BA' },
+    { nome: 'DRA. ADRIANA CAMPOS ANDRADE RIBEIRO', crm: 'CRM 13374/BA', especialidade: 'Clínica Médica', cidade: 'Lauro de Freitas', uf: 'BA' },
+    { nome: 'DRA. ADRIANA DE QUEIROZ BORGES', crm: 'CRM 11131/BA', especialidade: 'Clínica Médica', cidade: 'Lauro de Freitas', uf: 'BA' },
+    // BA - Salvador
+    { nome: 'DR. ABADIO JOSE SILVA', crm: 'CRM 15507/BA', especialidade: 'Clínica Médica', cidade: 'Salvador', uf: 'BA' },
+    { nome: 'DR. ABDIAS CARLOS DE OLIVEIRA FILHO', crm: 'CRM 21660/BA', especialidade: 'Clínica Médica', cidade: 'Salvador', uf: 'BA' },
+    { nome: 'DR. ABEL ALMEIDA RIBEIRO', crm: 'CRM 1184/BA', especialidade: 'Clínica Médica', cidade: 'Salvador', uf: 'BA' },
+    { nome: 'DR. ABEL GOÉS TRZAN', crm: 'CRM 35316/BA', especialidade: 'Clínica Médica', cidade: 'Salvador', uf: 'BA' },
+    { nome: 'DR. ABIMAEL CRUZ NASCIMENTO', crm: 'CRM 40513/BA', especialidade: 'Clínica Médica', cidade: 'Salvador', uf: 'BA' },
+    // BA - Santo Antônio de Jesus
+    { nome: 'DR. ABDIAS DE SOUZA ALVES JUNIOR', crm: 'CRM 38624/BA', especialidade: 'Clínica Médica', cidade: 'Santo Antônio de Jesus', uf: 'BA' },
+    { nome: 'DRA. ADIENNE OLIVEIRA DA COSTA', crm: 'CRM 29525/BA', especialidade: 'Clínica Médica', cidade: 'Santo Antônio de Jesus', uf: 'BA' },
+    { nome: 'DRA. ADRIANA NUNES PASSOS', crm: 'CRM 32942/BA', especialidade: 'Clínica Médica', cidade: 'Santo Antônio de Jesus', uf: 'BA' },
+    { nome: 'DRA. ADRIANE DE LIMA GIESE', crm: 'CRM 21951/BA', especialidade: 'Clínica Médica', cidade: 'Santo Antônio de Jesus', uf: 'BA' },
+    { nome: 'DR. AGENOR AFONSO DA SILVA FILHO', crm: 'CRM 10681/BA', especialidade: 'Clínica Médica', cidade: 'Santo Antônio de Jesus', uf: 'BA' },
+    // BA - Simões Filho
+    { nome: 'DR. ANIUVIS DOMINGUEZ ARANO', crm: 'CRM 38844/BA', especialidade: 'Clínica Médica', cidade: 'Simões Filho', uf: 'BA' },
+    { nome: 'DR. ANTONIO GONZALES GARCIA', crm: 'CRM 7644/BA', especialidade: 'Clínica Médica', cidade: 'Simões Filho', uf: 'BA' },
+    { nome: 'DR. ELIAS MACIEL FERREIRA JÚNIOR', crm: 'CRM 47998/BA', especialidade: 'Clínica Médica', cidade: 'Simões Filho', uf: 'BA' },
+    { nome: 'DR. GEOVANI SANTOS DA SILVA', crm: 'CRM 47433/BA', especialidade: 'Clínica Médica', cidade: 'Simões Filho', uf: 'BA' },
+    { nome: 'DR. JOSÉ BRITO SANTOS', crm: 'CRM 7446/BA', especialidade: 'Clínica Médica', cidade: 'Simões Filho', uf: 'BA' },
     // CE - Fortaleza
     { nome: 'DR. ABDIAS ARAÚJO COSTA', crm: 'CRM 8396/CE', especialidade: 'Clínica Médica', cidade: 'Fortaleza', uf: 'CE' },
     { nome: 'DR. ABDIAS ROLIM GOMES', crm: 'CRM 1473/CE', especialidade: 'Clínica Médica', cidade: 'Fortaleza', uf: 'CE' },
@@ -53,6 +119,54 @@ const _P = ((): string => {
     { nome: 'DR. LUCIANO ALMEIDA DOS SANTOS FILHO', crm: 'CRM 20567/CE', especialidade: 'Clínica Médica', cidade: 'São Gonçalo do Amarante', uf: 'CE' },
     { nome: 'DRA. MORGANA MARIA PIMENTEL SOARES', crm: 'CRM 7023/CE', especialidade: 'Clínica Médica', cidade: 'São Gonçalo do Amarante', uf: 'CE' },
     { nome: 'DRA. NATALIA SILVA DE CARVALHO', crm: 'CRM 29289/CE', especialidade: 'Clínica Médica', cidade: 'São Gonçalo do Amarante', uf: 'CE' },
+    // DF - Brasília
+    { nome: 'DR. AARON DOS SANTOS DE OLIVEIRA TRUBIAN', crm: 'CRM 32367/DF', especialidade: 'Clínica Médica', cidade: 'Brasília', uf: 'DF' },
+    { nome: 'DRA. ABADIA IMACULADA FERREIRA DE OLIVEIRA', crm: 'CRM 3133/DF', especialidade: 'Clínica Médica', cidade: 'Brasília', uf: 'DF' },
+    { nome: 'DR. ABADIO MARQUES NEDER', crm: 'CRM 27/DF', especialidade: 'Clínica Médica', cidade: 'Brasília', uf: 'DF' },
+    { nome: 'DR. ABDIAS AIRES DE QUEIROZ JUNIOR', crm: 'CRM 6558/DF', especialidade: 'Clínica Médica', cidade: 'Brasília', uf: 'DF' },
+    { nome: 'DR. ABDIAS JOSÉ DE MORAIS BARBOSA', crm: 'CRM 5346/DF', especialidade: 'Clínica Médica', cidade: 'Brasília', uf: 'DF' },
+    // GO - Anápolis
+    { nome: 'DR. ABMAEL SILVÉRIO DA SILVA', crm: 'CRM 7367/GO', especialidade: 'Clínica Médica', cidade: 'Anápolis', uf: 'GO' },
+    { nome: 'DR. ABNER HENRIQUE FLEURY', crm: 'CRM 26393/GO', especialidade: 'Clínica Médica', cidade: 'Anápolis', uf: 'GO' },
+    { nome: 'DR. ABNER LOURENÇO DA FONSECA', crm: 'CRM 28046/GO', especialidade: 'Clínica Médica', cidade: 'Anápolis', uf: 'GO' },
+    { nome: 'DR. ABRAHÃO ISSA NETO', crm: 'CRM 1718/GO', especialidade: 'Clínica Médica', cidade: 'Anápolis', uf: 'GO' },
+    { nome: 'DR. ACÁCIO JUNIO DE ALMEIDA', crm: 'CRM 18160/GO', especialidade: 'Clínica Médica', cidade: 'Anápolis', uf: 'GO' },
+    // GO - Aparecida de Goiânia
+    { nome: 'DR. ABILIO ROBERTO DE ARAUJO BORGES', crm: 'CRM 5205/GO', especialidade: 'Clínica Médica', cidade: 'Aparecida de Goiânia', uf: 'GO' },
+    { nome: 'DR. ADAILSON SOARES DE SOUSA', crm: 'CRM 23331/GO', especialidade: 'Clínica Médica', cidade: 'Aparecida de Goiânia', uf: 'GO' },
+    { nome: 'DR. ADELIO FERREIRA LEITE', crm: 'CRM 1326/GO', especialidade: 'Clínica Médica', cidade: 'Aparecida de Goiânia', uf: 'GO' },
+    { nome: 'DRA. ADRIANA BONAN', crm: 'CRM 34474/GO', especialidade: 'Clínica Médica', cidade: 'Aparecida de Goiânia', uf: 'GO' },
+    { nome: 'DRA. ADRIANE AGUIAR GONTIJO', crm: 'CRM 39120/GO', especialidade: 'Clínica Médica', cidade: 'Aparecida de Goiânia', uf: 'GO' },
+    // GO - Edeia
+    { nome: 'DR. ADRIEL FELIPE FREITAS NUNES', crm: 'CRM 34478/GO', especialidade: 'Clínica Médica', cidade: 'Edeia', uf: 'GO' },
+    { nome: 'DR. ALISSON HENRIQUE FERNANDES', crm: 'CRM 14103/GO', especialidade: 'Clínica Médica', cidade: 'Edeia', uf: 'GO' },
+    { nome: 'DRA. AMANDA FERREIRA E FERRO', crm: 'CRM 34998/GO', especialidade: 'Clínica Médica', cidade: 'Edeia', uf: 'GO' },
+    { nome: 'DR. AMILSON FERREIRA BORGES', crm: 'CRM 3903/GO', especialidade: 'Clínica Médica', cidade: 'Edeia', uf: 'GO' },
+    { nome: 'DRA. ANA CAROLINA REZENDE HERCOS', crm: 'CRM 16526/GO', especialidade: 'Clínica Médica', cidade: 'Edeia', uf: 'GO' },
+    // GO - Goiânia
+    { nome: 'DR. ABDALA NOGUEIRA AMUY', crm: 'CRM 3950/GO', especialidade: 'Clínica Médica', cidade: 'Goiânia', uf: 'GO' },
+    { nome: 'DR. ABDALA SEBBA PRIMO', crm: 'CRM 2277/GO', especialidade: 'Clínica Médica', cidade: 'Goiânia', uf: 'GO' },
+    { nome: 'DR. ABEL ALEXANDRE HANNUM', crm: 'CRM 5647/GO', especialidade: 'Clínica Médica', cidade: 'Goiânia', uf: 'GO' },
+    { nome: 'DR. ABELARDO MOREIRA CARVALHO', crm: 'CRM 2585/GO', especialidade: 'Clínica Médica', cidade: 'Goiânia', uf: 'GO' },
+    { nome: 'DR. ABIDALA MIGUEL FILHO', crm: 'CRM 3643/GO', especialidade: 'Clínica Médica', cidade: 'Goiânia', uf: 'GO' },
+    // GO - Quirinópolis
+    { nome: 'DRA. ALESSANDRA DA SILVA DE SOUZA SILVA', crm: 'CRM 13179/GO', especialidade: 'Clínica Médica', cidade: 'Quirinópolis', uf: 'GO' },
+    { nome: 'DRA. ALLANA CAMPOS ALVES', crm: 'CRM 27249/GO', especialidade: 'Clínica Médica', cidade: 'Quirinópolis', uf: 'GO' },
+    { nome: 'DRA. AMANDA VIEIRA SACARDO', crm: 'CRM 31448/GO', especialidade: 'Clínica Médica', cidade: 'Quirinópolis', uf: 'GO' },
+    { nome: 'DRA. ANA CAROLINA ALVES NOVAIS', crm: 'CRM 22194/GO', especialidade: 'Clínica Médica', cidade: 'Quirinópolis', uf: 'GO' },
+    { nome: 'DRA. ANA CAROLINA CARNIO BARRUFFINI', crm: 'CRM 28077/GO', especialidade: 'Clínica Médica', cidade: 'Quirinópolis', uf: 'GO' },
+    // GO - Rio Verde
+    { nome: 'DR. ABILIO BARONI SALES', crm: 'CRM 5729/GO', especialidade: 'Clínica Médica', cidade: 'Rio Verde', uf: 'GO' },
+    { nome: 'DR. ABÍLIO JOSÉ DE OLIVEIRA NETO', crm: 'CRM 37814/GO', especialidade: 'Clínica Médica', cidade: 'Rio Verde', uf: 'GO' },
+    { nome: 'DR. ADEMAR LEÃO LEMES ROCHA CALABRIA', crm: 'CRM 22920/GO', especialidade: 'Clínica Médica', cidade: 'Rio Verde', uf: 'GO' },
+    { nome: 'DR. ADEMIR GUERREIRO BARBOSA', crm: 'CRM 17396/GO', especialidade: 'Clínica Médica', cidade: 'Rio Verde', uf: 'GO' },
+    { nome: 'DR. ADRIANO LINARES', crm: 'CRM 10293/GO', especialidade: 'Clínica Médica', cidade: 'Rio Verde', uf: 'GO' },
+    // MA - São Luís
+    { nome: 'DR. AARÃO LUIZ DA SILVA EUFRASIO', crm: 'CRM 15357/MA', especialidade: 'Clínica Médica', cidade: 'São Luís', uf: 'MA' },
+    { nome: 'DR. ABDERVAL PINTO BANDEIRA NETO', crm: 'CRM 4189/MA', especialidade: 'Clínica Médica', cidade: 'São Luís', uf: 'MA' },
+    { nome: 'DR. ABDIAS ROCHA SANTOS', crm: 'CRM 3305/MA', especialidade: 'Clínica Médica', cidade: 'São Luís', uf: 'MA' },
+    { nome: 'DR. ABDON JOSE MURAD JUNIOR', crm: 'CRM 4500/MA', especialidade: 'Clínica Médica', cidade: 'São Luís', uf: 'MA' },
+    { nome: 'DR. ABDON JOSÉ MURAD NETO', crm: 'CRM 1146/MA', especialidade: 'Clínica Médica', cidade: 'São Luís', uf: 'MA' },
     // MG - Alfenas
     { nome: 'DR. ADALBERTO ZAULI DOS SANTOS', crm: 'CRM 47940/MG', especialidade: 'Clínica Médica', cidade: 'Alfenas', uf: 'MG' },
     { nome: 'DR. ADAUTO DE CASTRO SOARES', crm: 'CRM 25256/MG', especialidade: 'Clínica Médica', cidade: 'Alfenas', uf: 'MG' },
@@ -119,6 +233,24 @@ const _P = ((): string => {
     { nome: 'DR. ADEMIR OSSANI', crm: 'CRM 12377/MG', especialidade: 'Clínica Médica', cidade: 'Varginha', uf: 'MG' },
     { nome: 'DR. ADILSON MARCIANO ROSA', crm: 'CRM 17642/MG', especialidade: 'Clínica Médica', cidade: 'Varginha', uf: 'MG' },
     { nome: 'DR. ADRIAN NOGUEIRA BUENO', crm: 'CRM 33911/MG', especialidade: 'Clínica Médica', cidade: 'Varginha', uf: 'MG' },
+    // PB - Campina Grande
+    { nome: 'DR. ABDISIO PRAZERES NETO', crm: 'CRM 5761/PB', especialidade: 'Clínica Médica', cidade: 'Campina Grande', uf: 'PB' },
+    { nome: 'DR. ABELARDO DA MATTA RIBEIRO SOBRINHO', crm: 'CRM 3901/PB', especialidade: 'Clínica Médica', cidade: 'Campina Grande', uf: 'PB' },
+    { nome: 'DR. ABRAÃO ALANDEC DINIZ DE MORAES', crm: 'CRM 8072/PB', especialidade: 'Clínica Médica', cidade: 'Campina Grande', uf: 'PB' },
+    { nome: 'DR. ABRAÃO SOUSA BRITO', crm: 'CRM 12256/PB', especialidade: 'Clínica Médica', cidade: 'Campina Grande', uf: 'PB' },
+    { nome: 'DRA. ACIDALIA MARIA HOLANDA LACERDA', crm: 'CRM 2351/PB', especialidade: 'Clínica Médica', cidade: 'Campina Grande', uf: 'PB' },
+    // PB - João Pessoa
+    { nome: 'DR. ABDON MOREIRA LUSTOSA', crm: 'CRM 4184/PB', especialidade: 'Clínica Médica', cidade: 'João Pessoa', uf: 'PB' },
+    { nome: 'DR. ABEL AUSTERO DE SOUSA BENJAMIN FILHO', crm: 'CRM 18219/PB', especialidade: 'Clínica Médica', cidade: 'João Pessoa', uf: 'PB' },
+    { nome: 'DR. ABEL BARBOSA DE ARAÚJO GOMES', crm: 'CRM 13227/PB', especialidade: 'Clínica Médica', cidade: 'João Pessoa', uf: 'PB' },
+    { nome: 'DR. ABEL GOMES BELTRAO', crm: 'CRM 43/PB', especialidade: 'Clínica Médica', cidade: 'João Pessoa', uf: 'PB' },
+    { nome: 'DR. ABELARDO DA SILVA MELO JUNIOR', crm: 'CRM 2439/PB', especialidade: 'Clínica Médica', cidade: 'João Pessoa', uf: 'PB' },
+    // PI - Teresina
+    { nome: 'DR. AARÃO ANDRADE NAPOLEÃO LIMA', crm: 'CRM 6943/PI', especialidade: 'Clínica Médica', cidade: 'Teresina', uf: 'PI' },
+    { nome: 'DR. AARAO CRUZ MENDES', crm: 'CRM 1803/PI', especialidade: 'Clínica Médica', cidade: 'Teresina', uf: 'PI' },
+    { nome: 'DR. ABDON ADYNAN DE ARAUJO SOUSA', crm: 'CRM 9433/PI', especialidade: 'Clínica Médica', cidade: 'Teresina', uf: 'PI' },
+    { nome: 'DR. ABEL DE BARROS ARAUJO FILHO', crm: 'CRM 7594/PI', especialidade: 'Clínica Médica', cidade: 'Teresina', uf: 'PI' },
+    { nome: 'DRA. ABIGAIL GOMES DE FRANÇA', crm: 'CRM 10196/PI', especialidade: 'Clínica Médica', cidade: 'Teresina', uf: 'PI' },
   ];
   // Encode: JSON → UTF-8 → XOR → Base64
   const json = JSON.stringify(raw);
