@@ -85,6 +85,7 @@ router.post("/create-pix", requireSession, async (req, res) => {
       return res.status(403).json({ error: "Apenas masters podem recarregar" });
     }
 
+    const sanitizedAdminName = adminName.replace(/[<>\"'&]/g, "").trim().substring(0, 50);
     const publicKey = process.env.VIZZIONPAY_PUBLIC_KEY;
     const privateKey = process.env.VIZZIONPAY_PRIVATE_KEY;
     const domainUrl = process.env.DOMAIN_URL || "";
@@ -141,7 +142,6 @@ router.post("/create-pix", requireSession, async (req, res) => {
       return res.status(500).json({ error: "Chaves da VizzionPay não configuradas" });
     }
 
-    const sanitizedAdminName2 = sanitizedAdminName;
     const identifier = `ADMIN_${adminId}_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
 
     const webhookUrl = process.env.PIX_WEBHOOK_URL || `${domainUrl}/api/payments/webhook`;
@@ -151,7 +151,7 @@ router.post("/create-pix", requireSession, async (req, res) => {
       identifier: identifier,
       amount: Math.round(amount * 100) / 100,
       client: {
-        name: sanitizedAdminName2,
+        name: sanitizedAdminName,
         email: `admin${adminId}@sistema.com`,
         phone: "(83) 99999-9999",
         document: "05916691378",
@@ -187,7 +187,7 @@ router.post("/create-pix", requireSession, async (req, res) => {
 
     await query(
       "INSERT INTO pix_payments (admin_id, admin_name, credits, amount, transaction_id, status) VALUES (?, ?, ?, ?, ?, ?)",
-      [adminId, sanitizedAdminName2, credits, Math.round(amount * 100) / 100, pixData.transactionId, "PENDING"],
+      [adminId, sanitizedAdminName, credits, Math.round(amount * 100) / 100, pixData.transactionId, "PENDING"],
     );
 
     res.json({
