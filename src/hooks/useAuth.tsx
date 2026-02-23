@@ -13,6 +13,7 @@ interface Admin {
   rank: string;
   profile_photo: string | null;
   session_token: string | null;
+  criado_por?: number | null;
 }
 
 interface AuthContextType {
@@ -113,6 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         rank: data.admin.rank || 'revendedor',
         profile_photo: data.admin.profile_photo,
         session_token: data.admin.session_token,
+        criado_por: data.admin.criado_por || null,
       };
       
       setAdmin(adminData);
