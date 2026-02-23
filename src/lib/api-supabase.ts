@@ -101,7 +101,8 @@ export const supabaseApi = {
           rank: adminData.rank,
           profile_photo: adminData.profile_photo,
           pin: adminData.has_pin,
-          session_token: adminData.session_token
+          session_token: adminData.session_token,
+          criado_por: null,
         }
       };
     },

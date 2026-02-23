@@ -103,7 +103,8 @@ export const mysqlApi = {
           rank: data.admin.rank,
           profile_photo: data.admin.profile_photo,
           pin: data.admin.pin ? true : false,
-          session_token: data.admin.session_token
+          session_token: data.admin.session_token,
+          criado_por: data.admin.criado_por || null,
         }
       };
     },
