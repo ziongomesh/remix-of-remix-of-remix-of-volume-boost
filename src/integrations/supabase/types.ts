@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           created_at: string | null
           creditos: number
+          creditos_transf: number
           criado_por: number | null
           email: string
           id: number
@@ -34,6 +35,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           creditos?: number
+          creditos_transf?: number
           criado_por?: number | null
           email: string
           id?: number
@@ -50,6 +52,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           creditos?: number
+          creditos_transf?: number
           criado_por?: number | null
           email?: string
           id?: number

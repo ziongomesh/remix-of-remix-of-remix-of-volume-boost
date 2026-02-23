@@ -45,7 +45,7 @@ interface Noticia {
 }
 
 export default function Dashboard() {
-  const { admin, role: rawRole, credits, loading } = useAuth();
+  const { admin, role: rawRole, credits, creditsTransf, loading } = useAuth();
   const role = rawRole as string;
   const [topResellers, setTopResellers] = useState<TopReseller[]>([]);
   const [recentResellers, setRecentResellers] = useState<RecentReseller[]>([]);
@@ -269,14 +269,23 @@ export default function Dashboard() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className={`grid grid-cols-1 sm:grid-cols-2 ${role === 'master' ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-4 sm:gap-6`}>
           <StatsCard
-            title="Créditos Disponíveis"
+            title="Créditos de Uso"
             value={credits.toLocaleString('pt-BR')}
-            subtitle="Créditos ativos"
+            subtitle="Para gerar documentos"
             variant="green"
             icon={<CreditCard className="h-6 w-6 sm:h-8 sm:w-8" />}
           />
+          {role === 'master' && (
+            <StatsCard
+              title="Créditos p/ Transferir"
+              value={creditsTransf.toLocaleString('pt-BR')}
+              subtitle="Para enviar aos revendedores"
+              variant="blue"
+              icon={<Wallet className="h-6 w-6 sm:h-8 sm:w-8" />}
+            />
+          )}
           <StatsCard
             title="Seu Status"
             value={`${roleBadge.label} ${'★'.repeat(roleBadge.stars)}`}

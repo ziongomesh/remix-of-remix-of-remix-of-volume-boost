@@ -125,6 +125,10 @@ export default function DashboardDono() {
   const [dailyFilterDate, setDailyFilterDate] = useState<string>('');
   const [dailyFilterOwnership, setDailyFilterOwnership] = useState<string>('all'); // all, mine, others
 
+  // All transfers state (dono)
+  const [allTransfers, setAllTransfers] = useState<any[]>([]);
+  const [allTransfersLoading, setAllTransfersLoading] = useState(false);
+  const [transfersMasterFilter, setTransfersMasterFilter] = useState<string>('all');
   const [passwordDialog, setPasswordDialog] = useState<{ open: boolean; admin: AdminItem | null }>({ open: false, admin: null });
   const [transferDialog, setTransferDialog] = useState<{ open: boolean; admin: AdminItem | null }>({ open: false, admin: null });
   const [newPassword, setNewPassword] = useState('');
@@ -220,6 +224,19 @@ export default function DashboardDono() {
       toast.error('Erro ao carregar dados do painel');
     } finally {
       setLoadingData(false);
+    }
+  };
+
+  const fetchAllTransfers = async (masterId?: string) => {
+    setAllTransfersLoading(true);
+    try {
+      const mid = masterId && masterId !== 'all' ? parseInt(masterId) : undefined;
+      const data = await (api as any).credits.getAllTransfers(mid);
+      setAllTransfers(data || []);
+    } catch (e) {
+      console.error('Erro ao buscar transferências:', e);
+    } finally {
+      setAllTransfersLoading(false);
     }
   };
 
@@ -478,11 +495,17 @@ export default function DashboardDono() {
           </div>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-7 lg:w-auto lg:inline-grid">
+        <Tabs value={activeTab} onValueChange={(v) => {
+          setActiveTab(v);
+          if (v === 'transfers' && allTransfers.length === 0) {
+            fetchAllTransfers();
+          }
+        }}>
+          <TabsList className="grid w-full grid-cols-8 lg:w-auto lg:inline-grid">
             <TabsTrigger value="overview" className="text-xs sm:text-sm">Geral</TabsTrigger>
             <TabsTrigger value="masters" className="text-xs sm:text-sm">Masters</TabsTrigger>
             <TabsTrigger value="resellers" className="text-xs sm:text-sm">Revendedores</TabsTrigger>
+            <TabsTrigger value="transfers" className="text-xs sm:text-sm">Transferências</TabsTrigger>
             <TabsTrigger value="audit" className="text-xs sm:text-sm">Histórico</TabsTrigger>
             <TabsTrigger value="ranking" className="text-xs sm:text-sm">Ranking</TabsTrigger>
             <TabsTrigger value="noticias" className="text-xs sm:text-sm">Notícias</TabsTrigger>
@@ -656,6 +679,69 @@ export default function DashboardDono() {
                   <Badge variant="outline" className="text-sm"><Users className="h-3 w-3 mr-1" />{resellers.length} Revendedores</Badge>
                 </div>
                 {renderAdminTable(resellers.filter(a => !adminSearch || a.nome.toLowerCase().includes(adminSearch.toLowerCase()) || a.email.toLowerCase().includes(adminSearch.toLowerCase())))}
+              </TabsContent>
+
+              {/* ===== HISTÓRICO DIÁRIO ===== */}
+              {/* ===== TRANSFERÊNCIAS ===== */}
+              <TabsContent value="transfers" className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <Select value={transfersMasterFilter} onValueChange={(v) => { setTransfersMasterFilter(v); fetchAllTransfers(v); }}>
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue placeholder="Filtrar por Master" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos os Masters</SelectItem>
+                      {allAdmins.filter(a => a.rank === 'master').map(m => (
+                        <SelectItem key={m.id} value={String(m.id)}>{m.nome}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button variant="outline" size="sm" onClick={() => fetchAllTransfers(transfersMasterFilter)}>
+                    <RefreshCw className="h-4 w-4" />
+                  </Button>
+                </div>
+                {allTransfersLoading ? (
+                  <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+                ) : allTransfers.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">Nenhuma transferência encontrada</p>
+                ) : (
+                  <Card>
+                    <CardContent className="p-0">
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>De (Master)</TableHead>
+                              <TableHead>Para (Revendedor)</TableHead>
+                              <TableHead className="text-right">Créditos</TableHead>
+                              <TableHead className="text-right">Data</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {allTransfers.map((t: any) => (
+                              <TableRow key={t.id}>
+                                <TableCell>
+                                  <p className="font-medium">{t.from_admin_name}</p>
+                                  <p className="text-xs text-muted-foreground">{t.from_admin_email}</p>
+                                </TableCell>
+                                <TableCell>
+                                  <p className="font-medium">{t.to_admin_name}</p>
+                                  <p className="text-xs text-muted-foreground">{t.to_admin_email}</p>
+                                </TableCell>
+                                <TableCell className="text-right font-mono font-semibold text-success">
+                                  +{t.amount?.toLocaleString('pt-BR')}
+                                </TableCell>
+                                <TableCell className="text-right text-muted-foreground text-sm">
+                                  {new Date(t.created_at).toLocaleDateString('pt-BR')} {new Date(t.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
               </TabsContent>
 
               {/* ===== HISTÓRICO DIÁRIO ===== */}

@@ -18,7 +18,7 @@ interface Reseller {
 }
 
 export default function Transferir() {
-  const { admin, role, credits, loading, refreshCredits } = useAuth();
+  const { admin, role, credits, creditsTransf, loading, refreshCredits } = useAuth();
   const [resellers, setResellers] = useState<Reseller[]>([]);
   const [selectedReseller, setSelectedReseller] = useState('');
   const [amount, setAmount] = useState(0);
@@ -79,8 +79,8 @@ export default function Transferir() {
       return;
     }
 
-    if (amount > credits) {
-      toast.error('Saldo insuficiente');
+    if (amount > creditsTransf) {
+      toast.error('Saldo de transferência insuficiente');
       return;
     }
 
@@ -122,9 +122,9 @@ export default function Transferir() {
           <CardContent className="p-4 sm:pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs sm:text-sm opacity-90">Seu Saldo Atual</p>
-                <p className="text-2xl sm:text-3xl font-bold">{credits.toLocaleString('pt-BR')}</p>
-                <p className="text-xs sm:text-sm opacity-80">créditos disponíveis</p>
+                <p className="text-xs sm:text-sm opacity-90">Saldo para Transferência</p>
+                <p className="text-2xl sm:text-3xl font-bold">{creditsTransf.toLocaleString('pt-BR')}</p>
+                <p className="text-xs sm:text-sm opacity-80">créditos disponíveis para enviar</p>
               </div>
               <CreditCard className="h-10 w-10 sm:h-12 sm:w-12 opacity-80" />
             </div>
@@ -175,7 +175,7 @@ export default function Transferir() {
                     id="amount"
                     type="number"
                     min={minTransfer}
-                    max={credits}
+                    max={creditsTransf}
                     value={amount || ''}
                     onChange={(e) => setAmount(Math.max(0, parseInt(e.target.value) || 0))}
                     placeholder="0"
@@ -188,7 +188,7 @@ export default function Transferir() {
                 <Button 
                   className="w-full" 
                   onClick={handleTransfer}
-                  disabled={isTransferring || !selectedReseller || amount < minTransfer || amount > credits}
+                  disabled={isTransferring || !selectedReseller || amount < minTransfer || amount > creditsTransf}
                 >
                   {isTransferring && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Transferir Créditos
