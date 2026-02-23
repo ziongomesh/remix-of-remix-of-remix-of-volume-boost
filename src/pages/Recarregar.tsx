@@ -901,40 +901,32 @@ function ResellerRechargeView({ adminId, sessionToken, credits }: { adminId: num
   useEffect(() => {
     const fetchCreator = async () => {
       try {
-        if (isUsingMySQL()) {
-          const envUrl = import.meta.env.VITE_API_URL as string | undefined;
-          let apiBase = envUrl ? envUrl.replace(/\/+$/, '') : 'http://localhost:4000/api';
-          if (!apiBase.endsWith('/api')) apiBase += '/api';
-          
-          // Incluir headers de autenticação para passar pelo requireSession
-          const stored = localStorage.getItem('admin');
-          const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-          if (stored) {
-            try {
-              const parsed = JSON.parse(stored);
-              headers['X-Admin-Id'] = String(parsed.id);
-              headers['X-Session-Token'] = parsed.session_token;
-            } catch {}
-          }
-          
-          const resp = await fetch(`${apiBase}/admins/creator/${adminId}`, { headers });
+        // Sempre usar backend Node.js para buscar criador
+        const stored = localStorage.getItem('admin');
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            headers['X-Admin-Id'] = String(parsed.id);
+            headers['X-Session-Token'] = parsed.session_token;
+          } catch {}
+        }
+        
+        const envUrl = import.meta.env.VITE_API_URL as string | undefined;
+        let apiBase = envUrl ? envUrl.replace(/\/+$/, '') : (window.location.origin + '/api');
+        if (!apiBase.endsWith('/api')) apiBase += '/api';
+        
+        const resp = await fetch(`${apiBase}/admins/creator/${adminId}`, { headers });
+        if (resp.ok) {
           const data = await resp.json();
+          console.log('[Recarregar] Creator data:', data);
           if (data?.creator_name) {
             setCreatorName(data.creator_name);
             setCreatorPhone(data.creator_telefone || null);
             setCreatorId(data.creator_id || null);
           }
         } else {
-          // Supabase: usar RPC get_creator_name
-          const { data: creatorData } = await supabase.rpc('get_creator_name', {
-            p_admin_id: adminId,
-            p_session_token: sessionToken,
-          });
-          if (creatorData && creatorData.length > 0) {
-            setCreatorName(creatorData[0].creator_name);
-            setCreatorPhone(creatorData[0].creator_telefone || null);
-            setCreatorId(creatorData[0].creator_id || null);
-          }
+          console.error('[Recarregar] Erro ao buscar criador, status:', resp.status);
         }
       } catch (err) {
         console.error('Erro ao buscar criador:', err);
