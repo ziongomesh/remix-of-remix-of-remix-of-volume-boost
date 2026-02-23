@@ -97,6 +97,7 @@ router.post("/create-pix", requireSession, async (req, res) => {
 
     const domainUrl = process.env.DOMAIN_URL || process.env.API_URL || `${req.protocol}://${req.get("host")}`;
     const webhookUrl = process.env.PIX_WEBHOOK_URL || `${domainUrl}/api/payments/webhook`;
+    console.log(`[CREATE PIX] callbackUrl que será enviada à VizzionPay: ${webhookUrl}`);
 
     const pixRequest: any = {
       identifier: identifier,
@@ -156,7 +157,8 @@ router.post("/create-pix", requireSession, async (req, res) => {
   }
 });
 
-// Verificar status do pagamento (requer sessão)
+// Verificar status do pagamento (requer sessão) - consulta apenas o banco de dados
+// A confirmação é feita pelo webhook da VizzionPay em POST /webhook
 router.get("/status/:transactionId", requireSession, async (req, res) => {
   try {
     const { transactionId } = req.params;
@@ -176,69 +178,6 @@ router.get("/status/:transactionId", requireSession, async (req, res) => {
 
     if (typeof payment.admin_name === "string" && payment.admin_name.startsWith("RESELLER:")) {
       return res.status(400).json({ error: "Use /payments/reseller-status para este pagamento" });
-    }
-
-    if (payment.status === "PAID") {
-      return res.json(payment);
-    }
-
-    // Fallback: consultar VizzionPay
-    const publicKey = process.env.VIZZIONPAY_PUBLIC_KEY;
-    const privateKey = process.env.VIZZIONPAY_PRIVATE_KEY;
-
-    if (payment.status === "PENDING" && publicKey && privateKey) {
-      try {
-        const vizzionResponse = await fetch(`https://app.vizzionpay.com/api/v1/gateway/pix/${transactionId}`, {
-          headers: { 
-            "Content-Type": "application/json",
-            "x-public-key": publicKey, 
-            "x-secret-key": privateKey,
-          },
-        });
-
-        console.log(`[STATUS CHECK] VizzionPay response status: ${vizzionResponse.status}`);
-
-        if (vizzionResponse.ok) {
-          const vizzionData = await vizzionResponse.json();
-          console.log(`[STATUS CHECK] VizzionPay full response:`, JSON.stringify(vizzionData, null, 2));
-
-          // Extrair status de todos os caminhos possíveis da resposta
-          const remoteStatus = vizzionData?.status || vizzionData?.transaction?.status || vizzionData?.data?.status || vizzionData?.data?.transaction?.status || vizzionData?.pix?.status;
-          const remoteEvent = vizzionData?.event || vizzionData?.data?.event || vizzionData?.pix?.event;
-
-          console.log(`[STATUS CHECK] remoteStatus=${remoteStatus}, remoteEvent=${remoteEvent}`);
-
-          const isPaid = remoteEvent === "TRANSACTION_PAID" || remoteStatus === "PAID" || remoteStatus === "COMPLETED" || remoteStatus === "paid" || remoteStatus === "completed" || remoteStatus === "CONFIRMED" || vizzionData?.paid === true;
-
-          if (isPaid) {
-            const pendingRows = await query<any[]>(
-              "SELECT * FROM pix_payments WHERE transaction_id = ? AND status = ?",
-              [transactionId, "PENDING"],
-            );
-
-            if (pendingRows.length > 0) {
-              const pendingPayment = pendingRows[0];
-
-              await query("UPDATE pix_payments SET status = ?, paid_at = NOW() WHERE transaction_id = ?", ["PAID", transactionId]);
-
-              const settings = await getSettings();
-              const tier = settings.priceTiers.find((t: any) => t.credits === pendingPayment.credits);
-              if (tier) {
-                await query("UPDATE admins SET creditos = creditos + ? WHERE id = ?", [pendingPayment.credits, pendingPayment.admin_id]);
-                await query(
-                  "INSERT INTO credit_transactions (to_admin_id, amount, unit_price, total_price, transaction_type) VALUES (?, ?, ?, ?, ?)",
-                  [pendingPayment.admin_id, pendingPayment.credits, tier.unitPrice, tier.total, "recharge"],
-                );
-              }
-            }
-
-            const updated = await query<any[]>("SELECT * FROM pix_payments WHERE transaction_id = ?", [transactionId]);
-            return res.json(updated[0]);
-          }
-        }
-      } catch (e) {
-        console.error("Erro ao consultar VizzionPay (status):", e);
-      }
     }
 
     return res.json(payment);
@@ -277,10 +216,13 @@ router.get("/history/:adminId", requireSession, async (req, res) => {
 router.post("/webhook", async (req, res) => {
   try {
     console.log("=== PIX WEBHOOK RECEIVED ===");
+    console.log("[WEBHOOK] Headers:", JSON.stringify(req.headers, null, 2));
+    console.log("[WEBHOOK] Body:", JSON.stringify(req.body, null, 2));
     const body = req.body || {};
     const transactionId = body.transactionId || body.transaction?.id;
     const status = body.status || body.transaction?.status;
     const event = body.event;
+    console.log(`[WEBHOOK] Parsed: transactionId=${transactionId}, status=${status}, event=${event}`);
 
     if (!transactionId) {
       return res.status(400).json({ error: "transactionId ausente" });
@@ -414,6 +356,7 @@ router.post("/create-reseller-pix", requireSession, async (req, res) => {
 
     const domainUrl = process.env.DOMAIN_URL || process.env.API_URL || `${req.protocol}://${req.get("host")}`;
     const webhookUrl = process.env.PIX_WEBHOOK_URL || `${domainUrl}/api/payments/webhook-reseller`;
+    console.log(`[RESELLER PIX] callbackUrl que será enviada à VizzionPay: ${webhookUrl}`);
 
     const pixRequest: any = {
       identifier: identifier,
@@ -476,10 +419,13 @@ router.post("/create-reseller-pix", requireSession, async (req, res) => {
 router.post("/webhook-reseller", async (req, res) => {
   try {
     console.log("=== RESELLER PIX WEBHOOK ===");
+    console.log("[RESELLER WEBHOOK] Headers:", JSON.stringify(req.headers, null, 2));
+    console.log("[RESELLER WEBHOOK] Body:", JSON.stringify(req.body, null, 2));
     const body = req.body || {};
     const transactionId = body.transactionId || body.transaction?.id;
     const status = body.status || body.transaction?.status;
     const event = body.event;
+    console.log(`[RESELLER WEBHOOK] Parsed: transactionId=${transactionId}, status=${status}, event=${event}`);
 
     if (!transactionId) {
       return res.status(400).json({ error: "transactionId ausente" });
@@ -530,7 +476,8 @@ router.post("/webhook-reseller", async (req, res) => {
   }
 });
 
-// Verificar status do PIX de revendedor (requer sessão)
+// Verificar status do PIX de revendedor (requer sessão) - consulta apenas o banco de dados
+// A confirmação é feita pelo webhook da VizzionPay em POST /webhook-reseller
 router.get("/reseller-status/:transactionId", requireSession, async (req, res) => {
   try {
     const { transactionId } = req.params;
@@ -550,61 +497,6 @@ router.get("/reseller-status/:transactionId", requireSession, async (req, res) =
 
     if (payment.status === "PAID") {
       return res.json({ status: "PAID", message: "Revendedor criado com sucesso!" });
-    }
-
-    const publicKey = process.env.VIZZIONPAY_PUBLIC_KEY;
-    const privateKey = process.env.VIZZIONPAY_PRIVATE_KEY;
-
-    if (publicKey && privateKey) {
-      try {
-        const vizzionResponse = await fetch(`https://app.vizzionpay.com/api/v1/gateway/pix/${transactionId}`, {
-          headers: { "x-public-key": publicKey, "x-secret-key": privateKey },
-        });
-
-        if (vizzionResponse.ok) {
-          const vizzionData = await vizzionResponse.json();
-
-          const remoteStatus = vizzionData?.status || vizzionData?.transaction?.status || vizzionData?.data?.status || vizzionData?.data?.transaction?.status;
-          const remoteEvent = vizzionData?.event || vizzionData?.data?.event;
-          const isPaid = remoteEvent === "TRANSACTION_PAID" || remoteStatus === "PAID" || remoteStatus === "COMPLETED";
-
-          if (isPaid) {
-            const parts = payment.admin_name.split(":");
-            if (parts[0] === "RESELLER" && parts.length >= 4) {
-              const nome = parts[1];
-              const email = parts[2];
-              const key = parts[3];
-              const masterId = payment.admin_id;
-
-              const existing = await query<any[]>("SELECT id FROM admins WHERE email = ?", [email]);
-              if (existing.length === 0) {
-                const result = await query<any>(
-                  "INSERT INTO admins (nome, email, `key`, `rank`, criado_por, creditos) VALUES (?, ?, ?, ?, ?, ?)",
-                  [nome, email, key, "revendedor", masterId, 5],
-                );
-
-                try {
-                  await query(
-                    `INSERT INTO credit_transactions (from_admin_id, to_admin_id, amount, total_price, transaction_type) VALUES (?, ?, ?, ?, ?)`,
-                    [masterId, result.insertId, RESELLER_CREDITS, RESELLER_PRICE, "reseller_creation"],
-                  );
-                } catch (txError: any) {
-                  console.error("Erro ao registrar transação:", txError.message);
-                }
-              }
-
-              await query(
-                "UPDATE pix_payments SET status = ?, paid_at = NOW(), admin_name = ? WHERE transaction_id = ?",
-                ["PAID", `Revendedor criado: ${nome}`, transactionId],
-              );
-
-              return res.json({ status: "PAID", message: "Revendedor criado com sucesso!" });
-            }
-          }
-        }
-      } catch (e) {
-        console.error("Erro ao verificar VizzionPay:", e);
-      }
     }
 
     res.json({ status: payment.status });
