@@ -89,7 +89,7 @@ router.post("/create-pix", requireSession, async (req, res) => {
     const publicKey = process.env.VIZZIONPAY_PUBLIC_KEY;
     const privateKey = process.env.VIZZIONPAY_PRIVATE_KEY;
     const domainUrl = process.env.DOMAIN_URL || "";
-    const isLocal = domainUrl.includes("localhost");
+    const isLocal = !domainUrl || domainUrl.includes("localhost") || domainUrl.includes("127.0.0.1");
 
     // MODO LOCAL: Simular PIX SOMENTE quando NÃO tem chaves VizzionPay
     if (!publicKey || !privateKey) {
