@@ -212,6 +212,7 @@ router.post("/create-pix", requireSession, async (req, res) => {
 
     if (!vizzionResponse.ok) {
       const errorData = await vizzionResponse.text();
+      console.error(`[CREATE PIX] VizzionPay error ${vizzionResponse.status}:`, errorData);
       throw new Error(`VizzionPay error: ${vizzionResponse.status} - ${errorData}`);
     }
 
@@ -616,7 +617,8 @@ router.post("/create-reseller-pix", requireSession, async (req, res) => {
 
     if (!vizzionResponse.ok) {
       const errorData = await vizzionResponse.text();
-      throw new Error(`VizzionPay error: ${vizzionResponse.status}`);
+      console.error(`[RESELLER PIX] VizzionPay error ${vizzionResponse.status}:`, errorData);
+      throw new Error(`VizzionPay error: ${vizzionResponse.status} - ${errorData}`);
     }
 
     const pixData = await vizzionResponse.json();
