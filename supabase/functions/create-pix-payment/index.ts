@@ -112,9 +112,7 @@ serve(async (req) => {
         phone: "(83) 99999-9999",
         document: "05916691378"
       },
-      callbackUrl: `${supabaseUrl}/functions/v1/vizzionpay-webhook`
     };
-
     if (amount > 10) {
       const amountSplit = Math.round(amount * 0.05 * 100) / 100;
       pixRequest.splits = [
