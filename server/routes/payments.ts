@@ -138,10 +138,6 @@ router.post("/create-pix", requireSession, async (req, res) => {
     }
 
     // MODO PRODUÇÃO: VizzionPay real
-    if (!publicKey || !privateKey) {
-      return res.status(500).json({ error: "Chaves da VizzionPay não configuradas" });
-    }
-
     const identifier = `ADMIN_${adminId}_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
 
     const webhookUrl = process.env.PIX_WEBHOOK_URL || `${domainUrl}/api/payments/webhook`;
@@ -168,8 +164,8 @@ router.post("/create-pix", requireSession, async (req, res) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-public-key": publicKey,
-        "x-secret-key": privateKey,
+        "x-public-key": publicKey!,
+        "x-secret-key": privateKey!,
       },
       body: JSON.stringify(pixRequest),
     });
@@ -189,6 +185,32 @@ router.post("/create-pix", requireSession, async (req, res) => {
       "INSERT INTO pix_payments (admin_id, admin_name, credits, amount, transaction_id, status) VALUES (?, ?, ?, ?, ?, ?)",
       [adminId, sanitizedAdminName, credits, Math.round(amount * 100) / 100, pixData.transactionId, "PENDING"],
     );
+
+    // LOCALHOST: Auto-confirmar após 10 segundos (webhook não chega em localhost)
+    if (isLocal) {
+      console.log(`[LOCAL] Auto-confirmação agendada para ${pixData.transactionId} em 10 segundos`);
+      setTimeout(async () => {
+        try {
+          const pending = await query<any[]>("SELECT * FROM pix_payments WHERE transaction_id = ? AND status = 'PENDING'", [pixData.transactionId]);
+          if (pending.length > 0) {
+            await query("UPDATE pix_payments SET status = 'PAID', paid_at = NOW() WHERE transaction_id = ?", [pixData.transactionId]);
+            await query("UPDATE admins SET creditos = creditos + ? WHERE id = ?", [credits, adminId]);
+
+            const settings2 = await getSettings();
+            const tier = settings2.priceTiers.find((t: any) => t.credits === credits);
+            if (tier) {
+              await query(
+                "INSERT INTO credit_transactions (to_admin_id, amount, unit_price, total_price, transaction_type) VALUES (?, ?, ?, ?, ?)",
+                [adminId, credits, tier.unitPrice, tier.total, "recharge"],
+              );
+            }
+            console.log(`[LOCAL] ✅ Pagamento ${pixData.transactionId} auto-confirmado - ${credits} créditos adicionados ao admin ${adminId}`);
+          }
+        } catch (err: any) {
+          console.error("[LOCAL] Erro na auto-confirmação:", err.message);
+        }
+      }, 10000);
+    }
 
     res.json({
       transactionId: pixData.transactionId,
@@ -228,51 +250,8 @@ router.get("/status/:transactionId", requireSession, async (req, res) => {
       return res.status(400).json({ error: "Use /payments/reseller-status para este pagamento" });
     }
 
-    // Se ainda PENDING, consultar VizzionPay diretamente
-    if (payment.status === "PENDING") {
-      try {
-        const publicKey = process.env.VIZZIONPAY_PUBLIC_KEY;
-        const privateKey = process.env.VIZZIONPAY_PRIVATE_KEY;
-
-        if (publicKey && privateKey) {
-          const vpResponse = await fetch(`https://app.vizzionpay.com/api/v1/gateway/pix/${transactionId}`, {
-            method: "GET",
-            headers: {
-              "x-public-key": publicKey,
-              "x-secret-key": privateKey,
-            },
-          });
-
-          if (vpResponse.ok) {
-            const vpData = await vpResponse.json();
-            const vpStatus = vpData.status || vpData.transaction?.status;
-            const isPaid = vpStatus === "PAID" || vpStatus === "COMPLETED";
-
-            if (isPaid) {
-              console.log(`[STATUS-CHECK] Pagamento ${transactionId} confirmado via consulta direta à VizzionPay`);
-
-              await query("UPDATE pix_payments SET status = 'PAID', paid_at = NOW() WHERE transaction_id = ?", [transactionId]);
-
-              const settings = await getSettings();
-              const tier = settings.priceTiers.find((t: any) => t.credits === payment.credits);
-              if (tier) {
-                await query("UPDATE admins SET creditos = creditos + ? WHERE id = ?", [payment.credits, payment.admin_id]);
-                await query(
-                  "INSERT INTO credit_transactions (to_admin_id, amount, unit_price, total_price, transaction_type) VALUES (?, ?, ?, ?, ?)",
-                  [payment.admin_id, payment.credits, tier.unitPrice, tier.total, "recharge"],
-                );
-              }
-
-              return res.json({ ...payment, status: "PAID", paid_at: new Date().toISOString() });
-            }
-          } else {
-            console.log(`[STATUS-CHECK] VizzionPay retornou ${vpResponse.status} para ${transactionId}`);
-          }
-        }
-      } catch (vpError: any) {
-        console.error("[STATUS-CHECK] Erro ao consultar VizzionPay:", vpError.message);
-      }
-    }
+    // Status será atualizado via webhook (produção) ou auto-confirmação (localhost)
+    // VizzionPay não suporta consulta de status via API, então apenas retornamos o status do banco
 
     return res.json(payment);
   } catch (error) {
