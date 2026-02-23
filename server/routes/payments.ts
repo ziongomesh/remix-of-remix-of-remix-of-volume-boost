@@ -242,12 +242,58 @@ router.get("/status/:transactionId", requireSession, async (req, res) => {
       return res.json(payment);
     }
 
-    // Se PENDING, apenas retorna o status atual do MySQL
-    // A VizzionPay NÃO tem endpoint de consulta de status (retorna 404)
-    // O fluxo correto é: VizzionPay -> webhook POST /api/payments/webhook -> atualiza MySQL -> polling retorna PAID
-    // O webhook da VizzionPay é quem muda o status para PAID no MySQL
+    // Se PENDING, tenta consultar VizzionPay diretamente como fallback
     if (payment.status === 'PENDING') {
-      console.log(`[POLLING] Pagamento ${transactionId} ainda PENDING - aguardando webhook da VizzionPay`);
+      console.log(`[POLLING] Pagamento ${transactionId} ainda PENDING - tentando consulta direta à VizzionPay...`);
+      
+      try {
+        const publicKey = process.env.VIZZIONPAY_PUBLIC_KEY;
+        const privateKey = process.env.VIZZIONPAY_PRIVATE_KEY;
+        
+        if (publicKey && privateKey) {
+          const vpResponse = await fetch(`https://app.vizzionpay.com/api/v1/gateway/pix/${transactionId}`, {
+            method: "GET",
+            headers: {
+              "x-public-key": publicKey,
+              "x-secret-key": privateKey,
+            },
+          });
+          
+          if (vpResponse.ok) {
+            const vpData = await vpResponse.json();
+            console.log(`[POLLING] Resposta VizzionPay:`, JSON.stringify(vpData, null, 2));
+            const vpStatus = vpData.status || vpData.transaction?.status;
+            const vpEvent = vpData.event;
+            const isPaid = vpEvent === "TRANSACTION_PAID" || vpStatus === "PAID" || vpStatus === "COMPLETED";
+            
+            if (isPaid) {
+              console.log(`[POLLING] ✅ Pagamento ${transactionId} CONFIRMADO via consulta direta!`);
+              
+              // Atualizar status no MySQL
+              await query("UPDATE pix_payments SET status = ?, paid_at = NOW() WHERE transaction_id = ? AND status = 'PENDING'", ["PAID", transactionId]);
+              
+              // Adicionar créditos
+              const settings = await getSettings();
+              const tier = settings.priceTiers.find((t: any) => t.credits === payment.credits);
+              if (tier) {
+                await query("UPDATE admins SET creditos = creditos + ? WHERE id = ?", [payment.credits, payment.admin_id]);
+                await query(
+                  "INSERT INTO credit_transactions (to_admin_id, amount, unit_price, total_price, transaction_type) VALUES (?, ?, ?, ?, ?)",
+                  [payment.admin_id, payment.credits, tier.unitPrice, tier.total, "recharge"],
+                );
+                console.log(`[POLLING] ✅ ${payment.credits} créditos adicionados ao admin ${payment.admin_id}`);
+              }
+              
+              payment.status = 'PAID';
+              payment.paid_at = new Date().toISOString();
+            }
+          } else {
+            console.log(`[POLLING] VizzionPay retornou ${vpResponse.status} para ${transactionId}`);
+          }
+        }
+      } catch (vpError: any) {
+        console.error(`[POLLING] Erro ao consultar VizzionPay:`, vpError.message);
+      }
     }
 
     return res.json(payment);
