@@ -238,20 +238,12 @@ export default function RgEditView({ registro, onClose, onSaved }: RgEditViewPro
   };
 
   const handleRegenerate = async () => {
-    if (changedMatrices.size === 0) {
-      toast.info('Nenhuma alteração detectada');
-      return;
-    }
     await regenerateAll();
-    toast.success(`Preview regenerado: ${[...changedMatrices].join(', ')}`);
+    toast.success('Preview regenerado: frente, verso');
   };
 
   const handleSave = async () => {
     if (!admin) return;
-    if (changedMatrices.size === 0) {
-      toast.info('Nenhuma alteração para salvar');
-      return;
-    }
 
     setSaving(true);
     try {
@@ -535,7 +527,7 @@ export default function RgEditView({ registro, onClose, onSaved }: RgEditViewPro
           <Button
             variant="outline"
             onClick={handleRegenerate}
-            disabled={regenerating || changedMatrices.size === 0}
+            disabled={regenerating}
           >
             {regenerating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
             Regenerar Preview

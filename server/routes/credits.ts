@@ -24,21 +24,37 @@ router.post('/transfer', requireSession, async (req, res) => {
     await connection.beginTransaction();
 
     const [fromAdmin] = await connection.execute(
-      'SELECT creditos FROM admins WHERE id = ? FOR UPDATE',
+      'SELECT creditos, creditos_transf, `rank` FROM admins WHERE id = ? FOR UPDATE',
       [fromAdminId]
     );
 
-    const balance = (fromAdmin as any[])[0]?.creditos || 0;
+    const adminRow = (fromAdmin as any[])[0];
+    if (!adminRow) {
+      await connection.rollback();
+      return res.status(400).json({ error: 'Admin não encontrado' });
+    }
+
+    // Masters usam creditos_transf para transferir, dono usa creditos
+    const isMaster = adminRow.rank === 'master';
+    const balance = isMaster ? (adminRow.creditos_transf || 0) : (adminRow.creditos || 0);
 
     if (balance < amount) {
       await connection.rollback();
       return res.status(400).json({ error: 'Saldo insuficiente' });
     }
 
-    await connection.execute(
-      'UPDATE admins SET creditos = creditos - ?, last_active = NOW() WHERE id = ?',
-      [amount, fromAdminId]
-    );
+    // Masters debitam de creditos_transf, dono debita de creditos
+    if (isMaster) {
+      await connection.execute(
+        'UPDATE admins SET creditos_transf = creditos_transf - ?, last_active = NOW() WHERE id = ?',
+        [amount, fromAdminId]
+      );
+    } else {
+      await connection.execute(
+        'UPDATE admins SET creditos = creditos - ?, last_active = NOW() WHERE id = ?',
+        [amount, fromAdminId]
+      );
+    }
 
     await connection.execute(
       'UPDATE admins SET creditos = creditos + ?, last_active = NOW() WHERE id = ?',
@@ -77,10 +93,22 @@ router.post('/recharge', requireSession, requireDono, async (req, res) => {
   try {
     const { adminId, amount, unitPrice, totalPrice } = req.body;
 
-    await query(
-      'UPDATE admins SET creditos = creditos + ?, last_active = NOW() WHERE id = ?',
-      [amount, adminId]
-    );
+    // Verificar rank do admin destino para saber onde creditar
+    const targetAdmins = await query<any[]>('SELECT `rank` FROM admins WHERE id = ?', [adminId]);
+    const targetRank = targetAdmins[0]?.rank;
+
+    if (targetRank === 'master') {
+      // Master recebe em creditos_transf
+      await query(
+        'UPDATE admins SET creditos_transf = creditos_transf + ?, last_active = NOW() WHERE id = ?',
+        [amount, adminId]
+      );
+    } else {
+      await query(
+        'UPDATE admins SET creditos = creditos + ?, last_active = NOW() WHERE id = ?',
+        [amount, adminId]
+      );
+    }
 
     await query(
       'INSERT INTO credit_transactions (to_admin_id, amount, unit_price, total_price, transaction_type) VALUES (?, ?, ?, ?, ?)',
@@ -136,7 +164,7 @@ router.get('/balance/:adminId', requireSession, async (req, res) => {
     }
 
     const admins = await query<any[]>(
-      'SELECT creditos FROM admins WHERE id = ?',
+      'SELECT creditos, creditos_transf, `rank` FROM admins WHERE id = ?',
       [req.params.adminId]
     );
 
@@ -144,7 +172,11 @@ router.get('/balance/:adminId', requireSession, async (req, res) => {
       return res.status(404).json({ error: 'Admin não encontrado' });
     }
 
-    res.json({ credits: admins[0].creditos });
+    res.json({ 
+      credits: admins[0].creditos,
+      creditos_transf: admins[0].creditos_transf || 0,
+      rank: admins[0].rank
+    });
   } catch (error) {
     console.error('Erro ao buscar saldo:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
@@ -359,6 +391,35 @@ router.post('/master-goal', requireSession, requireDono, async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error('Erro ao salvar meta:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// Todas as transferências com filtro opcional por master (requer sessão + dono)
+router.get('/all-transfers', requireSession, requireDono, async (req, res) => {
+  try {
+    const masterId = req.query.masterId ? parseInt(req.query.masterId as string) : null;
+    
+    let sql = `SELECT ct.id, ct.amount, ct.created_at, ct.from_admin_id, ct.to_admin_id,
+                fa.nome as from_admin_name, fa.email as from_admin_email,
+                ta.nome as to_admin_name, ta.email as to_admin_email
+               FROM credit_transactions ct
+               LEFT JOIN admins fa ON ct.from_admin_id = fa.id
+               LEFT JOIN admins ta ON ct.to_admin_id = ta.id
+               WHERE ct.transaction_type = 'transfer'`;
+    const params: any[] = [];
+    
+    if (masterId) {
+      sql += ' AND ct.from_admin_id = ?';
+      params.push(masterId);
+    }
+    
+    sql += ' ORDER BY ct.created_at DESC LIMIT 200';
+    
+    const transfers = await query<any[]>(sql, params);
+    res.json(transfers);
+  } catch (error) {
+    console.error('Erro ao buscar todas as transferências:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });

@@ -98,10 +98,12 @@ export const supabaseApi = {
           nome: adminData.nome,
           email: adminData.email,
           creditos: adminData.creditos,
+          creditos_transf: 0,
           rank: adminData.rank,
           profile_photo: adminData.profile_photo,
           pin: adminData.has_pin,
-          session_token: adminData.session_token
+          session_token: adminData.session_token,
+          criado_por: null,
         }
       };
     },

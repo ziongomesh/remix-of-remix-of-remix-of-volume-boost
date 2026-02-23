@@ -100,10 +100,12 @@ export const mysqlApi = {
           nome: data.admin.nome,
           email: data.admin.email,
           creditos: data.admin.creditos,
+          creditos_transf: data.admin.creditos_transf || 0,
           rank: data.admin.rank,
           profile_photo: data.admin.profile_photo,
           pin: data.admin.pin ? true : false,
-          session_token: data.admin.session_token
+          session_token: data.admin.session_token,
+          criado_por: data.admin.criado_por || null,
         }
       };
     },
@@ -259,6 +261,11 @@ export const mysqlApi = {
 
     getMasterTransfers: async (masterId: number) => {
       return fetchAPI(`/credits/master-transfers/${masterId}`);
+    },
+
+    getAllTransfers: async (masterId?: number) => {
+      const params = masterId ? `?masterId=${masterId}` : '';
+      return fetchAPI(`/credits/all-transfers${params}`);
     },
 
     setMasterGoal: async (masterId: number, year: number, month: number, targetRevenue: number) => {

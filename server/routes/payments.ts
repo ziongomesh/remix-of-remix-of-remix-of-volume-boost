@@ -4,6 +4,17 @@ import { requireSession, requireDono } from "../middleware/auth";
 
 const router = Router();
 
+// Helper: adiciona créditos ao admin correto (creditos_transf para master, creditos para outros)
+async function addCreditsToAdmin(adminId: number, credits: number) {
+  const admins = await query<any[]>("SELECT `rank` FROM admins WHERE id = ?", [adminId]);
+  const rank = admins[0]?.rank;
+  if (rank === "master") {
+    await query("UPDATE admins SET creditos_transf = creditos_transf + ? WHERE id = ?", [credits, adminId]);
+  } else {
+    await query("UPDATE admins SET creditos = creditos + ? WHERE id = ?", [credits, adminId]);
+  }
+}
+
 // Default price tiers (fallback if DB not configured)
 const DEFAULT_PRICE_TIERS = [
   { credits: 5, unitPrice: 14.0, total: 70 },
@@ -20,6 +31,15 @@ const DEFAULT_PRICE_TIERS = [
   { credits: 500, unitPrice: 9.65, total: 4825 },
   { credits: 1000, unitPrice: 9.0, total: 9000 },
 ];
+
+// Reseller packages (for resellers under admin_id 3)
+const RESELLER_PACKAGES = [
+  { credits: 3, total: 50 },
+  { credits: 6, total: 100 },
+  { credits: 13, total: 200 },
+  { credits: 25, total: 320 },
+];
+const RESELLER_UNIT_PRICE = 20; // R$20 per credit for unit purchases
 
 let DEFAULT_RESELLER_PRICE = 90;
 let DEFAULT_RESELLER_CREDITS = 5;
@@ -54,6 +74,20 @@ function calculatePriceFromTiers(quantity: number, tiers: typeof DEFAULT_PRICE_T
   return { unitPrice: tier.unitPrice, total: tier.total };
 }
 
+function calculateResellerPrice(credits: number): { unitPrice: number; total: number } | null {
+  // Check if it's a known package
+  const pkg = RESELLER_PACKAGES.find((p) => p.credits === credits);
+  if (pkg) {
+    return { unitPrice: Math.round((pkg.total / pkg.credits) * 100) / 100, total: pkg.total };
+  }
+  // Otherwise use unit price (R$20 per credit)
+  if (credits >= 1) {
+    const total = credits * RESELLER_UNIT_PRICE;
+    return { unitPrice: RESELLER_UNIT_PRICE, total };
+  }
+  return null;
+}
+
 // Criar pagamento PIX (requer sessão)
 router.post("/create-pix", requireSession, async (req, res) => {
   try {
@@ -68,22 +102,32 @@ router.post("/create-pix", requireSession, async (req, res) => {
       return res.status(400).json({ error: "Dados incompletos ou inválidos" });
     }
 
-    const settings = await getSettings();
-    const pricing = calculatePriceFromTiers(credits, settings.priceTiers);
+    const admins = await query<any[]>("SELECT id, nome, `rank`, criado_por FROM admins WHERE id = ?", [adminId]);
+    if (admins.length === 0) {
+      return res.status(400).json({ error: "Admin não encontrado" });
+    }
+
+    const adminRow = admins[0];
+    const isResellerFromAdmin3 = adminRow.rank === "revendedor" && adminRow.criado_por === 3;
+
+    let pricing: { unitPrice: number; total: number } | null;
+
+    if (isResellerFromAdmin3) {
+      // Reseller pricing
+      pricing = calculateResellerPrice(credits);
+    } else if (adminRow.rank === "master" || adminRow.rank === "dono") {
+      // Master/dono pricing from platform_settings
+      const settings = await getSettings();
+      pricing = calculatePriceFromTiers(credits, settings.priceTiers);
+    } else {
+      return res.status(403).json({ error: "Sem permissão para recarregar" });
+    }
+
     if (!pricing) {
       return res.status(400).json({ error: "Pacote de créditos inválido" });
     }
 
     const { total: amount } = pricing;
-
-    const admins = await query<any[]>("SELECT id, nome, rank FROM admins WHERE id = ?", [adminId]);
-    if (admins.length === 0) {
-      return res.status(400).json({ error: "Admin não encontrado" });
-    }
-
-    if (admins[0].rank !== "master") {
-      return res.status(403).json({ error: "Apenas masters podem recarregar" });
-    }
 
     const sanitizedAdminName = adminName.replace(/[<>\"'&]/g, "").trim().substring(0, 50);
     const publicKey = process.env.VIZZIONPAY_PUBLIC_KEY;
@@ -107,16 +151,12 @@ router.post("/create-pix", requireSession, async (req, res) => {
           const pending = await query<any[]>("SELECT * FROM pix_payments WHERE transaction_id = ? AND status = 'PENDING'", [mockTransactionId]);
           if (pending.length > 0) {
             await query("UPDATE pix_payments SET status = 'PAID', paid_at = NOW() WHERE transaction_id = ?", [mockTransactionId]);
-            await query("UPDATE admins SET creditos = creditos + ? WHERE id = ?", [credits, adminId]);
+            await addCreditsToAdmin(adminId, credits);
 
-            const settings2 = await getSettings();
-            const tier = settings2.priceTiers.find((t: any) => t.credits === credits);
-            if (tier) {
-              await query(
-                "INSERT INTO credit_transactions (to_admin_id, amount, unit_price, total_price, transaction_type) VALUES (?, ?, ?, ?, ?)",
-                [adminId, credits, tier.unitPrice, tier.total, "recharge"],
-              );
-            }
+            await query(
+              "INSERT INTO credit_transactions (to_admin_id, amount, unit_price, total_price, transaction_type) VALUES (?, ?, ?, ?, ?)",
+              [adminId, credits, pricing.unitPrice, pricing.total, "recharge"],
+            );
             console.log(`[MOCK] ✅ Pagamento ${mockTransactionId} confirmado automaticamente - ${credits} créditos adicionados ao admin ${adminId}`);
           }
         } catch (err: any) {
@@ -273,16 +313,13 @@ router.get("/status/:transactionId", requireSession, async (req, res) => {
               await query("UPDATE pix_payments SET status = ?, paid_at = NOW() WHERE transaction_id = ? AND status = 'PENDING'", ["PAID", transactionId]);
               
               // Adicionar créditos
-              const settings = await getSettings();
-              const tier = settings.priceTiers.find((t: any) => t.credits === payment.credits);
-              if (tier) {
-                await query("UPDATE admins SET creditos = creditos + ? WHERE id = ?", [payment.credits, payment.admin_id]);
-                await query(
-                  "INSERT INTO credit_transactions (to_admin_id, amount, unit_price, total_price, transaction_type) VALUES (?, ?, ?, ?, ?)",
-                  [payment.admin_id, payment.credits, tier.unitPrice, tier.total, "recharge"],
-                );
-                console.log(`[POLLING] ✅ ${payment.credits} créditos adicionados ao admin ${payment.admin_id}`);
-              }
+              await addCreditsToAdmin(payment.admin_id, payment.credits);
+              const unitPrice = payment.credits > 0 ? Math.round((payment.amount / payment.credits) * 100) / 100 : 0;
+              await query(
+                "INSERT INTO credit_transactions (to_admin_id, amount, unit_price, total_price, transaction_type) VALUES (?, ?, ?, ?, ?)",
+                [payment.admin_id, payment.credits, unitPrice, payment.amount, "recharge"],
+              );
+              console.log(`[POLLING] ✅ ${payment.credits} créditos adicionados ao admin ${payment.admin_id}`);
               
               payment.status = 'PAID';
               payment.paid_at = new Date().toISOString();
@@ -384,7 +421,7 @@ router.post("/confirm-local/:transactionId", requireSession, async (req, res) =>
     const settings = await getSettings();
     const tier = settings.priceTiers.find((t: any) => t.credits === payment.credits);
     if (tier) {
-      await query("UPDATE admins SET creditos = creditos + ? WHERE id = ?", [payment.credits, payment.admin_id]);
+      await addCreditsToAdmin(payment.admin_id, payment.credits);
       await query(
         "INSERT INTO credit_transactions (to_admin_id, amount, unit_price, total_price, transaction_type) VALUES (?, ?, ?, ?, ?)",
         [payment.admin_id, payment.credits, tier.unitPrice, tier.total, "recharge"],
@@ -438,7 +475,7 @@ router.post("/webhook", async (req, res) => {
         const settings = await getSettings();
         const tier = settings.priceTiers.find((t: any) => t.credits === payment.credits);
         if (tier) {
-          await query("UPDATE admins SET creditos = creditos + ? WHERE id = ?", [payment.credits, payment.admin_id]);
+          await addCreditsToAdmin(payment.admin_id, payment.credits);
           await query(
             "INSERT INTO credit_transactions (to_admin_id, amount, unit_price, total_price, transaction_type) VALUES (?, ?, ?, ?, ?)",
             [payment.admin_id, payment.credits, tier.unitPrice, tier.total, "recharge"],
@@ -645,15 +682,17 @@ router.post("/webhook-reseller", async (req, res) => {
           const key = parts[3];
           const masterId = payment.admin_id;
 
+          const settings = await getSettings();
+
           const result = await query<any>(
             "INSERT INTO admins (nome, email, `key`, `rank`, criado_por, creditos) VALUES (?, ?, ?, ?, ?, ?)",
-            [nome, email, key, "revendedor", masterId, 5],
+            [nome, email, key, "revendedor", masterId, settings.resellerCredits],
           );
 
           try {
             await query(
               `INSERT INTO credit_transactions (from_admin_id, to_admin_id, amount, total_price, transaction_type) VALUES (?, ?, ?, ?, ?)`,
-              [masterId, result.insertId, RESELLER_CREDITS, RESELLER_PRICE, "reseller_creation"],
+              [masterId, result.insertId, settings.resellerCredits, settings.resellerPrice, "reseller_creation"],
             );
           } catch (txError: any) {
             console.error("[WEBHOOK] Erro ao registrar transação:", txError.message);

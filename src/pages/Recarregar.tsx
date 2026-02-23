@@ -816,10 +816,87 @@ export default function Recarregar() {
 }
 
 // ======== Reseller Recharge View ========
+
+const RESELLER_UNIT_PRICE = 20; // R$20 por crédito avulso
+
+const RESELLER_PACKAGES = [
+  { name: 'Plano Simples', credits: 3, baseCredits: 2, bonus: 0, total: 50, badge: 'INICIANTE', badgeColor: 'bg-orange-500' },
+  { name: 'Pacote Básico', credits: 6, baseCredits: 5, bonus: 1, total: 100, badge: 'POPULAR', badgeColor: 'bg-purple-500' },
+  { name: 'Pacote Premium', credits: 13, baseCredits: 10, bonus: 3, total: 200, badge: 'MELHOR CUSTO', badgeColor: 'bg-green-500' },
+  { name: 'Pacote Mega', credits: 25, baseCredits: 20, bonus: 5, total: 320, badge: 'MAIS VANTAGEM', badgeColor: 'bg-emerald-500' },
+];
+
 function ResellerRechargeView({ adminId, sessionToken, credits }: { adminId: number; sessionToken: string; credits: number }) {
+  const { admin, updateAdmin } = useAuth();
   const [creatorName, setCreatorName] = useState<string | null>(null);
   const [creatorPhone, setCreatorPhone] = useState<string | null>(null);
+  const [creatorId, setCreatorId] = useState<number | null>(null);
   const [loadingCreator, setLoadingCreator] = useState(true);
+
+  // PIX states
+  const [selectedPkg, setSelectedPkg] = useState<typeof RESELLER_PACKAGES[0] | null>(null);
+  const [customCredits, setCustomCredits] = useState(1);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [showPixModal, setShowPixModal] = useState(false);
+  const [pixData, setPixData] = useState<PixPayment | null>(null);
+  const [paymentConfirmed, setPaymentConfirmed] = useState(false);
+  const [paymentExpired, setPaymentExpired] = useState(false);
+  const [checkingPayment, setCheckingPayment] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState(600);
+  const [paymentHistory, setPaymentHistory] = useState<PaymentHistory[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(true);
+  const [activeTab, setActiveTab] = useState<'packages' | 'unit'>('packages');
+
+  const hasPlayedSound = useRef(false);
+  const checkIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const refAnimationInstance = useRef<any>(null);
+
+  const handleInit = useCallback(({ confetti }: { confetti: any }) => {
+    refAnimationInstance.current = confetti;
+  }, []);
+
+  const fire = useCallback(() => {
+    if (!refAnimationInstance.current) return;
+    const makeShot = (particleRatio: number, opts: any) => {
+      refAnimationInstance.current({ ...opts, origin: { y: 0.7 }, particleCount: Math.floor(200 * particleRatio) });
+    };
+    makeShot(0.25, { spread: 26, startVelocity: 55 });
+    makeShot(0.2, { spread: 60 });
+    makeShot(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+    makeShot(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+    makeShot(0.1, { spread: 120, startVelocity: 45 });
+  }, []);
+
+  const playNotificationSound = useCallback(() => {
+    if (hasPlayedSound.current) return;
+    hasPlayedSound.current = true;
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      oscillator.frequency.value = 800;
+      oscillator.type = 'sine';
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.5);
+    } catch (error) {
+      console.log('Erro ao tocar som:', error);
+    }
+  }, []);
+
+  const fetchPaymentHistory = useCallback(async () => {
+    try {
+      const data = await api.payments.getHistory(adminId);
+      setPaymentHistory(data || []);
+    } catch (error) {
+      console.error('Erro ao buscar histórico:', error);
+    } finally {
+      setLoadingHistory(false);
+    }
+  }, [adminId]);
 
   useEffect(() => {
     const fetchCreator = async () => {
@@ -833,15 +910,7 @@ function ResellerRechargeView({ adminId, sessionToken, credits }: { adminId: num
           if (data?.creator_name) {
             setCreatorName(data.creator_name);
             setCreatorPhone(data.creator_telefone || null);
-          }
-        } else {
-          const { data, error } = await supabase.rpc('get_creator_name', {
-            p_admin_id: adminId,
-            p_session_token: sessionToken,
-          });
-          if (!error && data && data.length > 0) {
-            setCreatorName(data[0].creator_name);
-            setCreatorPhone(data[0].creator_telefone || null);
+            setCreatorId(data.creator_id || null);
           }
         }
       } catch (err) {
@@ -851,94 +920,477 @@ function ResellerRechargeView({ adminId, sessionToken, credits }: { adminId: num
       }
     };
     fetchCreator();
-  }, [adminId, sessionToken]);
+    fetchPaymentHistory();
+  }, [adminId, sessionToken, fetchPaymentHistory]);
 
+  // Timer
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (showPixModal && !paymentConfirmed && !paymentExpired && timeRemaining > 0) {
+      timer = setInterval(() => {
+        setTimeRemaining(prev => {
+          if (prev <= 1) {
+            setPaymentExpired(true);
+            setCheckingPayment(false);
+            if (checkIntervalRef.current) clearInterval(checkIntervalRef.current);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => { if (timer) clearInterval(timer); };
+  }, [showPixModal, paymentConfirmed, paymentExpired, timeRemaining]);
+
+  useEffect(() => {
+    return () => { if (checkIntervalRef.current) clearInterval(checkIntervalRef.current); };
+  }, []);
+
+  const canRechargeDirectly = creatorId === 3;
+
+  const startPaymentVerification = (transactionId: string) => {
+    if (checkIntervalRef.current) clearInterval(checkIntervalRef.current);
+
+    const checkPayment = async () => {
+      try {
+        const payment = await api.payments.checkStatus(transactionId);
+        if (payment?.status === 'PAID' || payment?.status === 'COMPLETED') {
+          if (checkIntervalRef.current) {
+            clearInterval(checkIntervalRef.current);
+            checkIntervalRef.current = null;
+          }
+          setPaymentConfirmed(true);
+          setCheckingPayment(false);
+          playNotificationSound();
+          fire();
+          const balanceData = await api.credits.getBalance(adminId);
+          if (balanceData && admin) {
+            updateAdmin({ ...admin, creditos: balanceData.credits });
+          }
+          fetchPaymentHistory();
+          toast.success('Pagamento confirmado!', { description: 'Créditos adicionados à sua conta' });
+          setTimeout(() => {
+            setShowPixModal(false);
+            setPixData(null);
+          }, 3000);
+        }
+      } catch (error) {
+        console.log('Erro ao verificar pagamento:', error);
+      }
+    };
+    checkPayment();
+    checkIntervalRef.current = setInterval(checkPayment, 3000);
+  };
+
+  const handleRechargePackage = async (pkg: typeof RESELLER_PACKAGES[0]) => {
+    if (!admin?.session_token) return;
+    setSelectedPkg(pkg);
+    setIsProcessing(true);
+    hasPlayedSound.current = false;
+    try {
+      const pixPayment = await api.payments.createPix(pkg.credits, adminId, admin.nome, admin.session_token);
+      if (pixPayment.error) throw new Error(pixPayment.details || pixPayment.error);
+      setPixData(pixPayment);
+      setShowPixModal(true);
+      setPaymentConfirmed(false);
+      setPaymentExpired(false);
+      setTimeRemaining(600);
+      setCheckingPayment(true);
+      startPaymentVerification(pixPayment.transactionId);
+      toast.success('PIX Gerado!', { description: `PIX de R$ ${pkg.total.toFixed(2)} criado` });
+    } catch (error: any) {
+      toast.error('Erro ao gerar PIX', { description: error.message });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleRechargeUnit = async () => {
+    if (!admin?.session_token || customCredits < 1) return;
+    setIsProcessing(true);
+    hasPlayedSound.current = false;
+    const total = customCredits * RESELLER_UNIT_PRICE;
+    try {
+      const pixPayment = await api.payments.createPix(customCredits, adminId, admin.nome, admin.session_token);
+      if (pixPayment.error) throw new Error(pixPayment.details || pixPayment.error);
+      setPixData(pixPayment);
+      setShowPixModal(true);
+      setPaymentConfirmed(false);
+      setPaymentExpired(false);
+      setTimeRemaining(600);
+      setCheckingPayment(true);
+      startPaymentVerification(pixPayment.transactionId);
+      toast.success('PIX Gerado!', { description: `PIX de R$ ${total.toFixed(2)} criado` });
+    } catch (error: any) {
+      toast.error('Erro ao gerar PIX', { description: error.message });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const copyPixCode = () => {
+    if (pixData?.qrCode) {
+      navigator.clipboard.writeText(pixData.qrCode);
+      toast.success('Código copiado!');
+    }
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'PAID': return <Badge className="bg-green-500"><CheckCircle className="w-3 h-3 mr-1" />Pago</Badge>;
+      case 'PENDING': return <Badge variant="outline"><Clock className="w-3 h-3 mr-1" />Pendente</Badge>;
+      case 'EXPIRED': return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" />Expirado</Badge>;
+      default: return <Badge variant="outline">{status}</Badge>;
+    }
+  };
+
+  // Se não é do admin 3, mostrar view padrão de contato com master
+  if (loadingCreator) {
+    return (
+      <DashboardLayout>
+        <div className="min-h-[60vh] flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (!canRechargeDirectly) {
+    return (
+      <DashboardLayout>
+        <div className="space-y-6 animate-fade-in max-w-2xl mx-auto">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">Recarregar Créditos</h1>
+            <p className="text-sm text-muted-foreground mt-1">Solicite créditos ao seu master</p>
+          </div>
+
+          <Card>
+            <CardContent className="p-6 flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Seu saldo atual</p>
+                <p className="text-3xl font-bold text-primary">{credits}</p>
+                <p className="text-xs text-muted-foreground">créditos disponíveis</p>
+              </div>
+              <div className="h-14 w-14 rounded-xl bg-primary/10 flex items-center justify-center">
+                <CreditCard className="h-7 w-7 text-primary" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-primary/30">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <MessageCircle className="h-5 w-5 text-primary" />
+                Como recarregar?
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="bg-muted/50 rounded-xl p-5 space-y-3">
+                <p className="text-sm text-foreground leading-relaxed">
+                  Para recarregar seus créditos, entre em contato com o <strong>master</strong> que criou o seu acesso e solicite a recarga.
+                </p>
+                {creatorName ? (
+                  <div className="bg-card border border-border rounded-lg p-4 space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <User className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Seu Master</p>
+                        <p className="font-semibold text-foreground">{creatorName}</p>
+                      </div>
+                    </div>
+                    {creatorPhone && (
+                      <div className="flex items-center gap-2 pl-13 text-sm">
+                        <Smartphone className="h-4 w-4 text-primary" />
+                        <a href={`https://wa.me/55${creatorPhone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
+                          {(() => {
+                            const digits = creatorPhone.replace(/\D/g, '');
+                            if (digits.length === 11) return `(${digits.slice(0,2)}) ${digits.slice(2,7)}-${digits.slice(7)}`;
+                            if (digits.length === 10) return `(${digits.slice(0,2)}) ${digits.slice(2,6)}-${digits.slice(6)}`;
+                            return creatorPhone;
+                          })()}
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground italic">Não foi possível identificar o master responsável.</p>
+                )}
+                <div className="border-t border-border pt-3 space-y-2">
+                  <p className="text-xs text-muted-foreground font-medium">Passos para recarregar:</p>
+                  <ol className="text-sm text-muted-foreground space-y-1.5 list-decimal list-inside">
+                    <li>Entre em contato com seu master</li>
+                    <li>Informe a quantidade de créditos desejada</li>
+                    <li>Realize o pagamento conforme combinado</li>
+                    <li>Aguarde a transferência dos créditos</li>
+                  </ol>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // ===== REVENDEDOR DO ADMIN 3: RECARGA VIA PIX =====
   return (
     <DashboardLayout>
-      <div className="space-y-6 animate-fade-in max-w-2xl mx-auto">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Recarregar Créditos</h1>
-          <p className="text-sm text-muted-foreground mt-1">Solicite créditos ao seu master</p>
+      <div className="space-y-6 sm:space-y-8 animate-fade-in max-w-4xl mx-auto">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">Recarregar Créditos</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">Escolha um pacote ou compre créditos avulsos via PIX</p>
+          </div>
+          <div className="text-left sm:text-right">
+            <p className="text-xs sm:text-sm text-muted-foreground">Saldo atual</p>
+            <p className="text-xl sm:text-2xl font-bold text-primary">{credits} créditos</p>
+          </div>
         </div>
 
-        {/* Saldo atual */}
-        <Card>
-          <CardContent className="p-6 flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">Seu saldo atual</p>
-              <p className="text-3xl font-bold text-primary">{credits}</p>
-              <p className="text-xs text-muted-foreground">créditos disponíveis</p>
-            </div>
-            <div className="h-14 w-14 rounded-xl bg-primary/10 flex items-center justify-center">
-              <CreditCard className="h-7 w-7 text-primary" />
-            </div>
-          </CardContent>
-        </Card>
+        {/* Tabs */}
+        <div className="flex gap-2">
+          <Button
+            variant={activeTab === 'packages' ? 'default' : 'outline'}
+            onClick={() => setActiveTab('packages')}
+            className="flex-1"
+          >
+            <Tag className="mr-2 h-4 w-4" />
+            Pacotes Promocionais
+          </Button>
+          <Button
+            variant={activeTab === 'unit' ? 'default' : 'outline'}
+            onClick={() => setActiveTab('unit')}
+            className="flex-1"
+          >
+            <CreditCard className="mr-2 h-4 w-4" />
+            Crédito Avulso
+          </Button>
+        </div>
 
-        {/* Contato com Master */}
-        <Card className="border-primary/30">
+        {activeTab === 'packages' && (
+          <Card>
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <Tag className="h-5 w-5 text-primary" />
+                🎁 Pacotes Promocionais:
+              </CardTitle>
+              <CardDescription className="text-xs sm:text-sm">
+                Compre pacotes com bônus e economize
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0 space-y-4">
+              {RESELLER_PACKAGES.map((pkg) => {
+                const savingsAmount = (pkg.credits * RESELLER_UNIT_PRICE) - pkg.total;
+                return (
+                  <button
+                    key={pkg.name}
+                    onClick={() => handleRechargePackage(pkg)}
+                    disabled={isProcessing}
+                    className="w-full p-4 sm:p-5 rounded-xl border-2 border-border hover:border-primary/60 transition-all text-left relative bg-card hover:bg-muted/30 group"
+                  >
+                    <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
+                      <Badge className={`${pkg.badgeColor} text-white text-[10px] sm:text-xs`}>
+                        {pkg.badge}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-bold text-foreground text-sm sm:text-base">{pkg.name}</p>
+                        <p className="text-lg sm:text-xl font-bold text-foreground mt-1">
+                          R$ {pkg.total.toFixed(2).replace('.', ',')}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {pkg.baseCredits} + {pkg.bonus} grátis
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xl sm:text-2xl font-bold text-primary">{pkg.credits} créditos</p>
+                        {pkg.bonus > 0 && (
+                          <p className="text-xs text-primary/80">+{pkg.bonus} bônus</p>
+                        )}
+                        {savingsAmount > 0 && (
+                          <p className="text-xs text-green-500 font-medium mt-0.5">
+                            Economize R$ {savingsAmount.toFixed(2).replace('.', ',')}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </CardContent>
+          </Card>
+        )}
+
+        {activeTab === 'unit' && (
+          <Card>
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <CreditCard className="h-5 w-5 text-primary" />
+                Crédito Avulso
+              </CardTitle>
+              <CardDescription className="text-xs sm:text-sm">
+                R$ {RESELLER_UNIT_PRICE.toFixed(2).replace('.', ',')} por crédito
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0 space-y-4">
+              <div className="flex items-center gap-4">
+                <Button variant="outline" size="sm" onClick={() => setCustomCredits(Math.max(1, customCredits - 1))}>-</Button>
+                <div className="flex-1 text-center">
+                  <input
+                    type="number"
+                    min={1}
+                    value={customCredits}
+                    onChange={(e) => setCustomCredits(Math.max(1, parseInt(e.target.value) || 1))}
+                    className="w-24 text-center text-2xl font-bold bg-transparent border-b-2 border-primary outline-none text-foreground"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">créditos</p>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => setCustomCredits(customCredits + 1)}>+</Button>
+              </div>
+
+              <div className="p-4 rounded-lg bg-muted/50 text-center">
+                <p className="text-sm text-muted-foreground">Total</p>
+                <p className="text-2xl font-bold text-foreground">
+                  R$ {(customCredits * RESELLER_UNIT_PRICE).toFixed(2).replace('.', ',')}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {customCredits} × R$ {RESELLER_UNIT_PRICE.toFixed(2).replace('.', ',')}
+                </p>
+              </div>
+
+              <Button
+                className="w-full h-12 text-lg"
+                onClick={handleRechargeUnit}
+                disabled={isProcessing || customCredits < 1}
+              >
+                {isProcessing ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <QrCode className="mr-2 h-5 w-5" />}
+                {isProcessing ? 'Gerando PIX...' : 'Pagar com PIX'}
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Payment History */}
+        <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <MessageCircle className="h-5 w-5 text-primary" />
-              Como recarregar?
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <History className="h-5 w-5 text-primary" />
+                Histórico de Recargas
+              </div>
+              <Button variant="ghost" size="sm" onClick={fetchPaymentHistory}>
+                <RefreshCw className="h-4 w-4" />
+              </Button>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="bg-muted/50 rounded-xl p-5 space-y-3">
-              <p className="text-sm text-foreground leading-relaxed">
-                Para recarregar seus créditos, entre em contato com o <strong>master</strong> que criou o seu acesso e solicite a recarga.
-              </p>
-              
-              {loadingCreator ? (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Buscando informações...
-                </div>
-              ) : creatorName ? (
-                <div className="bg-card border border-border rounded-lg p-4 space-y-3">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <User className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Seu Master</p>
-                      <p className="font-semibold text-foreground">{creatorName}</p>
-                    </div>
-                  </div>
-                  {creatorPhone && (
-                    <div className="flex items-center gap-2 pl-13 text-sm">
-                      <Smartphone className="h-4 w-4 text-primary" />
-                      <a href={`https://wa.me/55${creatorPhone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
-                        {(() => {
-                          const digits = creatorPhone.replace(/\D/g, '');
-                          if (digits.length === 11) {
-                            return `(${digits.slice(0,2)}) ${digits.slice(2,7)}-${digits.slice(7)}`;
-                          } else if (digits.length === 10) {
-                            return `(${digits.slice(0,2)}) ${digits.slice(2,6)}-${digits.slice(6)}`;
-                          }
-                          return creatorPhone;
-                        })()}
-                      </a>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground italic">Não foi possível identificar o master responsável.</p>
-              )}
-
-              <div className="border-t border-border pt-3 space-y-2">
-                <p className="text-xs text-muted-foreground font-medium">Passos para recarregar:</p>
-                <ol className="text-sm text-muted-foreground space-y-1.5 list-decimal list-inside">
-                  <li>Entre em contato com seu master</li>
-                  <li>Informe a quantidade de créditos desejada</li>
-                  <li>Realize o pagamento conforme combinado</li>
-                  <li>Aguarde a transferência dos créditos</li>
-                </ol>
+          <CardContent>
+            {loadingHistory ? (
+              <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin" /></div>
+            ) : paymentHistory.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <CreditCard className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>Nenhuma recarga encontrada</p>
               </div>
-            </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Data</TableHead>
+                    <TableHead>Valor</TableHead>
+                    <TableHead>Créditos</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paymentHistory.map((payment) => (
+                    <TableRow key={payment.id}>
+                      <TableCell className="text-muted-foreground">
+                        {new Date(payment.created_at).toLocaleString('pt-BR')}
+                      </TableCell>
+                      <TableCell>R$ {Number(payment.amount).toFixed(2)}</TableCell>
+                      <TableCell className="font-medium">{payment.credits}</TableCell>
+                      <TableCell>{getStatusBadge(payment.status)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
       </div>
+
+      {/* PIX Modal */}
+      <Dialog open={showPixModal} onOpenChange={(open) => {
+        if (!open && checkIntervalRef.current) {
+          clearInterval(checkIntervalRef.current);
+          checkIntervalRef.current = null;
+        }
+        setCheckingPayment(false);
+        setShowPixModal(open);
+      }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Pagamento PIX</DialogTitle>
+          </DialogHeader>
+          
+          {!paymentConfirmed && !paymentExpired && (
+            <div className="space-y-4">
+              <div className="text-center">
+                <div className={`text-3xl font-bold ${timeRemaining < 60 ? 'text-red-600' : 'text-orange-600'}`}>
+                  <Clock className="inline-block mr-2 h-6 w-6" />
+                  {formatTime(timeRemaining)}
+                </div>
+                <p className="text-sm text-muted-foreground mt-1">Tempo restante para pagamento</p>
+              </div>
+              {pixData?.qrCodeBase64 && (
+                <div className="text-center">
+                  <img src={`data:image/png;base64,${pixData.qrCodeBase64}`} alt="QR Code PIX" className="mx-auto max-w-[200px] border rounded-lg" />
+                  <p className="text-sm text-muted-foreground mt-2">Escaneie o QR Code com o app do seu banco</p>
+                </div>
+              )}
+              <div className="space-y-2">
+                <p className="text-sm font-medium">Ou copie o código PIX:</p>
+                <div className="flex gap-2">
+                  <code className="flex-1 p-2 text-xs bg-muted rounded break-all max-h-20 overflow-y-auto">{pixData?.qrCode}</code>
+                  <Button variant="outline" size="sm" onClick={copyPixCode}>Copiar</Button>
+                </div>
+              </div>
+              {checkingPayment && (
+                <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Aguardando confirmação do pagamento...
+                </div>
+              )}
+            </div>
+          )}
+          {paymentConfirmed && (
+            <div className="text-center py-8">
+              <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-green-600">Pagamento Confirmado!</h3>
+              <p className="text-muted-foreground mt-2">Seus créditos foram adicionados à sua conta</p>
+            </div>
+          )}
+          {paymentExpired && (
+            <div className="text-center py-8">
+              <XCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-red-600">Pagamento Expirado</h3>
+              <p className="text-muted-foreground mt-2">O tempo expirou. Gere um novo PIX.</p>
+              <Button className="mt-4" onClick={() => { setShowPixModal(false); setPixData(null); }}>Fechar</Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <ReactCanvasConfetti onInit={handleInit} style={{ position: 'fixed', pointerEvents: 'none', width: '100%', height: '100%', top: 0, left: 0, zIndex: 9999 }} />
     </DashboardLayout>
   );
 }

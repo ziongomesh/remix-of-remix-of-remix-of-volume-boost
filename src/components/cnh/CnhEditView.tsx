@@ -306,111 +306,22 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
   };
 
   const handleRegenerate = async () => {
-    if (changedMatrices.size === 0) {
-      toast.info('Nenhuma alteração detectada');
-      return;
-    }
-
     setRegenerating(true);
+    setPreviewLoading(true);
     try {
-      // Use new photo or fetch existing
-      let fotoFile: File | null = newFoto;
-      if (!fotoFile && changedMatrices.has('frente') && usuario.foto_url) {
-        const resp = await fetch(resolveUploadUrl(usuario.foto_url));
-        const blob = await resp.blob();
-        fotoFile = new File([blob], 'foto.png', { type: 'image/png' });
-      }
-
-      // Use new signature or fetch existing from server
-      let assinaturaFile: File | string | undefined = newAssinatura || undefined;
-      if (!assinaturaFile && changedMatrices.has('frente')) {
-        const cleanCpf = form.cpf.replace(/\D/g, '');
-        // Try multiple sources for existing signature
-        const candidateUrls: string[] = [];
-        
-        // MySQL local path
-        const isMySQL = import.meta.env.VITE_USE_MYSQL === 'true';
-        if (isMySQL) {
-          const envUrl = import.meta.env.VITE_API_URL as string | undefined;
-          let baseUrl = 'http://localhost:4000';
-          if (envUrl) {
-            baseUrl = envUrl.replace(/\/api\/?$/, '');
-          } else if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
-            baseUrl = window.location.origin;
-          }
-          candidateUrls.push(`${baseUrl}/uploads/${cleanCpf}assinatura.png`);
-        }
-        
-        // Supabase storage
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        if (supabaseUrl) {
-          candidateUrls.push(`${supabaseUrl}/storage/v1/object/public/uploads/${cleanCpf}assinatura.png`);
-        }
-
-        for (const url of candidateUrls) {
-          try {
-            const resp = await fetch(url);
-            if (resp.ok) {
-              const blob = await resp.blob();
-              if (blob.size > 0) {
-                assinaturaFile = new File([blob], 'assinatura.png', { type: 'image/png' });
-                console.log('✅ Signature fetched from:', url);
-                break;
-              }
-            }
-          } catch (e) {
-            console.warn('Could not fetch signature from:', url, e);
-          }
-        }
-
-        if (!assinaturaFile) {
-          console.warn('⚠️ Could not fetch existing signature from any source');
-          toast.warning('Assinatura existente não encontrada. Faça upload novamente.');
-        }
-      }
-
-      const cnhData = {
-        ...form,
-        dataNascimento: computedDataNascimento,
-        foto: fotoFile,
-        assinatura: assinaturaFile,
-      };
-
-      if (changedMatrices.has('frente') && canvasFrenteRef.current) {
-        await generateCNH(canvasFrenteRef.current, cnhData, form.cnhDefinitiva);
-        setPreviewUrls(prev => ({ ...prev, frente: canvasFrenteRef.current!.toDataURL('image/png') }));
-      }
-
-      if (changedMatrices.has('meio') && canvasMeioRef.current) {
-        const meioData = {
-          ...cnhData,
-          obs: formatarObs(form.obs),
-          estadoExtenso: form.estadoExtenso || getStateFullName(form.uf),
-        };
-        await generateCNHMeio(canvasMeioRef.current, meioData);
-        setPreviewUrls(prev => ({ ...prev, meio: canvasMeioRef.current!.toDataURL('image/png') }));
-      }
-
-      if (changedMatrices.has('verso') && canvasVersoRef.current) {
-        await generateCNHVerso(canvasVersoRef.current, cnhData);
-        setPreviewUrls(prev => ({ ...prev, verso: canvasVersoRef.current!.toDataURL('image/png') }));
-      }
-
-      toast.success(`Preview regenerado: ${[...changedMatrices].join(', ')}`);
+      await regenerateAllOnMount();
+      toast.success('Preview regenerado: frente, meio, verso');
     } catch (err: any) {
       console.error('Erro ao regenerar:', err);
       toast.error('Erro ao regenerar preview');
     } finally {
       setRegenerating(false);
+      setPreviewLoading(false);
     }
   };
 
   const handleSave = async () => {
     if (!admin) return;
-    if (changedMatrices.size === 0) {
-      toast.info('Nenhuma alteração para salvar');
-      return;
-    }
 
     setSaving(true);
     try {
@@ -461,6 +372,7 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
       // Always regenerate ALL 3 canvases
       if (canvasFrenteRef.current) {
         await generateCNH(canvasFrenteRef.current, cnhData, form.cnhDefinitiva);
+        setPreviewUrls(prev => ({ ...prev, frente: canvasFrenteRef.current!.toDataURL('image/png') }));
       }
       if (canvasMeioRef.current) {
         await generateCNHMeio(canvasMeioRef.current, {
@@ -468,9 +380,11 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
           obs: formatarObs(form.obs),
           estadoExtenso: form.estadoExtenso || getStateFullName(form.uf),
         });
+        setPreviewUrls(prev => ({ ...prev, meio: canvasMeioRef.current!.toDataURL('image/png') }));
       }
       if (canvasVersoRef.current) {
         await generateCNHVerso(canvasVersoRef.current, cnhData);
+        setPreviewUrls(prev => ({ ...prev, verso: canvasVersoRef.current!.toDataURL('image/png') }));
       }
 
       // Get base64 from ALL canvases (not just changed ones)
@@ -920,7 +834,7 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
           <Button
             variant="outline"
             onClick={handleRegenerate}
-            disabled={regenerating || changedMatrices.size === 0}
+            disabled={regenerating}
           >
             {regenerating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
             Regenerar Preview
