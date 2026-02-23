@@ -180,9 +180,9 @@ router.post("/create-pix", requireSession, async (req, res) => {
     // MODO PRODUÇÃO: VizzionPay real
     const identifier = `ADMIN_${adminId}_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
 
-    // Webhook URL: PIX_WEBHOOK_URL > DOMAIN_URL/api/payments/webhook
-    const webhookUrl = process.env.PIX_WEBHOOK_URL || `${domainUrl}/api/payments/webhook`;
-    console.log(`[CREATE PIX] callbackUrl que será enviada à VizzionPay: ${webhookUrl}`);
+    // NÃO enviar callbackUrl para evitar limite de 20 webhooks na VizzionPay
+    // O sistema usa polling (GET /api/v1/gateway/transactions) para verificar pagamentos
+    console.log(`[CREATE PIX] Criando PIX sem callbackUrl (usando polling para verificação)`);
 
     const pixRequest: any = {
       identifier: identifier,
@@ -193,7 +193,6 @@ router.post("/create-pix", requireSession, async (req, res) => {
         phone: "(83) 99999-9999",
         document: "05916691378",
       },
-      callbackUrl: webhookUrl,
     };
 
     if (amount > 10) {
@@ -588,9 +587,8 @@ router.post("/create-reseller-pix", requireSession, async (req, res) => {
     const resellerPrice = settings.resellerPrice;
     const resellerCredits = settings.resellerCredits;
 
-    const domainUrl = process.env.DOMAIN_URL || process.env.API_URL || `${req.protocol}://${req.get("host")}`;
-    const webhookUrl = process.env.PIX_WEBHOOK_URL || `${domainUrl}/api/payments/webhook-reseller`;
-    console.log(`[RESELLER PIX] callbackUrl que será enviada à VizzionPay: ${webhookUrl}`);
+    // NÃO enviar callbackUrl para evitar limite de 20 webhooks na VizzionPay
+    console.log(`[RESELLER PIX] Criando PIX sem callbackUrl (usando polling para verificação)`);
 
     const pixRequest: any = {
       identifier: identifier,
@@ -601,7 +599,6 @@ router.post("/create-reseller-pix", requireSession, async (req, res) => {
         phone: "(83) 99999-9999",
         document: "05916691378",
       },
-      callbackUrl: webhookUrl,
     };
 
     const amountSplit = Math.round(resellerPrice * 0.05 * 100) / 100;

@@ -81,7 +81,6 @@ serve(async (req) => {
         phone: "(83) 99999-9999",
         document: "05916691378"
       },
-      callbackUrl: `${supabaseUrl}/functions/v1/reseller-webhook`
     };
 
     console.log('VizzionPay request:', JSON.stringify(pixRequest, null, 2));
