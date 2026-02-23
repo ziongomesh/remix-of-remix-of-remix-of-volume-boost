@@ -244,6 +244,8 @@ async function startServer() {
     console.log(`   URL: http://localhost:${PORT}`);
     console.log(`   API: http://localhost:${PORT}/api`);
     console.log(`   Health: http://localhost:${PORT}/api/health`);
+    console.log(`   DOMAIN_URL: ${process.env.DOMAIN_URL || '(NÃO CONFIGURADA!)'}`);
+    console.log(`   Webhook URL: ${process.env.DOMAIN_URL || 'http://localhost:' + PORT}/api/payments/webhook`);
     console.log(`   CORS (origens permitidas): ${Array.from(allowedOrigins).join(', ') || 'nenhuma'}`);
     console.log('------------------------------------------------------------');
     
