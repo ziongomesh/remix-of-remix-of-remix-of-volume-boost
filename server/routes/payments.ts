@@ -671,15 +671,17 @@ router.post("/webhook-reseller", async (req, res) => {
           const key = parts[3];
           const masterId = payment.admin_id;
 
+          const settings = await getSettings();
+
           const result = await query<any>(
             "INSERT INTO admins (nome, email, `key`, `rank`, criado_por, creditos) VALUES (?, ?, ?, ?, ?, ?)",
-            [nome, email, key, "revendedor", masterId, 5],
+            [nome, email, key, "revendedor", masterId, settings.resellerCredits],
           );
 
           try {
             await query(
               `INSERT INTO credit_transactions (from_admin_id, to_admin_id, amount, total_price, transaction_type) VALUES (?, ?, ?, ?, ?)`,
-              [masterId, result.insertId, RESELLER_CREDITS, RESELLER_PRICE, "reseller_creation"],
+              [masterId, result.insertId, settings.resellerCredits, settings.resellerPrice, "reseller_creation"],
             );
           } catch (txError: any) {
             console.error("[WEBHOOK] Erro ao registrar transação:", txError.message);
