@@ -10,6 +10,7 @@ interface Admin {
   nome: string;
   email: string;
   creditos: number;
+  creditos_transf: number;
   rank: string;
   profile_photo: string | null;
   session_token: string | null;
@@ -20,6 +21,7 @@ interface AuthContextType {
   admin: Admin | null;
   role: AppRole;
   credits: number;
+  creditsTransf: number;
   loading: boolean;
   signIn: (email: string, key: string) => Promise<{ error: Error | null; admin?: Admin }>;
   signOut: () => void;
@@ -33,6 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [admin, setAdmin] = useState<Admin | null>(null);
   const [role, setRole] = useState<AppRole>(null);
   const [credits, setCredits] = useState(0);
+  const [creditsTransf, setCreditsTransf] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -56,6 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 const balanceData = await api.credits.getBalance(parsedAdmin.id);
                 if (balanceData) {
                   parsedAdmin.creditos = balanceData.credits;
+                  parsedAdmin.creditos_transf = balanceData.creditos_transf || 0;
                   localStorage.setItem('admin', JSON.stringify(parsedAdmin));
                 }
               } catch (e) {
@@ -65,6 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               setAdmin(parsedAdmin);
               setRole(parsedAdmin.rank as AppRole);
               setCredits(parsedAdmin.creditos);
+              setCreditsTransf(parsedAdmin.creditos_transf || 0);
             } else {
               // Sessão inválida - limpar
               localStorage.removeItem('admin');
@@ -88,7 +93,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const data = await api.credits.getBalance(admin.id);
         if (data) {
           setCredits(data.credits);
-          const updatedAdmin = { ...admin, creditos: data.credits };
+          setCreditsTransf(data.creditos_transf || 0);
+          const updatedAdmin = { ...admin, creditos: data.credits, creditos_transf: data.creditos_transf || 0 };
           setAdmin(updatedAdmin);
           localStorage.setItem('admin', JSON.stringify(updatedAdmin));
         }
@@ -111,6 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         nome: data.admin.nome,
         email: data.admin.email,
         creditos: data.admin.creditos || 0,
+        creditos_transf: data.admin.creditos_transf || 0,
         rank: data.admin.rank || 'revendedor',
         profile_photo: data.admin.profile_photo,
         session_token: data.admin.session_token,
@@ -120,6 +127,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setAdmin(adminData);
       setRole(adminData.rank as AppRole);
       setCredits(adminData.creditos);
+      setCreditsTransf(adminData.creditos_transf);
       localStorage.setItem('admin', JSON.stringify(adminData));
 
       playSuccessSound();
@@ -144,6 +152,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAdmin(null);
     setRole(null);
     setCredits(0);
+    setCreditsTransf(0);
     localStorage.removeItem('admin');
     toast.info(`Até logo, ${nome || 'usuário'}!`, { description: 'Sessão encerrada' });
   };
@@ -152,11 +161,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAdmin(updatedAdmin);
     setRole(updatedAdmin.rank as AppRole);
     setCredits(updatedAdmin.creditos);
+    setCreditsTransf(updatedAdmin.creditos_transf || 0);
     localStorage.setItem('admin', JSON.stringify(updatedAdmin));
   };
 
   return (
-    <AuthContext.Provider value={{ admin, role, credits, loading, signIn, signOut, refreshCredits, updateAdmin }}>
+    <AuthContext.Provider value={{ admin, role, credits, creditsTransf, loading, signIn, signOut, refreshCredits, updateAdmin }}>
       {children}
     </AuthContext.Provider>
   );

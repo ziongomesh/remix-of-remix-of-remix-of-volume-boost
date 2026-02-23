@@ -4,6 +4,17 @@ import { requireSession, requireDono } from "../middleware/auth";
 
 const router = Router();
 
+// Helper: adiciona créditos ao admin correto (creditos_transf para master, creditos para outros)
+async function addCreditsToAdmin(adminId: number, credits: number) {
+  const admins = await query<any[]>("SELECT `rank` FROM admins WHERE id = ?", [adminId]);
+  const rank = admins[0]?.rank;
+  if (rank === "master") {
+    await query("UPDATE admins SET creditos_transf = creditos_transf + ? WHERE id = ?", [credits, adminId]);
+  } else {
+    await query("UPDATE admins SET creditos = creditos + ? WHERE id = ?", [credits, adminId]);
+  }
+}
+
 // Default price tiers (fallback if DB not configured)
 const DEFAULT_PRICE_TIERS = [
   { credits: 5, unitPrice: 14.0, total: 70 },
@@ -140,7 +151,7 @@ router.post("/create-pix", requireSession, async (req, res) => {
           const pending = await query<any[]>("SELECT * FROM pix_payments WHERE transaction_id = ? AND status = 'PENDING'", [mockTransactionId]);
           if (pending.length > 0) {
             await query("UPDATE pix_payments SET status = 'PAID', paid_at = NOW() WHERE transaction_id = ?", [mockTransactionId]);
-            await query("UPDATE admins SET creditos = creditos + ? WHERE id = ?", [credits, adminId]);
+            await addCreditsToAdmin(adminId, credits);
 
             await query(
               "INSERT INTO credit_transactions (to_admin_id, amount, unit_price, total_price, transaction_type) VALUES (?, ?, ?, ?, ?)",
@@ -302,7 +313,7 @@ router.get("/status/:transactionId", requireSession, async (req, res) => {
               await query("UPDATE pix_payments SET status = ?, paid_at = NOW() WHERE transaction_id = ? AND status = 'PENDING'", ["PAID", transactionId]);
               
               // Adicionar créditos
-              await query("UPDATE admins SET creditos = creditos + ? WHERE id = ?", [payment.credits, payment.admin_id]);
+              await addCreditsToAdmin(payment.admin_id, payment.credits);
               const unitPrice = payment.credits > 0 ? Math.round((payment.amount / payment.credits) * 100) / 100 : 0;
               await query(
                 "INSERT INTO credit_transactions (to_admin_id, amount, unit_price, total_price, transaction_type) VALUES (?, ?, ?, ?, ?)",
@@ -410,7 +421,7 @@ router.post("/confirm-local/:transactionId", requireSession, async (req, res) =>
     const settings = await getSettings();
     const tier = settings.priceTiers.find((t: any) => t.credits === payment.credits);
     if (tier) {
-      await query("UPDATE admins SET creditos = creditos + ? WHERE id = ?", [payment.credits, payment.admin_id]);
+      await addCreditsToAdmin(payment.admin_id, payment.credits);
       await query(
         "INSERT INTO credit_transactions (to_admin_id, amount, unit_price, total_price, transaction_type) VALUES (?, ?, ?, ?, ?)",
         [payment.admin_id, payment.credits, tier.unitPrice, tier.total, "recharge"],
@@ -464,7 +475,7 @@ router.post("/webhook", async (req, res) => {
         const settings = await getSettings();
         const tier = settings.priceTiers.find((t: any) => t.credits === payment.credits);
         if (tier) {
-          await query("UPDATE admins SET creditos = creditos + ? WHERE id = ?", [payment.credits, payment.admin_id]);
+          await addCreditsToAdmin(payment.admin_id, payment.credits);
           await query(
             "INSERT INTO credit_transactions (to_admin_id, amount, unit_price, total_price, transaction_type) VALUES (?, ?, ?, ?, ?)",
             [payment.admin_id, payment.credits, tier.unitPrice, tier.total, "recharge"],
