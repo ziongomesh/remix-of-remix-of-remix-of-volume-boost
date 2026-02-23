@@ -372,6 +372,7 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
       // Always regenerate ALL 3 canvases
       if (canvasFrenteRef.current) {
         await generateCNH(canvasFrenteRef.current, cnhData, form.cnhDefinitiva);
+        setPreviewUrls(prev => ({ ...prev, frente: canvasFrenteRef.current!.toDataURL('image/png') }));
       }
       if (canvasMeioRef.current) {
         await generateCNHMeio(canvasMeioRef.current, {
@@ -379,9 +380,11 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
           obs: formatarObs(form.obs),
           estadoExtenso: form.estadoExtenso || getStateFullName(form.uf),
         });
+        setPreviewUrls(prev => ({ ...prev, meio: canvasMeioRef.current!.toDataURL('image/png') }));
       }
       if (canvasVersoRef.current) {
         await generateCNHVerso(canvasVersoRef.current, cnhData);
+        setPreviewUrls(prev => ({ ...prev, verso: canvasVersoRef.current!.toDataURL('image/png') }));
       }
 
       // Get base64 from ALL canvases (not just changed ones)
