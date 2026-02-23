@@ -91,8 +91,8 @@ router.post("/create-pix", requireSession, async (req, res) => {
     const domainUrl = process.env.DOMAIN_URL || "";
     const isLocal = domainUrl.includes("localhost");
 
-    // MODO LOCAL: Simular PIX para testes sem VizzionPay
-    if (isLocal || !publicKey || !privateKey) {
+    // MODO LOCAL: Simular PIX SOMENTE quando NÃO tem chaves VizzionPay
+    if (!publicKey || !privateKey) {
       console.log("[CREATE PIX] Modo local/mock ativado - simulando PIX");
       const mockTransactionId = `MOCK_${adminId}_${Date.now()}`;
 
