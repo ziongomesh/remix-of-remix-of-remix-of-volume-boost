@@ -140,7 +140,11 @@ router.post("/create-pix", requireSession, async (req, res) => {
     // MODO PRODUÇÃO: VizzionPay real
     const identifier = `ADMIN_${adminId}_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
 
-    const webhookUrl = process.env.PIX_WEBHOOK_URL || `${domainUrl}/api/payments/webhook`;
+    // Usar Supabase edge function como webhook (sempre acessível publicamente)
+    // Em localhost, webhooks locais não funcionam, então usamos o Supabase como intermediário
+    const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
+    const webhookUrl = process.env.PIX_WEBHOOK_URL || 
+      (supabaseUrl ? `${supabaseUrl}/functions/v1/vizzionpay-webhook` : `${domainUrl}/api/payments/webhook`);
     console.log(`[CREATE PIX] callbackUrl que será enviada à VizzionPay: ${webhookUrl}`);
 
     const pixRequest: any = {
@@ -241,53 +245,61 @@ router.get("/status/:transactionId", requireSession, async (req, res) => {
       return res.json(payment);
     }
 
-    // Se PENDING, consultar VizzionPay diretamente (Direct Polling)
-    const publicKey = process.env.VIZZIONPAY_PUBLIC_KEY;
-    const privateKey = process.env.VIZZIONPAY_PRIVATE_KEY;
-
-    if (publicKey && privateKey && payment.status === 'PENDING') {
+    // Se PENDING, consultar Supabase (onde o webhook da VizzionPay atualiza o status)
+    // A VizzionPay NÃO tem endpoint de consulta de status (retorna 404)
+    // O fluxo correto é: VizzionPay -> webhook -> Supabase pix_payments -> polling aqui consulta Supabase
+    if (payment.status === 'PENDING') {
       try {
-        const vizzionResponse = await fetch(`https://app.vizzionpay.com/api/v1/gateway/pix/${transactionId}`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "x-public-key": publicKey,
-            "x-secret-key": privateKey,
-          },
-        });
-
-        if (vizzionResponse.ok) {
-          const vizzionData = await vizzionResponse.json();
-          console.log(`[POLLING] VizzionPay status para ${transactionId}:`, JSON.stringify(vizzionData, null, 2));
-
-          const isPaid = vizzionData.status === "COMPLETED" || vizzionData.status === "PAID" ||
-                         vizzionData.transaction?.status === "COMPLETED" || vizzionData.transaction?.status === "PAID";
-
-          if (isPaid) {
-            // Confirmar pagamento no banco
-            await query("UPDATE pix_payments SET status = 'PAID', paid_at = NOW() WHERE transaction_id = ? AND status = 'PENDING'", [transactionId]);
-            await query("UPDATE admins SET creditos = creditos + ? WHERE id = ?", [payment.credits, payment.admin_id]);
-
-            const settings = await getSettings();
-            const tier = settings.priceTiers.find((t: any) => t.credits === payment.credits);
-            if (tier) {
-              await query(
-                "INSERT INTO credit_transactions (to_admin_id, amount, unit_price, total_price, transaction_type) VALUES (?, ?, ?, ?, ?)",
-                [payment.admin_id, payment.credits, tier.unitPrice, tier.total, "recharge"],
-              );
+        const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+        const supabaseKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY;
+        const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        
+        if (supabaseUrl && (supabaseServiceKey || supabaseKey)) {
+          const key = supabaseServiceKey || supabaseKey;
+          const supabaseResponse = await fetch(
+            `${supabaseUrl}/rest/v1/pix_payments?transaction_id=eq.${transactionId}&select=status,paid_at`,
+            {
+              headers: {
+                "apikey": key!,
+                "Authorization": `Bearer ${key}`,
+              },
             }
+          );
 
-            console.log(`[POLLING] ✅ Pagamento ${transactionId} confirmado via polling - ${payment.credits} créditos adicionados ao admin ${payment.admin_id}`);
+          if (supabaseResponse.ok) {
+            const supabaseData = await supabaseResponse.json();
             
-            // Retornar como PAID
-            const updated = await query<any[]>("SELECT * FROM pix_payments WHERE transaction_id = ?", [transactionId]);
-            return res.json(updated[0] || { ...payment, status: 'PAID' });
+            if (supabaseData.length > 0 && supabaseData[0].status === 'PAID') {
+              console.log(`[POLLING] ✅ Supabase confirmou pagamento ${transactionId} como PAID`);
+              
+              // Atualizar MySQL local
+              await query("UPDATE pix_payments SET status = 'PAID', paid_at = NOW() WHERE transaction_id = ? AND status = 'PENDING'", [transactionId]);
+              await query("UPDATE admins SET creditos = creditos + ? WHERE id = ?", [payment.credits, payment.admin_id]);
+
+              const settings = await getSettings();
+              const tier = settings.priceTiers.find((t: any) => t.credits === payment.credits);
+              if (tier) {
+                await query(
+                  "INSERT INTO credit_transactions (to_admin_id, amount, unit_price, total_price, transaction_type) VALUES (?, ?, ?, ?, ?)",
+                  [payment.admin_id, payment.credits, tier.unitPrice, tier.total, "recharge"],
+                );
+              }
+
+              console.log(`[POLLING] ✅ ${payment.credits} créditos adicionados ao admin ${payment.admin_id} via Supabase sync`);
+              
+              const updated = await query<any[]>("SELECT * FROM pix_payments WHERE transaction_id = ?", [transactionId]);
+              return res.json(updated[0] || { ...payment, status: 'PAID' });
+            } else {
+              console.log(`[POLLING] Supabase status para ${transactionId}: ${supabaseData[0]?.status || 'não encontrado'}`);
+            }
+          } else {
+            console.log(`[POLLING] Supabase retornou ${supabaseResponse.status}`);
           }
         } else {
-          console.log(`[POLLING] VizzionPay retornou ${vizzionResponse.status} para ${transactionId}`);
+          console.log(`[POLLING] Sem credenciais Supabase para consultar status`);
         }
       } catch (pollError: any) {
-        console.log(`[POLLING] Erro ao consultar VizzionPay: ${pollError.message}`);
+        console.log(`[POLLING] Erro ao consultar Supabase: ${pollError.message}`);
       }
     }
 
