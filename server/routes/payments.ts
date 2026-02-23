@@ -212,6 +212,76 @@ router.get("/history/:adminId", requireSession, async (req, res) => {
   }
 });
 
+// Confirmação manual para testes locais (só funciona com localhost)
+router.post("/confirm-local/:transactionId", requireSession, async (req, res) => {
+  try {
+    const domain = process.env.DOMAIN_URL || "";
+    if (!domain.includes("localhost")) {
+      return res.status(403).json({ error: "Endpoint disponível apenas em ambiente local" });
+    }
+
+    const { transactionId } = req.params;
+    const payments = await query<any[]>("SELECT * FROM pix_payments WHERE transaction_id = ? AND status = 'PENDING'", [transactionId]);
+
+    if (payments.length === 0) {
+      return res.status(404).json({ error: "Pagamento pendente não encontrado" });
+    }
+
+    const payment = payments[0];
+
+    // Se for pagamento de revendedor
+    if (typeof payment.admin_name === "string" && payment.admin_name.startsWith("RESELLER:")) {
+      const parts = payment.admin_name.split(":");
+      if (parts.length >= 4) {
+        const nome = parts[1];
+        const email = parts[2];
+        const key = parts[3];
+        const masterId = payment.admin_id;
+
+        const settings = await getSettings();
+
+        const result = await query<any>(
+          "INSERT INTO admins (nome, email, `key`, `rank`, criado_por, creditos) VALUES (?, ?, ?, ?, ?, ?)",
+          [nome, email, key, "revendedor", masterId, settings.resellerCredits],
+        );
+
+        try {
+          await query(
+            "INSERT INTO credit_transactions (from_admin_id, to_admin_id, amount, total_price, transaction_type) VALUES (?, ?, ?, ?, ?)",
+            [masterId, result.insertId, settings.resellerCredits, settings.resellerPrice, "reseller_creation"],
+          );
+        } catch (txError: any) {
+          console.error("[CONFIRM-LOCAL] Erro ao registrar transação:", txError.message);
+        }
+
+        await query("UPDATE pix_payments SET status = 'PAID', paid_at = NOW(), admin_name = ? WHERE transaction_id = ?", [
+          `Revendedor criado: ${nome}`, transactionId,
+        ]);
+
+        return res.json({ status: "PAID", message: "Revendedor criado com sucesso (confirmação local)" });
+      }
+    }
+
+    // Pagamento normal de créditos
+    await query("UPDATE pix_payments SET status = 'PAID', paid_at = NOW() WHERE transaction_id = ?", [transactionId]);
+
+    const settings = await getSettings();
+    const tier = settings.priceTiers.find((t: any) => t.credits === payment.credits);
+    if (tier) {
+      await query("UPDATE admins SET creditos = creditos + ? WHERE id = ?", [payment.credits, payment.admin_id]);
+      await query(
+        "INSERT INTO credit_transactions (to_admin_id, amount, unit_price, total_price, transaction_type) VALUES (?, ?, ?, ?, ?)",
+        [payment.admin_id, payment.credits, tier.unitPrice, tier.total, "recharge"],
+      );
+    }
+
+    res.json({ status: "PAID", message: `${payment.credits} créditos adicionados (confirmação local)` });
+  } catch (error: any) {
+    console.error("[CONFIRM-LOCAL] Erro:", error);
+    res.status(500).json({ error: "Erro ao confirmar pagamento", details: error.message });
+  }
+});
+
 // Teste de acessibilidade do webhook (GET para verificar se a URL está acessível)
 router.get("/webhook", (_req, res) => {
   console.log("[WEBHOOK-TEST] GET /webhook chamado - webhook acessível!");
