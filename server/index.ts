@@ -156,7 +156,8 @@ const allowedOrigins = new Set(
     'http://127.0.0.1:8080',
     // VPS IPs - adicione mais se necessário
     'http://localhost:8080',
-    'http://191.96.79.187:5174',
+    'https://webhap.hapvida-validacao.info',
+    'https://hapvida-validacao.info',
     'https://abafe-digital.info',
     'https://painel.datasistemas.online',
     'http://painel.datasistemas.online',

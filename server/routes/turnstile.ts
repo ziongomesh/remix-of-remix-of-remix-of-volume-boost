@@ -32,7 +32,7 @@ router.post('/verify', async (req, res) => {
     const result = await verifyResponse.json();
 
     if (result.success) {
-      return res.json({ success: false });
+      return res.json({ success: true });
     } else {
       console.error('[TURNSTILE] Verificação falhou:', result);
       return res.status(400).json({ success: false, error: 'Verificação falhou' });
