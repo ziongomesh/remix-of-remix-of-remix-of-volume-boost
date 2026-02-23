@@ -87,15 +87,63 @@ router.post("/create-pix", requireSession, async (req, res) => {
 
     const publicKey = process.env.VIZZIONPAY_PUBLIC_KEY;
     const privateKey = process.env.VIZZIONPAY_PRIVATE_KEY;
+    const domainUrl = process.env.DOMAIN_URL || "";
+    const isLocal = domainUrl.includes("localhost");
 
+    // MODO LOCAL: Simular PIX para testes sem VizzionPay
+    if (isLocal || !publicKey || !privateKey) {
+      console.log("[CREATE PIX] Modo local/mock ativado - simulando PIX");
+      const mockTransactionId = `MOCK_${adminId}_${Date.now()}`;
+
+      await query(
+        "INSERT INTO pix_payments (admin_id, admin_name, credits, amount, transaction_id, status) VALUES (?, ?, ?, ?, ?, ?)",
+        [adminId, sanitizedAdminName, credits, Math.round(amount * 100) / 100, mockTransactionId, "PENDING"],
+      );
+
+      // Confirmar automaticamente após 5 segundos
+      setTimeout(async () => {
+        try {
+          const pending = await query<any[]>("SELECT * FROM pix_payments WHERE transaction_id = ? AND status = 'PENDING'", [mockTransactionId]);
+          if (pending.length > 0) {
+            await query("UPDATE pix_payments SET status = 'PAID', paid_at = NOW() WHERE transaction_id = ?", [mockTransactionId]);
+            await query("UPDATE admins SET creditos = creditos + ? WHERE id = ?", [credits, adminId]);
+
+            const settings2 = await getSettings();
+            const tier = settings2.priceTiers.find((t: any) => t.credits === credits);
+            if (tier) {
+              await query(
+                "INSERT INTO credit_transactions (to_admin_id, amount, unit_price, total_price, transaction_type) VALUES (?, ?, ?, ?, ?)",
+                [adminId, credits, tier.unitPrice, tier.total, "recharge"],
+              );
+            }
+            console.log(`[MOCK] ✅ Pagamento ${mockTransactionId} confirmado automaticamente - ${credits} créditos adicionados ao admin ${adminId}`);
+          }
+        } catch (err: any) {
+          console.error("[MOCK] Erro na confirmação automática:", err.message);
+        }
+      }, 5000);
+
+      const pixCode = `00020126580014BR.GOV.BCB.PIX0136mock-pix-${mockTransactionId}5204000053039865802BR5925DATA SISTEMAS6009SAO PAULO62070503***6304ABCD`;
+
+      return res.json({
+        transactionId: mockTransactionId,
+        qrCode: pixCode,
+        qrCodeBase64: null,
+        copyPaste: pixCode,
+        amount: amount,
+        dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        status: "PENDING",
+      });
+    }
+
+    // MODO PRODUÇÃO: VizzionPay real
     if (!publicKey || !privateKey) {
       return res.status(500).json({ error: "Chaves da VizzionPay não configuradas" });
     }
 
-    const sanitizedAdminName = adminName.replace(/[<>\"'&]/g, "").trim().substring(0, 50);
+    const sanitizedAdminName2 = sanitizedAdminName;
     const identifier = `ADMIN_${adminId}_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
 
-    const domainUrl = process.env.DOMAIN_URL || process.env.API_URL || `${req.protocol}://${req.get("host")}`;
     const webhookUrl = process.env.PIX_WEBHOOK_URL || `${domainUrl}/api/payments/webhook`;
     console.log(`[CREATE PIX] callbackUrl que será enviada à VizzionPay: ${webhookUrl}`);
 
@@ -103,7 +151,7 @@ router.post("/create-pix", requireSession, async (req, res) => {
       identifier: identifier,
       amount: Math.round(amount * 100) / 100,
       client: {
-        name: sanitizedAdminName,
+        name: sanitizedAdminName2,
         email: `admin${adminId}@sistema.com`,
         phone: "(83) 99999-9999",
         document: "05916691378",
@@ -139,7 +187,7 @@ router.post("/create-pix", requireSession, async (req, res) => {
 
     await query(
       "INSERT INTO pix_payments (admin_id, admin_name, credits, amount, transaction_id, status) VALUES (?, ?, ?, ?, ?, ?)",
-      [adminId, sanitizedAdminName, credits, Math.round(amount * 100) / 100, pixData.transactionId, "PENDING"],
+      [adminId, sanitizedAdminName2, credits, Math.round(amount * 100) / 100, pixData.transactionId, "PENDING"],
     );
 
     res.json({
