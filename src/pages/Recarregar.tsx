@@ -926,12 +926,14 @@ function ResellerRechargeView({ adminId, sessionToken, credits }: { adminId: num
           }
         } else {
           // Supabase: usar RPC get_creator_name
-          const stored = localStorage.getItem('admin');
-          if (stored) {
-            const parsed = JSON.parse(stored);
-            if (parsed.criado_por) {
-              setCreatorId(parsed.criado_por);
-            }
+          const { data: creatorData } = await supabase.rpc('get_creator_name', {
+            p_admin_id: adminId,
+            p_session_token: sessionToken,
+          });
+          if (creatorData && creatorData.length > 0) {
+            setCreatorName(creatorData[0].creator_name);
+            setCreatorPhone(creatorData[0].creator_telefone || null);
+            setCreatorId(creatorData[0].creator_id || null);
           }
         }
       } catch (err) {
