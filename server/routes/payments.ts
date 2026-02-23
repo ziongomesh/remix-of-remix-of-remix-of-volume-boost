@@ -251,7 +251,7 @@ router.get("/status/:transactionId", requireSession, async (req, res) => {
         const privateKey = process.env.VIZZIONPAY_PRIVATE_KEY;
         
         if (publicKey && privateKey) {
-          const vpResponse = await fetch(`https://app.vizzionpay.com/api/v1/gateway/pix/${transactionId}`, {
+          const vpResponse = await fetch(`https://app.vizzionpay.com/api/v1/gateway/transactions?id=${transactionId}`, {
             method: "GET",
             headers: {
               "x-public-key": publicKey,
@@ -703,7 +703,7 @@ router.get("/reseller-status/:transactionId", requireSession, async (req, res) =
         const privateKey = process.env.VIZZIONPAY_PRIVATE_KEY;
 
         if (publicKey && privateKey) {
-          const vpResponse = await fetch(`https://app.vizzionpay.com/api/v1/gateway/pix/${transactionId}`, {
+          const vpResponse = await fetch(`https://app.vizzionpay.com/api/v1/gateway/transactions?id=${transactionId}`, {
             method: "GET",
             headers: {
               "x-public-key": publicKey,
