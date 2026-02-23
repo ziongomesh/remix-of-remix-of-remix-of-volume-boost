@@ -212,6 +212,17 @@ router.get("/history/:adminId", requireSession, async (req, res) => {
   }
 });
 
+// Teste de acessibilidade do webhook (GET para verificar se a URL está acessível)
+router.get("/webhook", (_req, res) => {
+  console.log("[WEBHOOK-TEST] GET /webhook chamado - webhook acessível!");
+  res.json({ status: "ok", message: "Webhook endpoint is reachable", timestamp: new Date().toISOString() });
+});
+
+router.get("/webhook-reseller", (_req, res) => {
+  console.log("[WEBHOOK-TEST] GET /webhook-reseller chamado - webhook acessível!");
+  res.json({ status: "ok", message: "Reseller webhook endpoint is reachable", timestamp: new Date().toISOString() });
+});
+
 // Webhook de pagamento VizzionPay (público - chamado pela VizzionPay)
 router.post("/webhook", async (req, res) => {
   try {
