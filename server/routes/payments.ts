@@ -176,15 +176,22 @@ router.post("/create-pix", requireSession, async (req, res) => {
     }
 
     const pixData = await vizzionResponse.json();
+    console.log(`[CREATE PIX] Resposta VizzionPay:`, JSON.stringify(pixData, null, 2));
 
     if (!pixData.transactionId || typeof pixData.transactionId !== "string") {
-      throw new Error("Invalid VizzionPay response");
+      throw new Error("Invalid VizzionPay response - sem transactionId");
     }
 
-    await query(
-      "INSERT INTO pix_payments (admin_id, admin_name, credits, amount, transaction_id, status) VALUES (?, ?, ?, ?, ?, ?)",
-      [adminId, sanitizedAdminName, credits, Math.round(amount * 100) / 100, pixData.transactionId, "PENDING"],
-    );
+    try {
+      await query(
+        "INSERT INTO pix_payments (admin_id, admin_name, credits, amount, transaction_id, status) VALUES (?, ?, ?, ?, ?, ?)",
+        [adminId, sanitizedAdminName, credits, Math.round(amount * 100) / 100, pixData.transactionId, "PENDING"],
+      );
+      console.log(`[CREATE PIX] ✅ INSERT no MySQL OK - transactionId: ${pixData.transactionId}, admin: ${adminId}, credits: ${credits}, amount: ${amount}`);
+    } catch (dbError: any) {
+      console.error(`[CREATE PIX] ❌ ERRO ao inserir no MySQL:`, dbError.message);
+      throw new Error(`Erro ao salvar pagamento no banco: ${dbError.message}`);
+    }
 
     // Em localhost o webhook não chega, então o polling no endpoint /status vai consultar a VizzionPay diretamente
     if (isLocal) {
