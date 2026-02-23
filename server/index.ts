@@ -38,9 +38,11 @@ const envFiles = [
 let envLoaded = false;
 for (const envPath of envFiles) {
   if (fs.existsSync(envPath)) {
-    config({ path: envPath });
+    config({ path: envPath, override: true });
     console.log(`[ENV] Carregando variaveis de: ${envPath}`);
     envLoaded = true;
+    // NÃO dar break - carrega todos os arquivos encontrados (o último sobrescreve)
+    // Mas queremos prioridade do .env.local, então break no primeiro encontrado
     break;
   }
 }
@@ -48,6 +50,11 @@ if (!envLoaded) {
   config();
   console.log('[!] Nenhum arquivo .env encontrado, usando variaveis do sistema');
 }
+
+// Log das chaves VizzionPay para debug
+console.log(`[ENV] VIZZIONPAY_PUBLIC_KEY: ${process.env.VIZZIONPAY_PUBLIC_KEY ? '✅ configurada (' + process.env.VIZZIONPAY_PUBLIC_KEY.substring(0, 10) + '...)' : '❌ NÃO ENCONTRADA'}`);
+console.log(`[ENV] VIZZIONPAY_PRIVATE_KEY: ${process.env.VIZZIONPAY_PRIVATE_KEY ? '✅ configurada' : '❌ NÃO ENCONTRADA'}`);
+console.log(`[ENV] DOMAIN_URL: ${process.env.DOMAIN_URL || '❌ NÃO ENCONTRADA'}`);
 
 const app = express();
 const PORT = process.env.PORT || 4000;
