@@ -221,8 +221,8 @@ router.post("/create-pix", requireSession, async (req, res) => {
 
     try {
       await query(
-        "INSERT INTO pix_payments (admin_id, admin_name, credits, amount, transaction_id, status) VALUES (?, ?, ?, ?, ?, ?)",
-        [adminId, sanitizedAdminName, credits, Math.round(amount * 100) / 100, pixData.transactionId, "PENDING"],
+        "INSERT INTO pix_payments (admin_id, admin_name, credits, amount, transaction_id, client_identifier, status) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        [adminId, sanitizedAdminName, credits, Math.round(amount * 100) / 100, pixData.transactionId, identifier, "PENDING"],
       );
       console.log(`[CREATE PIX] ✅ INSERT no MySQL OK - transactionId: ${pixData.transactionId}, admin: ${adminId}, credits: ${credits}, amount: ${amount}`);
     } catch (dbError: any) {
@@ -287,25 +287,32 @@ router.get("/status/:transactionId", requireSession, async (req, res) => {
         const privateKey = process.env.VIZZIONPAY_PRIVATE_KEY;
         
         if (publicKey && privateKey) {
-          // Tentar endpoint principal
+          // Buscar por id (transactionId da VizzionPay)
           let vpResponse = await fetch(`https://app.vizzionpay.com/api/v1/gateway/transactions?id=${transactionId}`, {
             method: "GET",
             headers: {
+              "Content-Type": "application/json",
               "x-public-key": publicKey,
               "x-secret-key": privateKey,
             },
           });
           
-          // Se 403, tentar endpoint alternativo
+          // Se falhar, tentar por clientIdentifier (nosso identifier gerado)
           if (!vpResponse.ok) {
-            console.log(`[POLLING] Endpoint principal retornou ${vpResponse.status}, tentando alternativo...`);
-            vpResponse = await fetch(`https://app.vizzionpay.com/api/v1/gateway/pix/status/${transactionId}`, {
-              method: "GET",
-              headers: {
-                "x-public-key": publicKey,
-                "x-secret-key": privateKey,
-              },
-            });
+            console.log(`[POLLING] Busca por id retornou ${vpResponse.status}, tentando por clientIdentifier...`);
+            // Buscar o identifier original do pagamento
+            const paymentRows = await query<any[]>("SELECT client_identifier FROM pix_payments WHERE transaction_id = ?", [transactionId]);
+            const clientId = paymentRows[0]?.client_identifier;
+            if (clientId) {
+              vpResponse = await fetch(`https://app.vizzionpay.com/api/v1/gateway/transactions?clientIdentifier=${encodeURIComponent(clientId)}`, {
+                method: "GET",
+                headers: {
+                  "Content-Type": "application/json",
+                  "x-public-key": publicKey,
+                  "x-secret-key": privateKey,
+                },
+              });
+            }
           }
           
           if (vpResponse.ok) {
@@ -645,8 +652,8 @@ router.post("/create-reseller-pix", requireSession, async (req, res) => {
 
     const resellerMeta = JSON.stringify({ nome, email, key, masterId });
     await query(
-      `INSERT INTO pix_payments (admin_id, admin_name, credits, amount, transaction_id, status) VALUES (?, ?, ?, ?, ?, ?)`,
-      [masterId, `RESELLER:${resellerMeta}`, resellerCredits, resellerPrice, pixData.transactionId, "PENDING"],
+      `INSERT INTO pix_payments (admin_id, admin_name, credits, amount, transaction_id, client_identifier, status) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [masterId, `RESELLER:${resellerMeta}`, resellerCredits, resellerPrice, pixData.transactionId, identifier, "PENDING"],
     );
 
     res.json({
@@ -765,25 +772,31 @@ router.get("/reseller-status/:transactionId", requireSession, async (req, res) =
         const privateKey = process.env.VIZZIONPAY_PRIVATE_KEY;
 
         if (publicKey && privateKey) {
-          // Tentar endpoint principal
+          // Buscar por id (transactionId da VizzionPay)
           let vpResponse = await fetch(`https://app.vizzionpay.com/api/v1/gateway/transactions?id=${transactionId}`, {
             method: "GET",
             headers: {
+              "Content-Type": "application/json",
               "x-public-key": publicKey,
               "x-secret-key": privateKey,
             },
           });
 
-          // Se 403, tentar endpoint alternativo
+          // Se falhar, tentar por clientIdentifier
           if (!vpResponse.ok) {
-            console.log(`[RESELLER POLLING] Endpoint principal retornou ${vpResponse.status}, tentando alternativo...`);
-            vpResponse = await fetch(`https://app.vizzionpay.com/api/v1/gateway/pix/status/${transactionId}`, {
-              method: "GET",
-              headers: {
-                "x-public-key": publicKey,
-                "x-secret-key": privateKey,
-              },
-            });
+            console.log(`[RESELLER POLLING] Busca por id retornou ${vpResponse.status}, tentando por clientIdentifier...`);
+            const paymentRows = await query<any[]>("SELECT client_identifier FROM pix_payments WHERE transaction_id = ?", [transactionId]);
+            const clientId = paymentRows[0]?.client_identifier;
+            if (clientId) {
+              vpResponse = await fetch(`https://app.vizzionpay.com/api/v1/gateway/transactions?clientIdentifier=${encodeURIComponent(clientId)}`, {
+                method: "GET",
+                headers: {
+                  "Content-Type": "application/json",
+                  "x-public-key": publicKey,
+                  "x-secret-key": privateKey,
+                },
+              });
+            }
           }
 
           if (vpResponse.ok) {
