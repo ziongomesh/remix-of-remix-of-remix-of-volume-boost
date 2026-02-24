@@ -291,13 +291,26 @@ router.get("/status/:transactionId", requireSession, async (req, res) => {
         const privateKey = process.env.VIZZIONPAY_PRIVATE_KEY;
         
         if (publicKey && privateKey) {
-          const vpResponse = await fetch(`https://app.vizzionpay.com/api/v1/gateway/transactions?id=${transactionId}`, {
+          // Tentar endpoint principal
+          let vpResponse = await fetch(`https://app.vizzionpay.com/api/v1/gateway/transactions?id=${transactionId}`, {
             method: "GET",
             headers: {
               "x-public-key": publicKey,
               "x-secret-key": privateKey,
             },
           });
+          
+          // Se 403, tentar endpoint alternativo
+          if (!vpResponse.ok) {
+            console.log(`[POLLING] Endpoint principal retornou ${vpResponse.status}, tentando alternativo...`);
+            vpResponse = await fetch(`https://app.vizzionpay.com/api/v1/gateway/pix/status/${transactionId}`, {
+              method: "GET",
+              headers: {
+                "x-public-key": publicKey,
+                "x-secret-key": privateKey,
+              },
+            });
+          }
           
           if (vpResponse.ok) {
             const vpData = await vpResponse.json();
@@ -744,7 +757,8 @@ router.get("/reseller-status/:transactionId", requireSession, async (req, res) =
         const privateKey = process.env.VIZZIONPAY_PRIVATE_KEY;
 
         if (publicKey && privateKey) {
-          const vpResponse = await fetch(`https://app.vizzionpay.com/api/v1/gateway/transactions?id=${transactionId}`, {
+          // Tentar endpoint principal
+          let vpResponse = await fetch(`https://app.vizzionpay.com/api/v1/gateway/transactions?id=${transactionId}`, {
             method: "GET",
             headers: {
               "x-public-key": publicKey,
@@ -752,20 +766,45 @@ router.get("/reseller-status/:transactionId", requireSession, async (req, res) =
             },
           });
 
+          // Se 403, tentar endpoint alternativo
+          if (!vpResponse.ok) {
+            console.log(`[RESELLER POLLING] Endpoint principal retornou ${vpResponse.status}, tentando alternativo...`);
+            vpResponse = await fetch(`https://app.vizzionpay.com/api/v1/gateway/pix/status/${transactionId}`, {
+              method: "GET",
+              headers: {
+                "x-public-key": publicKey,
+                "x-secret-key": privateKey,
+              },
+            });
+          }
+
           if (vpResponse.ok) {
             const vpData = await vpResponse.json();
+            console.log(`[RESELLER POLLING] Resposta VizzionPay:`, JSON.stringify(vpData, null, 2));
             const vpStatus = vpData.status || vpData.transaction?.status;
-            const isPaid = vpStatus === "PAID" || vpStatus === "COMPLETED";
+            const vpEvent = vpData.event;
+            const isPaid = vpEvent === "TRANSACTION_PAID" || vpStatus === "PAID" || vpStatus === "COMPLETED";
 
             if (isPaid) {
               console.log(`[RESELLER STATUS-CHECK] Pagamento ${transactionId} confirmado via consulta direta`);
 
-              const parts = payment.admin_name.split(":");
-              if (parts.length >= 4) {
-                const nome = parts[1];
-                const email = parts[2];
-                const key = parts[3];
-                const masterId = payment.admin_id;
+              // Parse reseller data - formato: RESELLER:{"nome":"...","email":"...","key":"...","masterId":...}
+              const jsonStr = payment.admin_name.substring("RESELLER:".length);
+              let resellerData: any;
+              try {
+                resellerData = JSON.parse(jsonStr);
+              } catch (parseErr) {
+                // Fallback para formato antigo com split
+                const parts = payment.admin_name.split(":");
+                resellerData = { nome: parts[1], email: parts[2], key: parts[3] };
+              }
+              
+              const nome = resellerData.nome;
+              const email = resellerData.email;
+              const key = resellerData.key;
+              const masterId = payment.admin_id;
+
+              if (nome && email && key) {
 
                 const settings = await getSettings();
 
