@@ -58,6 +58,7 @@ CREATE TABLE IF NOT EXISTS `pix_payments` (
   `admin_id` INT(11) NOT NULL,
   `admin_name` TEXT NOT NULL,
   `transaction_id` TEXT NOT NULL,
+  `client_identifier` VARCHAR(255) DEFAULT NULL,
   `amount` DECIMAL(10,2) NOT NULL,
   `credits` INT(11) NOT NULL,
   `status` VARCHAR(20) NOT NULL DEFAULT 'PENDING' COMMENT 'PENDING, PAID, EXPIRED, CANCELLED',

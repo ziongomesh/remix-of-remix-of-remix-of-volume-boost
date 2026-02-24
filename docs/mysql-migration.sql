@@ -73,6 +73,7 @@ CREATE TABLE `pix_payments` (
   `admin_id` INT NOT NULL,
   `admin_name` VARCHAR(255) NOT NULL,
   `transaction_id` VARCHAR(255) NOT NULL UNIQUE,
+  `client_identifier` VARCHAR(255) DEFAULT NULL,
   `amount` DECIMAL(10,2) NOT NULL,
   `credits` INT NOT NULL,
   `status` ENUM('PENDING', 'PAID', 'EXPIRED', 'CANCELLED') DEFAULT 'PENDING',

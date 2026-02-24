@@ -8,6 +8,10 @@ ALTER TABLE `admins`
   ADD COLUMN IF NOT EXISTS `pin` VARCHAR(255) DEFAULT NULL AFTER `rank`,
   ADD COLUMN IF NOT EXISTS `criado_por` INT(11) DEFAULT NULL AFTER `id`;
 
+-- Adicionar client_identifier na tabela pix_payments para fallback do polling
+ALTER TABLE `pix_payments` 
+  ADD COLUMN IF NOT EXISTS `client_identifier` VARCHAR(255) DEFAULT NULL AFTER `transaction_id`;
+
 -- Criar índice para criado_por (hierarquia master/revendedor)
 ALTER TABLE `admins` ADD INDEX IF NOT EXISTS `idx_admins_criado_por` (`criado_por`);
 
