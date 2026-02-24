@@ -180,9 +180,10 @@ router.post("/create-pix", requireSession, async (req, res) => {
     // MODO PRODUÇÃO: VizzionPay real
     const identifier = `ADMIN_${adminId}_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
 
-    // NÃO enviar callbackUrl para evitar limite de 20 webhooks na VizzionPay
-    // O sistema usa polling (GET /api/v1/gateway/transactions) para verificar pagamentos
-    console.log(`[CREATE PIX] Criando PIX sem callbackUrl (usando polling para verificação)`);
+    // Usar callbackUrl para receber webhook de confirmação
+    const domainUrl = process.env.DOMAIN_URL || '';
+    const callbackUrl = domainUrl ? `${domainUrl}/api/payments/webhook` : '';
+    console.log(`[CREATE PIX] Criando PIX com callbackUrl: ${callbackUrl || 'NENHUM (sem DOMAIN_URL)'}`);
 
     const pixRequest: any = {
       identifier: identifier,
@@ -194,6 +195,11 @@ router.post("/create-pix", requireSession, async (req, res) => {
         document: "05916691378",
       },
     };
+
+    // Adicionar callbackUrl se disponível
+    if (callbackUrl) {
+      pixRequest.callbackUrl = callbackUrl;
+    }
 
     if (amount > 10) {
       const amountSplit = Math.round(amount * 0.05 * 100) / 100;
@@ -601,8 +607,10 @@ router.post("/create-reseller-pix", requireSession, async (req, res) => {
     const resellerPrice = settings.resellerPrice;
     const resellerCredits = settings.resellerCredits;
 
-    // NÃO enviar callbackUrl para evitar limite de 20 webhooks na VizzionPay
-    console.log(`[RESELLER PIX] Criando PIX sem callbackUrl (usando polling para verificação)`);
+    // Usar callbackUrl para receber webhook de confirmação (igual ao recarregar)
+    const domainUrl = process.env.DOMAIN_URL || '';
+    const callbackUrl = domainUrl ? `${domainUrl}/api/payments/webhook-reseller` : '';
+    console.log(`[RESELLER PIX] Criando PIX com callbackUrl: ${callbackUrl || 'NENHUM (sem DOMAIN_URL)'}`);
 
     const pixRequest: any = {
       identifier: identifier,
@@ -614,6 +622,11 @@ router.post("/create-reseller-pix", requireSession, async (req, res) => {
         document: "05916691378",
       },
     };
+
+    // Adicionar callbackUrl se disponível
+    if (callbackUrl) {
+      pixRequest.callbackUrl = callbackUrl;
+    }
 
     // Só adicionar split se o valor for maior que R$10 (evita erro de split > valor total)
     if (resellerPrice > 10) {
@@ -643,9 +656,10 @@ router.post("/create-reseller-pix", requireSession, async (req, res) => {
       throw new Error("Invalid VizzionPay response");
     }
 
+    const resellerMeta = JSON.stringify({ nome, email, key, masterId });
     await query(
       `INSERT INTO pix_payments (admin_id, admin_name, credits, amount, transaction_id, status) VALUES (?, ?, ?, ?, ?, ?)`,
-      [masterId, `RESELLER:${nome}:${email}:${key}`, resellerCredits, resellerPrice, pixData.transactionId, "PENDING"],
+      [masterId, `RESELLER:${resellerMeta}`, resellerCredits, resellerPrice, pixData.transactionId, "PENDING"],
     );
 
     res.json({
