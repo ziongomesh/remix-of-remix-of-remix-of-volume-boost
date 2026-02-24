@@ -180,10 +180,6 @@ router.post("/create-pix", requireSession, async (req, res) => {
     // MODO PRODUÇÃO: VizzionPay real
     const identifier = `ADMIN_${adminId}_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
 
-    // Construir callbackUrl para webhook
-    const domainBase = domainUrl.replace(/\/+$/, '');
-    const callbackUrl = domainBase ? `${domainBase}/api/payments/webhook` : '';
-
     const pixRequest: any = {
       identifier: identifier,
       amount: Math.round(amount * 100) / 100,
@@ -195,11 +191,8 @@ router.post("/create-pix", requireSession, async (req, res) => {
       },
     };
 
-    // Adicionar callbackUrl para receber notificação automática de pagamento
-    if (callbackUrl && !isLocal) {
-      pixRequest.callbackUrl = callbackUrl;
-      console.log(`[CREATE PIX] callbackUrl configurada: ${callbackUrl}`);
-    }
+    // NÃO enviar callbackUrl - webhook fixo configurado no painel da VizzionPay
+    // (Limite de 20 webhooks da VizzionPay já atingido)
 
     if (amount > 10) {
       const amountSplit = Math.round(amount * 0.05 * 100) / 100;
@@ -555,12 +548,6 @@ router.post("/create-reseller-pix", requireSession, async (req, res) => {
     const resellerPrice = settings.resellerPrice;
     const resellerCredits = settings.resellerCredits;
 
-    // Construir callbackUrl para webhook de revendedor
-    const domainUrl = process.env.DOMAIN_URL || '';
-    const domainBase = domainUrl.replace(/\/+$/, '');
-    const isLocal = !domainBase || domainBase.includes("localhost") || domainBase.includes("127.0.0.1");
-    const resellerCallbackUrl = domainBase ? `${domainBase}/api/payments/webhook-reseller` : '';
-
     const pixRequest: any = {
       identifier: identifier,
       amount: resellerPrice,
@@ -572,11 +559,8 @@ router.post("/create-reseller-pix", requireSession, async (req, res) => {
       },
     };
 
-    // Adicionar callbackUrl para receber notificação automática
-    if (resellerCallbackUrl && !isLocal) {
-      pixRequest.callbackUrl = resellerCallbackUrl;
-      console.log(`[RESELLER PIX] callbackUrl configurada: ${resellerCallbackUrl}`);
-    }
+    // NÃO enviar callbackUrl - webhook fixo configurado no painel da VizzionPay
+    // (Limite de 20 webhooks da VizzionPay já atingido)
 
     // Só adicionar split se o valor for maior que R$10 (evita erro de split > valor total)
     if (resellerPrice > 10) {
