@@ -180,10 +180,6 @@ router.post("/create-pix", requireSession, async (req, res) => {
     // MODO PRODUÇÃO: VizzionPay real
     const identifier = `ADMIN_${adminId}_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
 
-    // Usar callbackUrl para receber webhook de confirmação
-    const callbackUrl = domainUrl ? `${domainUrl}/api/payments/webhook` : '';
-    console.log(`[CREATE PIX] Criando PIX com callbackUrl: ${callbackUrl || 'NENHUM (sem DOMAIN_URL)'}`);
-
     const pixRequest: any = {
       identifier: identifier,
       amount: Math.round(amount * 100) / 100,
@@ -194,11 +190,6 @@ router.post("/create-pix", requireSession, async (req, res) => {
         document: "05916691378",
       },
     };
-
-    // Adicionar callbackUrl se disponível
-    if (callbackUrl) {
-      pixRequest.callbackUrl = callbackUrl;
-    }
 
     if (amount > 10) {
       const amountSplit = Math.round(amount * 0.05 * 100) / 100;
@@ -613,11 +604,6 @@ router.post("/create-reseller-pix", requireSession, async (req, res) => {
     const resellerPrice = settings.resellerPrice;
     const resellerCredits = settings.resellerCredits;
 
-    // Usar callbackUrl para receber webhook de confirmação (igual ao recarregar)
-    const domainUrl = process.env.DOMAIN_URL || '';
-    const callbackUrl = domainUrl ? `${domainUrl}/api/payments/webhook-reseller` : '';
-    console.log(`[RESELLER PIX] Criando PIX com callbackUrl: ${callbackUrl || 'NENHUM (sem DOMAIN_URL)'}`);
-
     const pixRequest: any = {
       identifier: identifier,
       amount: resellerPrice,
@@ -628,11 +614,6 @@ router.post("/create-reseller-pix", requireSession, async (req, res) => {
         document: "05916691378",
       },
     };
-
-    // Adicionar callbackUrl se disponível
-    if (callbackUrl) {
-      pixRequest.callbackUrl = callbackUrl;
-    }
 
     // Só adicionar split se o valor for maior que R$10 (evita erro de split > valor total)
     if (resellerPrice > 10) {
