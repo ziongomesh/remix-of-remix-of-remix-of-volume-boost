@@ -1209,35 +1209,20 @@ function ResellerRechargeView({ adminId, sessionToken, credits }: { adminId: num
                     key={pkg.name}
                     onClick={() => handleRechargePackage(pkg)}
                     disabled={isProcessing}
-                    className="w-full p-4 sm:p-5 rounded-xl border-2 border-border hover:border-primary/60 transition-all text-left relative bg-card hover:bg-muted/30 group"
+                    className="w-full py-3 px-4 rounded-lg border border-border hover:border-primary/60 transition-all text-center relative bg-card hover:bg-muted/30 group"
                   >
-                    <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
-                      <Badge className={`${pkg.badgeColor} text-white text-[10px] sm:text-xs`}>
-                        {pkg.badge}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-bold text-foreground text-sm sm:text-base">{pkg.name}</p>
-                        <p className="text-lg sm:text-xl font-bold text-foreground mt-1">
-                          R$ {pkg.total.toFixed(2).replace('.', ',')}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {pkg.baseCredits} + {pkg.bonus} grátis
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-xl sm:text-2xl font-bold text-primary">{pkg.credits} créditos</p>
-                        {pkg.bonus > 0 && (
-                          <p className="text-xs text-primary/80">+{pkg.bonus} bônus</p>
-                        )}
-                        {savingsAmount > 0 && (
-                          <p className="text-xs text-green-500 font-medium mt-0.5">
-                            Economize R$ {savingsAmount.toFixed(2).replace('.', ',')}
-                          </p>
-                        )}
-                      </div>
-                    </div>
+                    <Badge className={`${pkg.badgeColor} text-white text-[10px] absolute -top-2.5 left-1/2 -translate-x-1/2`}>
+                      {pkg.badge}
+                    </Badge>
+                    <p className="text-lg font-bold text-primary">{pkg.credits} créditos</p>
+                    {pkg.bonus > 0 && (
+                      <p className="text-[11px] text-muted-foreground">+{pkg.bonus} bônus</p>
+                    )}
+                    {savingsAmount > 0 && (
+                      <p className="text-xs text-green-500 font-medium">
+                        Economize R$ {savingsAmount.toFixed(2).replace('.', ',')}
+                      </p>
+                    )}
                   </button>
                 );
               })}
