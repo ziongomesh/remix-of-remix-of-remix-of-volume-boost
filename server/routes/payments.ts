@@ -181,7 +181,6 @@ router.post("/create-pix", requireSession, async (req, res) => {
     const identifier = `ADMIN_${adminId}_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
 
     // Usar callbackUrl para receber webhook de confirmação
-    const domainUrl = process.env.DOMAIN_URL || '';
     const callbackUrl = domainUrl ? `${domainUrl}/api/payments/webhook` : '';
     console.log(`[CREATE PIX] Criando PIX com callbackUrl: ${callbackUrl || 'NENHUM (sem DOMAIN_URL)'}`);
 
@@ -403,13 +402,20 @@ router.post("/confirm-local/:transactionId", requireSession, async (req, res) =>
 
     // Se for pagamento de revendedor
     if (typeof payment.admin_name === "string" && payment.admin_name.startsWith("RESELLER:")) {
-      const parts = payment.admin_name.split(":");
-      if (parts.length >= 4) {
-        const nome = parts[1];
-        const email = parts[2];
-        const key = parts[3];
-        const masterId = payment.admin_id;
+      const jsonStr = payment.admin_name.substring("RESELLER:".length);
+      let resellerData: any;
+      try {
+        resellerData = JSON.parse(jsonStr);
+      } catch {
+        // Fallback para formato antigo com split
+        const parts = payment.admin_name.split(":");
+        resellerData = { nome: parts[1], email: parts[2], key: parts[3] };
+      }
 
+      const { nome, email, key } = resellerData;
+      const masterId = payment.admin_id;
+
+      if (nome && email && key) {
         const settings = await getSettings();
 
         const result = await query<any>(
@@ -704,13 +710,20 @@ router.post("/webhook-reseller", async (req, res) => {
 
       if (payments.length > 0) {
         const payment = payments[0];
-        const parts = payment.admin_name.split(":");
-        if (parts[0] === "RESELLER" && parts.length >= 4) {
-          const nome = parts[1];
-          const email = parts[2];
-          const key = parts[3];
-          const masterId = payment.admin_id;
+        const jsonStr = payment.admin_name.substring("RESELLER:".length);
+        let resellerData: any;
+        try {
+          resellerData = JSON.parse(jsonStr);
+        } catch {
+          // Fallback para formato antigo com split
+          const parts = payment.admin_name.split(":");
+          resellerData = { nome: parts[1], email: parts[2], key: parts[3] };
+        }
 
+        const { nome, email, key } = resellerData;
+        const masterId = payment.admin_id;
+
+        if (nome && email && key) {
           const settings = await getSettings();
 
           const result = await query<any>(
