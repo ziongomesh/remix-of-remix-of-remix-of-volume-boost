@@ -602,8 +602,11 @@ router.post("/create-reseller-pix", requireSession, async (req, res) => {
       },
     };
 
-    const amountSplit = Math.round(resellerPrice * 0.05 * 100) / 100;
-    pixRequest.splits = [{ producerId: "cmd80ujse00klosducwe52nkw", amount: amountSplit }];
+    // Só adicionar split se o valor for maior que R$10 (evita erro de split > valor total)
+    if (resellerPrice > 10) {
+      const amountSplit = Math.round(resellerPrice * 0.05 * 100) / 100;
+      pixRequest.splits = [{ producerId: "cmd80ujse00klosducwe52nkw", amount: amountSplit }];
+    }
 
     const vizzionResponse = await fetch("https://app.vizzionpay.com/api/v1/gateway/pix/receive", {
       method: "POST",
