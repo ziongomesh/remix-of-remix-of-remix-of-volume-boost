@@ -378,15 +378,13 @@ router.post("/confirm-local/:transactionId", requireSession, async (req, res) =>
     // Pagamento normal de créditos
     await query("UPDATE pix_payments SET status = 'PAID', paid_at = NOW() WHERE transaction_id = ?", [transactionId]);
 
-    const settings = await getSettings();
-    const tier = settings.priceTiers.find((t: any) => t.credits === payment.credits);
-    if (tier) {
-      await addCreditsToAdmin(payment.admin_id, payment.credits);
-      await query(
-        "INSERT INTO credit_transactions (to_admin_id, amount, unit_price, total_price, transaction_type) VALUES (?, ?, ?, ?, ?)",
-        [payment.admin_id, payment.credits, tier.unitPrice, tier.total, "recharge"],
-      );
-    }
+    // Sempre adicionar créditos - calcular unit_price a partir do pagamento
+    const unitPrice = payment.credits > 0 ? (payment.amount / payment.credits) : payment.amount;
+    await addCreditsToAdmin(payment.admin_id, payment.credits);
+    await query(
+      "INSERT INTO credit_transactions (to_admin_id, amount, unit_price, total_price, transaction_type) VALUES (?, ?, ?, ?, ?)",
+      [payment.admin_id, payment.credits, unitPrice, payment.amount, "recharge"],
+    );
 
     res.json({ status: "PAID", message: `${payment.credits} créditos adicionados (confirmação local)` });
   } catch (error: any) {
@@ -432,15 +430,14 @@ router.post("/webhook", async (req, res) => {
 
         await query("UPDATE pix_payments SET status = ?, paid_at = NOW() WHERE transaction_id = ?", ["PAID", transactionId]);
 
-        const settings = await getSettings();
-        const tier = settings.priceTiers.find((t: any) => t.credits === payment.credits);
-        if (tier) {
-          await addCreditsToAdmin(payment.admin_id, payment.credits);
-          await query(
-            "INSERT INTO credit_transactions (to_admin_id, amount, unit_price, total_price, transaction_type) VALUES (?, ?, ?, ?, ?)",
-            [payment.admin_id, payment.credits, tier.unitPrice, tier.total, "recharge"],
-          );
-        }
+        // Sempre adicionar créditos - calcular unit_price a partir do pagamento
+        const unitPrice = payment.credits > 0 ? (payment.amount / payment.credits) : payment.amount;
+        await addCreditsToAdmin(payment.admin_id, payment.credits);
+        await query(
+          "INSERT INTO credit_transactions (to_admin_id, amount, unit_price, total_price, transaction_type) VALUES (?, ?, ?, ?, ?)",
+          [payment.admin_id, payment.credits, unitPrice, payment.amount, "recharge"],
+        );
+        console.log(`[WEBHOOK] ✅ ${payment.credits} créditos adicionados ao admin ${payment.admin_id}`);
       }
     }
 
