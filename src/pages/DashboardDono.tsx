@@ -300,31 +300,26 @@ export default function DashboardDono() {
     try {
       let newAdminId: number | null = null;
 
+      const creditsToGive = giveCredits && parseInt(initialCredits) > 0 ? parseInt(initialCredits) : 0;
+
       if (createType === 'master') {
         const result = await api.admins.createMaster({
           nome: createForm.name,
           email: createForm.email.toLowerCase().trim(),
           key: createForm.password,
           criadoPor: admin!.id,
+          ...(creditsToGive > 0 ? { creditos: creditsToGive } : {}),
         });
-        // result may contain the new id
         newAdminId = typeof result === 'number' ? result : (result as any)?.id || null;
       } else {
-        const { data, error } = await supabase.rpc('create_reseller', {
-          p_creator_id: admin!.id,
-          p_session_token: admin!.session_token,
-          p_nome: createForm.name,
-          p_email: createForm.email.toLowerCase().trim(),
-          p_key: createForm.password,
+        const result = await api.admins.createReseller({
+          nome: createForm.name,
+          email: createForm.email.toLowerCase().trim(),
+          key: createForm.password,
+          criadoPor: admin!.id,
+          ...(creditsToGive > 0 ? { creditos: creditsToGive } : {}),
         });
-        if (error) throw new Error(error.message);
-        newAdminId = data as number;
-      }
-
-      // If credits to give
-      if (giveCredits && parseInt(initialCredits) > 0 && newAdminId) {
-        const creditsAmount = parseInt(initialCredits);
-        await (api as any).owner.transferCredits(newAdminId, creditsAmount);
+        newAdminId = typeof result === 'number' ? result : (result as any)?.id || null;
       }
 
       toast.success(`${createType === 'master' ? 'Master' : 'Revendedor'} criado com sucesso!`);
