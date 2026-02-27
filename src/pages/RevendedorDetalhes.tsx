@@ -108,7 +108,7 @@ export default function RevendedorDetalhes() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (admin && role === 'master' && id) {
+    if (admin && (role === 'master' || role === 'sub') && id) {
       fetchDetails();
     }
   }, [admin, role, id]);
@@ -153,7 +153,7 @@ export default function RevendedorDetalhes() {
     return <Navigate to="/login" replace />;
   }
 
-  if (role !== 'master') {
+  if (role !== 'master' && role !== 'sub') {
     return <Navigate to="/dashboard" replace />;
   }
 

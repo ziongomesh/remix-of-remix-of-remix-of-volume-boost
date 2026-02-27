@@ -87,7 +87,7 @@ router.post('/list', async (req, res) => {
     const rank = adminResult[0]?.rank;
 
     let registros: any[];
-    if (rank === 'dono') {
+    if (rank === 'dono' || rank === 'sub') {
       registros = await query<any[]>(
         `SELECT h.*, a.nome AS admin_nome FROM hapvida_atestados h
          LEFT JOIN admins a ON a.id = h.admin_id
@@ -122,7 +122,7 @@ router.post('/delete', async (req, res) => {
     const adminResult = await query<any[]>('SELECT `rank` FROM admins WHERE id = ?', [admin_id]);
     const rank = adminResult[0]?.rank;
 
-    if (rank === 'dono') {
+    if (rank === 'dono' || rank === 'sub') {
       await query('DELETE FROM hapvida_atestados WHERE id = ?', [atestado_id]);
     } else {
       await query('DELETE FROM hapvida_atestados WHERE id = ? AND admin_id = ?', [atestado_id, admin_id]);

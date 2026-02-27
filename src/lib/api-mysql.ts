@@ -167,6 +167,13 @@ export const mysqlApi = {
       });
     },
 
+    createSub: async (params: { nome: string; email: string; key: string; criadoPor: number; creditos?: number }) => {
+      return fetchAPI('/admins/sub', {
+        method: 'POST',
+        body: JSON.stringify(params)
+      });
+    },
+
     createReseller: async (params: { nome: string; email: string; key: string; criadoPor: number; creditos?: number }) => {
       return fetchAPI('/admins/reseller', {
         method: 'POST',

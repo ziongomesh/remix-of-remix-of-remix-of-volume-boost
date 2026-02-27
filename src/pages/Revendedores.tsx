@@ -24,7 +24,7 @@ export default function Revendedores() {
   const [loadingData, setLoadingData] = useState(true);
 
   useEffect(() => {
-    if (admin && role === 'master') {
+    if (admin && (role === 'master' || role === 'sub')) {
       fetchResellers();
     }
   }, [admin, role]);
@@ -53,7 +53,7 @@ export default function Revendedores() {
     return <Navigate to="/login" replace />;
   }
 
-  if (role !== 'master') {
+  if (role !== 'master' && role !== 'sub') {
     return <Navigate to="/dashboard" replace />;
   }
 

@@ -149,7 +149,7 @@ export default function DashboardDono() {
   const [savingLinks, setSavingLinks] = useState(false);
 
   // Create master/reseller
-  const [createType, setCreateType] = useState<'master' | 'revendedor'>('master');
+  const [createType, setCreateType] = useState<'sub' | 'master' | 'revendedor'>('master');
   const [createForm, setCreateForm] = useState({ name: '', email: '', password: '' });
   const [initialCredits, setInitialCredits] = useState('0');
   const [giveCredits, setGiveCredits] = useState(false);
@@ -302,7 +302,16 @@ export default function DashboardDono() {
 
       const creditsToGive = giveCredits && parseInt(initialCredits) > 0 ? parseInt(initialCredits) : 0;
 
-      if (createType === 'master') {
+      if (createType === 'sub') {
+        const result = await (api as any).admins.createSub({
+          nome: createForm.name,
+          email: createForm.email.toLowerCase().trim(),
+          key: createForm.password,
+          criadoPor: admin!.id,
+          ...(creditsToGive > 0 ? { creditos: creditsToGive } : {}),
+        });
+        newAdminId = typeof result === 'number' ? result : (result as any)?.id || null;
+      } else if (createType === 'master') {
         const result = await api.admins.createMaster({
           nome: createForm.name,
           email: createForm.email.toLowerCase().trim(),
@@ -322,7 +331,7 @@ export default function DashboardDono() {
         newAdminId = typeof result === 'number' ? result : (result as any)?.id || null;
       }
 
-      toast.success(`${createType === 'master' ? 'Master' : 'Revendedor'} criado com sucesso!`);
+      const typeLabel = createType === 'sub' ? 'Sub Dono' : createType === 'master' ? 'Master' : 'Revendedor';
       setCreateForm({ name: '', email: '', password: '' });
       setInitialCredits('0');
       setGiveCredits(false);
@@ -1058,10 +1067,19 @@ export default function DashboardDono() {
                       <UserPlus className="h-5 w-5 text-primary" />
                       Criar Conta
                     </CardTitle>
-                    <CardDescription>Crie uma conta Master ou Revendedor diretamente</CardDescription>
+                    <CardDescription>Crie uma conta {!isSub ? 'Sub Dono, ' : ''}Master ou Revendedor diretamente</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex gap-2">
+                      {!isSub && (
+                        <Button
+                          variant={createType === 'sub' ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setCreateType('sub')}
+                        >
+                          <Crown className="h-4 w-4 mr-1" /> Sub Dono
+                        </Button>
+                      )}
                       <Button
                         variant={createType === 'master' ? 'default' : 'outline'}
                         size="sm"
@@ -1126,7 +1144,7 @@ export default function DashboardDono() {
 
                     <Button onClick={handleCreateAccount} disabled={isCreating} className="w-full">
                       {isCreating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <UserPlus className="h-4 w-4 mr-2" />}
-                      Criar {createType === 'master' ? 'Master' : 'Revendedor'}
+                      Criar {createType === 'sub' ? 'Sub Dono' : createType === 'master' ? 'Master' : 'Revendedor'}
                     </Button>
                   </CardContent>
                 </Card>

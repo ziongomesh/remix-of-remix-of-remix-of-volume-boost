@@ -193,7 +193,7 @@ export default function CriarRevendedor() {
     return <Navigate to="/login" replace />;
   }
 
-  if (role !== 'master') {
+  if (role !== 'master' && role !== 'sub') {
     return <Navigate to="/dashboard" replace />;
   }
 

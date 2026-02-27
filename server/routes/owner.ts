@@ -115,8 +115,33 @@ router.get('/overview', async (req, res) => {
 });
 
 // GET /owner/all-admins - Listar todos os admins com contagem de serviços e último serviço
-router.get('/all-admins', async (_req, res) => {
+router.get('/all-admins', async (req, res) => {
   try {
+    const rank = (req as any).ownerRank;
+    const ownerId = (req as any).ownerId;
+    
+    let whereClause = '';
+    let whereParams: any[] = [];
+    
+    if (rank === 'sub') {
+      // Sub vê: a si mesmo + seus criados diretos + revendedores dos seus masters
+      const directCreated = await query<any[]>('SELECT id FROM admins WHERE criado_por = ?', [ownerId]);
+      const masterIds = directCreated.filter((a: any) => true).map((a: any) => a.id);
+      const allVisibleIds = [ownerId, ...masterIds];
+      
+      // Also get resellers created by sub's masters
+      if (masterIds.length > 0) {
+        const ph = masterIds.map(() => '?').join(',');
+        const subResellers = await query<any[]>(`SELECT id FROM admins WHERE criado_por IN (${ph})`, masterIds);
+        allVisibleIds.push(...subResellers.map((r: any) => r.id));
+      }
+      
+      const uniqueIds = [...new Set(allVisibleIds)];
+      const placeholders = uniqueIds.map(() => '?').join(',');
+      whereClause = `WHERE a.id IN (${placeholders})`;
+      whereParams = uniqueIds;
+    }
+    
     const admins = await query<any[]>(
       `SELECT a.id, a.nome, a.email, a.creditos, a.\`rank\`, a.profile_photo, a.created_at, a.last_active, a.criado_por,
               c.nome as criado_por_nome,
@@ -127,7 +152,9 @@ router.get('/all-admins', async (_req, res) => {
               (SELECT COUNT(*) FROM chas WHERE admin_id = a.id) as total_cha
        FROM admins a
        LEFT JOIN admins c ON a.criado_por = c.id
-       ORDER BY a.\`rank\` ASC, a.nome ASC`
+       ${whereClause}
+       ORDER BY a.\`rank\` ASC, a.nome ASC`,
+      whereParams
     );
 
     // Para cada admin, buscar último serviço criado

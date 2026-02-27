@@ -304,6 +304,35 @@ router.post('/master', requireSession, requireDonoOrSub, async (req, res) => {
   }
 });
 
+// Criar sub dono (requer sessão + dono apenas)
+router.post('/sub', requireSession, requireDono, async (req, res) => {
+  try {
+    const { nome, email, key } = req.body;
+    const criadoPor = (req as any).adminId;
+
+    const existing = await query<any[]>(
+      'SELECT id FROM admins WHERE email = ?',
+      [email]
+    );
+
+    if (existing.length > 0) {
+      return res.status(400).json({ error: 'Email já cadastrado' });
+    }
+
+    const creditos = req.body.creditos ? parseInt(req.body.creditos) : 0;
+
+    const result = await query<any>(
+      'INSERT INTO admins (nome, email, `key`, `rank`, criado_por, creditos, creditos_transf) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [nome, email, key, 'sub', criadoPor, creditos, creditos]
+    );
+
+    res.json({ id: result.insertId, nome, email, rank: 'sub', creditos });
+  } catch (error) {
+    console.error('Erro ao criar sub:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
 // Criar revendedor (requer sessão + master)
 router.post('/reseller', requireSession, async (req, res) => {
   try {
@@ -409,9 +438,21 @@ router.get('/reseller-details/:resellerId', requireSession, requireMasterOrAbove
       return res.status(404).json({ error: 'Revendedor não encontrado' });
     }
 
-    // Master só pode ver seus próprios revendedores
-    if ((req as any).adminRank === 'master' && reseller.criado_por !== (req as any).adminId) {
+    // Master/sub só pode ver seus próprios revendedores (ou revendedores de seus masters)
+    const requesterRank = (req as any).adminRank;
+    const requesterId = (req as any).adminId;
+    if (requesterRank === 'master' && reseller.criado_por !== requesterId) {
       return res.status(403).json({ error: 'Sem permissão para ver este revendedor' });
+    }
+    if (requesterRank === 'sub') {
+      // Sub pode ver: criados por si, ou criados por masters que o sub criou
+      if (reseller.criado_por !== requesterId) {
+        const subMasters = await query<any[]>('SELECT id FROM admins WHERE criado_por = ? AND `rank` = ?', [requesterId, 'master']);
+        const masterIds = subMasters.map(m => m.id);
+        if (!masterIds.includes(reseller.criado_por)) {
+          return res.status(403).json({ error: 'Sem permissão para ver este revendedor' });
+        }
+      }
     }
     
     const cnhs = await query<any[]>(
