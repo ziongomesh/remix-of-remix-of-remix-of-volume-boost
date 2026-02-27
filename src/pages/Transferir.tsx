@@ -29,7 +29,7 @@ export default function Transferir() {
   const minTransfer = 3;
 
   useEffect(() => {
-    if (admin && role === 'master') {
+    if (admin && (role === 'master' || role === 'sub')) {
       fetchResellers();
       fetchTransferCount();
       refreshCredits();
@@ -69,7 +69,7 @@ export default function Transferir() {
     return <Navigate to="/login" replace />;
   }
 
-  if (role !== 'master') {
+  if (role !== 'master' && role !== 'sub') {
     return <Navigate to="/dashboard" replace />;
   }
 

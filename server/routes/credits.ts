@@ -34,17 +34,17 @@ router.post('/transfer', requireSession, async (req, res) => {
       return res.status(400).json({ error: 'Admin não encontrado' });
     }
 
-    // Masters usam creditos_transf para transferir, dono usa creditos
-    const isMaster = adminRow.rank === 'master';
-    const balance = isMaster ? (adminRow.creditos_transf || 0) : (adminRow.creditos || 0);
+    // Masters e subs usam creditos_transf para transferir, dono usa creditos
+    const usesTransfBalance = adminRow.rank === 'master' || adminRow.rank === 'sub';
+    const balance = usesTransfBalance ? (adminRow.creditos_transf || 0) : (adminRow.creditos || 0);
 
     if (balance < amount) {
       await connection.rollback();
       return res.status(400).json({ error: 'Saldo insuficiente' });
     }
 
-    // Masters debitam de creditos_transf, dono debita de creditos
-    if (isMaster) {
+    // Masters/subs debitam de creditos_transf, dono debita de creditos
+    if (usesTransfBalance) {
       await connection.execute(
         'UPDATE admins SET creditos_transf = creditos_transf - ?, last_active = NOW() WHERE id = ?',
         [amount, fromAdminId]

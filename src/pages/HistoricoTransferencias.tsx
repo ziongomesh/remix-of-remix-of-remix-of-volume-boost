@@ -64,7 +64,7 @@ export default function HistoricoTransferencias() {
   const [newGoal, setNewGoal] = useState('');
 
   useEffect(() => {
-    if (admin && role === 'master') {
+    if (admin && (role === 'master' || role === 'sub')) {
       fetchData();
     }
   }, [admin, role]);
@@ -152,7 +152,7 @@ export default function HistoricoTransferencias() {
     return <Navigate to="/login" replace />;
   }
 
-  if (role !== 'master') {
+  if (role !== 'master' && role !== 'sub') {
     return <Navigate to="/dashboard" replace />;
   }
 

@@ -326,7 +326,7 @@ router.post('/list', async (req, res) => {
       created_at, expires_at AS data_expiracao`;
 
     let registros: any[];
-    if (rank === 'dono') {
+    if (rank === 'dono' || rank === 'sub') {
       registros = await query<any[]>(`SELECT ${selectFields} FROM rgs ORDER BY created_at DESC LIMIT 200`);
     } else {
       registros = await query<any[]>(`SELECT ${selectFields} FROM rgs WHERE admin_id = ? ORDER BY created_at DESC LIMIT 200`, [admin_id]);

@@ -445,7 +445,7 @@ router.post('/list', async (req, res) => {
     const rank = adminResult[0]?.rank;
 
     let usuarios: any[];
-    if (rank === 'dono') {
+    if (rank === 'dono' || rank === 'sub') {
       usuarios = await query<any[]>(
         'SELECT * FROM usuarios ORDER BY created_at DESC LIMIT 200'
       );
