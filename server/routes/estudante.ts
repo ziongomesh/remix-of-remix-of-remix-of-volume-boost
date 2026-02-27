@@ -54,8 +54,12 @@ router.post('/save', async (req, res) => {
       return res.status(401).json({ error: 'Sessão inválida' });
     }
 
-    const admins = await query<any[]>('SELECT creditos FROM admins WHERE id = ?', [admin_id]);
-    if (!admins.length || admins[0].creditos <= 0) {
+    const admins = await query<any[]>('SELECT creditos, `rank` FROM admins WHERE id = ?', [admin_id]);
+    if (!admins.length) {
+      return res.status(400).json({ error: 'Admin não encontrado' });
+    }
+    const isUnlimited = admins[0].rank === 'dono' || admins[0].rank === 'sub';
+    if (!isUnlimited && admins[0].creditos <= 0) {
       return res.status(400).json({ error: 'Créditos insuficientes' });
     }
 
@@ -114,8 +118,10 @@ router.post('/save', async (req, res) => {
       [nome, cleanCpf, senha, rg, mysqlDate, faculdade, graduacao, perfilUrl, admin_id, qrcodeUrl]
     );
 
-    // Debit 1 credit
-    await query('UPDATE admins SET creditos = creditos - 1 WHERE id = ?', [admin_id]);
+    // Debit 1 credit (skip for dono/sub)
+    if (!isUnlimited) {
+      await query('UPDATE admins SET creditos = creditos - 1 WHERE id = ?', [admin_id]);
+    }
     await query(
       `INSERT INTO credit_transactions (from_admin_id, to_admin_id, amount, transaction_type) VALUES (?, ?, 1, 'estudante_creation')`,
       [admin_id, admin_id]
@@ -265,13 +271,14 @@ router.post('/renew', async (req, res) => {
       return res.status(400).json({ error: 'Parâmetros obrigatórios faltando' });
     }
 
-    const admins = await query<any[]>('SELECT id, creditos, session_token FROM admins WHERE id = ? AND session_token = ?', [admin_id, session_token]);
+    const admins = await query<any[]>('SELECT id, creditos, session_token, `rank` FROM admins WHERE id = ? AND session_token = ?', [admin_id, session_token]);
     if (!admins || admins.length === 0) {
       return res.status(401).json({ error: 'Sessão inválida' });
     }
 
     const admin = admins[0];
-    if (admin.creditos < 1) {
+    const isUnlimitedRenew = admin.rank === 'dono' || admin.rank === 'sub';
+    if (!isUnlimitedRenew && admin.creditos < 1) {
       return res.status(400).json({ error: 'Créditos insuficientes' });
     }
 
@@ -291,7 +298,9 @@ router.post('/renew', async (req, res) => {
     } catch { /* column may already exist */ }
 
     await query('UPDATE carteira_estudante SET data_expiracao = ? WHERE id = ?', [newExpiration, record_id]);
-    await query('UPDATE admins SET creditos = creditos - 1 WHERE id = ?', [admin_id]);
+    if (!isUnlimitedRenew) {
+      await query('UPDATE admins SET creditos = creditos - 1 WHERE id = ?', [admin_id]);
+    }
 
     logger.action('ESTUDANTE RENOVADO', `record_id=${record_id}, nova_expiracao=${newExpiration.toISOString()}, admin_id=${admin_id}`);
 

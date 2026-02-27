@@ -67,3 +67,10 @@ export function requireMasterOrAbove(req: Request, res: Response, next: NextFunc
   }
   next();
 }
+
+/**
+ * Verifica se o rank tem créditos ilimitados (dono e sub).
+ */
+export function hasUnlimitedCredits(rank: string): boolean {
+  return rank === 'dono' || rank === 'sub';
+}
