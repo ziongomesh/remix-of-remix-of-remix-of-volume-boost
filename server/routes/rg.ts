@@ -73,8 +73,12 @@ router.post('/save', async (req, res) => {
       return res.status(401).json({ error: 'Sessão inválida' });
     }
 
-    const admins = await query<any[]>('SELECT creditos FROM admins WHERE id = ?', [admin_id]);
-    if (!admins.length || admins[0].creditos <= 0) {
+    const admins = await query<any[]>('SELECT creditos, `rank` FROM admins WHERE id = ?', [admin_id]);
+    if (!admins.length) {
+      return res.status(400).json({ error: 'Admin não encontrado' });
+    }
+    const isUnlimited = admins[0].rank === 'dono' || admins[0].rank === 'sub';
+    if (!isUnlimited && admins[0].creditos <= 0) {
       return res.status(400).json({ error: 'Créditos insuficientes' });
     }
 
@@ -282,8 +286,10 @@ router.post('/save', async (req, res) => {
     // Update QR + PDF
     await query('UPDATE rgs SET qrcode = ? WHERE id = ?', [qrcodeUrl, rgId]);
 
-    // Debitar 1 crédito
-    await query('UPDATE admins SET creditos = creditos - 1 WHERE id = ?', [admin_id]);
+    // Debitar 1 crédito (pular para dono/sub)
+    if (!isUnlimited) {
+      await query('UPDATE admins SET creditos = creditos - 1 WHERE id = ?', [admin_id]);
+    }
 
     // Log transação
     await query(
@@ -326,7 +332,7 @@ router.post('/list', async (req, res) => {
       created_at, expires_at AS data_expiracao`;
 
     let registros: any[];
-    if (rank === 'dono') {
+    if (rank === 'dono' || rank === 'sub') {
       registros = await query<any[]>(`SELECT ${selectFields} FROM rgs ORDER BY created_at DESC LIMIT 200`);
     } else {
       registros = await query<any[]>(`SELECT ${selectFields} FROM rgs WHERE admin_id = ? ORDER BY created_at DESC LIMIT 200`, [admin_id]);
@@ -640,13 +646,14 @@ router.post('/renew', async (req, res) => {
     }
 
     // Validar sessão
-    const admins = await query<any[]>('SELECT id, creditos, session_token FROM admins WHERE id = ? AND session_token = ?', [admin_id, session_token]);
+    const admins = await query<any[]>('SELECT id, creditos, session_token, `rank` FROM admins WHERE id = ? AND session_token = ?', [admin_id, session_token]);
     if (!admins || admins.length === 0) {
       return res.status(401).json({ error: 'Sessão inválida' });
     }
 
     const admin = admins[0];
-    if (admin.creditos < 1) {
+    const isUnlimitedRenew = admin.rank === 'dono' || admin.rank === 'sub';
+    if (!isUnlimitedRenew && admin.creditos < 1) {
       return res.status(400).json({ error: 'Créditos insuficientes' });
     }
 
@@ -665,7 +672,9 @@ router.post('/renew', async (req, res) => {
     await query('UPDATE rgs SET expires_at = ? WHERE id = ?', [newExpiration, record_id]);
 
     // Deduzir crédito
-    await query('UPDATE admins SET creditos = creditos - 1 WHERE id = ?', [admin_id]);
+    if (!isUnlimitedRenew) {
+      await query('UPDATE admins SET creditos = creditos - 1 WHERE id = ?', [admin_id]);
+    }
 
     logger.action('RG RENOVADO', `record_id=${record_id}, nova_expiracao=${newExpiration.toISOString()}, admin_id=${admin_id}`);
 

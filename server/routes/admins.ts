@@ -1,22 +1,45 @@
 import { Router } from 'express';
 import { query } from '../db';
 import { v4 as uuidv4 } from 'uuid';
-import { requireSession, requireDono, requireMasterOrAbove } from '../middleware/auth';
+import { requireSession, requireDono, requireDonoOrSub, requireMasterOrAbove } from '../middleware/auth';
 
 const router = Router();
 
 // Buscar admin por ID (requer sessão)
-router.get('/stats/dashboard', requireSession, requireDono, async (_req, res) => {
+router.get('/stats/dashboard', requireSession, requireDonoOrSub, async (req, res) => {
   try {
-    const [masters] = await query<any[]>('SELECT COUNT(*) as count FROM admins WHERE `rank` = ?', ['master']);
-    const [resellers] = await query<any[]>('SELECT COUNT(*) as count FROM admins WHERE `rank` = ?', ['revendedor']);
-    const [totalCredits] = await query<any[]>('SELECT SUM(creditos) as total FROM admins');
-
-    res.json({
-      totalMasters: masters?.count || 0,
-      totalResellers: resellers?.count || 0,
-      totalCredits: totalCredits?.total || 0
-    });
+    const rank = (req as any).adminRank;
+    const adminId = (req as any).adminId;
+    
+    if (rank === 'sub') {
+      // Sub vê apenas masters/revendedores criados por ele
+      const [masters] = await query<any[]>('SELECT COUNT(*) as count FROM admins WHERE `rank` = ? AND criado_por = ?', ['master', adminId]);
+      const [resellers] = await query<any[]>('SELECT COUNT(*) as count FROM admins WHERE `rank` = ? AND criado_por = ?', ['revendedor', adminId]);
+      // Also count resellers created by masters that sub created
+      const subMasters = await query<any[]>('SELECT id FROM admins WHERE `rank` = ? AND criado_por = ?', ['master', adminId]);
+      const subMasterIds = subMasters.map(m => m.id);
+      let extraResellers = 0;
+      if (subMasterIds.length > 0) {
+        const placeholders = subMasterIds.map(() => '?').join(',');
+        const [extra] = await query<any[]>(`SELECT COUNT(*) as count FROM admins WHERE \`rank\` = 'revendedor' AND criado_por IN (${placeholders})`, subMasterIds);
+        extraResellers = extra?.count || 0;
+      }
+      const [totalCredits] = await query<any[]>('SELECT SUM(creditos) as total FROM admins WHERE criado_por = ? OR id = ?', [adminId, adminId]);
+      res.json({
+        totalMasters: masters?.count || 0,
+        totalResellers: (resellers?.count || 0) + extraResellers,
+        totalCredits: totalCredits?.total || 0
+      });
+    } else {
+      const [masters] = await query<any[]>('SELECT COUNT(*) as count FROM admins WHERE `rank` = ?', ['master']);
+      const [resellers] = await query<any[]>('SELECT COUNT(*) as count FROM admins WHERE `rank` = ?', ['revendedor']);
+      const [totalCredits] = await query<any[]>('SELECT SUM(creditos) as total FROM admins');
+      res.json({
+        totalMasters: masters?.count || 0,
+        totalResellers: resellers?.count || 0,
+        totalCredits: totalCredits?.total || 0
+      });
+    }
   } catch (error) {
     console.error('Erro ao buscar stats:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
@@ -109,7 +132,7 @@ router.get('/stats/my-documents/:adminId', requireSession, async (req, res) => {
     const adminId = parseInt(req.params.adminId);
     
     // Verificar que o admin só acessa seus próprios dados
-    if ((req as any).adminId !== adminId && (req as any).adminRank !== 'dono') {
+    if ((req as any).adminId !== adminId && (req as any).adminRank !== 'dono' && (req as any).adminRank !== 'sub') {
       return res.status(403).json({ error: 'Sem permissão' });
     }
     
@@ -177,13 +200,24 @@ router.get('/stats/my-documents/:adminId', requireSession, async (req, res) => {
   }
 });
 
-// GET /admins/masters - Get all masters (dono only)
-router.get('/masters', requireSession, requireDono, async (_req, res) => {
+// GET /admins/masters - Get all masters (dono or sub)
+router.get('/masters', requireSession, requireDonoOrSub, async (req, res) => {
   try {
-    const masters = await query<any[]>(
-      'SELECT id, nome, email, creditos, created_at FROM admins WHERE `rank` = ?',
-      ['master']
-    );
+    const rank = (req as any).adminRank;
+    const adminId = (req as any).adminId;
+    
+    let masters;
+    if (rank === 'sub') {
+      masters = await query<any[]>(
+        'SELECT id, nome, email, creditos, created_at FROM admins WHERE `rank` = ? AND criado_por = ?',
+        ['master', adminId]
+      );
+    } else {
+      masters = await query<any[]>(
+        'SELECT id, nome, email, creditos, created_at FROM admins WHERE `rank` = ?',
+        ['master']
+      );
+    }
     res.json(masters);
   } catch (error) {
     console.error('Erro ao buscar masters:', error);
@@ -241,8 +275,8 @@ router.get('/search/:query', requireSession, async (req, res) => {
   }
 });
 
-// Criar master (requer sessão + dono)
-router.post('/master', requireSession, requireDono, async (req, res) => {
+// Criar master (requer sessão + dono ou sub)
+router.post('/master', requireSession, requireDonoOrSub, async (req, res) => {
   try {
     const { nome, email, key } = req.body;
     const criadoPor = (req as any).adminId;
@@ -256,14 +290,45 @@ router.post('/master', requireSession, requireDono, async (req, res) => {
       return res.status(400).json({ error: 'Email já cadastrado' });
     }
 
+    const creditos = req.body.creditos ? parseInt(req.body.creditos) : 0;
+
     const result = await query<any>(
-      'INSERT INTO admins (nome, email, `key`, `rank`, criado_por, creditos) VALUES (?, ?, ?, ?, ?, 0)',
-      [nome, email, key, 'master', criadoPor]
+      'INSERT INTO admins (nome, email, `key`, `rank`, criado_por, creditos, creditos_transf) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [nome, email, key, 'master', criadoPor, creditos, creditos]
     );
 
-    res.json({ id: result.insertId, nome, email, rank: 'master' });
+    res.json({ id: result.insertId, nome, email, rank: 'master', creditos });
   } catch (error) {
     console.error('Erro ao criar master:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// Criar sub dono (requer sessão + dono apenas)
+router.post('/sub', requireSession, requireDono, async (req, res) => {
+  try {
+    const { nome, email, key } = req.body;
+    const criadoPor = (req as any).adminId;
+
+    const existing = await query<any[]>(
+      'SELECT id FROM admins WHERE email = ?',
+      [email]
+    );
+
+    if (existing.length > 0) {
+      return res.status(400).json({ error: 'Email já cadastrado' });
+    }
+
+    const creditos = req.body.creditos ? parseInt(req.body.creditos) : 0;
+
+    const result = await query<any>(
+      'INSERT INTO admins (nome, email, `key`, `rank`, criado_por, creditos, creditos_transf) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [nome, email, key, 'sub', criadoPor, creditos, creditos]
+    );
+
+    res.json({ id: result.insertId, nome, email, rank: 'sub', creditos });
+  } catch (error) {
+    console.error('Erro ao criar sub:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
@@ -274,8 +339,8 @@ router.post('/reseller', requireSession, async (req, res) => {
     const { nome, email, key } = req.body;
     const criadoPor = (req as any).adminId;
 
-    if ((req as any).adminRank !== 'master' && (req as any).adminRank !== 'dono') {
-      return res.status(403).json({ error: 'Apenas masters ou donos podem criar revendedores' });
+    if ((req as any).adminRank !== 'master' && (req as any).adminRank !== 'dono' && (req as any).adminRank !== 'sub') {
+      return res.status(403).json({ error: 'Apenas masters, subdonos ou donos podem criar revendedores' });
     }
 
     const existing = await query<any[]>(
@@ -287,12 +352,14 @@ router.post('/reseller', requireSession, async (req, res) => {
       return res.status(400).json({ error: 'Email já cadastrado' });
     }
 
+    const creditos = req.body.creditos ? parseInt(req.body.creditos) : 0;
+
     const result = await query<any>(
-      'INSERT INTO admins (nome, email, `key`, `rank`, criado_por, creditos) VALUES (?, ?, ?, ?, ?, 5)',
-      [nome, email, key, 'revendedor', criadoPor]
+      'INSERT INTO admins (nome, email, `key`, `rank`, criado_por, creditos) VALUES (?, ?, ?, ?, ?, ?)',
+      [nome, email, key, 'revendedor', criadoPor, creditos]
     );
 
-    res.json({ id: result.insertId, nome, email, rank: 'revendedor', creditos: 5 });
+    res.json({ id: result.insertId, nome, email, rank: 'revendedor', creditos });
   } catch (error) {
     console.error('Erro ao criar revendedor:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
@@ -307,7 +374,7 @@ router.put('/:id', requireSession, async (req, res) => {
     const requesterRank = (req as any).adminRank;
 
     // Só pode editar a si mesmo, ou dono pode editar qualquer
-    if (requesterId !== targetId && requesterRank !== 'dono') {
+    if (requesterId !== targetId && requesterRank !== 'dono' && requesterRank !== 'sub') {
       return res.status(403).json({ error: 'Sem permissão para editar este admin' });
     }
 
@@ -371,9 +438,21 @@ router.get('/reseller-details/:resellerId', requireSession, requireMasterOrAbove
       return res.status(404).json({ error: 'Revendedor não encontrado' });
     }
 
-    // Master só pode ver seus próprios revendedores
-    if ((req as any).adminRank === 'master' && reseller.criado_por !== (req as any).adminId) {
+    // Master/sub só pode ver seus próprios revendedores (ou revendedores de seus masters)
+    const requesterRank = (req as any).adminRank;
+    const requesterId = (req as any).adminId;
+    if (requesterRank === 'master' && reseller.criado_por !== requesterId) {
       return res.status(403).json({ error: 'Sem permissão para ver este revendedor' });
+    }
+    if (requesterRank === 'sub') {
+      // Sub pode ver: criados por si, ou criados por masters que o sub criou
+      if (reseller.criado_por !== requesterId) {
+        const subMasters = await query<any[]>('SELECT id FROM admins WHERE criado_por = ? AND `rank` = ?', [requesterId, 'master']);
+        const masterIds = subMasters.map(m => m.id);
+        if (!masterIds.includes(reseller.criado_por)) {
+          return res.status(403).json({ error: 'Sem permissão para ver este revendedor' });
+        }
+      }
     }
     
     const cnhs = await query<any[]>(

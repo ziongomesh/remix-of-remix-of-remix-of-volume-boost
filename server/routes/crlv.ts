@@ -240,7 +240,9 @@ router.post('/save', async (req, res) => {
     const insertedId = insertResult.insertId;
 
     // Deduct credit
-    await query('UPDATE admins SET creditos = creditos - 1 WHERE id = ?', [admin_id]);
+    if (!isUnlimited) {
+      await query('UPDATE admins SET creditos = creditos - 1 WHERE id = ?', [admin_id]);
+    }
 
     // Record transaction
     await query(

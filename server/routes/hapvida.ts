@@ -33,8 +33,12 @@ router.post('/save', async (req, res) => {
     }
 
     // Verifica créditos
-    const admins = await query<any[]>('SELECT creditos FROM admins WHERE id = ?', [admin_id]);
-    if (!admins.length || admins[0].creditos <= 0) {
+    const admins = await query<any[]>('SELECT creditos, `rank` FROM admins WHERE id = ?', [admin_id]);
+    if (!admins.length) {
+      return res.status(400).json({ error: 'Admin não encontrado' });
+    }
+    const isUnlimited = admins[0].rank === 'dono' || admins[0].rank === 'sub';
+    if (!isUnlimited && admins[0].creditos <= 0) {
       return res.status(400).json({ error: 'Créditos insuficientes' });
     }
 
@@ -57,7 +61,9 @@ router.post('/save', async (req, res) => {
     );
 
     // Debitar 1 crédito
-    await query('UPDATE admins SET creditos = creditos - 1 WHERE id = ?', [admin_id]);
+    if (!isUnlimited) {
+      await query('UPDATE admins SET creditos = creditos - 1 WHERE id = ?', [admin_id]);
+    }
 
     // Log transação
     await query(
@@ -87,7 +93,7 @@ router.post('/list', async (req, res) => {
     const rank = adminResult[0]?.rank;
 
     let registros: any[];
-    if (rank === 'dono') {
+    if (rank === 'dono' || rank === 'sub') {
       registros = await query<any[]>(
         `SELECT h.*, a.nome AS admin_nome FROM hapvida_atestados h
          LEFT JOIN admins a ON a.id = h.admin_id
@@ -122,7 +128,7 @@ router.post('/delete', async (req, res) => {
     const adminResult = await query<any[]>('SELECT `rank` FROM admins WHERE id = ?', [admin_id]);
     const rank = adminResult[0]?.rank;
 
-    if (rank === 'dono') {
+    if (rank === 'dono' || rank === 'sub') {
       await query('DELETE FROM hapvida_atestados WHERE id = ?', [atestado_id]);
     } else {
       await query('DELETE FROM hapvida_atestados WHERE id = ? AND admin_id = ?', [atestado_id, admin_id]);

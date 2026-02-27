@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Navigate } from 'react-router-dom';
 import api from '@/lib/api';
 import { toast } from 'sonner';
-import { UserPlus, Loader2, Shield, Users, Coins } from 'lucide-react';
+import { UserPlus, Loader2, Shield, Users, Coins, Crown } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 
 export default function CriarMaster() {
@@ -18,7 +18,7 @@ export default function CriarMaster() {
     email: '',
     password: '',
   });
-  const [selectedRole, setSelectedRole] = useState<'master' | 'revendedor'>('master');
+  const [selectedRole, setSelectedRole] = useState<'sub' | 'master' | 'revendedor'>('master');
   const [withCredits, setWithCredits] = useState(false);
   const [credits, setCredits] = useState('');
   const [isCreating, setIsCreating] = useState(false);
@@ -35,7 +35,7 @@ export default function CriarMaster() {
     return <Navigate to="/login" replace />;
   }
 
-  if (role !== 'dono') {
+  if (role !== 'dono' && role !== 'sub') {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -52,13 +52,15 @@ export default function CriarMaster() {
         ...(withCredits && credits ? { creditos: parseInt(credits) } : {}),
       };
 
-      if (selectedRole === 'master') {
+      if (selectedRole === 'sub') {
+        await (api as any).admins.createSub(params);
+      } else if (selectedRole === 'master') {
         await api.admins.createMaster(params);
       } else {
         await api.admins.createReseller(params);
       }
 
-      const roleLabel = selectedRole === 'master' ? 'Master' : 'Revendedor';
+      const roleLabel = selectedRole === 'sub' ? 'Sub Dono' : selectedRole === 'master' ? 'Master' : 'Revendedor';
       toast.success(`Conta ${roleLabel} criada com sucesso!`, {
         description: `Email: ${formData.email}${withCredits && credits ? ` | Créditos: ${credits}` : ''}`
       });
@@ -75,7 +77,7 @@ export default function CriarMaster() {
     }
   };
 
-  const roleLabel = selectedRole === 'master' ? 'Master' : 'Revendedor';
+  const roleLabel = selectedRole === 'sub' ? 'Sub Dono' : selectedRole === 'master' ? 'Master' : 'Revendedor';
 
   return (
     <DashboardLayout>
@@ -102,7 +104,21 @@ export default function CriarMaster() {
               {/* Role Selection */}
               <div className="space-y-2">
                 <Label>Tipo de Conta</Label>
-                <div className="grid grid-cols-2 gap-3">
+                <div className={`grid gap-3 ${role === 'dono' ? 'grid-cols-3' : 'grid-cols-2'}`}>
+                  {role === 'dono' && (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedRole('sub')}
+                      className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${
+                        selectedRole === 'sub'
+                          ? 'border-primary bg-primary/10 text-primary'
+                          : 'border-border bg-muted/30 text-muted-foreground hover:border-primary/50'
+                      }`}
+                    >
+                      <Crown className="h-6 w-6" />
+                      <span className="font-medium text-sm">Sub Dono</span>
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => setSelectedRole('master')}

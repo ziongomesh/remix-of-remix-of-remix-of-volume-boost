@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { query } from '../db';
-import { requireSession, requireDono } from '../middleware/auth';
+import { requireSession, requireDonoOrSub } from '../middleware/auth';
 
 const router = Router();
 
@@ -17,8 +17,8 @@ router.get('/', requireSession, async (_req, res) => {
   }
 });
 
-// Criar notícia (requer sessão + dono)
-router.post('/', requireSession, requireDono, async (req, res) => {
+// Criar notícia (requer sessão + dono ou sub)
+router.post('/', requireSession, requireDonoOrSub, async (req, res) => {
   try {
     const { titulo, informacao } = req.body;
     if (!titulo || !informacao) {
@@ -37,8 +37,8 @@ router.post('/', requireSession, requireDono, async (req, res) => {
   }
 });
 
-// Atualizar notícia (requer sessão + dono)
-router.put('/:id', requireSession, requireDono, async (req, res) => {
+// Atualizar notícia (requer sessão + dono ou sub)
+router.put('/:id', requireSession, requireDonoOrSub, async (req, res) => {
   try {
     const { titulo, informacao } = req.body;
     const updates: string[] = [];
@@ -60,8 +60,8 @@ router.put('/:id', requireSession, requireDono, async (req, res) => {
   }
 });
 
-// Deletar notícia (requer sessão + dono)
-router.delete('/:id', requireSession, requireDono, async (req, res) => {
+// Deletar notícia (requer sessão + dono ou sub)
+router.delete('/:id', requireSession, requireDonoOrSub, async (req, res) => {
   try {
     await query('DELETE FROM noticias WHERE id = ?', [req.params.id]);
     res.json({ success: true });

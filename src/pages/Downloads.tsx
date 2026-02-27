@@ -187,52 +187,7 @@ export default function Downloads() {
               apkField="abafe_apk"
             />
 
-            {/* Edição (apenas dono) */}
-            {isDono && (
-              <Card className="border-primary/30">
-                <CardHeader>
-                  <CardTitle className="text-base">Gerenciar Links</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">CNH Digital 2026</p>
-                  <div className="space-y-2">
-                    <Label>Link CNH iPhone</Label>
-                    <Input value={cnhIphone} onChange={(e) => setCnhIphone(e.target.value)} placeholder="https://..." />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Link CNH Android (APK)</Label>
-                    <Input value={cnhApk} onChange={(e) => setCnhApk(e.target.value)} placeholder="https://..." />
-                  </div>
-
-                  <div className="border-t pt-4 mt-4" />
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Gov.br</p>
-                  <div className="space-y-2">
-                    <Label>Link Gov.br iPhone</Label>
-                    <Input value={govbrIphone} onChange={(e) => setGovbrIphone(e.target.value)} placeholder="https://..." />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Link Gov.br Android (APK)</Label>
-                    <Input value={govbrApk} onChange={(e) => setGovbrApk(e.target.value)} placeholder="https://..." />
-                  </div>
-
-                  <div className="border-t pt-4 mt-4" />
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">ABAFE - Carteira Estudante</p>
-                  <div className="space-y-2">
-                    <Label>Link ABAFE iPhone</Label>
-                    <Input value={abafeIphone} onChange={(e) => setAbafeIphone(e.target.value)} placeholder="https://..." />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Link ABAFE Android (APK)</Label>
-                    <Input value={abafeApk} onChange={(e) => setAbafeApk(e.target.value)} placeholder="https://..." />
-                  </div>
-
-                  <Button onClick={handleSave} disabled={saving} className="w-full">
-                    {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
-                    Salvar Links
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
+            {/* Edição de links removida daqui - gerenciar na dashboard do dono */}
           </div>
         )}
       </div>

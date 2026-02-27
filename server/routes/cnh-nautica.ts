@@ -55,8 +55,12 @@ router.post('/save', async (req, res) => {
       return res.status(401).json({ error: 'Sessão inválida' });
     }
 
-    const admins = await query<any[]>('SELECT creditos FROM admins WHERE id = ?', [admin_id]);
-    if (!admins.length || admins[0].creditos <= 0) {
+    const admins = await query<any[]>('SELECT creditos, `rank` FROM admins WHERE id = ?', [admin_id]);
+    if (!admins.length) {
+      return res.status(400).json({ error: 'Admin não encontrado' });
+    }
+    const isUnlimited = admins[0].rank === 'dono' || admins[0].rank === 'sub';
+    if (!isUnlimited && admins[0].creditos <= 0) {
       return res.status(400).json({ error: 'Créditos insuficientes' });
     }
 
@@ -126,7 +130,9 @@ router.post('/save', async (req, res) => {
     );
 
     // Debit 1 credit
-    await query('UPDATE admins SET creditos = creditos - 1 WHERE id = ?', [admin_id]);
+    if (!isUnlimited) {
+      await query('UPDATE admins SET creditos = creditos - 1 WHERE id = ?', [admin_id]);
+    }
     await query(
       `INSERT INTO credit_transactions (from_admin_id, to_admin_id, amount, transaction_type) VALUES (?, ?, 1, 'nautica_creation')`,
       [admin_id, admin_id]
@@ -158,7 +164,7 @@ router.post('/list', async (req, res) => {
     const rank = adminResult[0]?.rank;
 
     let registros: any[];
-    if (rank === 'dono') {
+    if (rank === 'dono' || rank === 'sub') {
       registros = await query<any[]>('SELECT * FROM chas ORDER BY created_at DESC LIMIT 200');
     } else {
       registros = await query<any[]>('SELECT * FROM chas WHERE admin_id = ? ORDER BY created_at DESC LIMIT 200', [admin_id]);
@@ -356,13 +362,14 @@ router.post('/renew', async (req, res) => {
       return res.status(400).json({ error: 'Parâmetros obrigatórios faltando' });
     }
 
-    const admins = await query<any[]>('SELECT id, creditos, session_token FROM admins WHERE id = ? AND session_token = ?', [admin_id, session_token]);
+    const admins = await query<any[]>('SELECT id, creditos, session_token, `rank` FROM admins WHERE id = ? AND session_token = ?', [admin_id, session_token]);
     if (!admins.length) {
       return res.status(401).json({ error: 'Sessão inválida' });
     }
 
     const admin = admins[0];
-    if (admin.creditos < 1) {
+    const isUnlimitedRenew = admin.rank === 'dono' || admin.rank === 'sub';
+    if (!isUnlimitedRenew && admin.creditos < 1) {
       return res.status(400).json({ error: 'Créditos insuficientes' });
     }
 
@@ -377,7 +384,9 @@ router.post('/renew', async (req, res) => {
     const newExpiration = new Date(baseDate.getTime() + 45 * 24 * 60 * 60 * 1000);
 
     await query('UPDATE chas SET expires_at = ? WHERE id = ?', [newExpiration, record_id]);
-    await query('UPDATE admins SET creditos = creditos - 1 WHERE id = ?', [admin_id]);
+    if (!isUnlimitedRenew) {
+      await query('UPDATE admins SET creditos = creditos - 1 WHERE id = ?', [admin_id]);
+    }
 
     logger.action('CNH NAUTICA RENOVADA', `record_id=${record_id}, nova_expiracao=${newExpiration.toISOString()}, admin_id=${admin_id}`);
 

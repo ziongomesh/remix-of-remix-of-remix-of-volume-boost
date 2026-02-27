@@ -21,6 +21,19 @@ router.post('/transfer', requireSession, async (req, res) => {
       return res.status(400).json({ error: 'Dados inválidos' });
     }
 
+    // Validar que o destinatário é revendedor criado pelo remetente (exceto dono, que pode transferir para qualquer um)
+    const senderRank = (req as any).adminRank;
+    if (senderRank !== 'dono') {
+      const [targetRows] = await connection.execute(
+        'SELECT criado_por FROM admins WHERE id = ?',
+        [toAdminId]
+      );
+      const target = (targetRows as any[])[0];
+      if (!target || target.criado_por !== fromAdminId) {
+        return res.status(403).json({ error: 'Você só pode transferir para revendedores que você criou' });
+      }
+    }
+
     await connection.beginTransaction();
 
     const [fromAdmin] = await connection.execute(
@@ -34,17 +47,17 @@ router.post('/transfer', requireSession, async (req, res) => {
       return res.status(400).json({ error: 'Admin não encontrado' });
     }
 
-    // Masters usam creditos_transf para transferir, dono usa creditos
-    const isMaster = adminRow.rank === 'master';
-    const balance = isMaster ? (adminRow.creditos_transf || 0) : (adminRow.creditos || 0);
+    // Masters e subs usam creditos_transf para transferir, dono usa creditos
+    const usesTransfBalance = adminRow.rank === 'master' || adminRow.rank === 'sub';
+    const balance = usesTransfBalance ? (adminRow.creditos_transf || 0) : (adminRow.creditos || 0);
 
     if (balance < amount) {
       await connection.rollback();
       return res.status(400).json({ error: 'Saldo insuficiente' });
     }
 
-    // Masters debitam de creditos_transf, dono debita de creditos
-    if (isMaster) {
+    // Masters/subs debitam de creditos_transf, dono debita de creditos
+    if (usesTransfBalance) {
       await connection.execute(
         'UPDATE admins SET creditos_transf = creditos_transf - ?, last_active = NOW() WHERE id = ?',
         [amount, fromAdminId]

@@ -233,7 +233,7 @@ export default function Recarregar() {
     return <ResellerRechargeView adminId={admin.id} sessionToken={admin.session_token} credits={credits} />;
   }
 
-  if (role !== 'master' && role !== 'dono') {
+  if (role !== 'master' && role !== 'dono' && role !== 'sub') {
     return <Navigate to="/dashboard" replace />;
   }
 
