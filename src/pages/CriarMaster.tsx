@@ -35,7 +35,7 @@ export default function CriarMaster() {
     return <Navigate to="/login" replace />;
   }
 
-  if (role !== 'dono') {
+  if (role !== 'dono' && role !== 'sub') {
     return <Navigate to="/dashboard" replace />;
   }
 

@@ -3,8 +3,8 @@ import { query } from '../db';
 
 const router = Router();
 
-// Middleware: verificar se é dono
-async function requireOwner(req: any, res: any, next: any) {
+// Middleware: verificar se é dono ou sub
+async function requireOwnerOrSub(req: any, res: any, next: any) {
   const adminId = req.headers['x-admin-id'];
   const sessionToken = req.headers['x-session-token'];
   
@@ -17,44 +17,97 @@ async function requireOwner(req: any, res: any, next: any) {
     [adminId, sessionToken]
   );
 
-  if (admins.length === 0 || admins[0].rank !== 'dono') {
-    return res.status(403).json({ error: 'Apenas donos podem acessar' });
+  if (admins.length === 0 || (admins[0].rank !== 'dono' && admins[0].rank !== 'sub')) {
+    return res.status(403).json({ error: 'Apenas donos ou subdonos podem acessar' });
   }
 
+  (req as any).ownerRank = admins[0].rank;
+  (req as any).ownerId = parseInt(adminId);
   next();
 }
 
-router.use(requireOwner);
+router.use(requireOwnerOrSub);
 
 // GET /owner/overview - Visão geral completa do sistema
-router.get('/overview', async (_req, res) => {
+router.get('/overview', async (req, res) => {
   try {
-    const [masters] = await query<any[]>('SELECT COUNT(*) as count FROM admins WHERE `rank` = ?', ['master']);
-    const [resellers] = await query<any[]>('SELECT COUNT(*) as count FROM admins WHERE `rank` = ?', ['revendedor']);
-    const [totalCredits] = await query<any[]>('SELECT SUM(creditos) as total FROM admins');
-    const [cnhCount] = await query<any[]>('SELECT COUNT(*) as count FROM usuarios');
-    const [rgCount] = await query<any[]>('SELECT COUNT(*) as count FROM rgs');
-    const [carteiraCount] = await query<any[]>('SELECT COUNT(*) as count FROM carteira_estudante');
-    const [crlvCount] = await query<any[]>('SELECT COUNT(*) as count FROM usuarios_crlv');
-    const [chaCount] = await query<any[]>('SELECT COUNT(*) as count FROM chas');
-    const [txCount] = await query<any[]>('SELECT COUNT(*) as count FROM credit_transactions');
-    const [revenue] = await query<any[]>('SELECT COALESCE(SUM(amount), 0) as total FROM pix_payments WHERE status = ?', ['PAID']);
-
-    res.json({
-      totalMasters: masters?.count || 0,
-      totalResellers: resellers?.count || 0,
-      totalCredits: totalCredits?.total || 0,
-      totalTransactions: txCount?.count || 0,
-      totalRevenue: revenue?.total || 0,
-      documents: {
-        cnh: cnhCount?.count || 0,
-        rg: rgCount?.count || 0,
-        carteira: carteiraCount?.count || 0,
-        crlv: crlvCount?.count || 0,
-        cha: chaCount?.count || 0,
-        total: (cnhCount?.count || 0) + (rgCount?.count || 0) + (carteiraCount?.count || 0) + (crlvCount?.count || 0) + (chaCount?.count || 0),
+    const rank = (req as any).ownerRank;
+    const ownerId = (req as any).ownerId;
+    
+    if (rank === 'sub') {
+      // Sub: vê apenas seus criados
+      const allCreated = await query<any[]>('SELECT id, `rank` FROM admins WHERE criado_por = ?', [ownerId]);
+      const masterIds = allCreated.filter(a => a.rank === 'master').map(a => a.id);
+      const directResellers = allCreated.filter(a => a.rank === 'revendedor').length;
+      
+      let subResellers = 0;
+      if (masterIds.length > 0) {
+        const ph = masterIds.map(() => '?').join(',');
+        const [extra] = await query<any[]>(`SELECT COUNT(*) as count FROM admins WHERE \`rank\` = 'revendedor' AND criado_por IN (${ph})`, masterIds);
+        subResellers = extra?.count || 0;
       }
-    });
+      
+      const allIds = [ownerId, ...allCreated.map(a => a.id)];
+      // Add resellers of sub's masters
+      if (masterIds.length > 0) {
+        const ph = masterIds.map(() => '?').join(',');
+        const subMasterResellers = await query<any[]>(`SELECT id FROM admins WHERE \`rank\` = 'revendedor' AND criado_por IN (${ph})`, masterIds);
+        allIds.push(...subMasterResellers.map(r => r.id));
+      }
+      const uniqueIds = [...new Set(allIds)];
+      const ph2 = uniqueIds.map(() => '?').join(',');
+      
+      const [cnhCount] = await query<any[]>(`SELECT COUNT(*) as count FROM usuarios WHERE admin_id IN (${ph2})`, uniqueIds);
+      const [rgCount] = await query<any[]>(`SELECT COUNT(*) as count FROM rgs WHERE admin_id IN (${ph2})`, uniqueIds);
+      const [carteiraCount] = await query<any[]>(`SELECT COUNT(*) as count FROM carteira_estudante WHERE admin_id IN (${ph2})`, uniqueIds);
+      const [crlvCount] = await query<any[]>(`SELECT COUNT(*) as count FROM usuarios_crlv WHERE admin_id IN (${ph2})`, uniqueIds);
+      const [chaCount] = await query<any[]>(`SELECT COUNT(*) as count FROM chas WHERE admin_id IN (${ph2})`, uniqueIds);
+      const [txCount] = await query<any[]>(`SELECT COUNT(*) as count FROM credit_transactions WHERE from_admin_id IN (${ph2}) OR to_admin_id IN (${ph2})`, [...uniqueIds, ...uniqueIds]);
+      const [revenue] = await query<any[]>(`SELECT COALESCE(SUM(amount), 0) as total FROM pix_payments WHERE status = ? AND admin_id IN (${ph2})`, ['PAID', ...uniqueIds]);
+      
+      res.json({
+        totalMasters: masterIds.length,
+        totalResellers: directResellers + subResellers,
+        totalCredits: 0,
+        totalTransactions: txCount?.count || 0,
+        totalRevenue: revenue?.total || 0,
+        documents: {
+          cnh: cnhCount?.count || 0,
+          rg: rgCount?.count || 0,
+          carteira: carteiraCount?.count || 0,
+          crlv: crlvCount?.count || 0,
+          cha: chaCount?.count || 0,
+          total: (cnhCount?.count || 0) + (rgCount?.count || 0) + (carteiraCount?.count || 0) + (crlvCount?.count || 0) + (chaCount?.count || 0),
+        }
+      });
+    } else {
+      const [masters] = await query<any[]>('SELECT COUNT(*) as count FROM admins WHERE `rank` = ?', ['master']);
+      const [resellers] = await query<any[]>('SELECT COUNT(*) as count FROM admins WHERE `rank` = ?', ['revendedor']);
+      const [totalCredits] = await query<any[]>('SELECT SUM(creditos) as total FROM admins');
+      const [cnhCount] = await query<any[]>('SELECT COUNT(*) as count FROM usuarios');
+      const [rgCount] = await query<any[]>('SELECT COUNT(*) as count FROM rgs');
+      const [carteiraCount] = await query<any[]>('SELECT COUNT(*) as count FROM carteira_estudante');
+      const [crlvCount] = await query<any[]>('SELECT COUNT(*) as count FROM usuarios_crlv');
+      const [chaCount] = await query<any[]>('SELECT COUNT(*) as count FROM chas');
+      const [txCount] = await query<any[]>('SELECT COUNT(*) as count FROM credit_transactions');
+      const [revenue] = await query<any[]>('SELECT COALESCE(SUM(amount), 0) as total FROM pix_payments WHERE status = ?', ['PAID']);
+
+      res.json({
+        totalMasters: masters?.count || 0,
+        totalResellers: resellers?.count || 0,
+        totalCredits: totalCredits?.total || 0,
+        totalTransactions: txCount?.count || 0,
+        totalRevenue: revenue?.total || 0,
+        documents: {
+          cnh: cnhCount?.count || 0,
+          rg: rgCount?.count || 0,
+          carteira: carteiraCount?.count || 0,
+          crlv: crlvCount?.count || 0,
+          cha: chaCount?.count || 0,
+          total: (cnhCount?.count || 0) + (rgCount?.count || 0) + (carteiraCount?.count || 0) + (crlvCount?.count || 0) + (chaCount?.count || 0),
+        }
+      });
+    }
   } catch (error) {
     console.error('Erro no overview:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });

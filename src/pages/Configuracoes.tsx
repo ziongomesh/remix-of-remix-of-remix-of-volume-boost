@@ -56,7 +56,7 @@ export default function Configuracoes() {
   }
 
   if (!admin) return <Navigate to="/login" replace />;
-  if (role !== 'master' && role !== 'dono') return <Navigate to="/dashboard" replace />;
+  if (role !== 'master' && role !== 'dono' && role !== 'sub') return <Navigate to="/dashboard" replace />;
 
   const handleSave = async () => {
     setSaving(true);
