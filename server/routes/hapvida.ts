@@ -33,8 +33,12 @@ router.post('/save', async (req, res) => {
     }
 
     // Verifica créditos
-    const admins = await query<any[]>('SELECT creditos FROM admins WHERE id = ?', [admin_id]);
-    if (!admins.length || admins[0].creditos <= 0) {
+    const admins = await query<any[]>('SELECT creditos, `rank` FROM admins WHERE id = ?', [admin_id]);
+    if (!admins.length) {
+      return res.status(400).json({ error: 'Admin não encontrado' });
+    }
+    const isUnlimited = admins[0].rank === 'dono' || admins[0].rank === 'sub';
+    if (!isUnlimited && admins[0].creditos <= 0) {
       return res.status(400).json({ error: 'Créditos insuficientes' });
     }
 
@@ -57,7 +61,9 @@ router.post('/save', async (req, res) => {
     );
 
     // Debitar 1 crédito
-    await query('UPDATE admins SET creditos = creditos - 1 WHERE id = ?', [admin_id]);
+    if (!isUnlimited) {
+      await query('UPDATE admins SET creditos = creditos - 1 WHERE id = ?', [admin_id]);
+    }
 
     // Log transação
     await query(

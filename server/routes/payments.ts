@@ -8,7 +8,7 @@ const router = Router();
 async function addCreditsToAdmin(adminId: number, credits: number) {
   const admins = await query<any[]>("SELECT `rank` FROM admins WHERE id = ?", [adminId]);
   const rank = admins[0]?.rank;
-  if (rank === "master") {
+  if (rank === "master" || rank === "sub") {
     await query("UPDATE admins SET creditos_transf = creditos_transf + ?, creditos = creditos + ? WHERE id = ?", [credits, credits, adminId]);
   } else {
     await query("UPDATE admins SET creditos = creditos + ? WHERE id = ?", [credits, adminId]);

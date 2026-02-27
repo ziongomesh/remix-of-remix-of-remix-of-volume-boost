@@ -494,7 +494,7 @@ export default function DashboardDono() {
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="text-sm">
               <CreditCard className="h-3 w-3 mr-1" />
-              {credits.toLocaleString('pt-BR')} uso
+              Ilimitado
             </Badge>
             {(isSub) && (
               <Badge variant="outline" className="text-sm">

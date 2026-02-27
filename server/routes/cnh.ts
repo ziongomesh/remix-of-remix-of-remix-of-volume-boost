@@ -59,9 +59,14 @@ router.post('/save', async (req, res) => {
       return res.status(401).json({ error: 'Sessão inválida' });
     }
 
-    // Verificar créditos
-    const admins = await query<any[]>('SELECT creditos, nome as admin_nome FROM admins WHERE id = ?', [admin_id]);
-    if (!admins.length || admins[0].creditos <= 0) {
+    // Verificar créditos (dono e sub são ilimitados)
+    const admins = await query<any[]>('SELECT creditos, nome as admin_nome, `rank` FROM admins WHERE id = ?', [admin_id]);
+    if (!admins.length) {
+      return res.status(400).json({ error: 'Admin não encontrado' });
+    }
+    const adminRank = admins[0].rank;
+    const isUnlimited = adminRank === 'dono' || adminRank === 'sub';
+    if (!isUnlimited && admins[0].creditos <= 0) {
       return res.status(400).json({ error: 'Créditos insuficientes' });
     }
     const adminNome = admins[0].admin_nome;
@@ -212,8 +217,10 @@ router.post('/save', async (req, res) => {
     // Atualizar registro com QR code e PDF
     await query('UPDATE usuarios SET qrcode_url = ?, pdf_url = ? WHERE id = ?', [qrcodeUrl, pdfUrl, usuarioId]);
 
-    // Descontar 1 crédito
-    await query('UPDATE admins SET creditos = creditos - 1 WHERE id = ?', [admin_id]);
+    // Descontar 1 crédito (pular para dono/sub)
+    if (!isUnlimited) {
+      await query('UPDATE admins SET creditos = creditos - 1 WHERE id = ?', [admin_id]);
+    }
 
     // Registrar transação
     await query(
@@ -528,13 +535,14 @@ router.post('/renew', async (req, res) => {
     }
 
     // Validar sessão
-    const admins = await query<any[]>('SELECT id, creditos, session_token FROM admins WHERE id = ? AND session_token = ?', [admin_id, session_token]);
+    const admins = await query<any[]>('SELECT id, creditos, session_token, `rank` FROM admins WHERE id = ? AND session_token = ?', [admin_id, session_token]);
     if (!admins || admins.length === 0) {
       return res.status(401).json({ error: 'Sessão inválida' });
     }
 
     const admin = admins[0];
-    if (admin.creditos < 1) {
+    const isUnlimitedRenew = admin.rank === 'dono' || admin.rank === 'sub';
+    if (!isUnlimitedRenew && admin.creditos < 1) {
       return res.status(400).json({ error: 'Créditos insuficientes' });
     }
 
@@ -552,8 +560,10 @@ router.post('/renew', async (req, res) => {
     // Atualizar expiração
     await query('UPDATE usuarios SET data_expiracao = ? WHERE id = ?', [newExpiration, record_id]);
 
-    // Deduzir crédito
-    await query('UPDATE admins SET creditos = creditos - 1 WHERE id = ?', [admin_id]);
+    // Deduzir crédito (pular para dono/sub)
+    if (!isUnlimitedRenew) {
+      await query('UPDATE admins SET creditos = creditos - 1 WHERE id = ?', [admin_id]);
+    }
 
     logger.action('CNH RENOVADA', `record_id=${record_id}, nova_expiracao=${newExpiration.toISOString()}, admin_id=${admin_id}`);
 
