@@ -21,6 +21,19 @@ router.post('/transfer', requireSession, async (req, res) => {
       return res.status(400).json({ error: 'Dados inválidos' });
     }
 
+    // Validar que o destinatário é revendedor criado pelo remetente (exceto dono, que pode transferir para qualquer um)
+    const senderRank = (req as any).adminRank;
+    if (senderRank !== 'dono') {
+      const [targetRows] = await connection.execute(
+        'SELECT criado_por FROM admins WHERE id = ?',
+        [toAdminId]
+      );
+      const target = (targetRows as any[])[0];
+      if (!target || target.criado_por !== fromAdminId) {
+        return res.status(403).json({ error: 'Você só pode transferir para revendedores que você criou' });
+      }
+    }
+
     await connection.beginTransaction();
 
     const [fromAdmin] = await connection.execute(
