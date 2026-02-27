@@ -534,14 +534,14 @@ export default function DashboardDono() {
               <TabsContent value="overview" className="space-y-6">
                 {overview && (
                   <>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                    <div className={`grid grid-cols-2 ${isSub ? 'sm:grid-cols-2 lg:grid-cols-2' : 'sm:grid-cols-3 lg:grid-cols-5'} gap-3`}>
                       {[
-                        { icon: Shield, label: 'Masters', value: overview.totalMasters, color: 'text-blue-500', bg: 'from-blue-500/10 to-blue-600/5 border-blue-500/20' },
-                        { icon: Users, label: 'Revendedores', value: overview.totalResellers, color: 'text-purple-500', bg: 'from-purple-500/10 to-purple-600/5 border-purple-500/20' },
-                        { icon: CreditCard, label: 'Créditos', value: overview.totalCredits?.toLocaleString('pt-BR'), color: 'text-green-500', bg: 'from-green-500/10 to-green-600/5 border-green-500/20' },
-                        { icon: TrendingUp, label: 'Transações', value: overview.totalTransactions, color: 'text-amber-500', bg: 'from-amber-500/10 to-amber-600/5 border-amber-500/20' },
-                        { icon: DollarSign, label: 'Faturamento', value: `R$ ${overview.totalRevenue?.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}`, color: 'text-emerald-500', bg: 'from-emerald-500/10 to-emerald-600/5 border-emerald-500/20' },
-                      ].map(item => (
+                        { icon: Shield, label: 'Masters', value: overview.totalMasters, color: 'text-blue-500', bg: 'from-blue-500/10 to-blue-600/5 border-blue-500/20', showForSub: true },
+                        { icon: Users, label: 'Revendedores', value: overview.totalResellers, color: 'text-purple-500', bg: 'from-purple-500/10 to-purple-600/5 border-purple-500/20', showForSub: true },
+                        { icon: CreditCard, label: 'Créditos', value: overview.totalCredits?.toLocaleString('pt-BR'), color: 'text-green-500', bg: 'from-green-500/10 to-green-600/5 border-green-500/20', showForSub: false },
+                        { icon: TrendingUp, label: 'Transações', value: overview.totalTransactions, color: 'text-amber-500', bg: 'from-amber-500/10 to-amber-600/5 border-amber-500/20', showForSub: false },
+                        { icon: DollarSign, label: 'Faturamento', value: `R$ ${overview.totalRevenue?.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}`, color: 'text-emerald-500', bg: 'from-emerald-500/10 to-emerald-600/5 border-emerald-500/20', showForSub: false },
+                      ].filter(item => !isSub || item.showForSub).map(item => (
                         <Card key={item.label} className={`bg-gradient-to-br ${item.bg}`}>
                           <CardContent className="p-4">
                             <div className="flex items-center gap-2">
@@ -606,6 +606,7 @@ export default function DashboardDono() {
                                 <p className="text-xs text-muted-foreground">CPF: {lastService.cpf}</p>
                                 <p className="text-xs text-muted-foreground">Criado por: <span className="font-semibold text-foreground">{lastService.admin_nome}</span></p>
                               </div>
+                              {!isSub && (
                               <div className="grid grid-cols-3 gap-2">
                                 <div className="text-center p-2 rounded-lg bg-green-500/10 border border-green-500/20">
                                   <p className="text-xs text-muted-foreground">Saldo Antes</p>
@@ -620,6 +621,7 @@ export default function DashboardDono() {
                                   <p className="text-lg font-bold">{lastService.saldo_atual}</p>
                                 </div>
                               </div>
+                              )}
                             </div>
                           ) : (
                             <p className="text-center text-muted-foreground py-4 text-sm">Nenhum serviço criado</p>
@@ -1454,10 +1456,10 @@ export default function DashboardDono() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Admin</TableHead>
-                  <TableHead>Créditos</TableHead>
+                  {!isSub && <TableHead>Créditos</TableHead>}
                   <TableHead>Serviços</TableHead>
                   <TableHead>Último Serviço</TableHead>
-                  <TableHead>Saldo Antes/Depois</TableHead>
+                  {!isSub && <TableHead>Saldo Antes/Depois</TableHead>}
                   <TableHead>Último Acesso</TableHead>
                   <TableHead>Criado por</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
@@ -1472,7 +1474,7 @@ export default function DashboardDono() {
                         <p className="text-xs text-muted-foreground">{adm.email}</p>
                       </div>
                     </TableCell>
-                    <TableCell><span className="font-semibold">{adm.creditos.toLocaleString('pt-BR')}</span></TableCell>
+                    {!isSub && <TableCell><span className="font-semibold">{adm.creditos.toLocaleString('pt-BR')}</span></TableCell>}
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
                         <span className="font-bold text-sm">{adm.total_services}</span>
@@ -1500,6 +1502,7 @@ export default function DashboardDono() {
                         <span className="text-xs text-muted-foreground">Nenhum</span>
                       )}
                     </TableCell>
+                    {!isSub && (
                     <TableCell>
                       {adm.last_service ? (
                         <div className="flex items-center gap-1">
@@ -1511,6 +1514,7 @@ export default function DashboardDono() {
                         <span className="text-xs text-muted-foreground">-</span>
                       )}
                     </TableCell>
+                    )}
                     <TableCell>
                       <div>
                         <p className="text-xs">{adm.last_active ? timeAgo(adm.last_active) : 'Nunca'}</p>
@@ -1521,12 +1525,12 @@ export default function DashboardDono() {
                       <div className="flex items-center gap-1 justify-end">
                         <Button variant="ghost" size="sm" onClick={() => openDetailDialog(adm)} title="Ver documentos"><Eye className="h-4 w-4" /></Button>
                         <Button variant="ghost" size="sm" onClick={() => { setPasswordDialog({ open: true, admin: adm }); setNewPassword(''); }} title="Alterar senha"><KeyRound className="h-4 w-4" /></Button>
-                        <Button variant="ghost" size="sm" onClick={() => { setTransferDialog({ open: true, admin: adm }); setTransferAmount(''); }} title="Transferir créditos"><Send className="h-4 w-4" /></Button>
+                        {!isSub && <Button variant="ghost" size="sm" onClick={() => { setTransferDialog({ open: true, admin: adm }); setTransferAmount(''); }} title="Transferir créditos"><Send className="h-4 w-4" /></Button>}
                       </div>
                     </TableCell>
                   </TableRow>
                 ))}
-                {admins.length === 0 && (<TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Nenhum admin encontrado</TableCell></TableRow>)}
+                {admins.length === 0 && (<TableRow><TableCell colSpan={isSub ? 6 : 8} className="text-center py-8 text-muted-foreground">Nenhum admin encontrado</TableCell></TableRow>)}
               </TableBody>
             </Table>
           </div>
