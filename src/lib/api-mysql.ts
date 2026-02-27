@@ -160,14 +160,14 @@ export const mysqlApi = {
       return fetchAPI(`/admins/search/${encodeURIComponent(query)}`);
     },
 
-    createMaster: async (params: { nome: string; email: string; key: string; criadoPor: number }) => {
+    createMaster: async (params: { nome: string; email: string; key: string; criadoPor: number; creditos?: number }) => {
       return fetchAPI('/admins/master', {
         method: 'POST',
         body: JSON.stringify(params)
       });
     },
 
-    createReseller: async (params: { nome: string; email: string; key: string; criadoPor: number }) => {
+    createReseller: async (params: { nome: string; email: string; key: string; criadoPor: number; creditos?: number }) => {
       return fetchAPI('/admins/reseller', {
         method: 'POST',
         body: JSON.stringify(params)

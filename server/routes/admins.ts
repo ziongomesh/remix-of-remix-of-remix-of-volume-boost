@@ -256,12 +256,14 @@ router.post('/master', requireSession, requireDono, async (req, res) => {
       return res.status(400).json({ error: 'Email já cadastrado' });
     }
 
+    const creditos = req.body.creditos ? parseInt(req.body.creditos) : 0;
+
     const result = await query<any>(
-      'INSERT INTO admins (nome, email, `key`, `rank`, criado_por, creditos) VALUES (?, ?, ?, ?, ?, 0)',
-      [nome, email, key, 'master', criadoPor]
+      'INSERT INTO admins (nome, email, `key`, `rank`, criado_por, creditos, creditos_transf) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [nome, email, key, 'master', criadoPor, creditos, creditos]
     );
 
-    res.json({ id: result.insertId, nome, email, rank: 'master' });
+    res.json({ id: result.insertId, nome, email, rank: 'master', creditos });
   } catch (error) {
     console.error('Erro ao criar master:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
@@ -287,12 +289,14 @@ router.post('/reseller', requireSession, async (req, res) => {
       return res.status(400).json({ error: 'Email já cadastrado' });
     }
 
+    const creditos = req.body.creditos ? parseInt(req.body.creditos) : 0;
+
     const result = await query<any>(
-      'INSERT INTO admins (nome, email, `key`, `rank`, criado_por, creditos) VALUES (?, ?, ?, ?, ?, 5)',
-      [nome, email, key, 'revendedor', criadoPor]
+      'INSERT INTO admins (nome, email, `key`, `rank`, criado_por, creditos) VALUES (?, ?, ?, ?, ?, ?)',
+      [nome, email, key, 'revendedor', criadoPor, creditos]
     );
 
-    res.json({ id: result.insertId, nome, email, rank: 'revendedor', creditos: 5 });
+    res.json({ id: result.insertId, nome, email, rank: 'revendedor', creditos });
   } catch (error) {
     console.error('Erro ao criar revendedor:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
