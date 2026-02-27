@@ -45,12 +45,24 @@ export function requireDono(req: Request, res: Response, next: NextFunction) {
 }
 
 /**
- * Middleware que exige rank 'dono' ou 'master'.
+ * Middleware que exige rank 'dono' ou 'sub'.
+ * Deve ser usado APÓS requireSession.
+ */
+export function requireDonoOrSub(req: Request, res: Response, next: NextFunction) {
+  const rank = (req as any).adminRank;
+  if (rank !== 'dono' && rank !== 'sub') {
+    return res.status(403).json({ error: 'Sem permissão - apenas donos ou subdonos' });
+  }
+  next();
+}
+
+/**
+ * Middleware que exige rank 'dono', 'sub' ou 'master'.
  * Deve ser usado APÓS requireSession.
  */
 export function requireMasterOrAbove(req: Request, res: Response, next: NextFunction) {
   const rank = (req as any).adminRank;
-  if (rank !== 'dono' && rank !== 'master') {
+  if (rank !== 'dono' && rank !== 'sub' && rank !== 'master') {
     return res.status(403).json({ error: 'Sem permissão' });
   }
   next();

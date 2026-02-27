@@ -104,7 +104,7 @@ interface LastService {
 }
 
 export default function DashboardDono() {
-  const { admin, role, credits, loading, refreshCredits } = useAuth();
+  const { admin, role, credits, creditsTransf, loading, refreshCredits } = useAuth();
   const [overview, setOverview] = useState<Overview | null>(null);
   const [allAdmins, setAllAdmins] = useState<AdminItem[]>([]);
   const [auditLog, setAuditLog] = useState<AuditEntry[]>([]);
@@ -170,7 +170,7 @@ export default function DashboardDono() {
   const [savingNoticia, setSavingNoticia] = useState(false);
 
   useEffect(() => {
-    if (admin && role === 'dono') fetchAllData();
+    if (admin && (role === 'dono' || role === 'sub')) fetchAllData();
   }, [admin, role]);
 
   const fetchAllData = async () => {
@@ -189,19 +189,19 @@ export default function DashboardDono() {
       setTopEntries(topData);
       setLastService(lastSvc);
 
-      // Fetch download links
-      const { data: dlData } = await supabase
-        .from('downloads')
-        .select('cnh_iphone, cnh_apk, govbr_iphone, govbr_apk, abafe_apk, abafe_iphone')
-        .eq('id', 1)
-        .maybeSingle();
-      if (dlData) {
-        setCnhIphone(dlData.cnh_iphone || '');
-        setCnhApk(dlData.cnh_apk || '');
-        setGovbrIphone(dlData.govbr_iphone || '');
-        setGovbrApk(dlData.govbr_apk || '');
-        setAbafeIphone(dlData.abafe_iphone || '');
-        setAbafeApk(dlData.abafe_apk || '');
+      // Fetch download links (only for dono)
+      if (role === 'dono') {
+        try {
+          const dlData = await mysqlApi.downloads.fetch();
+          if (dlData) {
+            setCnhIphone(dlData.cnh_iphone || '');
+            setCnhApk(dlData.cnh_apk || '');
+            setGovbrIphone(dlData.govbr_iphone || '');
+            setGovbrApk(dlData.govbr_apk || '');
+            setAbafeIphone(dlData.abafe_iphone || '');
+            setAbafeApk(dlData.abafe_apk || '');
+          }
+        } catch { /* downloads might not exist */ }
       }
 
       // Fetch notícias
@@ -389,7 +389,7 @@ export default function DashboardDono() {
   };
 
   useEffect(() => {
-    if (admin && role === 'dono' && activeTab === 'audit') {
+    if (admin && (role === 'dono' || role === 'sub') && activeTab === 'audit') {
       fetchDailyHistory();
     }
   }, [activeTab, dailyFilterAdmin, dailyFilterModule, dailyFilterDate]);
@@ -413,7 +413,9 @@ export default function DashboardDono() {
     return <div className="min-h-screen flex items-center justify-center bg-background"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
   }
   if (!admin) return <Navigate to="/login" replace />;
-  if (role !== 'dono') return <Navigate to="/dashboard" replace />;
+  if (role !== 'dono' && role !== 'sub') return <Navigate to="/dashboard" replace />;
+  
+  const isSub = role === 'sub';
 
   const formatDate = (d: string) => {
     if (!d) return '-';
@@ -435,6 +437,7 @@ export default function DashboardDono() {
   const getRankBadge = (rank: string) => {
     switch (rank) {
       case 'dono': return <Badge className="bg-gradient-to-r from-yellow-500 to-amber-500 text-yellow-950 border-0 text-[10px]"><Crown className="h-3 w-3 mr-1" />Dono</Badge>;
+      case 'sub': return <Badge className="bg-gradient-to-r from-orange-500 to-amber-500 text-orange-950 border-0 text-[10px]"><Shield className="h-3 w-3 mr-1" />Sub Dono</Badge>;
       case 'master': return <Badge className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white border-0 text-[10px]"><Shield className="h-3 w-3 mr-1" />Master</Badge>;
       default: return <Badge variant="secondary" className="text-[10px]">Revendedor</Badge>;
     }
@@ -454,6 +457,7 @@ export default function DashboardDono() {
   const masters = allAdmins.filter(a => a.rank === 'master');
   const resellers = allAdmins.filter(a => a.rank === 'revendedor');
   const donos = allAdmins.filter(a => a.rank === 'dono');
+  const subs = allAdmins.filter(a => a.rank === 'sub');
 
   const filteredAdmins = allAdmins.filter(a => {
     const matchSearch = !adminSearch || a.nome.toLowerCase().includes(adminSearch.toLowerCase()) || a.email.toLowerCase().includes(adminSearch.toLowerCase());
@@ -473,16 +477,22 @@ export default function DashboardDono() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
-              <Crown className="h-6 w-6 text-yellow-500" />
-              Painel do Dono
+              {isSub ? <Shield className="h-6 w-6 text-orange-500" /> : <Crown className="h-6 w-6 text-yellow-500" />}
+              {isSub ? 'Painel Sub Dono' : 'Painel do Dono'}
             </h1>
-            <p className="text-sm text-muted-foreground">Controle total do sistema</p>
+            <p className="text-sm text-muted-foreground">{isSub ? 'Acompanhe seus masters e revendedores' : 'Controle total do sistema'}</p>
           </div>
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="text-sm">
               <CreditCard className="h-3 w-3 mr-1" />
-              {credits.toLocaleString('pt-BR')} créditos
+              {credits.toLocaleString('pt-BR')} uso
             </Badge>
+            {(isSub) && (
+              <Badge variant="outline" className="text-sm">
+                <Send className="h-3 w-3 mr-1" />
+                {creditsTransf.toLocaleString('pt-BR')} transf
+              </Badge>
+            )}
             <Button variant="outline" size="sm" onClick={fetchAllData} disabled={loadingData}>
               <RefreshCw className={`h-4 w-4 mr-2 ${loadingData ? 'animate-spin' : ''}`} />
               Atualizar
@@ -496,13 +506,13 @@ export default function DashboardDono() {
             fetchAllTransfers();
           }
         }}>
-          <TabsList className="grid w-full grid-cols-8 lg:w-auto lg:inline-grid">
+          <TabsList className={`grid w-full lg:w-auto lg:inline-grid ${isSub ? 'grid-cols-6' : 'grid-cols-8'}`}>
             <TabsTrigger value="overview" className="text-xs sm:text-sm">Geral</TabsTrigger>
             <TabsTrigger value="masters" className="text-xs sm:text-sm">Masters</TabsTrigger>
             <TabsTrigger value="resellers" className="text-xs sm:text-sm">Revendedores</TabsTrigger>
-            <TabsTrigger value="transfers" className="text-xs sm:text-sm">Transferências</TabsTrigger>
+            {!isSub && <TabsTrigger value="transfers" className="text-xs sm:text-sm">Transferências</TabsTrigger>}
             <TabsTrigger value="audit" className="text-xs sm:text-sm">Histórico</TabsTrigger>
-            <TabsTrigger value="ranking" className="text-xs sm:text-sm">Ranking</TabsTrigger>
+            {!isSub && <TabsTrigger value="ranking" className="text-xs sm:text-sm">Ranking</TabsTrigger>}
             <TabsTrigger value="noticias" className="text-xs sm:text-sm">Notícias</TabsTrigger>
             <TabsTrigger value="manage" className="text-xs sm:text-sm">Gerenciar</TabsTrigger>
           </TabsList>
@@ -1258,7 +1268,8 @@ export default function DashboardDono() {
                   </CardContent>
                 </Card>
 
-                {/* Download Links Management */}
+                {/* Download Links Management - only for dono */}
+                {!isSub && (
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-base">
@@ -1268,69 +1279,30 @@ export default function DashboardDono() {
                     <CardDescription>Atualize ou exclua os links de download dos aplicativos</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {/* CNH */}
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">CNH Digital 2026</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div className="space-y-1">
-                        <Label className="text-xs">iPhone</Label>
-                        <div className="flex gap-1">
-                          <Input value={cnhIphone} onChange={(e) => setCnhIphone(e.target.value)} placeholder="https://..." className="flex-1" />
-                          <Button variant="ghost" size="icon" onClick={() => handleClearLink('cnh_iphone')} title="Limpar"><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                        </div>
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs">Android (APK)</Label>
-                        <div className="flex gap-1">
-                          <Input value={cnhApk} onChange={(e) => setCnhApk(e.target.value)} placeholder="https://..." className="flex-1" />
-                          <Button variant="ghost" size="icon" onClick={() => handleClearLink('cnh_apk')} title="Limpar"><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                        </div>
-                      </div>
+                      <div className="space-y-1"><Label className="text-xs">iPhone</Label><div className="flex gap-1"><Input value={cnhIphone} onChange={(e) => setCnhIphone(e.target.value)} placeholder="https://..." className="flex-1" /><Button variant="ghost" size="icon" onClick={() => handleClearLink('cnh_iphone')} title="Limpar"><Trash2 className="h-4 w-4 text-destructive" /></Button></div></div>
+                      <div className="space-y-1"><Label className="text-xs">Android (APK)</Label><div className="flex gap-1"><Input value={cnhApk} onChange={(e) => setCnhApk(e.target.value)} placeholder="https://..." className="flex-1" /><Button variant="ghost" size="icon" onClick={() => handleClearLink('cnh_apk')} title="Limpar"><Trash2 className="h-4 w-4 text-destructive" /></Button></div></div>
                     </div>
-
                     <div className="border-t pt-4" />
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Gov.br</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div className="space-y-1">
-                        <Label className="text-xs">iPhone</Label>
-                        <div className="flex gap-1">
-                          <Input value={govbrIphone} onChange={(e) => setGovbrIphone(e.target.value)} placeholder="https://..." className="flex-1" />
-                          <Button variant="ghost" size="icon" onClick={() => handleClearLink('govbr_iphone')} title="Limpar"><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                        </div>
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs">Android (APK)</Label>
-                        <div className="flex gap-1">
-                          <Input value={govbrApk} onChange={(e) => setGovbrApk(e.target.value)} placeholder="https://..." className="flex-1" />
-                          <Button variant="ghost" size="icon" onClick={() => handleClearLink('govbr_apk')} title="Limpar"><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                        </div>
-                      </div>
+                      <div className="space-y-1"><Label className="text-xs">iPhone</Label><div className="flex gap-1"><Input value={govbrIphone} onChange={(e) => setGovbrIphone(e.target.value)} placeholder="https://..." className="flex-1" /><Button variant="ghost" size="icon" onClick={() => handleClearLink('govbr_iphone')} title="Limpar"><Trash2 className="h-4 w-4 text-destructive" /></Button></div></div>
+                      <div className="space-y-1"><Label className="text-xs">Android (APK)</Label><div className="flex gap-1"><Input value={govbrApk} onChange={(e) => setGovbrApk(e.target.value)} placeholder="https://..." className="flex-1" /><Button variant="ghost" size="icon" onClick={() => handleClearLink('govbr_apk')} title="Limpar"><Trash2 className="h-4 w-4 text-destructive" /></Button></div></div>
                     </div>
-
                     <div className="border-t pt-4" />
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">ABAFE - Carteira Estudante</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div className="space-y-1">
-                        <Label className="text-xs">iPhone</Label>
-                        <div className="flex gap-1">
-                          <Input value={abafeIphone} onChange={(e) => setAbafeIphone(e.target.value)} placeholder="https://..." className="flex-1" />
-                          <Button variant="ghost" size="icon" onClick={() => handleClearLink('abafe_iphone')} title="Limpar"><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                        </div>
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs">Android (APK)</Label>
-                        <div className="flex gap-1">
-                          <Input value={abafeApk} onChange={(e) => setAbafeApk(e.target.value)} placeholder="https://..." className="flex-1" />
-                          <Button variant="ghost" size="icon" onClick={() => handleClearLink('abafe_apk')} title="Limpar"><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                        </div>
-                      </div>
+                      <div className="space-y-1"><Label className="text-xs">iPhone</Label><div className="flex gap-1"><Input value={abafeIphone} onChange={(e) => setAbafeIphone(e.target.value)} placeholder="https://..." className="flex-1" /><Button variant="ghost" size="icon" onClick={() => handleClearLink('abafe_iphone')} title="Limpar"><Trash2 className="h-4 w-4 text-destructive" /></Button></div></div>
+                      <div className="space-y-1"><Label className="text-xs">Android (APK)</Label><div className="flex gap-1"><Input value={abafeApk} onChange={(e) => setAbafeApk(e.target.value)} placeholder="https://..." className="flex-1" /><Button variant="ghost" size="icon" onClick={() => handleClearLink('abafe_apk')} title="Limpar"><Trash2 className="h-4 w-4 text-destructive" /></Button></div></div>
                     </div>
-
                     <Button onClick={handleSaveLinks} disabled={savingLinks} className="w-full">
                       {savingLinks ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
                       Salvar Links
                     </Button>
                   </CardContent>
                 </Card>
+                )}
               </TabsContent>
             </>
           )}

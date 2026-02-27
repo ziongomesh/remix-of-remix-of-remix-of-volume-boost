@@ -3,7 +3,7 @@ import api from '@/lib/api';
 import { toast } from 'sonner';
 import { playSuccessSound } from '@/lib/success-sound';
 
-type AppRole = 'dono' | 'master' | 'revendedor' | null;
+type AppRole = 'dono' | 'sub' | 'master' | 'revendedor' | null;
 
 interface Admin {
   id: number;

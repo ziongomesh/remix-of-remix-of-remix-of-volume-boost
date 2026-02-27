@@ -27,28 +27,28 @@ interface NavItem {
   label: string;
   icon: React.ElementType;
   href: string;
-  roles: Array<'dono' | 'master' | 'revendedor'>;
+  roles: Array<'dono' | 'sub' | 'master' | 'revendedor'>;
   group?: string;
 }
 
 const navItems: NavItem[] = [
-  { label: 'Início', icon: Home, href: '/dashboard-dono', roles: ['dono'] },
+  { label: 'Início', icon: Home, href: '/dashboard-dono', roles: ['dono', 'sub'] },
   { label: 'Início', icon: Home, href: '/dashboard', roles: ['master', 'revendedor'] },
-  { label: 'Serviços', icon: FolderOpen, href: '/servicos', roles: ['dono', 'master', 'revendedor'] },
-  { label: 'Histórico Serviços', icon: History, href: '/historico-servicos', roles: ['dono', 'master', 'revendedor'] },
+  { label: 'Serviços', icon: FolderOpen, href: '/servicos', roles: ['dono', 'sub', 'master', 'revendedor'] },
+  { label: 'Histórico Serviços', icon: History, href: '/historico-servicos', roles: ['dono', 'sub', 'master', 'revendedor'] },
   { label: 'Estatísticas', icon: BarChart3, href: '/estatisticas', roles: ['dono'] },
-  { label: 'Criar Usuário', icon: UserPlus, href: '/criar-master', roles: ['dono'] },
-  // Master group
-  { label: 'Recarregar', icon: CreditCard, href: '/recarregar', roles: ['master'], group: 'master' },
+  { label: 'Criar Usuário', icon: UserPlus, href: '/criar-master', roles: ['dono', 'sub'] },
+  // Master group (also for sub since sub acts like master for credits)
+  { label: 'Recarregar', icon: CreditCard, href: '/recarregar', roles: ['sub', 'master'], group: 'master' },
   { label: 'Recarregar', icon: CreditCard, href: '/recarregar', roles: ['revendedor'] },
-  { label: 'Meus Revendedores', icon: Users, href: '/revendedores', roles: ['master'], group: 'master' },
-  { label: 'Transferir Créditos', icon: Send, href: '/transferir', roles: ['master'], group: 'master' },
-  { label: 'Histórico & Métricas', icon: History, href: '/historico-transferencias', roles: ['master'], group: 'master' },
-  { label: 'Criar Revendedor', icon: UserPlus, href: '/criar-revendedor', roles: ['master'], group: 'master' },
+  { label: 'Meus Revendedores', icon: Users, href: '/revendedores', roles: ['sub', 'master'], group: 'master' },
+  { label: 'Transferir Créditos', icon: Send, href: '/transferir', roles: ['sub', 'master'], group: 'master' },
+  { label: 'Histórico & Métricas', icon: History, href: '/historico-transferencias', roles: ['sub', 'master'], group: 'master' },
+  { label: 'Criar Revendedor', icon: UserPlus, href: '/criar-revendedor', roles: ['sub', 'master'], group: 'master' },
   // Common
-  { label: 'Ferramentas', icon: Wrench, href: '/ferramentas', roles: ['dono', 'master', 'revendedor'] },
-  { label: 'Downloads', icon: Download, href: '/downloads', roles: ['dono', 'master', 'revendedor'] },
-  { label: 'Configurações', icon: Settings, href: '/configuracoes', roles: ['dono', 'master'] },
+  { label: 'Ferramentas', icon: Wrench, href: '/ferramentas', roles: ['dono', 'sub', 'master', 'revendedor'] },
+  { label: 'Downloads', icon: Download, href: '/downloads', roles: ['dono', 'sub', 'master', 'revendedor'] },
+  { label: 'Configurações', icon: Settings, href: '/configuracoes', roles: ['dono', 'sub', 'master'] },
 ];
 
 const masterGroupHrefs = navItems.filter(i => i.group === 'master').map(i => i.href);
@@ -70,6 +70,7 @@ export function Sidebar() {
   const getRoleIcon = () => {
     switch (role) {
       case 'dono': return <Crown className="h-4 w-4" />;
+      case 'sub': return <Shield className="h-4 w-4" />;
       case 'master': return <Shield className="h-4 w-4" />;
       default: return null;
     }
@@ -78,6 +79,7 @@ export function Sidebar() {
   const getRoleLabel = () => {
     switch (role) {
       case 'dono': return 'Dono';
+      case 'sub': return 'Sub Dono';
       case 'master': return 'Master';
       case 'revendedor': return 'Revendedor';
       default: return '';
