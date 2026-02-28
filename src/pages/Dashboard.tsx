@@ -219,6 +219,8 @@ export default function Dashboard() {
     switch (role) {
       case 'dono':
         return { label: 'Dono', stars: 3 };
+      case 'sub':
+        return { label: 'Sub Dono', stars: 3 };
       case 'master':
         return { label: 'Master', stars: 2 };
       case 'revendedor':
