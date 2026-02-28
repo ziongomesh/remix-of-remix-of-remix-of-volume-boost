@@ -243,7 +243,7 @@ function ServiceCard({ service, hasCredits }: { service: Service; hasCredits: bo
 
 // ─── Accordion Category (Nacional) ───
 function CategoryAccordion({ cat, hasCredits }: { cat: ServiceCategory; hasCredits: boolean }) {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const Icon = cat.icon;
   const activeCount = cat.services.filter(s => s.available).length;
   const sorted = [...cat.services.filter(s => s.available), ...cat.services.filter(s => !s.available)];
@@ -252,14 +252,14 @@ function CategoryAccordion({ cat, hasCredits }: { cat: ServiceCategory; hasCredi
     <div className="border border-border rounded-xl overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center gap-3 px-4 py-3 bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition-colors"
+        className="w-full flex items-center gap-3 px-4 py-3.5 bg-card hover:bg-muted/50 font-semibold text-sm transition-colors"
       >
-        <Icon className="h-5 w-5" />
-        <span className="flex-1 text-left">{cat.title}</span>
+        <Icon className="h-5 w-5 text-muted-foreground" />
+        <span className="flex-1 text-left text-foreground">{cat.title}</span>
         {activeCount > 0 && (
-          <Badge className="bg-primary-foreground/20 text-primary-foreground text-[10px] border-0">{activeCount} ativo{activeCount > 1 ? 's' : ''}</Badge>
+          <Badge variant="secondary" className="text-[10px] border-0">{activeCount} ativo{activeCount > 1 ? 's' : ''}</Badge>
         )}
-        {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+        {open ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
       </button>
       {open && (
         <div className="p-2 space-y-2 bg-card">
