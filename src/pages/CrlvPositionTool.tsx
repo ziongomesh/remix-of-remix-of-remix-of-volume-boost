@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { crlvService } from '@/lib/crlv-service';
 import { toast } from 'sonner';
+import CrlvSuccessModal from '@/components/crlv/CrlvSuccessModal';
 import openSansFont from '@/assets/OpenSans-VariableFont_wdth_wght.ttf';
 import freeMonoBoldFont from '@/assets/FreeMonoBold.otf';
 
@@ -287,6 +288,13 @@ export default function CrlvPositionTool() {
   const [qrImage, setQrImage] = useState<string | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [successModal, setSuccessModal] = useState<{
+    isOpen: boolean;
+    placa: string;
+    senha: string;
+    pdfUrl: string | null;
+    nomeProprietario: string;
+  }>({ isOpen: false, placa: '', senha: '', pdfUrl: null, nomeProprietario: '' });
 
   const handleGerarCrlv = async () => {
     if (!admin) {
@@ -333,7 +341,13 @@ export default function CrlvPositionTool() {
         data: v.data,
         observacoes: v.observacoes,
       });
-      toast.success(`CRLV gerado com sucesso! Senha: ${result.senha}`);
+      setSuccessModal({
+        isOpen: true,
+        placa: v.placa,
+        senha: result.senha,
+        pdfUrl: result.pdf,
+        nomeProprietario: v.nomeProprietario,
+      });
     } catch (err: any) {
       toast.error(err.message || 'Erro ao gerar CRLV');
     } finally {
@@ -604,6 +618,15 @@ export default function CrlvPositionTool() {
           </div>
         </div>
       )}
+
+      <CrlvSuccessModal
+        isOpen={successModal.isOpen}
+        onClose={() => setSuccessModal(prev => ({ ...prev, isOpen: false }))}
+        placa={successModal.placa}
+        senha={successModal.senha}
+        pdfUrl={successModal.pdfUrl}
+        nomeProprietario={successModal.nomeProprietario}
+      />
     </div>
   );
 }
