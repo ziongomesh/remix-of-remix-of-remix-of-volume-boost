@@ -21,8 +21,10 @@ export default function Login() {
   return (
     <div className="min-h-screen flex bg-black">
       {/* Left panel - Login form */}
-      <div className="w-full md:w-[380px] lg:w-[420px] shrink-0 flex flex-col justify-center px-8 md:px-10 py-12 relative z-10">
-        <LoginForm />
+      <div className="w-full md:w-[380px] lg:w-[420px] shrink-0 flex flex-col items-center justify-center px-8 md:px-10 py-12 relative z-10">
+        <div className="w-full max-w-sm">
+          <LoginForm />
+        </div>
       </div>
 
       {/* Right panel - Background image */}

@@ -157,20 +157,22 @@ export function LoginForm() {
   return (
     <div className="w-full space-y-8">
       {/* Home icon */}
-      <button
-        onClick={() => navigate('/')}
-        className="text-gray-500 hover:text-white transition-colors"
-      >
-        <Home className="h-5 w-5" />
-      </button>
+      <div className="flex justify-center md:justify-start">
+        <button
+          onClick={() => navigate('/')}
+          className="text-gray-500 hover:text-white transition-colors"
+        >
+          <Home className="h-5 w-5" />
+        </button>
+      </div>
 
       {/* Logo */}
-      <div className="flex justify-center md:justify-start">
+      <div className="flex justify-center">
         <Logo className="h-20 w-20" />
       </div>
 
       {/* Title */}
-      <h1 className="text-2xl font-bold text-white">Iniciar Sessão</h1>
+      <h1 className="text-2xl font-bold text-white text-center">Iniciar Sessão</h1>
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
