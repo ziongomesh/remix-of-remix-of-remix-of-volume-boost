@@ -480,7 +480,10 @@ export default function DashboardDono() {
 
   // Ordenar por atividade: mais ativos primeiro
   const sortedByActivity = [...allAdmins].filter(a => a.rank !== 'dono').sort((a, b) => b.total_services - a.total_services);
-  const mostActive = sortedByActivity.slice(0, 5);
+  const mostActive = sortedByActivity.slice(0, 10);
+  const mostActiveMasters = sortedByActivity.filter(a => a.rank === 'master').slice(0, 5);
+  const mostActiveResellers = sortedByActivity.filter(a => a.rank === 'revendedor').slice(0, 5);
+  const mostActiveSubs = sortedByActivity.filter(a => a.rank === 'sub').slice(0, 5);
   const leastActive = [...sortedByActivity].reverse().slice(0, 5);
 
   return (
@@ -633,71 +636,92 @@ export default function DashboardDono() {
                       </Card>
 
                       {/* Most active / least active - side by side */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <Card>
-                          <CardHeader className="pb-3">
+                          <CardHeader className="pb-2">
                             <CardTitle className="flex items-center gap-2 text-base">
                               <TrendingUp className="h-5 w-5 text-green-500" />
                               Mais Ativos
                             </CardTitle>
                           </CardHeader>
                           <CardContent>
-                            <div className="space-y-1.5">
-                              {mostActive.map((a, i) => (
-                                <div key={a.id} className="flex items-center justify-between text-sm p-2 rounded-lg bg-muted/30">
-                                  <div className="flex items-center gap-2 min-w-0">
-                                    <span className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center text-[10px] font-bold text-green-600 shrink-0">{i + 1}</span>
-                                    <div className="min-w-0">
-                                      <div className="flex items-center gap-1.5">
-                                        <span className="text-xs font-medium truncate max-w-[100px]">{a.nome}</span>
-                                        {getRankBadge(a.rank)}
+                            <Tabs defaultValue="todos" className="w-full">
+                              <TabsList className="w-full mb-3">
+                                <TabsTrigger value="todos" className="flex-1 text-xs">Todos</TabsTrigger>
+                                <TabsTrigger value="masters" className="flex-1 text-xs">Masters</TabsTrigger>
+                                <TabsTrigger value="revendedores" className="flex-1 text-xs">Revendas</TabsTrigger>
+                                {mostActiveSubs.length > 0 && (
+                                  <TabsTrigger value="subs" className="flex-1 text-xs">Sub Donos</TabsTrigger>
+                                )}
+                              </TabsList>
+                              {[
+                                { value: 'todos', list: mostActive },
+                                { value: 'masters', list: mostActiveMasters },
+                                { value: 'revendedores', list: mostActiveResellers },
+                                { value: 'subs', list: mostActiveSubs },
+                              ].map(tab => (
+                                <TabsContent key={tab.value} value={tab.value} className="mt-0">
+                                  <div className="space-y-2">
+                                    {tab.list.length === 0 ? (
+                                      <p className="text-center text-muted-foreground py-4 text-xs">Nenhum admin encontrado</p>
+                                    ) : tab.list.map((a, i) => (
+                                      <div key={a.id} className="flex items-center justify-between text-sm p-2.5 rounded-lg bg-muted/30">
+                                        <div className="flex items-center gap-2.5 min-w-0">
+                                          <span className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center text-[11px] font-bold text-green-600 shrink-0">{i + 1}</span>
+                                          <div className="min-w-0">
+                                            <div className="flex items-center gap-1.5">
+                                              <span className="text-sm font-medium truncate max-w-[120px]">{a.nome}</span>
+                                              {getRankBadge(a.rank)}
+                                            </div>
+                                            <p className="text-[11px] text-muted-foreground truncate">{a.email}</p>
+                                          </div>
+                                        </div>
+                                        <div className="flex items-center gap-3 shrink-0">
+                                          {!isSub && (
+                                            <span className="text-[11px] text-muted-foreground">
+                                              <CreditCard className="h-3 w-3 inline mr-0.5" />{a.creditos.toLocaleString('pt-BR')}
+                                            </span>
+                                          )}
+                                          <span className="text-xs font-semibold">{a.total_services} serviços</span>
+                                          <span className="text-[11px] text-muted-foreground hidden sm:inline">{a.last_active ? timeAgo(a.last_active) : '-'}</span>
+                                        </div>
                                       </div>
-                                      <p className="text-[10px] text-muted-foreground truncate">{a.email}</p>
-                                    </div>
+                                    ))}
                                   </div>
-                                  <div className="flex items-center gap-3 shrink-0">
-                                    {!isSub && (
-                                      <span className="text-[10px] text-muted-foreground">
-                                        <CreditCard className="h-2.5 w-2.5 inline mr-0.5" />{a.creditos.toLocaleString('pt-BR')}
-                                      </span>
-                                    )}
-                                    <span className="text-xs font-semibold">{a.total_services} serviços</span>
-                                    <span className="text-[10px] text-muted-foreground hidden sm:inline">{a.last_active ? timeAgo(a.last_active) : '-'}</span>
-                                  </div>
-                                </div>
+                                </TabsContent>
                               ))}
-                            </div>
+                            </Tabs>
                           </CardContent>
                         </Card>
 
                         <Card>
-                          <CardHeader className="pb-3">
+                          <CardHeader className="pb-2">
                             <CardTitle className="flex items-center gap-2 text-base">
                               <AlertTriangle className="h-5 w-5 text-orange-500" />
                               Inativos
                             </CardTitle>
                           </CardHeader>
                           <CardContent>
-                            <div className="space-y-1.5">
+                            <div className="space-y-2">
                               {leastActive.map((a) => (
-                                <div key={a.id} className="flex items-center justify-between text-sm p-2 rounded-lg bg-muted/30">
-                                  <div className="flex items-center gap-2 min-w-0">
+                                <div key={a.id} className="flex items-center justify-between text-sm p-2.5 rounded-lg bg-muted/30">
+                                  <div className="flex items-center gap-2.5 min-w-0">
                                     <div className="min-w-0">
                                       <div className="flex items-center gap-1.5">
-                                        <span className="text-xs font-medium truncate max-w-[100px]">{a.nome}</span>
+                                        <span className="text-sm font-medium truncate max-w-[120px]">{a.nome}</span>
                                         {getRankBadge(a.rank)}
                                       </div>
-                                      <p className="text-[10px] text-muted-foreground truncate">{a.email}</p>
+                                      <p className="text-[11px] text-muted-foreground truncate">{a.email}</p>
                                     </div>
                                   </div>
                                   <div className="flex items-center gap-3 shrink-0">
                                     {!isSub && (
-                                      <span className="text-[10px] text-muted-foreground">
-                                        <CreditCard className="h-2.5 w-2.5 inline mr-0.5" />{a.creditos.toLocaleString('pt-BR')}
+                                      <span className="text-[11px] text-muted-foreground">
+                                        <CreditCard className="h-3 w-3 inline mr-0.5" />{a.creditos.toLocaleString('pt-BR')}
                                       </span>
                                     )}
                                     <span className="text-xs">{a.total_services} serviços</span>
-                                    <span className="text-[10px] text-muted-foreground">{a.last_active ? timeAgo(a.last_active) : 'Nunca'}</span>
+                                    <span className="text-[11px] text-muted-foreground">{a.last_active ? timeAgo(a.last_active) : 'Nunca'}</span>
                                   </div>
                                 </div>
                               ))}
