@@ -2,14 +2,13 @@ import { useState, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Play, Home } from 'lucide-react';
 import { Logo } from '@/components/Logo';
 import { PinPad } from './PinPad';
 import { TurnstileWidget, TURNSTILE_ENABLED } from './TurnstileWidget';
 import api from '@/lib/api';
+import { useNavigate } from 'react-router-dom';
 
 interface PendingAdmin {
   id: number;
@@ -23,6 +22,7 @@ interface PendingAdmin {
 
 export function LoginForm() {
   const { signIn } = useAuth();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -57,16 +57,12 @@ export function LoginForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Only check turnstile if enabled
     if (TURNSTILE_ENABLED) {
       if (!turnstileToken) {
         toast.error('Por favor, complete a verificação de segurança');
         return;
       }
-
       setLoading(true);
-
-      // Verify turnstile token
       const isValid = await verifyTurnstile(turnstileToken);
       if (!isValid) {
         toast.error('Verificação de segurança falhou. Tente novamente.');
@@ -79,13 +75,10 @@ export function LoginForm() {
     }
 
     try {
-      // Validate login credentials using Node.js API
       const data = await api.auth.login(email, password);
 
       if (!data?.admin) {
-        toast.error('Erro ao fazer login', {
-          description: 'Email ou senha incorretos'
-        });
+        toast.error('Erro ao fazer login', { description: 'Email ou senha incorretos' });
         setLoading(false);
         return;
       }
@@ -93,8 +86,6 @@ export function LoginForm() {
       const adminData = data.admin;
       const hasPin = !!adminData.pin;
 
-      // All ranks now require PIN verification
-      // Show PIN pad for verification or registration
       setPendingAdmin({
         id: adminData.id,
         nome: adminData.nome,
@@ -102,40 +93,33 @@ export function LoginForm() {
         creditos: adminData.creditos,
         rank: adminData.rank,
         profile_photo: adminData.profile_photo,
-        hasPin
+        hasPin,
       });
-      
+
       setLoading(false);
     } catch (error: any) {
-      toast.error('Erro ao fazer login', {
-        description: error.message || 'Email ou senha incorretos'
-      });
+      toast.error('Erro ao fazer login', { description: error.message || 'Email ou senha incorretos' });
       setLoading(false);
     }
   };
 
   const handlePinSubmit = async (pin: string) => {
     if (!pendingAdmin) return;
-    
     setPinLoading(true);
 
     try {
       if (pendingAdmin.hasPin) {
-        // Verify PIN using Node.js API
         const result = await api.auth.validatePin(pendingAdmin.id, pin);
-
         if (!result.valid) {
           toast.error('PIN incorreto');
           setPinLoading(false);
           return;
         }
       } else {
-        // Register PIN using Node.js API
         await api.auth.setPin(pendingAdmin.id, pin);
         toast.success('PIN registrado com sucesso!');
       }
 
-      // Complete login
       const { error } = await signIn(email, password);
       if (error) {
         toast.error('Erro ao fazer login');
@@ -143,26 +127,24 @@ export function LoginForm() {
         toast.success('Login realizado com sucesso!');
       }
     } catch (err: any) {
-      toast.error('Erro ao processar PIN', {
-        description: err.message
-      });
+      toast.error('Erro ao processar PIN', { description: err.message });
     }
 
     setPinLoading(false);
   };
 
-  // Show PIN pad if we have a pending admin
+  // PIN pad view
   if (pendingAdmin) {
     return (
-      <div className="w-full max-w-sm">
+      <div className="w-full">
         <PinPad
           mode={pendingAdmin.hasPin ? 'verify' : 'register'}
           onSubmit={handlePinSubmit}
           loading={pinLoading}
         />
-        <Button 
-          variant="ghost" 
-          className="w-full mt-4 text-muted-foreground"
+        <Button
+          variant="ghost"
+          className="w-full mt-4 text-gray-500 hover:text-gray-300"
           onClick={() => setPendingAdmin(null)}
         >
           Voltar ao login
@@ -172,55 +154,77 @@ export function LoginForm() {
   }
 
   return (
-    <Card className="w-full max-w-md shadow-lg border-0">
-      <CardHeader className="space-y-4 text-center">
-        <div className="flex justify-center">
-          <Logo className="h-20 w-20" />
+    <div className="w-full space-y-8">
+      {/* Home icon */}
+      <button
+        onClick={() => navigate('/')}
+        className="text-gray-500 hover:text-white transition-colors"
+      >
+        <Home className="h-5 w-5" />
+      </button>
+
+      {/* Logo */}
+      <div className="flex justify-center md:justify-start">
+        <Logo className="h-20 w-20" />
+      </div>
+
+      {/* Title */}
+      <h1 className="text-2xl font-bold text-white">Iniciar Sessão</h1>
+
+      {/* Form */}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <Input
+            type="email"
+            placeholder="Usuário"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="h-12 bg-white/5 border-white/10 text-white placeholder:text-gray-500 rounded-lg focus:border-primary/50 focus:ring-primary/20"
+          />
         </div>
-        <CardDescription className="text-base">Inovando e Recriando o Futuro Digital</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="seu@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Senha</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          
-          {TURNSTILE_ENABLED && (
-            <TurnstileWidget 
-              onVerify={handleTurnstileVerify}
-              onExpire={handleTurnstileExpire}
-            />
-          )}
-          
-          <Button 
-            type="submit" 
-            className="w-full" 
+        <div>
+          <Input
+            type="password"
+            placeholder="Senha"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="h-12 bg-white/5 border-white/10 text-white placeholder:text-gray-500 rounded-lg focus:border-primary/50 focus:ring-primary/20"
+          />
+        </div>
+
+        {TURNSTILE_ENABLED && (
+          <TurnstileWidget
+            onVerify={handleTurnstileVerify}
+            onExpire={handleTurnstileExpire}
+          />
+        )}
+
+        {/* Play button */}
+        <div className="flex justify-center pt-4">
+          <Button
+            type="submit"
             disabled={loading || (TURNSTILE_ENABLED && !turnstileToken)}
+            className="h-14 w-14 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 text-white shadow-lg transition-all"
+            size="icon"
           >
-            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Entrar
+            {loading ? (
+              <Loader2 className="h-6 w-6 animate-spin" />
+            ) : (
+              <Play className="h-6 w-6 ml-0.5" />
+            )}
           </Button>
-        </form>
-      </CardContent>
-    </Card>
+        </div>
+      </form>
+
+      {/* Footer */}
+      <p className="text-sm text-gray-500 text-center md:text-left">
+        Não tem uma conta?{' '}
+        <button className="text-primary hover:underline font-medium">
+          Criar Conta
+        </button>
+      </p>
+    </div>
   );
 }
