@@ -275,104 +275,85 @@ export default function CrlvPositionTool() {
   const seguroFields = ['observacoes'] as const;
 
   return (
-    <div className="min-h-screen bg-background flex">
-      {/* Left: Form inputs */}
-      <div className="w-[420px] shrink-0 border-r border-border">
-        <ScrollArea className="h-screen">
-          <div className="p-4 space-y-4">
-            <h2 className="text-lg font-bold text-foreground">CRLV Digital — Teste</h2>
-            <p className="text-xs text-muted-foreground">Preencha os campos para visualizar no CRLV ao lado</p>
-
-            {/* UF Select - first field */}
-            <div className="space-y-1">
-              <Label className="text-[10px] text-muted-foreground">UF do CRLV</Label>
-              <Select value={values.uf} onValueChange={(val) => setValue('uf', val)}>
-                <SelectTrigger className="h-8 text-xs">
-                  <SelectValue placeholder="Selecione o estado" />
-                </SelectTrigger>
-                <SelectContent>
-                  {ESTADOS_BR.map(uf => (
-                    <SelectItem key={uf} value={uf}>{uf}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+    <div className="min-h-screen bg-background flex flex-col lg:flex-row">
+      {/* Form inputs - top on mobile, left on desktop */}
+      <div className="w-full lg:w-[420px] shrink-0 border-b lg:border-b-0 lg:border-r border-border">
+        <ScrollArea className="h-auto lg:h-screen">
+          <div className="p-4 space-y-6">
+            <div>
+              <h2 className="text-lg font-bold text-foreground">CRLV Digital — Teste</h2>
+              <p className="text-xs text-muted-foreground mt-1">Preencha os campos para visualizar no CRLV</p>
             </div>
 
-            {/* Doc emitido fields */}
-            <div className="space-y-1">
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Documento Emitido</p>
+            {/* UF Select */}
+            <div className="space-y-2 p-3 rounded-lg border border-border bg-card">
+              <p className="text-[11px] font-semibold text-foreground uppercase tracking-wider">Estado</p>
+              <div>
+                <Label className="text-[10px] text-muted-foreground">UF do CRLV</Label>
+                <Select value={values.uf} onValueChange={(val) => setValue('uf', val)}>
+                  <SelectTrigger className="h-8 text-xs">
+                    <SelectValue placeholder="Selecione o estado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ESTADOS_BR.map(uf => (
+                      <SelectItem key={uf} value={uf}>{uf}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Documento Emitido */}
+            <div className="space-y-2 p-3 rounded-lg border border-border bg-card">
+              <p className="text-[11px] font-semibold text-foreground uppercase tracking-wider">Documento Emitido</p>
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <div className="flex items-center justify-between">
                     <Label className="text-[10px] text-muted-foreground">Data</Label>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="h-4 px-1 text-[9px] text-primary"
+                    <Button type="button" variant="ghost" size="sm" className="h-4 px-1 text-[9px] text-primary"
                       onClick={() => {
                         const now = new Date();
                         setValue('docData', now.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric' }));
-                      }}
-                    >
-                      Definir atual
-                    </Button>
+                      }}>Definir atual</Button>
                   </div>
                   <Input {...register('docData')} className="h-7 text-xs uppercase" placeholder="dd/mm/aaaa" />
                 </div>
                 <div>
                   <div className="flex items-center justify-between">
                     <Label className="text-[10px] text-muted-foreground">Hora</Label>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="h-4 px-1 text-[9px] text-primary"
+                    <Button type="button" variant="ghost" size="sm" className="h-4 px-1 text-[9px] text-primary"
                       onClick={() => {
                         const now = new Date();
                         setValue('docHora', now.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', second: '2-digit' }));
-                      }}
-                    >
-                      Definir atual
-                    </Button>
+                      }}>Definir atual</Button>
                   </div>
                   <Input {...register('docHora')} className="h-7 text-xs uppercase" placeholder="hh:mm:ss" />
                 </div>
                 <div className="col-span-2">
                   <div className="flex items-center justify-between">
                     <Label className="text-[10px] text-muted-foreground">Código Hash</Label>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="h-4 px-1 text-[9px] text-primary"
+                    <Button type="button" variant="ghost" size="sm" className="h-4 px-1 text-[9px] text-primary"
                       onClick={() => {
                         const chars = '0123456789ABCDEF';
                         let hash = '';
                         for (let i = 0; i < 12; i++) hash += chars[Math.floor(Math.random() * chars.length)];
                         setValue('docHash', hash + 'D00');
-                      }}
-                    >
-                      Gerar
-                    </Button>
+                      }}>Gerar</Button>
                   </div>
                   <Input {...register('docHash')} className="h-7 text-xs uppercase" placeholder="364525021238D00" />
+                </div>
+              </div>
             </div>
 
             {/* QR Code Upload */}
-            <div className="space-y-1">
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">QR Code</p>
+            <div className="space-y-2 p-3 rounded-lg border border-border bg-card">
+              <p className="text-[11px] font-semibold text-foreground uppercase tracking-wider">QR Code</p>
               {qrImage && (
                 <img src={qrImage} alt="QR Preview" className="w-20 h-20 object-contain border border-border rounded" />
               )}
               <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="h-7 text-xs"
-                  onClick={() => document.getElementById('qr-upload-input')?.click()}
-                >
+                <Button type="button" variant="outline" size="sm" className="h-7 text-xs"
+                  onClick={() => document.getElementById('qr-upload-input')?.click()}>
                   {qrImage ? 'Trocar QR Code' : 'Enviar QR Code'}
                 </Button>
                 {qrImage && (
@@ -381,11 +362,7 @@ export default function CrlvPositionTool() {
                   </Button>
                 )}
               </div>
-              <input
-                id="qr-upload-input"
-                type="file"
-                accept="image/*"
-                className="hidden"
+              <input id="qr-upload-input" type="file" accept="image/*" className="hidden"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (!file) return;
@@ -395,30 +372,21 @@ export default function CrlvPositionTool() {
                 }}
               />
             </div>
-              </div>
-            </div>
 
             {/* Dados de Emissão */}
-            <div className="space-y-1">
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Dados de Emissão do CRLV</p>
+            <div className="space-y-2 p-3 rounded-lg border border-border bg-card">
+              <p className="text-[11px] font-semibold text-foreground uppercase tracking-wider">Dados de Emissão do CRLV</p>
               <div className="grid grid-cols-2 gap-2">
                 {emissaoFields.map(key => (
                   <div key={key} className={key === 'nomeProprietario' ? 'col-span-2' : ''}>
                     <div className="flex items-center justify-between">
                       <Label className="text-[10px] text-muted-foreground">{FIELD_LABELS[key]}</Label>
                       {key === 'data' && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="h-4 px-1 text-[9px] text-primary"
+                        <Button type="button" variant="ghost" size="sm" className="h-4 px-1 text-[9px] text-primary"
                           onClick={() => {
                             const now = new Date();
                             setValue('data', now.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric' }));
-                          }}
-                        >
-                          Definir atual
-                        </Button>
+                          }}>Definir atual</Button>
                       )}
                     </div>
                     <Input {...register(key)} className="h-7 text-xs uppercase" placeholder={FIELD_LABELS[key]} />
@@ -428,8 +396,8 @@ export default function CrlvPositionTool() {
             </div>
 
             {/* Dados do Veículo */}
-            <div className="space-y-1">
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Dados do Veículo</p>
+            <div className="space-y-2 p-3 rounded-lg border border-border bg-card">
+              <p className="text-[11px] font-semibold text-foreground uppercase tracking-wider">Dados do Veículo</p>
               <div className="grid grid-cols-2 gap-2">
                 {veiculoFields.map(key => (
                   <div key={key} className={key === 'marcaModelo' || key === 'especieTipo' || key === 'carroceria' ? 'col-span-2' : ''}>
@@ -441,8 +409,8 @@ export default function CrlvPositionTool() {
             </div>
 
             {/* Dados do Seguro DPVAT */}
-            <div className="space-y-1">
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Dados do Seguro DPVAT</p>
+            <div className="space-y-2 p-3 rounded-lg border border-border bg-card">
+              <p className="text-[11px] font-semibold text-foreground uppercase tracking-wider">Dados do Seguro DPVAT</p>
               <div className="grid grid-cols-2 gap-2">
                 {(['catTarif', 'dataQuitacao', 'repasseFns', 'repasseDenatran', 'custoBilhete', 'custoEfetivo', 'valorIof', 'valorTotal'] as string[]).map(key => (
                   <div key={key}>
@@ -460,9 +428,9 @@ export default function CrlvPositionTool() {
         </ScrollArea>
       </div>
 
-      {/* Right: Preview */}
+      {/* Preview - bottom on mobile, right on desktop */}
       <div className="flex-1 overflow-auto bg-muted/30">
-        <ScrollArea className="h-screen">
+        <ScrollArea className="h-auto lg:h-screen">
           <div className="p-4">
             <CrlvCanvas values={values} qrImage={qrImage} />
           </div>
