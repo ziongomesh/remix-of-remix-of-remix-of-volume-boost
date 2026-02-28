@@ -2,25 +2,11 @@ import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { 
-  Home, 
-  CreditCard, 
-  Users, 
-  BarChart3, 
-  LogOut,
-  UserPlus,
-  Send,
-  Crown,
-  Shield,
-  History,
-  FolderOpen,
-  Wrench,
-  Download,
-  ChevronDown,
-  Settings
+  Home, LogOut, Crown, Shield, ChevronDown,
+  FolderOpen, Wrench, Download, Settings
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link, useLocation } from 'react-router-dom';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { Logo } from '@/components/Logo';
 
 interface NavItem {
@@ -28,53 +14,23 @@ interface NavItem {
   icon: React.ElementType;
   href: string;
   roles: Array<'dono' | 'sub' | 'master' | 'revendedor'>;
-  group?: string;
 }
 
 const navItems: NavItem[] = [
-  { label: 'Início', icon: Home, href: '/dashboard', roles: ['dono', 'sub'] },
-  { label: 'Início', icon: Home, href: '/dashboard', roles: ['master', 'revendedor'] },
+  { label: 'Início', icon: Home, href: '/dashboard', roles: ['dono', 'sub', 'master', 'revendedor'] },
   { label: 'Serviços', icon: FolderOpen, href: '/servicos', roles: ['dono', 'sub', 'master', 'revendedor'] },
-  { label: 'Histórico Serviços', icon: History, href: '/historico-servicos', roles: ['dono', 'sub', 'master', 'revendedor'] },
-  { label: 'Estatísticas', icon: BarChart3, href: '/estatisticas', roles: ['dono'] },
-  { label: 'Criar Usuário', icon: UserPlus, href: '/criar-master', roles: ['dono', 'sub'] },
-  // Master group (also for sub since sub acts like master for credits)
-  { label: 'Recarregar', icon: CreditCard, href: '/recarregar', roles: ['sub', 'master'], group: 'master' },
-  { label: 'Recarregar', icon: CreditCard, href: '/recarregar', roles: ['revendedor'] },
-  { label: 'Meus Revendedores', icon: Users, href: '/revendedores', roles: ['sub', 'master'], group: 'master' },
-  { label: 'Transferir Créditos', icon: Send, href: '/transferir', roles: ['sub', 'master'], group: 'master' },
-  { label: 'Histórico & Métricas', icon: History, href: '/historico-transferencias', roles: ['sub', 'master'], group: 'master' },
-  { label: 'Criar Revendedor', icon: UserPlus, href: '/criar-revendedor', roles: ['sub', 'master'], group: 'master' },
-  // Common
   { label: 'Ferramentas', icon: Wrench, href: '/ferramentas', roles: ['dono', 'sub', 'master', 'revendedor'] },
   { label: 'Downloads', icon: Download, href: '/downloads', roles: ['dono', 'sub', 'master', 'revendedor'] },
   { label: 'Configurações', icon: Settings, href: '/configuracoes', roles: ['dono', 'sub', 'master'] },
 ];
 
-const masterGroupHrefs = navItems.filter(i => i.group === 'master').map(i => i.href);
-
 export function Sidebar() {
   const { role, signOut, admin } = useAuth();
   const location = useLocation();
 
-  const isMasterGroupActive = masterGroupHrefs.includes(location.pathname);
-  const [masterOpen, setMasterOpen] = useState(isMasterGroupActive);
-
   const filteredItems = navItems.filter(item => 
     role && item.roles.includes(role)
   );
-
-  const topItems = filteredItems.filter(i => !i.group);
-  const masterItems = filteredItems.filter(i => i.group === 'master');
-
-  const getRoleIcon = () => {
-    switch (role) {
-      case 'dono': return <Crown className="h-4 w-4" />;
-      case 'sub': return <Shield className="h-4 w-4" />;
-      case 'master': return <Shield className="h-4 w-4" />;
-      default: return null;
-    }
-  };
 
   const getRoleLabel = () => {
     switch (role) {
@@ -86,89 +42,49 @@ export function Sidebar() {
     }
   };
 
-  const renderNavButton = (item: NavItem) => (
-    <Link key={item.href} to={item.href}>
-      <Button
-        variant="ghost"
-        className={cn(
-          'w-full justify-start gap-3 h-11 hover:bg-primary/10 hover:text-primary',
-          location.pathname === item.href && 'bg-primary/10 text-primary'
-        )}
-      >
-        <item.icon className="h-5 w-5" />
-        {item.label}
-      </Button>
-    </Link>
-  );
-
-  // Split top items: before ferramentas and ferramentas+downloads
-  const bottomHrefs = ['/ferramentas', '/downloads', '/configuracoes'];
-  const mainItems = topItems.filter(i => !bottomHrefs.includes(i.href));
-  const bottomItems = topItems.filter(i => bottomHrefs.includes(i.href));
-
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-card border-r border-border flex flex-col">
-      <div className="p-6 border-b border-border">
-        <div className="flex items-center justify-between">
-          <Link to="/dashboard" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-            <Logo className="h-10 w-10" />
-            <h1 className="text-base font-bold text-primary">Data Sistemas</h1>
-          </Link>
-          <ThemeToggle />
-        </div>
-        <div className="flex items-center gap-2 mt-3 text-sm text-muted-foreground">
-          {getRoleIcon()}
-          <span>{getRoleLabel()}</span>
-        </div>
+    <aside className="fixed left-0 top-0 h-screen w-56 bg-sidebar-background border-r border-sidebar-border flex flex-col">
+      {/* Logo */}
+      <div className="p-5 pb-3">
+        <Link to="/dashboard" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
+          <Logo className="h-8 w-8" />
+          <span className="text-sm font-semibold text-sidebar-foreground">Data Sistemas</span>
+        </Link>
+        <p className="text-[11px] text-muted-foreground mt-1.5 ml-[42px]">{getRoleLabel()}</p>
       </div>
 
-      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-        {mainItems.map(renderNavButton)}
-
-        {/* Master collapsible group */}
-        {masterItems.length > 0 && (
-          <div className="pt-1">
-            <button
-              onClick={() => setMasterOpen(!masterOpen)}
-              className={cn(
-                'w-full flex items-center justify-between px-4 py-2.5 rounded-md text-sm font-medium transition-colors',
-                isMasterGroupActive
-                  ? 'text-primary bg-primary/5'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-              )}
-            >
-              <div className="flex items-center gap-3">
-                <Shield className="h-5 w-5" />
-                <span>Área Master</span>
-              </div>
-              <ChevronDown className={cn('h-4 w-4 transition-transform duration-200', masterOpen && 'rotate-180')} />
-            </button>
-            <div className={cn(
-              'overflow-hidden transition-all duration-200',
-              masterOpen ? 'max-h-96 opacity-100 mt-1' : 'max-h-0 opacity-0'
-            )}>
-              <div className="pl-3 space-y-0.5 border-l-2 border-primary/20 ml-6">
-                {masterItems.map(renderNavButton)}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {bottomItems.map(renderNavButton)}
+      {/* Nav */}
+      <nav className="flex-1 px-3 py-2 space-y-0.5">
+        {filteredItems.map((item) => {
+          const isActive = location.pathname === item.href;
+          return (
+            <Link key={item.href} to={item.href}>
+              <button
+                className={cn(
+                  'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-colors',
+                  isActive
+                    ? 'bg-primary/15 text-primary'
+                    : 'text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/50'
+                )}
+              >
+                <item.icon className="h-4 w-4 shrink-0" />
+                {item.label}
+              </button>
+            </Link>
+          );
+        })}
       </nav>
 
-      <div className="p-4 border-t border-border">
-        <div className="text-sm text-muted-foreground mb-3 truncate">
-          {admin?.email}
-        </div>
-        <Button
-          variant="ghost"
-          className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10"
+      {/* Footer */}
+      <div className="px-3 py-4 border-t border-sidebar-border">
+        <p className="text-[11px] text-muted-foreground truncate px-3 mb-2">{admin?.email}</p>
+        <button
           onClick={signOut}
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
         >
-          <LogOut className="h-5 w-5" />
+          <LogOut className="h-4 w-4" />
           Sair
-        </Button>
+        </button>
       </div>
     </aside>
   );
