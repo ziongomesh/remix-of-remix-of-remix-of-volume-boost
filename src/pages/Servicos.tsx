@@ -114,11 +114,20 @@ const categories: ServiceCategory[] = [
     services: [
       {
         id: 'crlv-digital',
-        name: 'CRLV DIGITAL',
+        name: 'CRLV PDF (QR OFF)',
         description: 'Certificado de Registro e Licenciamento de Veículo',
         credits: 1,
         available: true,
         route: '/servicos/crlv-digital',
+        icon: Car,
+      },
+      {
+        id: 'crlv-digital-qr',
+        name: 'CRLV PDF (QR ON)',
+        description: 'CRLV com QR Code integrado',
+        credits: 1,
+        available: false,
+        route: '#',
         icon: Car,
       },
       {
