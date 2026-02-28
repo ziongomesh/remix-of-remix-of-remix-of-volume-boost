@@ -11,7 +11,7 @@ import { Logo } from "./components/Logo";
 import Login from "./pages/Login";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
-import DashboardDono from "./pages/DashboardDono";
+// DashboardDono is now rendered inside Dashboard based on role
 import NotFound from "./pages/NotFound";
 
 // Lazy loaded (heavy pages with template assets)
@@ -85,7 +85,7 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/dashboard-dono" element={<DashboardDono />} />
+                <Route path="/dashboard-dono" element={<Navigate to="/dashboard" replace />} />
                 <Route path="/recarregar" element={<Recarregar />} />
                 <Route path="/criar-master" element={<CriarMaster />} />
                 <Route path="/criar-revendedor" element={<CriarRevendedor />} />
