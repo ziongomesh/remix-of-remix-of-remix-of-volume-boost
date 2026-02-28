@@ -30,7 +30,7 @@ router.post('/save', async (req, res) => {
 
     // Validate session
     const sessions = await query<any[]>(
-      'SELECT id, creditos FROM admins WHERE id = ? AND session_token = ?',
+      'SELECT id, creditos, rank FROM admins WHERE id = ? AND session_token = ?',
       [admin_id, session_token]
     );
     if (!sessions || sessions.length === 0) {
@@ -246,7 +246,9 @@ router.post('/save', async (req, res) => {
 
     const insertedId = insertResult.insertId;
 
-    // Deduct credit
+    // Deduct credit (dono/sub have unlimited)
+    const adminRank = admin.rank || '';
+    const isUnlimited = adminRank === 'dono' || adminRank === 'sub';
     if (!isUnlimited) {
       await query('UPDATE admins SET creditos = creditos - 1 WHERE id = ?', [admin_id]);
     }
