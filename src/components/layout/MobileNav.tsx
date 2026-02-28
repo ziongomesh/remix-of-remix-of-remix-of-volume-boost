@@ -111,7 +111,7 @@ export function MobileNav() {
   return (
     <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-card border-b border-border">
       <div className="flex items-center justify-between p-4">
-        <div className="flex items-center gap-3">
+        <Link to={role === 'dono' || role === 'sub' ? '/dashboard-dono' : '/dashboard'} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
           <Logo className="h-8 w-8" />
           <div>
             <h1 className="text-lg font-bold text-primary">Data Sistemas</h1>
@@ -120,7 +120,7 @@ export function MobileNav() {
               <span>{getRoleLabel()}</span>
             </div>
           </div>
-        </div>
+        </Link>
         
         <div className="flex items-center gap-2">
           <ThemeToggle />
