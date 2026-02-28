@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Maximize2, X } from 'lucide-react';
+import { Maximize2, X, FileText, Loader2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -7,6 +7,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
+import { crlvService } from '@/lib/crlv-service';
+import { toast } from 'sonner';
 import openSansFont from '@/assets/OpenSans-VariableFont_wdth_wght.ttf';
 import freeMonoBoldFont from '@/assets/FreeMonoBold.otf';
 
@@ -280,8 +283,63 @@ export default function CrlvPositionTool() {
   const defaultDate = now.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric' });
   const defaultTime = now.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
+  const { admin } = useAuth();
   const [qrImage, setQrImage] = useState<string | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const handleGerarCrlv = async () => {
+    if (!admin) {
+      toast.error('Você precisa estar logado para gerar o CRLV');
+      return;
+    }
+    const v = watch();
+    if (!v.renavam || !v.placa || !v.nomeProprietario || !v.cpfCnpj) {
+      toast.error('Preencha os campos obrigatórios: Renavam, Placa, Nome e CPF/CNPJ');
+      return;
+    }
+    setSaving(true);
+    try {
+      const result = await crlvService.save({
+        admin_id: admin.id,
+        session_token: admin.session_token!,
+        renavam: v.renavam,
+        placa: v.placa,
+        exercicio: v.exercicio,
+        numero_crv: v.numeroCrv,
+        seguranca_crv: v.codSegCla,
+        cod_seg_cla: v.codSegCla,
+        marca_modelo: v.marcaModelo,
+        ano_fab: v.anoFab,
+        ano_mod: v.anoMod,
+        cor: v.cor,
+        combustivel: v.combustivel,
+        especie_tipo: v.especieTipo,
+        categoria: v.categoria,
+        cat_obs: v.catObs,
+        carroceria: v.carroceria,
+        chassi: v.chassi,
+        placa_ant: v.placaAnt,
+        potencia_cil: v.potenciaCil,
+        capacidade: v.capacidade,
+        lotacao: v.lotacao,
+        peso_bruto: v.pesoBruto,
+        motor: v.motor,
+        cmt: v.cmt,
+        eixos: v.eixos,
+        nome_proprietario: v.nomeProprietario,
+        cpf_cnpj: v.cpfCnpj,
+        local: v.local,
+        data: v.data,
+        observacoes: v.observacoes,
+      });
+      toast.success(`CRLV gerado com sucesso! Senha: ${result.senha}`);
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao gerar CRLV');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const { register, watch, setValue } = useForm<Record<string, string>>({
     defaultValues: {
@@ -513,12 +571,17 @@ export default function CrlvPositionTool() {
 
       {/* Preview - bottom on mobile, right on desktop */}
       <div className="flex-1 overflow-auto bg-muted/30 relative">
-        {/* Expand button - mobile only */}
-        <div className="lg:hidden sticky top-2 z-10 flex justify-center mb-2">
-          <Button type="button" variant="outline" size="sm" className="h-8 px-3 text-xs bg-background/80 backdrop-blur-sm gap-1"
+        {/* Action buttons */}
+        <div className="sticky top-2 z-10 flex justify-center gap-2 mb-2">
+          <Button type="button" variant="outline" size="sm" className="lg:hidden h-8 px-3 text-xs bg-background/80 backdrop-blur-sm gap-1"
             onClick={() => setFullscreen(true)}>
             <Maximize2 className="h-3.5 w-3.5" />
-            Expandir Preview
+            Expandir
+          </Button>
+          <Button type="button" size="sm" className="h-8 px-4 text-xs bg-primary text-primary-foreground gap-1"
+            onClick={handleGerarCrlv} disabled={saving}>
+            {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileText className="h-3.5 w-3.5" />}
+            {saving ? 'Gerando...' : 'Gerar CRLV (1 crédito)'}
           </Button>
         </div>
         <ScrollArea className="h-auto lg:h-screen">
