@@ -18,6 +18,8 @@ import iconAbafe from '@/assets/icon-abafe.png';
 import { estudanteService } from '@/lib/estudante-service';
 import { playSuccessSound } from '@/lib/success-sound';
 import { supabase } from '@/integrations/supabase/client';
+import { isUsingMySQL } from '@/lib/db-config';
+import { mysqlApi } from '@/lib/api-mysql';
 import ImageGalleryModal from '@/components/ImageGalleryModal';
 import exemploAbafe from '@/assets/exemplo-abafe.png';
 import AppExamplePreview from '@/components/AppExamplePreview';
@@ -65,17 +67,26 @@ export default function CarteiraEstudante() {
   const [showGallery, setShowGallery] = useState(false);
 
   useEffect(() => {
-    supabase
-      .from('downloads')
-      .select('abafe_apk, abafe_iphone')
-      .eq('id', 1)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (data) {
-          setAbafeApk((data as any).abafe_apk || '');
-          setAbafeIphone((data as any).abafe_iphone || '');
+    const loadLinks = async () => {
+      try {
+        if (isUsingMySQL()) {
+          const data = await mysqlApi.downloads.fetch();
+          if (data) {
+            setAbafeApk(data.abafe_apk || '');
+            setAbafeIphone(data.abafe_iphone || '');
+          }
+        } else {
+          const { data } = await supabase.from('downloads').select('abafe_apk, abafe_iphone').eq('id', 1).maybeSingle();
+          if (data) {
+            setAbafeApk((data as any).abafe_apk || '');
+            setAbafeIphone((data as any).abafe_iphone || '');
+          }
         }
-      });
+      } catch (err) {
+        console.error('Erro ao carregar links:', err);
+      }
+    };
+    loadLinks();
   }, []);
 
   const form = useForm<EstudanteFormData>({

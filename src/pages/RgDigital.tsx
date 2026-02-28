@@ -26,6 +26,8 @@ import { playSuccessSound } from '@/lib/success-sound';
 import { useCpfCheck } from '@/hooks/useCpfCheck';
 import CpfDuplicateModal from '@/components/CpfDuplicateModal';
 import { supabase } from '@/integrations/supabase/client';
+import { isUsingMySQL } from '@/lib/db-config';
+import { mysqlApi } from '@/lib/api-mysql';
 
 const ESTADOS = [
   { value: "AC", label: "Acre" }, { value: "AL", label: "Alagoas" },
@@ -123,9 +125,20 @@ export default function RgDigital() {
     }
   };
   useEffect(() => {
-    supabase.from('downloads').select('govbr_iphone, govbr_apk').eq('id', 1).maybeSingle().then(({ data }) => {
-      if (data) setDownloadLinks({ govbr_iphone: data.govbr_iphone || '', govbr_apk: data.govbr_apk || '' });
-    });
+    const loadLinks = async () => {
+      try {
+        if (isUsingMySQL()) {
+          const data = await mysqlApi.downloads.fetch();
+          if (data) setDownloadLinks({ govbr_iphone: data.govbr_iphone || '', govbr_apk: data.govbr_apk || '' });
+        } else {
+          const { data } = await supabase.from('downloads').select('govbr_iphone, govbr_apk').eq('id', 1).maybeSingle();
+          if (data) setDownloadLinks({ govbr_iphone: data.govbr_iphone || '', govbr_apk: data.govbr_apk || '' });
+        }
+      } catch (err) {
+        console.error('Erro ao carregar links:', err);
+      }
+    };
+    loadLinks();
   }, []);
 
   const frenteCanvasRef = useRef<HTMLCanvasElement>(null);
