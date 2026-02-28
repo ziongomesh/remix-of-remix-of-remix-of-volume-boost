@@ -96,122 +96,90 @@ const categories: ServiceCategory[] = [
   },
 ];
 
-interface InternationalCountry {
+const documentTypes = [
+  'Carteira Motorista',
+  'Passaporte',
+  'Declaração Bancos',
+  'Faturas',
+  'Cheques Bancos',
+  'Carteira Militar',
+  'Cartão de Seguro',
+  'Carta de Residência',
+];
+
+interface VipCountry {
   name: string;
   flag: string;
-  available: boolean;
 }
 
-interface InternationalCategory {
-  title: string;
-  emoji: string;
-  countries: InternationalCountry[];
-}
-
-const internationalCategories: InternationalCategory[] = [
-  {
-    title: 'Passaportes',
-    emoji: '🛂',
-    countries: [
-      { name: 'Estados Unidos', flag: '🇺🇸', available: false },
-      { name: 'Reino Unido', flag: '🇬🇧', available: false },
-      { name: 'Canadá', flag: '🇨🇦', available: false },
-      { name: 'Austrália', flag: '🇦🇺', available: false },
-      { name: 'Japão', flag: '🇯🇵', available: false },
-      { name: 'Alemanha', flag: '🇩🇪', available: false },
-      { name: 'França', flag: '🇫🇷', available: false },
-      { name: 'Itália', flag: '🇮🇹', available: false },
-      { name: 'Portugal', flag: '🇵🇹', available: false },
-      { name: 'México', flag: '🇲🇽', available: false },
-    ],
-  },
-  {
-    title: 'Carteiras de Identidade',
-    emoji: '🪪',
-    countries: [
-      { name: 'Eslováquia', flag: '🇸🇰', available: false },
-      { name: 'Alemanha', flag: '🇩🇪', available: false },
-      { name: 'Ucrânia', flag: '🇺🇦', available: false },
-      { name: 'Noruega', flag: '🇳🇴', available: false },
-      { name: 'Armênia', flag: '🇦🇲', available: false },
-      { name: 'Áustria', flag: '🇦🇹', available: false },
-      { name: 'Bangladesh', flag: '🇧🇩', available: false },
-      { name: 'Bulgária', flag: '🇧🇬', available: false },
-      { name: 'Bélgica', flag: '🇧🇪', available: false },
-      { name: 'Camarões', flag: '🇨🇲', available: false },
-      { name: 'Chile', flag: '🇨🇱', available: false },
-      { name: 'Croácia', flag: '🇭🇷', available: false },
-      { name: 'Tcheco', flag: '🇨🇿', available: false },
-      { name: 'Chipre', flag: '🇨🇾', available: false },
-      { name: 'Dinamarca', flag: '🇩🇰', available: false },
-      { name: 'Dominicano', flag: '🇩🇴', available: false },
-      { name: 'Egito', flag: '🇪🇬', available: false },
-      { name: 'Estônia', flag: '🇪🇪', available: false },
-      { name: 'Finlândia', flag: '🇫🇮', available: false },
-      { name: 'Geórgia', flag: '🇬🇪', available: false },
-      { name: 'Grécia', flag: '🇬🇷', available: false },
-      { name: 'Hungria', flag: '🇭🇺', available: false },
-      { name: 'Índia', flag: '🇮🇳', available: false },
-      { name: 'Indonésia', flag: '🇮🇩', available: false },
-      { name: 'Irlanda', flag: '🇮🇪', available: false },
-      { name: 'Israel', flag: '🇮🇱', available: false },
-      { name: 'Itália', flag: '🇮🇹', available: false },
-      { name: 'Costa do Marfim', flag: '🇨🇮', available: false },
-      { name: 'Cazaquistão', flag: '🇰🇿', available: false },
-      { name: 'Quênia', flag: '🇰🇪', available: false },
-      { name: 'Quirguistão', flag: '🇰🇬', available: false },
-      { name: 'Letônia', flag: '🇱🇻', available: false },
-      { name: 'Lituânia', flag: '🇱🇹', available: false },
-      { name: 'Malásia', flag: '🇲🇾', available: false },
-      { name: 'Malta', flag: '🇲🇹', available: false },
-      { name: 'Holanda', flag: '🇳🇱', available: false },
-      { name: 'Nova Zelândia', flag: '🇳🇿', available: false },
-      { name: 'Nigéria', flag: '🇳🇬', available: false },
-      { name: 'Macedônia do Norte', flag: '🇲🇰', available: false },
-      { name: 'Peru', flag: '🇵🇪', available: false },
-      { name: 'Portugal', flag: '🇵🇹', available: false },
-      { name: 'Polônia', flag: '🇵🇱', available: false },
-      { name: 'Romênia', flag: '🇷🇴', available: false },
-    ],
-  },
-  {
-    title: 'Carteiras de Motorista',
-    emoji: '🚗',
-    countries: [
-      { name: 'Estados Unidos', flag: '🇺🇸', available: false },
-      { name: 'Reino Unido', flag: '🇬🇧', available: false },
-      { name: 'China', flag: '🇨🇳', available: false },
-      { name: 'Hong Kong', flag: '🇭🇰', available: false },
-      { name: 'França', flag: '🇫🇷', available: false },
-      { name: 'Canadá', flag: '🇨🇦', available: false },
-      { name: 'Alemanha', flag: '🇩🇪', available: false },
-      { name: 'Japão', flag: '🇯🇵', available: false },
-      { name: 'Austrália', flag: '🇦🇺', available: false },
-      { name: 'México', flag: '🇲🇽', available: false },
-    ],
-  },
-  {
-    title: 'Contas',
-    emoji: '🧾',
-    countries: [
-      { name: 'Estados Unidos', flag: '🇺🇸', available: false },
-      { name: 'Reino Unido', flag: '🇬🇧', available: false },
-      { name: 'Canadá', flag: '🇨🇦', available: false },
-      { name: 'Austrália', flag: '🇦🇺', available: false },
-      { name: 'Alemanha', flag: '🇩🇪', available: false },
-    ],
-  },
-  {
-    title: 'Extratos Bancários',
-    emoji: '🏦',
-    countries: [
-      { name: 'Estados Unidos', flag: '🇺🇸', available: false },
-      { name: 'Reino Unido', flag: '🇬🇧', available: false },
-      { name: 'Canadá', flag: '🇨🇦', available: false },
-      { name: 'Austrália', flag: '🇦🇺', available: false },
-      { name: 'Alemanha', flag: '🇩🇪', available: false },
-    ],
-  },
+const vipCountries: VipCountry[] = [
+  { name: 'Estados Unidos', flag: '🇺🇸' },
+  { name: 'Reino Unido', flag: '🇬🇧' },
+  { name: 'China', flag: '🇨🇳' },
+  { name: 'Hong Kong', flag: '🇭🇰' },
+  { name: 'França', flag: '🇫🇷' },
+  { name: 'Canadá', flag: '🇨🇦' },
+  { name: 'Alemanha', flag: '🇩🇪' },
+  { name: 'Japão', flag: '🇯🇵' },
+  { name: 'Austrália', flag: '🇦🇺' },
+  { name: 'México', flag: '🇲🇽' },
+  { name: 'Eslováquia', flag: '🇸🇰' },
+  { name: 'Ucrânia', flag: '🇺🇦' },
+  { name: 'Noruega', flag: '🇳🇴' },
+  { name: 'Armênia', flag: '🇦🇲' },
+  { name: 'Áustria', flag: '🇦🇹' },
+  { name: 'Bangladesh', flag: '🇧🇩' },
+  { name: 'Bulgária', flag: '🇧🇬' },
+  { name: 'Bélgica', flag: '🇧🇪' },
+  { name: 'Camarões', flag: '🇨🇲' },
+  { name: 'Chile', flag: '🇨🇱' },
+  { name: 'Croácia', flag: '🇭🇷' },
+  { name: 'Tcheco', flag: '🇨🇿' },
+  { name: 'Chipre', flag: '🇨🇾' },
+  { name: 'Dinamarca', flag: '🇩🇰' },
+  { name: 'Dominicano', flag: '🇩🇴' },
+  { name: 'Egito', flag: '🇪🇬' },
+  { name: 'Estônia', flag: '🇪🇪' },
+  { name: 'Finlândia', flag: '🇫🇮' },
+  { name: 'Geórgia', flag: '🇬🇪' },
+  { name: 'Grécia', flag: '🇬🇷' },
+  { name: 'Hungria', flag: '🇭🇺' },
+  { name: 'Índia', flag: '🇮🇳' },
+  { name: 'Indonésia', flag: '🇮🇩' },
+  { name: 'Irlanda', flag: '🇮🇪' },
+  { name: 'Israel', flag: '🇮🇱' },
+  { name: 'Itália', flag: '🇮🇹' },
+  { name: 'Costa do Marfim', flag: '🇨🇮' },
+  { name: 'Cazaquistão', flag: '🇰🇿' },
+  { name: 'Quênia', flag: '🇰🇪' },
+  { name: 'Quirguistão', flag: '🇰🇬' },
+  { name: 'Letônia', flag: '🇱🇻' },
+  { name: 'Lituânia', flag: '🇱🇹' },
+  { name: 'Malásia', flag: '🇲🇾' },
+  { name: 'Malta', flag: '🇲🇹' },
+  { name: 'Holanda', flag: '🇳🇱' },
+  { name: 'Nova Zelândia', flag: '🇳🇿' },
+  { name: 'Nigéria', flag: '🇳🇬' },
+  { name: 'Macedônia do Norte', flag: '🇲🇰' },
+  { name: 'Peru', flag: '🇵🇪' },
+  { name: 'Portugal', flag: '🇵🇹' },
+  { name: 'Polônia', flag: '🇵🇱' },
+  { name: 'Romênia', flag: '🇷🇴' },
+  { name: 'Sérvia', flag: '🇷🇸' },
+  { name: 'Cingapura', flag: '🇸🇬' },
+  { name: 'Eslovênia', flag: '🇸🇮' },
+  { name: 'África do Sul', flag: '🇿🇦' },
+  { name: 'Coreia do Sul', flag: '🇰🇷' },
+  { name: 'Espanha', flag: '🇪🇸' },
+  { name: 'Suécia', flag: '🇸🇪' },
+  { name: 'Suíça', flag: '🇨🇭' },
+  { name: 'Taiwan', flag: '🇹🇼' },
+  { name: 'Tailândia', flag: '🇹🇭' },
+  { name: 'Emirados Árabes Unidos', flag: '🇦🇪' },
+  { name: 'Turquia', flag: '🇹🇷' },
+  { name: 'Venezuela', flag: '🇻🇪' },
+  { name: 'Vietnã', flag: '🇻🇳' },
+  { name: 'Luxemburgo', flag: '🇱🇺' },
 ];
 
 // ─── Service Card (Nacional) ───
@@ -304,27 +272,26 @@ function CategoryAccordion({ cat, hasCredits }: { cat: ServiceCategory; hasCredi
   );
 }
 
-// ─── International Accordion ───
-function InternationalAccordion({ cat }: { cat: InternationalCategory }) {
+// ─── Country Card (Internacional) ───
+function CountryCard({ country }: { country: VipCountry }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="border border-border rounded-xl overflow-hidden">
+    <div className="border border-border rounded-lg overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center gap-3 px-4 py-3 bg-orange-500 text-white font-semibold text-sm hover:bg-orange-600 transition-colors"
+        className={`w-full flex items-center gap-3 px-3 py-2.5 transition-colors ${open ? 'bg-orange-500 text-white' : 'bg-card hover:bg-muted'}`}
       >
-        <span className="text-lg">{cat.emoji}</span>
-        <span className="flex-1 text-left">{cat.title}</span>
-        <Badge className="bg-white/20 text-white text-[10px] border-0">{cat.countries.length}</Badge>
+        <span className="text-2xl">{country.flag}</span>
+        <span className={`flex-1 text-left font-medium text-sm ${open ? 'text-white' : 'text-foreground'}`}>{country.name}</span>
         {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
       </button>
       {open && (
         <div className="p-2 space-y-1.5 bg-card">
-          {cat.countries.map((country) => (
-            <div key={country.name} className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-border bg-card opacity-60 cursor-default">
-              <span className="text-2xl">{country.flag}</span>
-              <span className="flex-1 font-medium text-sm text-foreground">{country.name}</span>
+          {documentTypes.map((doc) => (
+            <div key={doc} className="flex items-center gap-3 px-3 py-2 rounded-lg border border-border bg-muted/50 opacity-60 cursor-default">
+              <FileText className="h-4 w-4 text-muted-foreground" />
+              <span className="flex-1 text-sm text-foreground">{doc}</span>
               <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
                 <Clock className="h-2.5 w-2.5 mr-0.5" /> Breve
               </Badge>
@@ -335,7 +302,6 @@ function InternationalAccordion({ cat }: { cat: InternationalCategory }) {
     </div>
   );
 }
-
 // ─── Page ───
 export default function Servicos() {
   const { admin, credits, loading } = useAuth();
@@ -397,8 +363,8 @@ export default function Servicos() {
               <div className="absolute -right-2 -bottom-6 h-16 w-16 rounded-full bg-white/5" />
             </div>
 
-            {internationalCategories.map((cat) => (
-              <InternationalAccordion key={cat.title} cat={cat} />
+            {vipCountries.map((country) => (
+              <CountryCard key={country.name} country={country} />
             ))}
           </TabsContent>
         </Tabs>
