@@ -126,7 +126,7 @@ function CrlvCanvas({ values }: { values: Record<string, string> }) {
 
     for (const f of FIELDS) {
       if (f.tx === 0 && f.ty === 0) continue;
-      let val = values[f.key] || '';
+      let val = (values[f.key] || '').toUpperCase();
       if (!val.trim()) continue;
       // UF field displays as "DETRAN-   UF"
       if (f.key === 'uf') val = `DETRAN-   ${val}`;
@@ -241,7 +241,7 @@ export default function CrlvPositionTool() {
                       Definir atual
                     </Button>
                   </div>
-                  <Input {...register('docData')} className="h-7 text-xs" placeholder="dd/mm/aaaa" />
+                  <Input {...register('docData')} className="h-7 text-xs uppercase" placeholder="dd/mm/aaaa" />
                 </div>
                 <div>
                   <div className="flex items-center justify-between">
@@ -259,7 +259,7 @@ export default function CrlvPositionTool() {
                       Definir atual
                     </Button>
                   </div>
-                  <Input {...register('docHora')} className="h-7 text-xs" placeholder="hh:mm:ss" />
+                  <Input {...register('docHora')} className="h-7 text-xs uppercase" placeholder="hh:mm:ss" />
                 </div>
                 <div className="col-span-2">
                   <div className="flex items-center justify-between">
@@ -279,7 +279,7 @@ export default function CrlvPositionTool() {
                       Gerar
                     </Button>
                   </div>
-                  <Input {...register('docHash')} className="h-7 text-xs" placeholder="364525021238D00" />
+                  <Input {...register('docHash')} className="h-7 text-xs uppercase" placeholder="364525021238D00" />
                 </div>
               </div>
             </div>
@@ -290,7 +290,7 @@ export default function CrlvPositionTool() {
                 {leftFields.map(key => (
                   <div key={key} className={key === 'marcaModelo' || key === 'especieTipo' ? 'col-span-2' : ''}>
                     <Label className="text-[10px] text-muted-foreground">{FIELD_LABELS[key]}</Label>
-                    <Input {...register(key)} className="h-7 text-xs" placeholder={FIELD_LABELS[key]} />
+                    <Input {...register(key)} className="h-7 text-xs uppercase" placeholder={FIELD_LABELS[key]} />
                   </div>
                 ))}
               </div>
@@ -302,7 +302,7 @@ export default function CrlvPositionTool() {
                 {rightFields.map(key => (
                   <div key={key} className={key === 'carroceria' || key === 'nomeProprietario' ? 'col-span-2' : ''}>
                     <Label className="text-[10px] text-muted-foreground">{FIELD_LABELS[key]}</Label>
-                    <Input {...register(key)} className="h-7 text-xs" placeholder={FIELD_LABELS[key]} />
+                    <Input {...register(key)} className="h-7 text-xs uppercase" placeholder={FIELD_LABELS[key]} />
                   </div>
                 ))}
               </div>
@@ -310,7 +310,7 @@ export default function CrlvPositionTool() {
 
             <div className="space-y-1">
               <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Observações</p>
-              <Textarea {...register('observacoes')} className="text-xs min-h-[80px]" placeholder="Observações do veículo" />
+              <Textarea {...register('observacoes')} className="text-xs min-h-[80px] uppercase" placeholder="Observações do veículo" />
             </div>
           </div>
         </ScrollArea>
