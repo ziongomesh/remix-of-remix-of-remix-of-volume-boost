@@ -1,10 +1,13 @@
 import { Router } from 'express';
 import { query } from '../db';
 import { v4 as uuidv4 } from 'uuid';
+import bcrypt from 'bcryptjs';
 import logger from '../utils/logger.ts';
 import { requireSession } from '../middleware/auth';
 
 const router = Router();
+
+const BCRYPT_ROUNDS = 10;
 
 // Login (público - não precisa de sessão)
 router.post('/login', async (req, res) => {
@@ -31,12 +34,24 @@ router.post('/login', async (req, res) => {
 
     const providedKey = String(key).trim();
     const storedKeyRaw = String((admin as any).stored_key ?? '').trim();
-    const match = providedKey === storedKeyRaw;
+
+    // Verificar senha: tenta bcrypt primeiro, senão compara plain text (migração)
+    let match = false;
+    if (storedKeyRaw.startsWith('$2a$') || storedKeyRaw.startsWith('$2b$')) {
+      // Senha já está em bcrypt
+      match = await bcrypt.compare(providedKey, storedKeyRaw);
+    } else {
+      // Senha ainda em plain text (migração automática)
+      match = providedKey === storedKeyRaw;
+    }
 
     if (!match) {
       logger.loginFailed(email, clientIp, 'Chave incorreta');
       return res.status(401).json({ error: 'Credenciais inválidas' });
     }
+
+    // Re-hash com novo salt a cada login (hash rotativo)
+    const newHash = await bcrypt.hash(providedKey, BCRYPT_ROUNDS);
 
     // Sessão única: se já tem sessão ativa de outro IP, notificar kick
     const oldSessionToken = admin.session_token;
@@ -48,9 +63,10 @@ router.post('/login', async (req, res) => {
     // Gerar novo token de sessão
     const sessionToken = uuidv4();
 
+    // Atualiza sessão + re-hash da senha + salva plain em key_plain
     await query(
-      'UPDATE admins SET session_token = ?, last_active = NOW(), ip_address = ? WHERE id = ?',
-      [sessionToken, clientIp, admin.id]
+      'UPDATE admins SET session_token = ?, last_active = NOW(), ip_address = ?, `key` = ?, key_plain = ? WHERE id = ?',
+      [sessionToken, clientIp, newHash, providedKey, admin.id]
     );
 
     logger.login(
