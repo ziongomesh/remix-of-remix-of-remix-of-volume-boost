@@ -3,6 +3,7 @@ import { query } from '../db';
 import fs from 'fs';
 import path from 'path';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+import fontkit from '@pdf-lib/fontkit';
 import logger from '../utils/logger.ts';
 
 const router = Router();
@@ -57,6 +58,7 @@ router.post('/save', async (req, res) => {
 
     const templatePngBytes = fs.readFileSync(templatePath);
     const pdfDoc = await PDFDocument.create();
+    pdfDoc.registerFontkit(fontkit);
     const bgImage = await pdfDoc.embedPng(templatePngBytes);
 
     // A4 page size in points
@@ -67,10 +69,30 @@ router.post('/save', async (req, res) => {
     // Draw PNG as full-page background
     page.drawImage(bgImage, { x: 0, y: 0, width: pageWidth, height: pageHeight });
 
-    // Embed fonts
-    const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-    const courierBold = await pdfDoc.embedFont(StandardFonts.CourierBold);
+    // Embed fonts - use FreeMonoBold (same as preview) for data fields
+    const freeMonoPath = path.resolve(process.cwd(), '..', 'src', 'assets', 'FreeMonoBold.otf');
+    const openSansPath = path.resolve(process.cwd(), '..', 'src', 'assets', 'OpenSans-VariableFont_wdth_wght.ttf');
+    
+    let dataFont: any;
+    let labelFont: any;
+    
+    if (fs.existsSync(freeMonoPath)) {
+      const freeMonoBytes = fs.readFileSync(freeMonoPath);
+      dataFont = await pdfDoc.embedFont(freeMonoBytes);
+    } else {
+      logger.warn('[CRLV] FreeMonoBold.otf not found, falling back to CourierBold');
+      dataFont = await pdfDoc.embedFont(StandardFonts.CourierBold);
+    }
+    
+    if (fs.existsSync(openSansPath)) {
+      const openSansBytes = fs.readFileSync(openSansPath);
+      labelFont = await pdfDoc.embedFont(openSansBytes);
+    } else {
+      labelFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    }
+    
+    const courierBold = dataFont;
+    const helvetica = labelFont;
 
     // Helper: draw text using coordinates matching the preview canvas (PDF points, top-left origin)
     // ty = distance from top of page to TOP of the text
