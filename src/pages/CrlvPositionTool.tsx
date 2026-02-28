@@ -108,16 +108,27 @@ export default function CrlvPositionTool() {
   const loadTemplate = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch('/templates/crlv-template.pdf?v=' + Date.now());
-      const blob = await response.blob();
-      const file = new File([blob], 'crlv-template.pdf', { type: 'application/pdf' });
+      // Load PNG template and convert to a simple PDF for the position tool
+      const { PDFDocument } = await import('pdf-lib');
+      const response = await fetch('/templates/crlv-template-base.png?v=' + Date.now());
+      const pngBytes = await response.arrayBuffer();
+
+      // Create a PDF with the PNG as background
+      const pdfDoc = await PDFDocument.create();
+      const bgImage = await pdfDoc.embedPng(new Uint8Array(pngBytes));
+      const page = pdfDoc.addPage([595.28, 841.89]);
+      page.drawImage(bgImage, { x: 0, y: 0, width: 595.28, height: 841.89 });
+
+      const pdfBytes = await pdfDoc.save();
+      const pdfBlob = new Blob([pdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' });
+      const file = new File([pdfBlob], 'crlv-template.pdf', { type: 'application/pdf' });
       const { pages: extractedPages, fields: extractedFields, arrayBuffer } = await extractPdfData(file);
       setPages(extractedPages);
       setFields(extractedFields);
       setPdfBytes(arrayBuffer);
       setCurrentPage(0);
       setLoaded(true);
-      toast.success(`PDF carregado! ${extractedFields.length} campos de texto encontrados.`);
+      toast.success(`Template PNG carregado como PDF! ${extractedFields.length} campos encontrados.`);
     } catch (err) {
       console.error(err);
       toast.error('Erro ao carregar template CRLV');

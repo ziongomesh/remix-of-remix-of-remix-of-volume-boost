@@ -1,8 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import * as pdfjsLib from 'pdfjs-dist';
-
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs`;
 
 interface CrlvPreviewProps {
   form: UseFormReturn<any>;
@@ -10,13 +7,11 @@ interface CrlvPreviewProps {
   showDenseQr?: boolean;
 }
 
-// pdfjs viewport scale
-const PDF_SCALE = 1.5;
-// PDF points → canvas pixels: pdfjs maps at 96/72 * scale
-const PX_RATIO = (96 / 72) * PDF_SCALE; // = 2.0
-const s = (v: number) => v * PX_RATIO;
+// Scale for canvas rendering
+const SCALE = 2.0;
+const s = (v: number) => v * SCALE;
 
-// Each field: formKey, whiteout rect (x, y, w, h in PDF pts), text position (x, y in PDF pts), fontSize, bold
+// Each field: formKey, whiteout rect (x, y, w, h), text position (x, y), fontSize
 interface FieldDef {
   key: string;
   wx: number; wy: number; ww: number; wh: number;
@@ -58,43 +53,31 @@ const FIELDS: FieldDef[] = [
 export function CrlvPreview({ form, customQrPreview, showDenseQr = true }: CrlvPreviewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [bgCanvas, setBgCanvas] = useState<HTMLCanvasElement | null>(null);
+  const [bgImage, setBgImage] = useState<HTMLImageElement | null>(null);
   const [ready, setReady] = useState(false);
   const rafRef = useRef<number>(0);
 
   const v = form.watch();
 
-  // Load and render PDF template once
+  // Load PNG template once
   useEffect(() => {
     let cancelled = false;
-    const load = async () => {
-      try {
-        const response = await fetch('/templates/crlv-template.pdf?v=' + Date.now());
-        const arrayBuffer = await response.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-        const page = await pdf.getPage(1);
-        const viewport = page.getViewport({ scale: PDF_SCALE });
-
-        const canvas = document.createElement('canvas');
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-        const ctx = canvas.getContext('2d')!;
-        await page.render({ canvasContext: ctx, viewport }).promise;
-
-        if (cancelled) return;
-        setBgCanvas(canvas);
-        setReady(true);
-      } catch (err) {
-        console.error('Erro ao carregar template CRLV:', err);
-      }
+    const img = new Image();
+    img.onload = () => {
+      if (cancelled) return;
+      setBgImage(img);
+      setReady(true);
     };
-    load();
+    img.onerror = () => {
+      console.error('Erro ao carregar template CRLV PNG');
+    };
+    img.src = '/templates/crlv-template-base.png?v=' + Date.now();
     return () => { cancelled = true; };
   }, []);
 
   // Redraw on form changes
   useEffect(() => {
-    if (!ready || !bgCanvas) return;
+    if (!ready || !bgImage) return;
 
     cancelAnimationFrame(rafRef.current);
     rafRef.current = requestAnimationFrame(() => {
@@ -103,11 +86,18 @@ export function CrlvPreview({ form, customQrPreview, showDenseQr = true }: CrlvP
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
-      canvas.width = bgCanvas.width;
-      canvas.height = bgCanvas.height;
+      // Set canvas size based on image
+      canvas.width = bgImage.naturalWidth;
+      canvas.height = bgImage.naturalHeight;
 
-      // Draw original rendered page
-      ctx.drawImage(bgCanvas, 0, 0);
+      // Draw background PNG
+      ctx.drawImage(bgImage, 0, 0);
+
+      // Calculate scale ratio: image pixels / PDF points
+      // The FIELDS coordinates are in PDF points, we need to map to image pixels
+      const imgScale = bgImage.naturalWidth / (595); // A4 width in points ≈ 595
+
+      const ps = (v: number) => v * imgScale;
 
       // For each field: white-out + redraw with form value
       for (const f of FIELDS) {
@@ -115,28 +105,28 @@ export function CrlvPreview({ form, customQrPreview, showDenseQr = true }: CrlvP
 
         // White-out original area
         ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(s(f.wx), s(f.wy), s(f.ww), s(f.wh));
+        ctx.fillRect(ps(f.wx), ps(f.wy), ps(f.ww), ps(f.wh));
 
         // Draw new text
         if (formValue.trim()) {
           ctx.fillStyle = '#000000';
-          ctx.font = `bold ${s(f.size)}px "FreeMono", "Courier New", monospace`;
+          ctx.font = `bold ${ps(f.size)}px "FreeMono", "Courier New", monospace`;
           ctx.textBaseline = 'alphabetic';
-          ctx.fillText(formValue, s(f.tx), s(f.ty));
+          ctx.fillText(formValue, ps(f.tx), ps(f.ty));
         }
       }
 
-      // DETRAN-UF — sobrescreve "RO" com o UF selecionado
+      // DETRAN-UF
       if (v.uf) {
         ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(s(268), s(30), s(30), s(12));
+        ctx.fillRect(ps(268), ps(30), ps(30), ps(12));
         ctx.fillStyle = '#000000';
-        ctx.font = `bold ${s(8)}px "FreeMono", "Courier New", monospace`;
+        ctx.font = `bold ${ps(8)}px "FreeMono", "Courier New", monospace`;
         ctx.textBaseline = 'alphabetic';
-        ctx.fillText(v.uf, s(270), s(39));
+        ctx.fillText(v.uf, ps(270), ps(39));
       }
 
-      // "Documento emitido por CDT..." com data e hora de Brasília
+      // "Documento emitido por CDT..."
       const cpfClean = (v.cpfCnpj || '').replace(/\D/g, '');
       const cpfHash = cpfClean.slice(0, 9) || '000000000';
       const hashCode = `${cpfHash.slice(0,3)}${cpfHash.slice(3,5)}f${cpfHash.slice(5,8)}`;
@@ -145,27 +135,27 @@ export function CrlvPreview({ form, customQrPreview, showDenseQr = true }: CrlvP
       const brTime = now.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo' });
       const docText = `Documento emitido por CDT (${hashCode}) em ${brDate} às ${brTime}.`;
       ctx.fillStyle = '#FFFFFF';
-      ctx.fillRect(s(23), s(315), s(400), s(10));
+      ctx.fillRect(ps(23), ps(315), ps(400), ps(10));
       ctx.fillStyle = '#000000';
-      ctx.font = `${s(5)}px "FreeMono", "Courier New", monospace`;
+      ctx.font = `${ps(5)}px "FreeMono", "Courier New", monospace`;
       ctx.textBaseline = 'alphabetic';
-      ctx.fillText(docText, s(25), s(322));
+      ctx.fillText(docText, ps(25), ps(322));
 
       // QR Code overlay
       const qrSrc = customQrPreview || (showDenseQr ? '/images/qrcode-sample-crlv.png' : null);
       if (qrSrc) {
-        const img = new Image();
-        img.onload = () => {
+        const qrImg = new Image();
+        qrImg.onload = () => {
           ctx.fillStyle = '#FFFFFF';
-          ctx.fillRect(s(150), s(60), s(90), s(95));
-          ctx.drawImage(img, s(155), s(65), s(80), s(80));
+          ctx.fillRect(ps(150), ps(60), ps(90), ps(95));
+          ctx.drawImage(qrImg, ps(155), ps(65), ps(80), ps(80));
         };
-        img.src = qrSrc;
+        qrImg.src = qrSrc;
       }
     });
 
     return () => cancelAnimationFrame(rafRef.current);
-  }, [v, customQrPreview, showDenseQr, ready, bgCanvas]);
+  }, [v, customQrPreview, showDenseQr, ready, bgImage]);
 
   return (
     <div ref={containerRef} className="rounded-lg border border-border overflow-hidden bg-muted">
