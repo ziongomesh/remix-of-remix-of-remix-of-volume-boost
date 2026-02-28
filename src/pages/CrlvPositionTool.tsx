@@ -36,7 +36,7 @@ const FIELDS: FieldDef[] = [
   { key: 'chassi', tx: 0, ty: 0, size: 4.42 },
   { key: 'cor', tx: 0, ty: 0, size: 4.42 },
   { key: 'combustivel', tx: 0, ty: 0, size: 4.42 },
-  { key: 'categoria', tx: 0, ty: 0, size: 4.42 },
+  { key: 'categoria', tx: 315.76, ty: 73.67, size: 10 },
   { key: 'capacidade', tx: 0, ty: 0, size: 4.42 },
   { key: 'potenciaCil', tx: 316.01, ty: 114.22, size: 10 },
   { key: 'pesoBruto', tx: 0, ty: 0, size: 4.42 },
@@ -175,6 +175,7 @@ export default function CrlvPositionTool() {
     defaultValues: {
       ...Object.fromEntries(FIELDS.map(f => [f.key, ''])),
       uf: 'SP',
+      categoria: 'PARTICULAR',
       docData: defaultDate,
       docHora: defaultTime,
       docHash: '364525021238D00',
