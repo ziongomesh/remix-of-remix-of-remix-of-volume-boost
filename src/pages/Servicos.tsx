@@ -112,74 +112,59 @@ interface VipCountry {
   flag: string;
 }
 
-const vipCountries: VipCountry[] = [
-  { name: 'Estados Unidos', flag: '🇺🇸' },
-  { name: 'Reino Unido', flag: '🇬🇧' },
-  { name: 'China', flag: '🇨🇳' },
-  { name: 'Hong Kong', flag: '🇭🇰' },
-  { name: 'França', flag: '🇫🇷' },
-  { name: 'Canadá', flag: '🇨🇦' },
-  { name: 'Alemanha', flag: '🇩🇪' },
-  { name: 'Japão', flag: '🇯🇵' },
-  { name: 'Austrália', flag: '🇦🇺' },
+interface VipCategory {
+  title: string;
+  countries: VipCountry[];
+}
+
+const passportCountries: VipCountry[] = [
+  { name: 'Estados Unidos', flag: '🇺🇸' }, { name: 'Reino Unido', flag: '🇬🇧' }, { name: 'Canadá', flag: '🇨🇦' },
+  { name: 'Austrália', flag: '🇦🇺' }, { name: 'Japão', flag: '🇯🇵' }, { name: 'Alemanha', flag: '🇩🇪' },
+  { name: 'França', flag: '🇫🇷' }, { name: 'Itália', flag: '🇮🇹' }, { name: 'Portugal', flag: '🇵🇹' },
   { name: 'México', flag: '🇲🇽' },
-  { name: 'Eslováquia', flag: '🇸🇰' },
-  { name: 'Ucrânia', flag: '🇺🇦' },
-  { name: 'Noruega', flag: '🇳🇴' },
-  { name: 'Armênia', flag: '🇦🇲' },
-  { name: 'Áustria', flag: '🇦🇹' },
-  { name: 'Bangladesh', flag: '🇧🇩' },
-  { name: 'Bulgária', flag: '🇧🇬' },
-  { name: 'Bélgica', flag: '🇧🇪' },
-  { name: 'Camarões', flag: '🇨🇲' },
-  { name: 'Chile', flag: '🇨🇱' },
-  { name: 'Croácia', flag: '🇭🇷' },
-  { name: 'Tcheco', flag: '🇨🇿' },
-  { name: 'Chipre', flag: '🇨🇾' },
-  { name: 'Dinamarca', flag: '🇩🇰' },
-  { name: 'Dominicano', flag: '🇩🇴' },
-  { name: 'Egito', flag: '🇪🇬' },
-  { name: 'Estônia', flag: '🇪🇪' },
-  { name: 'Finlândia', flag: '🇫🇮' },
-  { name: 'Geórgia', flag: '🇬🇪' },
-  { name: 'Grécia', flag: '🇬🇷' },
-  { name: 'Hungria', flag: '🇭🇺' },
-  { name: 'Índia', flag: '🇮🇳' },
-  { name: 'Indonésia', flag: '🇮🇩' },
-  { name: 'Irlanda', flag: '🇮🇪' },
-  { name: 'Israel', flag: '🇮🇱' },
-  { name: 'Itália', flag: '🇮🇹' },
-  { name: 'Costa do Marfim', flag: '🇨🇮' },
-  { name: 'Cazaquistão', flag: '🇰🇿' },
-  { name: 'Quênia', flag: '🇰🇪' },
-  { name: 'Quirguistão', flag: '🇰🇬' },
-  { name: 'Letônia', flag: '🇱🇻' },
-  { name: 'Lituânia', flag: '🇱🇹' },
-  { name: 'Malásia', flag: '🇲🇾' },
-  { name: 'Malta', flag: '🇲🇹' },
-  { name: 'Holanda', flag: '🇳🇱' },
-  { name: 'Nova Zelândia', flag: '🇳🇿' },
-  { name: 'Nigéria', flag: '🇳🇬' },
-  { name: 'Macedônia do Norte', flag: '🇲🇰' },
-  { name: 'Peru', flag: '🇵🇪' },
-  { name: 'Portugal', flag: '🇵🇹' },
-  { name: 'Polônia', flag: '🇵🇱' },
-  { name: 'Romênia', flag: '🇷🇴' },
-  { name: 'Sérvia', flag: '🇷🇸' },
-  { name: 'Cingapura', flag: '🇸🇬' },
-  { name: 'Eslovênia', flag: '🇸🇮' },
-  { name: 'África do Sul', flag: '🇿🇦' },
-  { name: 'Coreia do Sul', flag: '🇰🇷' },
-  { name: 'Espanha', flag: '🇪🇸' },
-  { name: 'Suécia', flag: '🇸🇪' },
-  { name: 'Suíça', flag: '🇨🇭' },
-  { name: 'Taiwan', flag: '🇹🇼' },
-  { name: 'Tailândia', flag: '🇹🇭' },
-  { name: 'Emirados Árabes Unidos', flag: '🇦🇪' },
-  { name: 'Turquia', flag: '🇹🇷' },
-  { name: 'Venezuela', flag: '🇻🇪' },
-  { name: 'Vietnã', flag: '🇻🇳' },
+];
+
+const idCountries: VipCountry[] = [
+  { name: 'Eslováquia', flag: '🇸🇰' }, { name: 'Alemanha', flag: '🇩🇪' }, { name: 'Ucrânia', flag: '🇺🇦' },
+  { name: 'Noruega', flag: '🇳🇴' }, { name: 'Armênia', flag: '🇦🇲' }, { name: 'Áustria', flag: '🇦🇹' },
+  { name: 'Bangladesh', flag: '🇧🇩' }, { name: 'Bulgária', flag: '🇧🇬' }, { name: 'Bélgica', flag: '🇧🇪' },
+  { name: 'Camarões', flag: '🇨🇲' }, { name: 'Chile', flag: '🇨🇱' }, { name: 'Croácia', flag: '🇭🇷' },
+  { name: 'Tcheco', flag: '🇨🇿' }, { name: 'Chipre', flag: '🇨🇾' }, { name: 'Dinamarca', flag: '🇩🇰' },
+  { name: 'Dominicano', flag: '🇩🇴' }, { name: 'Egito', flag: '🇪🇬' }, { name: 'Estônia', flag: '🇪🇪' },
+  { name: 'Finlândia', flag: '🇫🇮' }, { name: 'Geórgia', flag: '🇬🇪' }, { name: 'Grécia', flag: '🇬🇷' },
+  { name: 'Hungria', flag: '🇭🇺' }, { name: 'Índia', flag: '🇮🇳' }, { name: 'Indonésia', flag: '🇮🇩' },
+  { name: 'Irlanda', flag: '🇮🇪' }, { name: 'Israel', flag: '🇮🇱' }, { name: 'Itália', flag: '🇮🇹' },
+  { name: 'Costa do Marfim', flag: '🇨🇮' }, { name: 'Cazaquistão', flag: '🇰🇿' }, { name: 'Quênia', flag: '🇰🇪' },
+  { name: 'Quirguistão', flag: '🇰🇬' }, { name: 'Letônia', flag: '🇱🇻' }, { name: 'Lituânia', flag: '🇱🇹' },
+  { name: 'Malásia', flag: '🇲🇾' }, { name: 'Malta', flag: '🇲🇹' }, { name: 'Holanda', flag: '🇳🇱' },
+  { name: 'Nova Zelândia', flag: '🇳🇿' }, { name: 'Nigéria', flag: '🇳🇬' }, { name: 'Macedônia do Norte', flag: '🇲🇰' },
+  { name: 'Peru', flag: '🇵🇪' }, { name: 'Portugal', flag: '🇵🇹' }, { name: 'Polônia', flag: '🇵🇱' },
+  { name: 'Romênia', flag: '🇷🇴' }, { name: 'Sérvia', flag: '🇷🇸' }, { name: 'Cingapura', flag: '🇸🇬' },
+  { name: 'Eslovênia', flag: '🇸🇮' }, { name: 'África do Sul', flag: '🇿🇦' }, { name: 'Coreia do Sul', flag: '🇰🇷' },
+  { name: 'Espanha', flag: '🇪🇸' }, { name: 'Suécia', flag: '🇸🇪' }, { name: 'Suíça', flag: '🇨🇭' },
+  { name: 'Taiwan', flag: '🇹🇼' }, { name: 'Tailândia', flag: '🇹🇭' }, { name: 'Emirados Árabes Unidos', flag: '🇦🇪' },
+  { name: 'Turquia', flag: '🇹🇷' }, { name: 'Venezuela', flag: '🇻🇪' }, { name: 'Vietnã', flag: '🇻🇳' },
   { name: 'Luxemburgo', flag: '🇱🇺' },
+];
+
+const dlCountries: VipCountry[] = [
+  { name: 'Estados Unidos', flag: '🇺🇸' }, { name: 'Reino Unido', flag: '🇬🇧' }, { name: 'China', flag: '🇨🇳' },
+  { name: 'Hong Kong', flag: '🇭🇰' }, { name: 'França', flag: '🇫🇷' }, { name: 'Canadá', flag: '🇨🇦' },
+  { name: 'Alemanha', flag: '🇩🇪' }, { name: 'Japão', flag: '🇯🇵' }, { name: 'Austrália', flag: '🇦🇺' },
+  { name: 'México', flag: '🇲🇽' },
+];
+
+const billCountries: VipCountry[] = [
+  { name: 'Estados Unidos', flag: '🇺🇸' }, { name: 'Reino Unido', flag: '🇬🇧' },
+  { name: 'Canadá', flag: '🇨🇦' }, { name: 'Austrália', flag: '🇦🇺' }, { name: 'Alemanha', flag: '🇩🇪' },
+];
+
+const vipCategories: VipCategory[] = [
+  { title: 'Passaportes', countries: passportCountries },
+  { title: 'Carteiras de Identidade', countries: idCountries },
+  { title: 'Carteiras de Motorista', countries: dlCountries },
+  { title: 'Contas', countries: billCountries },
+  { title: 'Extratos Bancários', countries: billCountries },
 ];
 
 // ─── Service Card (Nacional) ───
@@ -272,28 +257,27 @@ function CategoryAccordion({ cat, hasCredits }: { cat: ServiceCategory; hasCredi
   );
 }
 
-// ─── Country Card (Internacional) ───
+// ─── Country Card (expande docs) ───
 function CountryCard({ country }: { country: VipCountry }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="border border-border rounded-lg overflow-hidden">
+    <div className="border border-border/50 rounded-lg overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
-        className={`w-full flex items-center gap-3 px-3 py-2.5 transition-colors ${open ? 'bg-orange-500 text-white' : 'bg-card hover:bg-muted'}`}
+        className={`w-full flex items-center gap-3 px-3 py-2.5 transition-colors ${open ? 'bg-amber-900/30' : 'bg-card hover:bg-muted/50'}`}
       >
-        <span className="text-2xl">{country.flag}</span>
-        <span className={`flex-1 text-left font-medium text-sm ${open ? 'text-white' : 'text-foreground'}`}>{country.name}</span>
-        {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+        <span className="text-xl">{country.flag}</span>
+        <span className="flex-1 text-left font-medium text-sm text-foreground">{country.name}</span>
+        {open ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />}
       </button>
       {open && (
-        <div className="p-2 space-y-1.5 bg-card">
+        <div className="p-2 space-y-1 bg-card">
           {documentTypes.map((doc) => (
-            <div key={doc} className="flex items-center gap-3 px-3 py-2 rounded-lg border border-border bg-muted/50 opacity-60 cursor-default">
-              <FileText className="h-4 w-4 text-muted-foreground" />
-              <span className="flex-1 text-sm text-foreground">{doc}</span>
-              <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                <Clock className="h-2.5 w-2.5 mr-0.5" /> Breve
+            <div key={doc} className="flex items-center gap-3 px-3 py-2 rounded-md border border-border/40 bg-muted/30 opacity-60 cursor-default">
+              <span className="flex-1 text-xs text-foreground">{doc}</span>
+              <Badge variant="secondary" className="text-[9px] px-1.5 py-0">
+                <Clock className="h-2 w-2 mr-0.5" /> Breve
               </Badge>
             </div>
           ))}
@@ -302,6 +286,44 @@ function CountryCard({ country }: { country: VipCountry }) {
     </div>
   );
 }
+
+// ─── VIP Category Accordion (gold) ───
+function VipCategoryAccordion({ cat }: { cat: VipCategory }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="rounded-xl overflow-hidden" style={{ border: '1px solid hsl(43, 50%, 35%)' }}>
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center gap-3 px-4 py-3.5 font-semibold text-sm transition-colors"
+        style={{
+          background: 'linear-gradient(135deg, hsl(43, 60%, 25%) 0%, hsl(38, 55%, 30%) 50%, hsl(43, 60%, 25%) 100%)',
+          color: 'hsl(43, 80%, 75%)',
+        }}
+      >
+        <span className="flex-1 text-left">{cat.title}</span>
+        <span
+          className="text-[10px] px-2 py-0.5 rounded-full font-medium"
+          style={{ background: 'hsl(43, 50%, 20%)', color: 'hsl(43, 80%, 70%)' }}
+        >
+          {cat.countries.length}
+        </span>
+        {open
+          ? <ChevronUp className="h-4 w-4" style={{ color: 'hsl(43, 80%, 65%)' }} />
+          : <ChevronDown className="h-4 w-4" style={{ color: 'hsl(43, 80%, 65%)' }} />
+        }
+      </button>
+      {open && (
+        <div className="p-2 space-y-1.5 bg-card">
+          {cat.countries.map((country) => (
+            <CountryCard key={country.name} country={country} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Page ───
 export default function Servicos() {
   const { admin, credits, loading } = useAuth();
@@ -345,26 +367,32 @@ export default function Servicos() {
           </TabsContent>
 
           <TabsContent value="internacional" className="space-y-3 mt-0">
-            {/* VIP Banner */}
-            <div className="relative overflow-hidden rounded-xl border-2 border-orange-400 bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 p-4">
+            {/* VIP Banner - Gold */}
+            <div
+              className="relative overflow-hidden rounded-xl p-4"
+              style={{
+                background: 'linear-gradient(135deg, hsl(43, 60%, 22%) 0%, hsl(38, 55%, 30%) 40%, hsl(48, 70%, 40%) 100%)',
+                border: '2px solid hsl(43, 60%, 40%)',
+              }}
+            >
               <div className="flex items-center gap-3">
-                <div className="h-12 w-12 rounded-full bg-white/20 flex items-center justify-center">
-                  <Crown className="h-7 w-7 text-white" />
+                <div className="h-12 w-12 rounded-full flex items-center justify-center" style={{ background: 'hsl(43, 50%, 30%)' }}>
+                  <Crown className="h-7 w-7" style={{ color: 'hsl(43, 80%, 70%)' }} />
                 </div>
                 <div>
-                  <h3 className="text-white font-bold text-lg flex items-center gap-2">
+                  <h3 className="font-bold text-lg flex items-center gap-2" style={{ color: 'hsl(43, 80%, 80%)' }}>
                     Documentos Internacionais
-                    <Badge className="bg-white/20 text-white border-0 text-[10px]">VIP</Badge>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ background: 'hsl(43, 50%, 25%)', color: 'hsl(43, 80%, 70%)' }}>VIP</span>
                   </h3>
-                  <p className="text-white/80 text-xs">Módulos premium com documentos de diversos países. Em breve disponível.</p>
+                  <p className="text-xs" style={{ color: 'hsl(43, 40%, 60%)' }}>Módulos premium com documentos de diversos países. Em breve disponível.</p>
                 </div>
               </div>
-              <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-white/10" />
-              <div className="absolute -right-2 -bottom-6 h-16 w-16 rounded-full bg-white/5" />
+              <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full" style={{ background: 'hsla(43, 60%, 50%, 0.1)' }} />
+              <div className="absolute -right-2 -bottom-6 h-16 w-16 rounded-full" style={{ background: 'hsla(43, 60%, 50%, 0.05)' }} />
             </div>
 
-            {vipCountries.map((country) => (
-              <CountryCard key={country.name} country={country} />
+            {vipCategories.map((cat) => (
+              <VipCategoryAccordion key={cat.title} cat={cat} />
             ))}
           </TabsContent>
         </Tabs>
