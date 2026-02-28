@@ -243,6 +243,38 @@ function formatTime(raw: string): string {
   return `${digits.slice(0, 2)}:${digits.slice(2, 4)}:${digits.slice(4)}`;
 }
 
+function formatPlacaUf(raw: string): string {
+  // Remove tudo exceto letras, números e /
+  const clean = raw.replace(/[^A-Za-z0-9/]/g, '').toUpperCase();
+  // Se já tem /, separa placa e UF
+  const parts = clean.split('/');
+  if (parts.length >= 2) {
+    return `${parts[0].slice(0, 7)}/${parts[1].slice(0, 2)}`;
+  }
+  // Se digitou 7+ chars sem /, auto-insere /
+  if (clean.length > 7) {
+    return `${clean.slice(0, 7)}/${clean.slice(7, 9)}`;
+  }
+  return clean.slice(0, 7);
+}
+
+function formatCpfCnpj(raw: string): string {
+  const digits = raw.replace(/\D/g, '');
+  if (digits.length <= 11) {
+    // CPF: 000.000.000-00
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`;
+    if (digits.length <= 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
+    return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9, 11)}`;
+  }
+  // CNPJ: 00.000.000/0000-00
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 5) return `${digits.slice(0, 2)}.${digits.slice(2)}`;
+  if (digits.length <= 8) return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5)}`;
+  if (digits.length <= 12) return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8)}`;
+  return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8, 12)}-${digits.slice(12, 14)}`;
+}
+
 export default function CrlvPositionTool() {
   const now = new Date();
   const defaultDate = now.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -432,6 +464,8 @@ export default function CrlvPositionTool() {
                     </div>
                     {key === 'data' ? (
                       <Input value={values.data || ''} onChange={(e) => setValue('data', formatDate(e.target.value))} className="h-7 text-xs uppercase" placeholder="dd/mm/aaaa" maxLength={10} />
+                    ) : key === 'cpfCnpj' ? (
+                      <Input value={values.cpfCnpj || ''} onChange={(e) => setValue('cpfCnpj', formatCpfCnpj(e.target.value))} className="h-7 text-xs uppercase" placeholder="000.000.000-00" maxLength={18} />
                     ) : (
                       <Input {...register(key)} className="h-7 text-xs uppercase" placeholder={FIELD_LABELS[key]} />
                     )}
@@ -447,7 +481,11 @@ export default function CrlvPositionTool() {
                 {veiculoFields.map(key => (
                   <div key={key} className={key === 'marcaModelo' || key === 'especieTipo' || key === 'carroceria' ? 'col-span-2' : ''}>
                     <Label className="text-[10px] text-muted-foreground">{FIELD_LABELS[key]}</Label>
-                    <Input {...register(key)} className="h-7 text-xs uppercase" placeholder={FIELD_LABELS[key]} />
+                    {key === 'placaAnt' ? (
+                      <Input value={values.placaAnt || ''} onChange={(e) => setValue('placaAnt', formatPlacaUf(e.target.value))} className="h-7 text-xs uppercase" placeholder="ABC1D23/SP" maxLength={10} />
+                    ) : (
+                      <Input {...register(key)} className="h-7 text-xs uppercase" placeholder={FIELD_LABELS[key]} />
+                    )}
                   </div>
                 ))}
               </div>
