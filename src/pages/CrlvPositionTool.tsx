@@ -183,6 +183,7 @@ export default function CrlvPositionTool() {
       eixos: '*',
       cmt: '1.75',
       carroceria: 'NÃO APLICAVEL',
+      nomeProprietario: 'FELIPE DA SILVA PEREIRA',
       docData: defaultDate,
       docHora: defaultTime,
       docHash: '364525021238D00',
