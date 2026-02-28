@@ -115,7 +115,7 @@ router.post("/create-pix", requireSession, async (req, res) => {
     if (isResellerFromAdmin3) {
       // Reseller pricing
       pricing = calculateResellerPrice(credits);
-    } else if (adminRow.rank === "master" || adminRow.rank === "dono") {
+    } else if (adminRow.rank === "master" || adminRow.rank === "dono" || adminRow.rank === "sub") {
       // Master/dono pricing from platform_settings
       const settings = await getSettings();
       pricing = calculatePriceFromTiers(credits, settings.priceTiers);
