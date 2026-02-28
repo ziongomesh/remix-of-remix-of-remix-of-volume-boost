@@ -26,6 +26,9 @@ router.post('/save', async (req, res) => {
       nome_proprietario, cpf_cnpj, local: localEmissao, data: dataEmissao,
       observacoes, uf,
       qrcode_base64,
+      // Insurance/DPVAT fields
+      data_quitacao, cat_tarif, repasse_fns, repasse_denatran,
+      custo_bilhete, custo_efetivo, valor_iof, valor_total,
     } = req.body;
 
     // Validate session
@@ -65,113 +68,93 @@ router.post('/save', async (req, res) => {
     page.drawImage(bgImage, { x: 0, y: 0, width: pageWidth, height: pageHeight });
 
     // Embed fonts
+    const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-    const courier = await pdfDoc.embedFont(StandardFonts.Courier);
+    const courierBold = await pdfDoc.embedFont(StandardFonts.CourierBold);
 
-    const drawText = (text: string, x: number, y: number, size = 9, font = courier) => {
-      page.drawText(text || '', { x, y: pageHeight - y, size, font, color: rgb(0, 0, 0) });
+    // Helper: draw text using coordinates matching the preview canvas (PDF points, top-left origin)
+    // ty = distance from top of page to TOP of the text
+    // pdf-lib uses bottom-left, so: pdfY = pageHeight - ty - fontSize
+    const drawField = (text: string, tx: number, ty: number, size = 10, font = courierBold) => {
+      if (!text || !text.trim()) return;
+      const val = text.toUpperCase();
+      page.drawText(val, {
+        x: tx,
+        y: pageHeight - ty - size,
+        size,
+        font,
+        color: rgb(0, 0, 0),
+      });
     };
 
-    const whiteOut = (x: number, y: number, w: number, h: number) => {
-      page.drawRectangle({ x, y: pageHeight - y - h, width: w, height: h, color: rgb(1, 1, 1) });
-    };
+    // ========== ALL FIELDS — coordinates match CrlvPositionTool FIELDS exactly ==========
 
-    // ========== LEFT COLUMN ==========
-    whiteOut(18, 100, 200, 20);
-    drawText(renavam, 18, 115, 12, helveticaBold);
+    // UF (small font, like OpenSans in preview)
+    if (uf) {
+      drawField(`DETRAN-   ${uf}`, 31.20, 54.22, 4.42, helvetica);
+    }
 
-    whiteOut(18, 132, 100, 18);
-    drawText(placa, 18, 146, 12, helveticaBold);
+    // Left column
+    drawField(renavam, 31.20, 102.21, 10, courierBold);
+    drawField(placa, 30.95, 128.58, 10, courierBold);
+    drawField(exercicio, 102.93, 128.58, 10, courierBold);
+    drawField(ano_fab, 31.20, 154.75, 10, courierBold);
+    drawField(ano_mod, 102.93, 154.75, 10, courierBold);
+    drawField(numero_crv, 31.20, 181.14, 10, courierBold);
+    drawField(cod_seg_cla, 31.67, 258.97, 10, courierBold);
+    drawField(cat_obs || '***', 162.67, 259.21, 10, courierBold);
+    drawField(marca_modelo, 30.95, 293.43, 10, courierBold);
+    drawField(especie_tipo, 30.47, 329.66, 10, courierBold);
+    drawField(placa_ant || '*******/**', 31.20, 364.00, 10, courierBold);
+    drawField(chassi, 131.01, 364.46, 10, courierBold);
+    drawField(cor, 30.47, 400.19, 10, courierBold);
+    drawField(combustivel, 101.97, 399.47, 10, courierBold);
 
-    whiteOut(130, 132, 90, 18);
-    drawText(exercicio, 130, 146, 12, helveticaBold);
+    // Right column
+    drawField(categoria, 315.76, 73.67, 10, courierBold);
+    drawField(capacidade || '*.*', 510.08, 88.78, 10, courierBold);
+    drawField(potencia_cil, 316.01, 114.22, 10, courierBold);
+    drawField(peso_bruto, 510.08, 114.70, 10, courierBold);
+    drawField(motor, 317.00, 140.86, 10, courierBold);
+    drawField(cmt, 453.79, 140.62, 10, courierBold);
+    drawField(eixos, 504.80, 140.62, 10, courierBold);
+    drawField(lotacao, 538.63, 140.86, 10, courierBold);
+    drawField(carroceria, 316.01, 166.27, 10, courierBold);
+    drawField(nome_proprietario, 314.82, 192.18, 10, courierBold);
+    drawField(cpf_cnpj, 463.39, 223.38, 10, courierBold);
+    drawField(localEmissao, 316.49, 259.40, 10, courierBold);
+    drawField(dataEmissao, 510.08, 258.20, 10, courierBold);
 
-    whiteOut(18, 162, 100, 18);
-    drawText(ano_fab, 18, 176, 12, helveticaBold);
+    // Insurance / DPVAT fields
+    drawField(data_quitacao || '*', 389.63, 323.51, 10, courierBold);
+    drawField(cat_tarif || '*', 316.73, 323.51, 10, courierBold);
+    drawField(repasse_fns || '*', 316.73, 360.46, 10, courierBold);
+    drawField(custo_bilhete || '*', 424.18, 360.46, 10, courierBold);
+    drawField(custo_efetivo || '*', 494.72, 360.46, 10, courierBold);
+    drawField(repasse_denatran || '*', 316.73, 401.25, 10, courierBold);
+    drawField(valor_iof || '*', 424.18, 401.25, 10, courierBold);
+    drawField(valor_total || '*', 494.72, 401.25, 10, courierBold);
 
-    whiteOut(130, 162, 90, 18);
-    drawText(ano_mod, 130, 176, 12, helveticaBold);
+    // ========== "Documento emitido por DETRAN..." ==========
+    const cpfHash = cleanCpf.slice(0, 9) || '000000000';
+    const hashCode = `${cpfHash.slice(0,3)}${cpfHash.slice(3,5)}f${cpfHash.slice(5,8)}`;
+    const docEmitidoText = `Documento emitido por DETRAN ${uf || 'SP'} (${hashCode}) em ${dataEmissao || new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}.`;
+    drawField(docEmitidoText, 31.43, 413.00, 4.42, helvetica);
 
-    whiteOut(18, 192, 200, 20);
-    drawText(numero_crv, 18, 208, 11, helveticaBold);
-
-    whiteOut(18, 312, 165, 20);
-    drawText(cod_seg_cla, 18, 328, 11, helveticaBold);
-
-    whiteOut(195, 312, 50, 20);
-    drawText(cat_obs || '***', 200, 328, 11, helveticaBold);
-
-    whiteOut(18, 347, 230, 22);
-    drawText(marca_modelo, 18, 363, 11, helveticaBold);
-
-    whiteOut(18, 382, 230, 22);
-    drawText(especie_tipo, 18, 400, 11, helveticaBold);
-
-    whiteOut(18, 418, 110, 18);
-    drawText(placa_ant || '*******/**', 18, 433, 11, helveticaBold);
-
-    whiteOut(135, 418, 120, 18);
-    drawText(chassi, 135, 433, 10, helveticaBold);
-
-    whiteOut(18, 450, 110, 18);
-    drawText(cor, 18, 465, 11, helveticaBold);
-
-    whiteOut(135, 450, 120, 18);
-    drawText(combustivel, 135, 465, 10, helveticaBold);
-
-    // ========== RIGHT COLUMN ==========
-    whiteOut(310, 87, 190, 22);
-    drawText(categoria, 310, 105, 12, helveticaBold);
-
-    whiteOut(500, 87, 80, 22);
-    drawText(capacidade || '*.*', 510, 105, 12, helveticaBold);
-
-    whiteOut(310, 122, 190, 22);
-    drawText(potencia_cil, 310, 140, 12, helveticaBold);
-
-    whiteOut(500, 122, 80, 22);
-    drawText(peso_bruto, 510, 140, 10, helveticaBold);
-
-    whiteOut(310, 156, 165, 20);
-    drawText(motor, 310, 172, 10, helveticaBold);
-
-    whiteOut(476, 156, 40, 20);
-    drawText(cmt, 476, 172, 10, helveticaBold);
-
-    whiteOut(518, 156, 25, 20);
-    drawText(eixos, 520, 172, 10, helveticaBold);
-
-    whiteOut(545, 156, 40, 20);
-    drawText(lotacao, 548, 172, 10, helveticaBold);
-
-    whiteOut(310, 190, 280, 22);
-    drawText(carroceria, 310, 208, 11, helveticaBold);
-
-    whiteOut(310, 224, 280, 22);
-    drawText(nome_proprietario, 310, 242, 11, helveticaBold);
-
-    whiteOut(420, 258, 170, 22);
-    drawText(cpf_cnpj, 420, 276, 11, helveticaBold);
-
-    whiteOut(310, 292, 190, 22);
-    drawText(localEmissao, 310, 310, 11, helveticaBold);
-
-    whiteOut(520, 292, 70, 22);
-    drawText(dataEmissao, 520, 310, 10, helveticaBold);
+    // ========== OBSERVAÇÕES ==========
+    if (observacoes) {
+      drawField(observacoes, 26.87, 442.18, 10, courierBold);
+    }
 
     // ========== QR CODE ==========
-    whiteOut(240, 100, 175, 195);
-
     let qrcodePath: string | null = null;
     try {
       let qrBytes: Buffer;
 
       if (qrcode_base64 && qrcode_base64.length > 100) {
-        // User provided custom QR
         const clean = qrcode_base64.replace(/^data:image\/\w+;base64,/, '');
         qrBytes = Buffer.from(clean, 'base64');
       } else {
-        // Generate QR denso
         const densePad = '#REPUBLICA.FEDERATIVA.DO.BRASIL//CERTIFICADO.DE.REGISTRO.E.LICENCIAMENTO.DE.VEICULO//DETRAN//DENATRAN//CONTRAN//v1=SERPRO//v2=RENAVAM//v3=REGISTRO.NACIONAL//v4=CERTIFICADO.DIGITAL//v5=ICP-BRASIL//v6=LICENCIAMENTO.ANUAL//v7=SEGURO.DPVAT//v8=IPVA//v9=VISTORIA//v10=CRV';
         const qrData = `https://qrcode-certificadodigital-vio.info/crlv?ren=${renavam}&pl=${placa}${densePad}`;
         const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
@@ -181,7 +164,13 @@ router.post('/save', async (req, res) => {
       }
 
       const qrImg = await pdfDoc.embedPng(qrBytes);
-      page.drawImage(qrImg, { x: 255, y: pageHeight - 280, width: 145, height: 145 });
+      // QR position matching preview: tx=167.23, ty=92.85, size=97.4
+      page.drawImage(qrImg, {
+        x: 167.23,
+        y: pageHeight - 92.85 - 97.4,
+        width: 97.4,
+        height: 97.4,
+      });
 
       // Save QR locally
       const qrFilename = `crlv_${cleanCpf}_qr.png`;
@@ -192,27 +181,6 @@ router.post('/save', async (req, res) => {
       logger.error('[CRLV] QR code error:', qrErr);
     }
 
-    // ========== DETRAN-UF (Open Sans style, positioned below QR area) ==========
-    whiteOut(310, 340, 280, 22);
-    const detranText = uf ? `DETRAN-   ${uf}` : 'DETRAN-   SP';
-    drawText(detranText, 310, 355, 12, helveticaBold);
-
-    // ========== "Documento emitido por CDT..." ==========
-    whiteOut(18, 480, 560, 20);
-    const cpfHash = cleanCpf.slice(0, 9) || '000000000';
-    const hashCode = `${cpfHash.slice(0,3)}${cpfHash.slice(3,5)}f${cpfHash.slice(5,8)}`;
-    const docEmitidoText = `Documento emitido por CDT (${hashCode}) em ${dataEmissao || new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}.`;
-    drawText(docEmitidoText, 80, 495, 8, courier);
-
-    // ========== OBSERVAÇÕES ==========
-    whiteOut(18, 505, 270, 245);
-    const obsText = observacoes || '*.*';
-    const lines = (obsText as string).split('\n');
-    lines.forEach((line: string, i: number) => {
-      drawText(line, 25, 530 + i * 16, 11, helveticaBold);
-    });
-
-    // Save PDF locally
     const pdfBytes = await pdfDoc.save();
     const cleanPlaca = (placa || '').replace(/[^A-Za-z0-9]/g, '');
     const pdfFilename = `CRLV_${cleanPlaca}.pdf`;
