@@ -140,8 +140,9 @@ function CrlvCanvas({ values }: { values: Record<string, string> }) {
     // "Documento emitido por DETRAN UF ..." line
     const uf = values.uf || 'SP';
     const cpfClean = (values.cpfCnpj || '').replace(/\D/g, '');
-    const cpfHash = cpfClean.slice(0, 9) || '000000000';
-    const hashCode = `${cpfHash.slice(0,3)}${cpfHash.slice(3,6)}${cpfHash.slice(6,9)}${cpfHash.slice(0,3)}D00`;
+    const hashCode = cpfClean.length >= 9
+      ? `${cpfClean.slice(0,3)}${cpfClean.slice(3,6)}${cpfClean.slice(6,9)}${cpfClean.slice(0,3)}D00`
+      : '364525021238D00';
     const now = new Date();
     const brDate = now.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric' });
     const brTime = now.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', second: '2-digit' });
