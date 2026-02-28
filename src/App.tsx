@@ -9,6 +9,7 @@ import { Logo } from "./components/Logo";
 
 // Eagerly loaded (lightweight pages)
 import Login from "./pages/Login";
+import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import DashboardDono from "./pages/DashboardDono";
 import NotFound from "./pages/NotFound";
@@ -81,7 +82,7 @@ const App = () => (
           <AuthProvider>
             <Suspense fallback={<LazyFallback />}>
               <Routes>
-                <Route path="/" element={<Navigate to="/login" replace />} />
+                <Route path="/" element={<Index />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/dashboard-dono" element={<DashboardDono />} />
