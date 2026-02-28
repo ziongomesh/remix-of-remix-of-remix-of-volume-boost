@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/Logo';
 import { Delete, Check, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import waveBg from '@/assets/wave-bg.png';
+
 
 interface PinPadProps {
   mode: 'register' | 'verify';
@@ -66,28 +66,8 @@ export function PinPad({ mode, onSubmit, loading = false }: PinPadProps) {
     : 'Digite seu PIN de 4 dígitos para acessar';
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center relative overflow-hidden">
-      {/* Animated wave background */}
-      <div
-        className="absolute inset-0 opacity-40 pointer-events-none"
-        style={{
-          backgroundImage: `url(${waveBg})`,
-          backgroundSize: '200% 200%',
-          backgroundPosition: 'center',
-          animation: 'pinWaveMove 12s ease-in-out infinite alternate',
-        }}
-      />
-      <style>{`
-        @keyframes pinWaveMove {
-          0% { background-position: 0% 30%; transform: scale(1.05); }
-          25% { background-position: 50% 60%; }
-          50% { background-position: 100% 40%; transform: scale(1.15); }
-          75% { background-position: 60% 20%; }
-          100% { background-position: 20% 70%; transform: scale(1.05); }
-        }
-      `}</style>
-
-      <div className="relative z-10 w-full max-w-sm mx-4 animate-fade-in">
+    <div className="w-full">
+      <div className="w-full max-w-sm mx-auto animate-fade-in">
         {/* Header */}
         <div className="text-center mb-8 space-y-4">
           <div className="flex justify-center">
