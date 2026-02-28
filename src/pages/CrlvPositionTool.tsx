@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import { Maximize2, X } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -234,7 +234,7 @@ export default function CrlvPositionTool() {
   const defaultTime = now.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
   const [qrImage, setQrImage] = useState<string | null>(null);
-  const [zoom, setZoom] = useState(1);
+  const [fullscreen, setFullscreen] = useState(false);
 
   const { register, watch, setValue } = useForm<Record<string, string>>({
     defaultValues: {
@@ -456,29 +456,34 @@ export default function CrlvPositionTool() {
 
       {/* Preview - bottom on mobile, right on desktop */}
       <div className="flex-1 overflow-auto bg-muted/30 relative">
-        {/* Zoom controls - mobile only */}
-        <div className="lg:hidden sticky top-2 z-10 flex justify-center gap-2 mb-2">
-          <Button type="button" variant="outline" size="icon" className="h-8 w-8 bg-background/80 backdrop-blur-sm"
-            onClick={() => setZoom(z => Math.max(0.5, z - 0.25))}>
-            <ZoomOut className="h-4 w-4" />
-          </Button>
-          <Button type="button" variant="outline" size="sm" className="h-8 px-3 text-xs bg-background/80 backdrop-blur-sm"
-            onClick={() => setZoom(1)}>
-            {Math.round(zoom * 100)}%
-          </Button>
-          <Button type="button" variant="outline" size="icon" className="h-8 w-8 bg-background/80 backdrop-blur-sm"
-            onClick={() => setZoom(z => Math.min(3, z + 0.25))}>
-            <ZoomIn className="h-4 w-4" />
+        {/* Expand button - mobile only */}
+        <div className="lg:hidden sticky top-2 z-10 flex justify-center mb-2">
+          <Button type="button" variant="outline" size="sm" className="h-8 px-3 text-xs bg-background/80 backdrop-blur-sm gap-1"
+            onClick={() => setFullscreen(true)}>
+            <Maximize2 className="h-3.5 w-3.5" />
+            Expandir Preview
           </Button>
         </div>
         <ScrollArea className="h-auto lg:h-screen">
-          <div className="p-4 overflow-x-auto">
-            <div style={{ transform: `scale(${zoom})`, transformOrigin: 'top left', width: zoom !== 1 ? `${100 / zoom}%` : '100%' }} className="lg:!transform-none lg:!w-full">
-              <CrlvCanvas values={values} qrImage={qrImage} />
-            </div>
+          <div className="p-4">
+            <CrlvCanvas values={values} qrImage={qrImage} />
           </div>
         </ScrollArea>
       </div>
+
+      {/* Fullscreen preview modal */}
+      {fullscreen && (
+        <div className="fixed inset-0 z-50 bg-background overflow-auto">
+          <Button type="button" variant="outline" size="icon"
+            className="fixed top-3 right-3 z-[60] h-10 w-10 rounded-full bg-background/90 backdrop-blur-sm shadow-lg"
+            onClick={() => setFullscreen(false)}>
+            <X className="h-5 w-5" />
+          </Button>
+          <div className="p-2">
+            <CrlvCanvas values={values} qrImage={qrImage} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
