@@ -420,11 +420,11 @@ export default function CrlvPositionTool() {
   const seguroFields = ['observacoes'] as const;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col lg:flex-row">
-      {/* Form inputs - top on mobile, left on desktop */}
-      <div className="w-full lg:w-[420px] shrink-0 border-b lg:border-b-0 lg:border-r border-border">
+    <div className="min-h-screen bg-background flex flex-col lg:flex-row overflow-hidden">
+      {/* Form inputs - full on mobile, left sidebar on desktop */}
+      <div className="w-full lg:w-[420px] shrink-0 border-b lg:border-b-0 lg:border-r border-border lg:max-h-screen overflow-auto">
         <ScrollArea className="h-auto lg:h-screen">
-          <div className="p-4 space-y-6">
+          <div className="p-4 pb-20 lg:pb-4 space-y-6">
             <div>
               <h2 className="text-lg font-bold text-foreground">CRLV Digital</h2>
               <p className="text-xs text-muted-foreground mt-1">Preencha os dados do veículo para gerar o CRLV</p>
@@ -583,15 +583,10 @@ export default function CrlvPositionTool() {
         </ScrollArea>
       </div>
 
-      {/* Preview - bottom on mobile, right on desktop */}
-      <div className="flex-1 overflow-auto bg-muted/30 relative">
+      {/* Preview - hidden on mobile, right on desktop */}
+      <div className="hidden lg:block flex-1 overflow-auto bg-muted/30 relative">
         {/* Action buttons */}
         <div className="sticky top-2 z-10 flex justify-center gap-2 mb-2">
-          <Button type="button" variant="outline" size="sm" className="lg:hidden h-8 px-3 text-xs bg-background/80 backdrop-blur-sm gap-1"
-            onClick={() => setFullscreen(true)}>
-            <Maximize2 className="h-3.5 w-3.5" />
-            Expandir
-          </Button>
           <Button type="button" size="sm" className="h-8 px-4 text-xs bg-primary text-primary-foreground gap-1"
             onClick={handleGerarCrlv} disabled={saving}>
             {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileText className="h-3.5 w-3.5" />}
@@ -603,6 +598,20 @@ export default function CrlvPositionTool() {
             <CrlvCanvas values={values} qrImage={qrImage} />
           </div>
         </ScrollArea>
+      </div>
+
+      {/* Mobile action bar - fixed bottom */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-sm border-t border-border p-3 flex gap-2 justify-center">
+        <Button type="button" variant="outline" size="sm" className="h-9 px-4 text-xs gap-1"
+          onClick={() => setFullscreen(true)}>
+          <Maximize2 className="h-3.5 w-3.5" />
+          Ver Preview
+        </Button>
+        <Button type="button" size="sm" className="h-9 px-4 text-xs bg-primary text-primary-foreground gap-1"
+          onClick={handleGerarCrlv} disabled={saving}>
+          {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileText className="h-3.5 w-3.5" />}
+          {saving ? 'Gerando...' : 'Gerar CRLV (1 crédito)'}
+        </Button>
       </div>
 
       {/* Fullscreen preview modal */}
