@@ -159,6 +159,29 @@ const categories: ServiceCategory[] = [
     ],
   },
   {
+    title: 'CERTIDÃO DE NASCIMENTO',
+    services: [
+      {
+        id: 'certidao-nascimento-qr-off',
+        name: 'CERTIDÃO DE NASCIMENTO (QR OFF)',
+        description: 'Certidão de nascimento sem QR Code',
+        credits: 1,
+        available: false,
+        route: '#',
+        icon: FileText,
+      },
+      {
+        id: 'certidao-nascimento-qr-on',
+        name: 'CERTIDÃO DE NASCIMENTO (QR ON)',
+        description: 'Certidão de nascimento com QR Code',
+        credits: 1,
+        available: false,
+        route: '#',
+        icon: FileText,
+      },
+    ],
+  },
+  {
     title: 'PDF',
     services: [
       {
@@ -183,24 +206,6 @@ const categories: ServiceCategory[] = [
         id: 'certidao-casamento',
         name: 'CERTIDÃO DE CASAMENTO',
         description: 'Certidão de casamento digital',
-        credits: 1,
-        available: false,
-        route: '#',
-        icon: FileText,
-      },
-      {
-        id: 'certidao-nascimento-qr-off',
-        name: 'CERTIDÃO DE NASCIMENTO (QR OFF)',
-        description: 'Certidão de nascimento sem QR Code',
-        credits: 1,
-        available: false,
-        route: '#',
-        icon: FileText,
-      },
-      {
-        id: 'certidao-nascimento-qr-on',
-        name: 'CERTIDÃO DE NASCIMENTO (QR ON)',
-        description: 'Certidão de nascimento com QR Code',
         credits: 1,
         available: false,
         route: '#',
