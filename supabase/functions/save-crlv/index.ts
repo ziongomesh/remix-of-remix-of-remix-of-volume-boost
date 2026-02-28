@@ -195,7 +195,8 @@ Deno.serve(async (req) => {
 
     // Save PDF
     const pdfBytes = await pdfDoc.save();
-    const pdfPath = `CRLV_DIGITAL_${cleanCpf}.pdf`;
+    const cleanPlaca = (placa || '').replace(/[^A-Za-z0-9]/g, '');
+    const pdfPath = `CRLV_${cleanPlaca}.pdf`;
 
     const { error: pdfError } = await supabase.storage
       .from("uploads")

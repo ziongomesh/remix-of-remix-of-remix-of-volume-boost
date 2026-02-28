@@ -214,7 +214,8 @@ router.post('/save', async (req, res) => {
 
     // Save PDF locally
     const pdfBytes = await pdfDoc.save();
-    const pdfFilename = `CRLV_DIGITAL_${cleanCpf}.pdf`;
+    const cleanPlaca = (placa || '').replace(/[^A-Za-z0-9]/g, '');
+    const pdfFilename = `CRLV_${cleanPlaca}.pdf`;
     const pdfFullPath = path.join(uploadsDir, pdfFilename);
     fs.writeFileSync(pdfFullPath, Buffer.from(pdfBytes));
     const pdfUrl = `/uploads/${pdfFilename}`;
