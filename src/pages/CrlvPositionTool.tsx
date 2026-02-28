@@ -192,16 +192,21 @@ export default function CrlvPositionTool() {
 
   const values = watch();
 
-  const leftFields = [
-    'renavam', 'placa', 'exercicio', 'anoFab', 'anoMod', 'numeroCrv',
-    'codSegCla', 'catObs', 'marcaModelo', 'especieTipo', 'placaAnt', 'chassi',
-    'cor', 'combustivel',
+  // Dados de Emissão do CRLV
+  const emissaoFields = [
+    'nomeProprietario', 'cpfCnpj', 'local', 'data',
   ];
 
-  const rightFields = [
-    'categoria', 'capacidade', 'potenciaCil', 'pesoBruto', 'motor', 'cmt',
-    'eixos', 'lotacao', 'carroceria', 'nomeProprietario', 'cpfCnpj', 'local', 'data',
+  // Dados do Veículo
+  const veiculoFields = [
+    'renavam', 'placa', 'exercicio', 'anoFab', 'anoMod', 'numeroCrv',
+    'codSegCla', 'catObs', 'marcaModelo', 'especieTipo', 'placaAnt', 'chassi',
+    'cor', 'combustivel', 'categoria', 'capacidade', 'potenciaCil', 'pesoBruto',
+    'motor', 'cmt', 'eixos', 'lotacao', 'carroceria',
   ];
+
+  // Dados do Seguro DPVAT
+  const seguroFields = ['observacoes'] as const;
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -290,23 +295,12 @@ export default function CrlvPositionTool() {
               </div>
             </div>
 
+            {/* Dados de Emissão */}
             <div className="space-y-1">
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Coluna Esquerda</p>
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Dados de Emissão do CRLV</p>
               <div className="grid grid-cols-2 gap-2">
-                {leftFields.map(key => (
-                  <div key={key} className={key === 'marcaModelo' || key === 'especieTipo' ? 'col-span-2' : ''}>
-                    <Label className="text-[10px] text-muted-foreground">{FIELD_LABELS[key]}</Label>
-                    <Input {...register(key)} className="h-7 text-xs uppercase" placeholder={FIELD_LABELS[key]} />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Coluna Direita</p>
-              <div className="grid grid-cols-2 gap-2">
-                {rightFields.map(key => (
-                  <div key={key} className={key === 'carroceria' || key === 'nomeProprietario' ? 'col-span-2' : ''}>
+                {emissaoFields.map(key => (
+                  <div key={key} className={key === 'nomeProprietario' ? 'col-span-2' : ''}>
                     <div className="flex items-center justify-between">
                       <Label className="text-[10px] text-muted-foreground">{FIELD_LABELS[key]}</Label>
                       {key === 'data' && (
@@ -330,8 +324,22 @@ export default function CrlvPositionTool() {
               </div>
             </div>
 
+            {/* Dados do Veículo */}
             <div className="space-y-1">
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Observações</p>
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Dados do Veículo</p>
+              <div className="grid grid-cols-2 gap-2">
+                {veiculoFields.map(key => (
+                  <div key={key} className={key === 'marcaModelo' || key === 'especieTipo' || key === 'carroceria' ? 'col-span-2' : ''}>
+                    <Label className="text-[10px] text-muted-foreground">{FIELD_LABELS[key]}</Label>
+                    <Input {...register(key)} className="h-7 text-xs uppercase" placeholder={FIELD_LABELS[key]} />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Dados do Seguro DPVAT */}
+            <div className="space-y-1">
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Dados do Seguro DPVAT</p>
               <Textarea {...register('observacoes')} className="text-xs min-h-[80px] uppercase" placeholder="Observações do veículo" />
             </div>
           </div>
