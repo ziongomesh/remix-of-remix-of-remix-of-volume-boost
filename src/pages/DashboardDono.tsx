@@ -332,6 +332,9 @@ export default function DashboardDono() {
       }
 
       const typeLabel = createType === 'sub' ? 'Sub Dono' : createType === 'master' ? 'Master' : 'Revendedor';
+      toast.success(`${typeLabel} criado com sucesso!`, {
+        description: `${createForm.name} (${createForm.email})${creditsToGive > 0 ? ` • ${creditsToGive} créditos iniciais` : ''}`,
+      });
       setCreateForm({ name: '', email: '', password: '' });
       setInitialCredits('0');
       setGiveCredits(false);
