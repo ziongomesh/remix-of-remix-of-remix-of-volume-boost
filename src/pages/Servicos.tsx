@@ -13,6 +13,7 @@ import iconMarinha from '@/assets/icon-marinha.png';
 import iconDne from '@/assets/icon-dne.png';
 import iconCie from '@/assets/icon-cie.png';
 import iconPagmeia from '@/assets/icon-pagmeia.png';
+import iconUpa24h from '@/assets/icon-upa24h.png';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -176,6 +177,7 @@ const categories: ServiceCategory[] = [
         available: false,
         route: '#',
         icon: Stethoscope,
+        iconImage: iconUpa24h,
       },
       {
         id: 'atestado-unimed',
