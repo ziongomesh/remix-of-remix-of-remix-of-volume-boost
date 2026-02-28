@@ -26,7 +26,7 @@ const FIELDS: FieldDef[] = [
   { key: 'renavam', tx: 0, ty: 0, size: 4.42 },
   { key: 'placa', tx: 0, ty: 0, size: 4.42 },
   { key: 'exercicio', tx: 102.93, ty: 128.58, size: 10 },
-  { key: 'anoFab', tx: 0, ty: 0, size: 4.42 },
+  { key: 'anoFab', tx: 31.20, ty: 154.75, size: 10 },
   { key: 'anoMod', tx: 102.93, ty: 154.75, size: 10 },
   { key: 'numeroCrv', tx: 31.20, ty: 181.14, size: 10 },
   { key: 'codSegCla', tx: 31.67, ty: 258.97, size: 10 },
