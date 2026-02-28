@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { 
   Zap, FileText, Users, History, FolderOpen, Send, Wrench, 
   Download, UserPlus, CreditCard, Wallet, ArrowRight, Trophy,
-  Shield, Megaphone
+  Shield, Megaphone, Target, Settings2
 } from 'lucide-react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
@@ -12,12 +12,34 @@ import api from '@/lib/api';
 import OnboardingWizard from '@/components/tutorial/OnboardingWizard';
 import MasterOnboardingWizard from '@/components/tutorial/MasterOnboardingWizard';
 import DashboardDono from './DashboardDono';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { toast } from 'sonner';
 
 interface Noticia {
   id: number;
   titulo: string;
   informacao: string;
   data_post: string;
+}
+
+interface Goals {
+  daily: number;
+  weekly: number;
+  monthly: number;
+}
+
+const DEFAULT_GOALS: Goals = { daily: 3, weekly: 10, monthly: 30 };
+
+function loadGoals(adminId: number): Goals {
+  const stored = localStorage.getItem(`goals_${adminId}`);
+  if (stored) return JSON.parse(stored);
+  return DEFAULT_GOALS;
+}
+
+function saveGoals(adminId: number, goals: Goals) {
+  localStorage.setItem(`goals_${adminId}`, JSON.stringify(goals));
 }
 
 export default function Dashboard() {
@@ -29,9 +51,13 @@ export default function Dashboard() {
   const [showMasterOnboarding, setShowMasterOnboarding] = useState(false);
   const [noticias, setNoticias] = useState<Noticia[]>([]);
   const [myDocStats, setMyDocStats] = useState<{ today: number; week: number; month: number }>({ today: 0, week: 0, month: 0 });
+  const [goals, setGoals] = useState<Goals>(DEFAULT_GOALS);
+  const [editGoals, setEditGoals] = useState<Goals>(DEFAULT_GOALS);
+  const [goalsOpen, setGoalsOpen] = useState(false);
 
   useEffect(() => {
     if (admin && !loading) {
+      setGoals(loadGoals(admin.id));
       if (admin.rank === 'revendedor') {
         const tutorialKey = `tutorial_completed_${admin.id}`;
         if (!localStorage.getItem(tutorialKey)) setShowOnboarding(true);
@@ -81,6 +107,13 @@ export default function Dashboard() {
 
   const firstName = admin.nome?.split(' ')[0] || 'Usuário';
 
+  const handleSaveGoals = () => {
+    saveGoals(admin.id, editGoals);
+    setGoals(editGoals);
+    setGoalsOpen(false);
+    toast.success('Metas atualizadas!');
+  };
+
   // Launcher quick actions
   const quickActions = [
     { label: 'Serviços', icon: FolderOpen, href: '/servicos', desc: 'Gerar documentos' },
@@ -94,6 +127,12 @@ export default function Dashboard() {
     ] : [
       { label: 'Recarregar', icon: CreditCard, href: '/recarregar', desc: 'Comprar créditos' },
     ]),
+  ];
+
+  const goalItems = [
+    { label: 'Diária', current: myDocStats.today, target: goals.daily, color: 'text-emerald-400', bg: 'bg-emerald-400' },
+    { label: 'Semanal', current: myDocStats.week, target: goals.weekly, color: 'text-blue-400', bg: 'bg-blue-400' },
+    { label: 'Mensal', current: myDocStats.month, target: goals.monthly, color: 'text-violet-400', bg: 'bg-violet-400' },
   ];
 
   return (
@@ -159,6 +198,62 @@ export default function Dashboard() {
               accent="text-amber-400"
             />
           )}
+        </div>
+
+        {/* ═══ METAS ═══ */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+              <Target className="h-3 w-3" /> Metas
+            </p>
+            <Dialog open={goalsOpen} onOpenChange={(open) => { setGoalsOpen(open); if (open) setEditGoals(goals); }}>
+              <DialogTrigger asChild>
+                <button className="text-[10px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-1">
+                  <Settings2 className="h-3 w-3" /> Alterar
+                </button>
+              </DialogTrigger>
+              <DialogContent className="max-w-xs">
+                <DialogHeader>
+                  <DialogTitle className="text-base">Alterar Metas</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-3 pt-2">
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">Meta Diária</label>
+                    <Input type="number" min={1} value={editGoals.daily} onChange={(e) => setEditGoals(g => ({ ...g, daily: Number(e.target.value) || 1 }))} className="h-9" />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">Meta Semanal</label>
+                    <Input type="number" min={1} value={editGoals.weekly} onChange={(e) => setEditGoals(g => ({ ...g, weekly: Number(e.target.value) || 1 }))} className="h-9" />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">Meta Mensal</label>
+                    <Input type="number" min={1} value={editGoals.monthly} onChange={(e) => setEditGoals(g => ({ ...g, monthly: Number(e.target.value) || 1 }))} className="h-9" />
+                  </div>
+                  <Button onClick={handleSaveGoals} className="w-full h-9 text-sm">Salvar</Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            {goalItems.map((g) => {
+              const pct = Math.min((g.current / g.target) * 100, 100);
+              return (
+                <div key={g.label} className="rounded-xl bg-card border border-border/50 px-4 py-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">{g.label}</span>
+                    <span className={`text-xs font-bold ${g.color}`}>{g.current}/{g.target}</span>
+                  </div>
+                  <div className="w-full h-1.5 rounded-full bg-muted/30">
+                    <div
+                      className={`h-full rounded-full ${g.bg} transition-all duration-500`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-1.5 text-right">{Math.round(pct)}%</p>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         {/* ═══ LAUNCHER GRID ═══ */}
