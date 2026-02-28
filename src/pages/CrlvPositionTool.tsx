@@ -123,20 +123,6 @@ function CrlvCanvas({ values }: { values: Record<string, string> }) {
       ctx.fillText(values.uf, ps(270), ps(39));
     }
 
-    // Doc emitido
-    const cpfClean = (values.cpfCnpj || '').replace(/\D/g, '');
-    const cpfHash = cpfClean.slice(0, 9) || '000000000';
-    const hashCode = `${cpfHash.slice(0,3)}${cpfHash.slice(3,5)}f${cpfHash.slice(5,8)}`;
-    const now = new Date();
-    const brDate = values.data || now.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
-    const brTime = now.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo' });
-    const docText = `Documento emitido por CDT (${hashCode}) em ${brDate} às ${brTime}.`;
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(ps(23), ps(315), ps(400), ps(10));
-    ctx.fillStyle = '#000000';
-    ctx.font = `${ps(5)}px "FreeMono", "Courier New", monospace`;
-    ctx.textBaseline = 'alphabetic';
-    ctx.fillText(docText, ps(25), ps(322));
   }, [values, bgImage]);
 
   return (
