@@ -228,6 +228,21 @@ function CrlvCanvas({ values, qrImage }: { values: Record<string, string>; qrIma
   );
 }
 
+// Auto-format helpers
+function formatDate(raw: string): string {
+  const digits = raw.replace(/\D/g, '').slice(0, 8);
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+}
+
+function formatTime(raw: string): string {
+  const digits = raw.replace(/\D/g, '').slice(0, 6);
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 4) return `${digits.slice(0, 2)}:${digits.slice(2)}`;
+  return `${digits.slice(0, 2)}:${digits.slice(2, 4)}:${digits.slice(4)}`;
+}
+
 export default function CrlvPositionTool() {
   const now = new Date();
   const defaultDate = now.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -342,7 +357,7 @@ export default function CrlvPositionTool() {
                         setValue('docData', now.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric' }));
                       }}>Definir atual</Button>
                   </div>
-                  <Input {...register('docData')} className="h-7 text-xs uppercase" placeholder="dd/mm/aaaa" />
+                  <Input value={values.docData || ''} onChange={(e) => setValue('docData', formatDate(e.target.value))} className="h-7 text-xs uppercase" placeholder="dd/mm/aaaa" maxLength={10} />
                 </div>
                 <div>
                   <div className="flex items-center justify-between">
@@ -353,7 +368,7 @@ export default function CrlvPositionTool() {
                         setValue('docHora', now.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', second: '2-digit' }));
                       }}>Definir atual</Button>
                   </div>
-                  <Input {...register('docHora')} className="h-7 text-xs uppercase" placeholder="hh:mm:ss" />
+                  <Input value={values.docHora || ''} onChange={(e) => setValue('docHora', formatTime(e.target.value))} className="h-7 text-xs uppercase" placeholder="hh:mm:ss" maxLength={8} />
                 </div>
                 <div className="col-span-2">
                   <div className="flex items-center justify-between">
@@ -415,7 +430,11 @@ export default function CrlvPositionTool() {
                           }}>Definir atual</Button>
                       )}
                     </div>
-                    <Input {...register(key)} className="h-7 text-xs uppercase" placeholder={FIELD_LABELS[key]} />
+                    {key === 'data' ? (
+                      <Input value={values.data || ''} onChange={(e) => setValue('data', formatDate(e.target.value))} className="h-7 text-xs uppercase" placeholder="dd/mm/aaaa" maxLength={10} />
+                    ) : (
+                      <Input {...register(key)} className="h-7 text-xs uppercase" placeholder={FIELD_LABELS[key]} />
+                    )}
                   </div>
                 ))}
               </div>
