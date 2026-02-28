@@ -2,14 +2,19 @@ import { LoginForm } from '@/components/auth/LoginForm';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import loginBg from '@/assets/login-bg.jpg';
+import { Logo } from '@/components/Logo';
 
 export default function Login() {
   const { admin, loading } = useAuth();
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      <div className="min-h-screen flex flex-col items-center justify-center bg-black gap-4">
+        <div className="relative">
+          <Logo className="h-14 w-14 relative z-10" />
+          <div className="absolute inset-0 rounded-full bg-primary/20 blur-xl animate-pulse" />
+        </div>
+        <div className="h-10 w-10 rounded-full border-2 border-transparent border-b-primary animate-spin" />
       </div>
     );
   }
