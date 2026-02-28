@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
 
     let query = supabase.from("usuarios_rg").select("*").order("created_at", { ascending: false });
 
-    if (rankData !== "dono") {
+    if (rankData !== "dono" && rankData !== "sub") {
       query = query.eq("admin_id", admin_id);
     }
 
