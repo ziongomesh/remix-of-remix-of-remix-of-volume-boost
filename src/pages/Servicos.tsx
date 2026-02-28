@@ -136,7 +136,7 @@ const categories: ServiceCategory[] = [
     ],
   },
   {
-    title: 'PDF',
+    title: 'CRLV',
     services: [
       {
         id: 'crlv-digital',
@@ -156,6 +156,11 @@ const categories: ServiceCategory[] = [
         route: '#',
         icon: Car,
       },
+    ],
+  },
+  {
+    title: 'PDF',
+    services: [
       {
         id: 'comprovante-residencia',
         name: 'COMPROVANTE DE RESIDÊNCIA',
