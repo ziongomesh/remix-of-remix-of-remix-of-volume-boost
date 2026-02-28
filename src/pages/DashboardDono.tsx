@@ -661,20 +661,14 @@ export default function DashboardDono() {
                             </CardTitle>
                           </CardHeader>
                           <CardContent>
-                            <Tabs defaultValue="todos" className="w-full">
+                            <Tabs defaultValue="masters" className="w-full">
                               <TabsList className="w-full mb-3">
-                                <TabsTrigger value="todos" className="flex-1 text-xs">Todos</TabsTrigger>
                                 <TabsTrigger value="masters" className="flex-1 text-xs">Masters</TabsTrigger>
                                 <TabsTrigger value="revendedores" className="flex-1 text-xs">Revendas</TabsTrigger>
-                                {mostActiveSubs.length > 0 && (
-                                  <TabsTrigger value="subs" className="flex-1 text-xs">Sub Donos</TabsTrigger>
-                                )}
                               </TabsList>
                               {[
-                                { value: 'todos', list: mostActive },
                                 { value: 'masters', list: mostActiveMasters },
                                 { value: 'revendedores', list: mostActiveResellers },
-                                { value: 'subs', list: mostActiveSubs },
                               ].map(tab => (
                                 <TabsContent key={tab.value} value={tab.value} className="mt-0">
                                   <div className="space-y-2">
@@ -728,20 +722,14 @@ export default function DashboardDono() {
                             </div>
                           </CardHeader>
                           <CardContent>
-                            <Tabs defaultValue="todos" className="w-full">
+                            <Tabs defaultValue="masters" className="w-full">
                               <TabsList className="w-full mb-3">
-                                <TabsTrigger value="todos" className="flex-1 text-xs">Todos ({inactiveAdmins.length})</TabsTrigger>
                                 <TabsTrigger value="masters" className="flex-1 text-xs">Masters ({inactiveMasters.length})</TabsTrigger>
                                 <TabsTrigger value="revendedores" className="flex-1 text-xs">Revendas ({inactiveResellers.length})</TabsTrigger>
-                                {inactiveSubs.length > 0 && (
-                                  <TabsTrigger value="subs" className="flex-1 text-xs">Sub Donos</TabsTrigger>
-                                )}
                               </TabsList>
                               {[
-                                { value: 'todos', list: inactiveAdmins },
                                 { value: 'masters', list: inactiveMasters },
                                 { value: 'revendedores', list: inactiveResellers },
-                                { value: 'subs', list: inactiveSubs },
                               ].map(tab => (
                                 <TabsContent key={tab.value} value={tab.value} className="mt-0">
                                   <div className="space-y-2">
