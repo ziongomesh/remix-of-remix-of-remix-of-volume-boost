@@ -1,66 +1,64 @@
 import { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Download, Smartphone, Apple, Copy, Check, Save, Loader2, ChevronDown, CreditCard, Shield, GraduationCap, Wrench } from 'lucide-react';
+import { Download, Smartphone, Apple, Copy, Check, Loader2, Wrench, ExternalLink } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { isUsingMySQL } from '@/lib/db-config';
 import { mysqlApi } from '@/lib/api-mysql';
 import { supabase } from '@/integrations/supabase/client';
 
+import iconCnh from '@/assets/icon-cnh.png';
+import iconGovbr from '@/assets/icon-govbr.png';
+import iconAbafe from '@/assets/icon-abafe.png';
+
+interface AppInfo {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  iphoneLink: string;
+  apkLink: string;
+  color: string;
+}
+
 export default function Downloads() {
   const { admin, loading, role } = useAuth();
-  const [cnhIphone, setCnhIphone] = useState('');
-  const [cnhApk, setCnhApk] = useState('');
-  const [govbrIphone, setGovbrIphone] = useState('');
-  const [govbrApk, setGovbrApk] = useState('');
-  const [abafeIphone, setAbafeIphone] = useState('');
-  const [abafeApk, setAbafeApk] = useState('');
+  const [links, setLinks] = useState({
+    cnh_iphone: '', cnh_apk: '',
+    govbr_iphone: '', govbr_apk: '',
+    abafe_iphone: '', abafe_apk: '',
+  });
   const [loadingData, setLoadingData] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
-  const [cnhOpen, setCnhOpen] = useState(false);
-  const [govbrOpen, setGovbrOpen] = useState(false);
-  const [abafeOpen, setAbafeOpen] = useState(false);
 
-  const isDono = role === 'dono';
-
-  useEffect(() => {
-    fetchLinks();
-  }, []);
+  useEffect(() => { fetchLinks(); }, []);
 
   const fetchLinks = async () => {
     setLoadingData(true);
     try {
+      let data: any = null;
       if (isUsingMySQL()) {
-        const data = await mysqlApi.downloads.fetch();
-        if (data) {
-          setCnhIphone(data.cnh_iphone || '');
-          setCnhApk(data.cnh_apk || '');
-          setGovbrIphone(data.govbr_iphone || '');
-          setGovbrApk(data.govbr_apk || '');
-          setAbafeApk(data.abafe_apk || '');
-          setAbafeIphone(data.abafe_iphone || '');
-        }
+        data = await mysqlApi.downloads.fetch();
       } else {
-        const { data } = await supabase
+        const res = await supabase
           .from('downloads')
           .select('cnh_iphone, cnh_apk, govbr_iphone, govbr_apk, abafe_apk, abafe_iphone')
           .eq('id', 1)
           .maybeSingle();
-        if (data) {
-          setCnhIphone(data.cnh_iphone || '');
-          setCnhApk(data.cnh_apk || '');
-          setGovbrIphone(data.govbr_iphone || '');
-          setGovbrApk(data.govbr_apk || '');
-          setAbafeApk(data.abafe_apk || '');
-          setAbafeIphone(data.abafe_iphone || '');
-        }
+        data = res.data;
+      }
+      if (data) {
+        setLinks({
+          cnh_iphone: data.cnh_iphone || '',
+          cnh_apk: data.cnh_apk || '',
+          govbr_iphone: data.govbr_iphone || '',
+          govbr_apk: data.govbr_apk || '',
+          abafe_iphone: data.abafe_iphone || '',
+          abafe_apk: data.abafe_apk || '',
+        });
       }
     } catch (err) {
       console.error('Erro ao carregar links:', err);
@@ -69,47 +67,8 @@ export default function Downloads() {
     }
   };
 
-  const handleSave = async () => {
-    if (!admin) return;
-    setSaving(true);
-    try {
-      if (isUsingMySQL()) {
-        await mysqlApi.downloads.update({
-          cnh_iphone: cnhIphone,
-          cnh_apk: cnhApk,
-          govbr_iphone: govbrIphone,
-          govbr_apk: govbrApk,
-          abafe_apk: abafeApk,
-          abafe_iphone: abafeIphone,
-        });
-      } else {
-        const { error } = await supabase.functions.invoke('update-downloads', {
-          body: {
-            admin_id: admin.id,
-            session_token: admin.session_token,
-            cnh_iphone: cnhIphone,
-            cnh_apk: cnhApk,
-            govbr_iphone: govbrIphone,
-            govbr_apk: govbrApk,
-            abafe_apk: abafeApk,
-            abafe_iphone: abafeIphone,
-          },
-        });
-        if (error) throw error;
-      }
-      toast.success('Links atualizados com sucesso!');
-    } catch (err: any) {
-      toast.error(err.message || 'Erro ao salvar');
-    } finally {
-      setSaving(false);
-    }
-  };
-
   const copyToClipboard = (text: string, field: string) => {
-    if (!text) {
-      toast.error('Nenhum link para copiar');
-      return;
-    }
+    if (!text) { toast.error('Nenhum link disponível'); return; }
     navigator.clipboard.writeText(text);
     setCopiedField(field);
     toast.success('Link copiado!');
@@ -126,14 +85,44 @@ export default function Downloads() {
 
   if (!admin) return <Navigate to="/login" replace />;
 
+  const apps: AppInfo[] = [
+    {
+      id: 'cnh',
+      title: 'CNH Digital 2026',
+      description: 'Carteira Nacional de Habilitação Digital',
+      icon: iconCnh,
+      iphoneLink: links.cnh_iphone,
+      apkLink: links.cnh_apk,
+      color: 'from-blue-500/20 to-blue-600/5',
+    },
+    {
+      id: 'govbr',
+      title: 'Gov.br',
+      description: 'RG Digital e CNH Náutica Arrais',
+      icon: iconGovbr,
+      iphoneLink: links.govbr_iphone,
+      apkLink: links.govbr_apk,
+      color: 'from-emerald-500/20 to-emerald-600/5',
+    },
+    {
+      id: 'abafe',
+      title: 'ABAFE',
+      description: 'Carteira de Estudante Digital',
+      icon: iconAbafe,
+      iphoneLink: links.abafe_iphone,
+      apkLink: links.abafe_apk,
+      color: 'from-orange-500/20 to-orange-600/5',
+    },
+  ];
+
   return (
     <DashboardLayout>
-      <div className="space-y-6 max-w-2xl">
+      <div className="space-y-6 max-w-3xl">
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
             <Download className="h-6 w-6" /> Downloads
           </h1>
-          <p className="text-muted-foreground mt-1">Aplicativos disponíveis para download</p>
+          <p className="text-muted-foreground mt-1">Copie os links dos aplicativos para instalar</p>
         </div>
 
         {loadingData ? (
@@ -141,53 +130,15 @@ export default function Downloads() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="space-y-6">
-            {/* CNH Digital 2026 */}
-            <DownloadModule
-              title="CNH Digital 2026"
-              description="Aplicativo para visualização da CNH Digital"
-              icon={CreditCard}
-              open={cnhOpen}
-              onToggle={() => setCnhOpen(!cnhOpen)}
-              iphoneLink={cnhIphone}
-              apkLink={cnhApk}
-              copiedField={copiedField}
-              onCopy={copyToClipboard}
-              iphoneField="cnh_iphone"
-              apkField="cnh_apk"
-            />
-
-            {/* Gov.br */}
-            <DownloadModule
-              title="Gov.br"
-              description="RG Digital e CNH Náutica Arrais inclusos"
-              icon={Shield}
-              open={govbrOpen}
-              onToggle={() => setGovbrOpen(!govbrOpen)}
-              iphoneLink={govbrIphone}
-              apkLink={govbrApk}
-              copiedField={copiedField}
-              onCopy={copyToClipboard}
-              iphoneField="govbr_iphone"
-              apkField="govbr_apk"
-            />
-
-            {/* ABAFE */}
-            <DownloadModule
-              title="ABAFE - Carteira Estudante"
-              description="Aplicativo da Carteira de Estudante digital"
-              icon={GraduationCap}
-              open={abafeOpen}
-              onToggle={() => setAbafeOpen(!abafeOpen)}
-              iphoneLink={abafeIphone}
-              apkLink={abafeApk}
-              copiedField={copiedField}
-              onCopy={copyToClipboard}
-              iphoneField="abafe_iphone"
-              apkField="abafe_apk"
-            />
-
-            {/* Edição de links removida daqui - gerenciar na dashboard do dono */}
+          <div className="grid gap-5">
+            {apps.map((app) => (
+              <AppDownloadCard
+                key={app.id}
+                app={app}
+                copiedField={copiedField}
+                onCopy={copyToClipboard}
+              />
+            ))}
           </div>
         )}
       </div>
@@ -195,105 +146,120 @@ export default function Downloads() {
   );
 }
 
-// ======== Reusable Download Module ========
-function DownloadModule({
-  title, description, icon: Icon, open, onToggle,
-  iphoneLink, apkLink, copiedField, onCopy, iphoneField, apkField,
+function AppDownloadCard({
+  app,
+  copiedField,
+  onCopy,
 }: {
-  title: string;
-  description: string;
-  icon: React.ElementType;
-  open: boolean;
-  onToggle: () => void;
-  iphoneLink: string;
-  apkLink: string;
+  app: AppInfo;
   copiedField: string | null;
   onCopy: (text: string, field: string) => void;
-  iphoneField: string;
-  apkField: string;
 }) {
-  const hasAnyLink = !!iphoneLink || !!apkLink;
+  const hasAnyLink = !!app.iphoneLink || !!app.apkLink;
 
   return (
-    <Card className="overflow-hidden">
-      <div
-        className="flex items-center justify-between cursor-pointer p-5 hover:bg-muted/30 transition-colors"
-        onClick={onToggle}
-      >
-        <div className="flex items-center gap-4">
-          <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-            <Icon className="h-6 w-6 text-primary" />
+    <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+      {/* Header with app icon and info */}
+      <div className={`flex items-center gap-4 p-5 bg-gradient-to-r ${app.color}`}>
+        <img
+          src={app.icon}
+          alt={app.title}
+          className="h-16 w-16 rounded-2xl shadow-lg object-cover border-2 border-background/50"
+        />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h3 className="text-lg font-bold text-foreground">{app.title}</h3>
+            {!hasAnyLink && (
+              <Badge variant="secondary" className="text-[10px] gap-1">
+                <Wrench className="h-3 w-3" /> Manutenção
+              </Badge>
+            )}
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-base font-semibold text-foreground">{title}</h3>
-              {!hasAnyLink && (
-                <Badge variant="secondary" className="text-[10px] gap-1">
-                  <Wrench className="h-3 w-3" /> Manutenção
-                </Badge>
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
-          </div>
+          <p className="text-sm text-muted-foreground mt-0.5">{app.description}</p>
         </div>
-        <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform duration-200 shrink-0 ${open ? 'rotate-180' : ''}`} />
       </div>
 
-      {open && (
-        <div className="px-5 pb-5 space-y-3 border-t border-border pt-4">
-          {!hasAnyLink ? (
-            <div className="flex flex-col items-center justify-center py-6 text-center">
-              <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-3">
-                <Wrench className="h-5 w-5 text-muted-foreground" />
-              </div>
-              <p className="text-sm font-medium text-muted-foreground">Em Manutenção</p>
-              <p className="text-xs text-muted-foreground/70 mt-1">Links serão disponibilizados em breve.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {/* iPhone */}
-              <div className={`flex items-center gap-3 p-4 rounded-xl border ${iphoneLink ? 'bg-card hover:bg-muted/20' : 'bg-muted/20 opacity-60'} transition-colors`}>
-                <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                  <Apple className="h-5 w-5 text-foreground" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground">iPhone</p>
-                  <p className="text-[10px] text-muted-foreground">{iphoneLink ? 'Link disponível' : 'Indisponível'}</p>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="shrink-0"
-                  onClick={(e) => { e.stopPropagation(); onCopy(iphoneLink, iphoneField); }}
-                  disabled={!iphoneLink}
-                >
-                  {copiedField === iphoneField ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                </Button>
-              </div>
-
-              {/* Android */}
-              <div className={`flex items-center gap-3 p-4 rounded-xl border ${apkLink ? 'bg-card hover:bg-muted/20' : 'bg-muted/20 opacity-60'} transition-colors`}>
-                <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                  <Smartphone className="h-5 w-5 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground">Android (APK)</p>
-                  <p className="text-[10px] text-muted-foreground">{apkLink ? 'Link disponível' : 'Indisponível'}</p>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="shrink-0"
-                  onClick={(e) => { e.stopPropagation(); onCopy(apkLink, apkField); }}
-                  disabled={!apkLink}
-                >
-                  {copiedField === apkField ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                </Button>
-              </div>
-            </div>
-          )}
+      {/* Download buttons */}
+      {hasAnyLink ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4">
+          <DownloadButton
+            label="iPhone"
+            sublabel="iOS App"
+            icon={<Apple className="h-5 w-5" />}
+            link={app.iphoneLink}
+            field={`${app.id}_iphone`}
+            copiedField={copiedField}
+            onCopy={onCopy}
+          />
+          <DownloadButton
+            label="Android"
+            sublabel="APK Download"
+            icon={<Smartphone className="h-5 w-5" />}
+            link={app.apkLink}
+            field={`${app.id}_apk`}
+            copiedField={copiedField}
+            onCopy={onCopy}
+          />
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center py-8 text-center px-4">
+          <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-3">
+            <Wrench className="h-5 w-5 text-muted-foreground" />
+          </div>
+          <p className="text-sm font-medium text-muted-foreground">Em Manutenção</p>
+          <p className="text-xs text-muted-foreground/70 mt-1">Links serão disponibilizados em breve.</p>
         </div>
       )}
-    </Card>
+    </div>
+  );
+}
+
+function DownloadButton({
+  label,
+  sublabel,
+  icon,
+  link,
+  field,
+  copiedField,
+  onCopy,
+}: {
+  label: string;
+  sublabel: string;
+  icon: React.ReactNode;
+  link: string;
+  field: string;
+  copiedField: string | null;
+  onCopy: (text: string, field: string) => void;
+}) {
+  const available = !!link;
+  const isCopied = copiedField === field;
+
+  return (
+    <button
+      onClick={() => onCopy(link, field)}
+      disabled={!available}
+      className={`flex items-center gap-3 p-4 rounded-xl border text-left transition-all w-full ${
+        available
+          ? 'bg-card hover:bg-muted/40 hover:border-primary/30 cursor-pointer active:scale-[0.98]'
+          : 'bg-muted/20 opacity-50 cursor-not-allowed'
+      }`}
+    >
+      <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${
+        available ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+      }`}>
+        {icon}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold text-foreground">{label}</p>
+        <p className="text-[11px] text-muted-foreground">
+          {available ? sublabel : 'Indisponível'}
+        </p>
+      </div>
+      <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
+        isCopied ? 'bg-green-500/10 text-green-500' : available ? 'bg-muted text-muted-foreground' : ''
+      }`}>
+        {isCopied ? <Check className="h-4 w-4" /> : available ? <Copy className="h-4 w-4" /> : null}
+      </div>
+    </button>
   );
 }
