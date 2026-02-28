@@ -794,7 +794,11 @@ export default function DashboardDono() {
                                   if (!alertTargetId) return;
                                   setSendingAlert(true);
                                   try {
-                                    await api.alerts.send(Number(alertTargetId), '⚠️ Você está inativo na base. Use com frequência, pois poderá perder acesso.');
+                                    const target = allAdmins.find(a => a.id === Number(alertTargetId));
+                                    const msg = target?.rank === 'master'
+                                      ? '⚠️ ALERTA DA ADMINISTRAÇÃO: Você é Master, um cargo importante na base. Dê atenção ou será rebaixado para Revendedor. Não faz sentido ter seu cargo e não utilizar dos benefícios.'
+                                      : '⚠️ ALERTA DA ADMINISTRAÇÃO: Você está inativo na base. Use com frequência, pois poderá perder acesso.';
+                                    await api.alerts.send(Number(alertTargetId), msg);
                                     toast.success('Alerta enviado!');
                                     setAlertDialogOpen(false);
                                     setAlertTargetId('');
@@ -815,7 +819,10 @@ export default function DashboardDono() {
                                     setSendingAlert(true);
                                     try {
                                       for (const a of inactiveAdmins) {
-                                        await api.alerts.send(a.id, '⚠️ Você está inativo na base. Use com frequência, pois poderá perder acesso.');
+                                        const msg = a.rank === 'master'
+                                          ? '⚠️ ALERTA DA ADMINISTRAÇÃO: Você é Master, um cargo importante na base. Dê atenção ou será rebaixado para Revendedor. Não faz sentido ter seu cargo e não utilizar dos benefícios.'
+                                          : '⚠️ ALERTA DA ADMINISTRAÇÃO: Você está inativo na base. Use com frequência, pois poderá perder acesso.';
+                                        await api.alerts.send(a.id, msg);
                                       }
                                       toast.success(`Alerta enviado para ${inactiveAdmins.length} inativos!`);
                                       setAlertDialogOpen(false);
