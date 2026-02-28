@@ -51,6 +51,11 @@ const FIELDS: FieldDef[] = [
   { key: 'local', tx: 316.49, ty: 259.40, size: 10 },
   { key: 'data', tx: 510.08, ty: 258.20, size: 10 },
   { key: 'observacoes', tx: 0, ty: 0, size: 4.42 },
+  { key: 'dataQuitacao', tx: 389.63, ty: 323.51, size: 10 },
+  { key: 'custoBilhete', tx: 424.18, ty: 360.46, size: 10 },
+  { key: 'custoEfetivo', tx: 494.72, ty: 360.46, size: 10 },
+  { key: 'valorIof', tx: 424.18, ty: 401.25, size: 10 },
+  { key: 'valorTotal', tx: 494.72, ty: 401.25, size: 10 },
 ];
 
 const FIELD_LABELS: Record<string, string> = {
@@ -83,6 +88,11 @@ const FIELD_LABELS: Record<string, string> = {
   local: 'Local (CIDADE UF)',
   data: 'Data de Emissão',
   observacoes: 'Observações',
+  dataQuitacao: 'Data de Quitação',
+  custoBilhete: 'Custo do Bilhete',
+  custoEfetivo: 'Custo Efetivo do Seguro',
+  valorIof: 'Valor do IOF',
+  valorTotal: 'Valor Total',
 };
 
 function CrlvCanvas({ values }: { values: Record<string, string> }) {
@@ -187,6 +197,11 @@ export default function CrlvPositionTool() {
       docData: defaultDate,
       docHora: defaultTime,
       docHash: '364525021238D00',
+      dataQuitacao: '*',
+      custoBilhete: '*',
+      custoEfetivo: '*',
+      valorIof: '*',
+      valorTotal: '*',
     },
   });
 
@@ -340,7 +355,18 @@ export default function CrlvPositionTool() {
             {/* Dados do Seguro DPVAT */}
             <div className="space-y-1">
               <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Dados do Seguro DPVAT</p>
-              <Textarea {...register('observacoes')} className="text-xs min-h-[80px] uppercase" placeholder="Observações do veículo" />
+              <div className="grid grid-cols-2 gap-2">
+                {(['dataQuitacao', 'custoBilhete', 'custoEfetivo', 'valorIof', 'valorTotal'] as string[]).map(key => (
+                  <div key={key}>
+                    <Label className="text-[10px] text-muted-foreground">{FIELD_LABELS[key]}</Label>
+                    <Input {...register(key)} className="h-7 text-xs uppercase" placeholder={FIELD_LABELS[key]} />
+                  </div>
+                ))}
+              </div>
+              <div className="mt-2">
+                <Label className="text-[10px] text-muted-foreground">Observações</Label>
+                <Textarea {...register('observacoes')} className="text-xs min-h-[80px] uppercase" placeholder="Observações do veículo" />
+              </div>
             </div>
           </div>
         </ScrollArea>
