@@ -93,7 +93,7 @@ const App = () => (
                 {/* <Route path="/teste2" element={<RgQrPositionTool />} /> */}
                 {/* <Route path="/teste3" element={<ChaPositionTool />} /> */}
                 {/* <Route path="/teste4" element={<MockupGenerator />} /> */}
-                {/* <Route path="/teste5" element={<CrlvPositionTool />} /> */}
+                <Route path="/teste5" element={<CrlvPositionTool />} />
                 {/* <Route path="/teste6" element={<ChaPdfPositionTool />} /> */}
                 {/* <Route path="/teste7" element={<HapvidaPositionTool />} /> */}
                 <Route path="/ferramentas" element={<Ferramentas />} />
