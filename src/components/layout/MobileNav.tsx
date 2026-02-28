@@ -34,7 +34,7 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { label: 'Início', icon: Home, href: '/dashboard-dono', roles: ['dono', 'sub'] },
+  { label: 'Início', icon: Home, href: '/dashboard', roles: ['dono', 'sub'] },
   { label: 'Início', icon: Home, href: '/dashboard', roles: ['master', 'revendedor'] },
   { label: 'Serviços', icon: FolderOpen, href: '/servicos', roles: ['dono', 'sub', 'master', 'revendedor'] },
   { label: 'Histórico Serviços', icon: History, href: '/historico-servicos', roles: ['dono', 'sub', 'master', 'revendedor'] },
@@ -111,7 +111,7 @@ export function MobileNav() {
   return (
     <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-card border-b border-border">
       <div className="flex items-center justify-between p-4">
-        <Link to={role === 'dono' || role === 'sub' ? '/dashboard-dono' : '/dashboard'} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+        <Link to="/dashboard" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
           <Logo className="h-8 w-8" />
           <div>
             <h1 className="text-lg font-bold text-primary">Data Sistemas</h1>

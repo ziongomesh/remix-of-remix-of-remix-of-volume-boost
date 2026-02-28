@@ -32,7 +32,7 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { label: 'Início', icon: Home, href: '/dashboard-dono', roles: ['dono', 'sub'] },
+  { label: 'Início', icon: Home, href: '/dashboard', roles: ['dono', 'sub'] },
   { label: 'Início', icon: Home, href: '/dashboard', roles: ['master', 'revendedor'] },
   { label: 'Serviços', icon: FolderOpen, href: '/servicos', roles: ['dono', 'sub', 'master', 'revendedor'] },
   { label: 'Histórico Serviços', icon: History, href: '/historico-servicos', roles: ['dono', 'sub', 'master', 'revendedor'] },
@@ -110,7 +110,7 @@ export function Sidebar() {
     <aside className="fixed left-0 top-0 h-screen w-64 bg-card border-r border-border flex flex-col">
       <div className="p-6 border-b border-border">
         <div className="flex items-center justify-between">
-          <Link to={role === 'dono' || role === 'sub' ? '/dashboard-dono' : '/dashboard'} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+          <Link to="/dashboard" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <Logo className="h-10 w-10" />
             <h1 className="text-base font-bold text-primary">Data Sistemas</h1>
           </Link>

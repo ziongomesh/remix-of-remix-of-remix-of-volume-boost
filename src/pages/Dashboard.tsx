@@ -14,6 +14,7 @@ import { useState, useEffect } from 'react';
 import api from '@/lib/api';
 import OnboardingWizard from '@/components/tutorial/OnboardingWizard';
 import MasterOnboardingWizard from '@/components/tutorial/MasterOnboardingWizard';
+import DashboardDono from './DashboardDono';
 
 interface TopReseller {
   id: number;
@@ -197,7 +198,7 @@ export default function Dashboard() {
   }
 
   if (!admin) return <Navigate to="/login" replace />;
-  if (role === 'dono') return <Navigate to="/dashboard-dono" replace />;
+  if (role === 'dono' || role === 'sub') return <DashboardDono />;
 
   const getRoleBadge = () => {
     switch (role) {
