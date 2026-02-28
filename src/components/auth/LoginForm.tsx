@@ -179,7 +179,7 @@ export function LoginForm() {
         <div>
           <Input
             type="email"
-            placeholder="Usuário"
+            placeholder="E-mail"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
