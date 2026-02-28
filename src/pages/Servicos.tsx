@@ -117,8 +117,8 @@ const categories: ServiceCategory[] = [
         name: 'CRLV DIGITAL',
         description: 'Certificado de Registro e Licenciamento de Veículo',
         credits: 1,
-        available: false,
-        route: '#',
+        available: true,
+        route: '/servicos/crlv-digital',
         icon: Car,
       },
       {
