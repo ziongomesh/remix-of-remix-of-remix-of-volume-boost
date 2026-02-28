@@ -101,12 +101,13 @@ const FIELD_LABELS: Record<string, string> = {
   repasseDenatran: 'Repasse Obrig. DENATRAN',
 };
 
-function CrlvCanvas({ values }: { values: Record<string, string> }) {
+function CrlvCanvas({ values, qrImage }: { values: Record<string, string>; qrImage: string | null }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [bgImage, setBgImage] = useState<HTMLImageElement | null>(null);
+  const [defaultQr, setDefaultQr] = useState<HTMLImageElement | null>(null);
+  const [customQr, setCustomQr] = useState<HTMLImageElement | null>(null);
   const [fontLoaded, setFontLoaded] = useState(false);
 
-  // Load fonts for canvas
   useEffect(() => {
     const openSans = new FontFace('OpenSans', `url(${openSansFont})`);
     const freeMono = new FontFace('FreeMonoBold', `url(${freeMonoBoldFont})`);
@@ -127,6 +128,19 @@ function CrlvCanvas({ values }: { values: Record<string, string> }) {
   }, []);
 
   useEffect(() => {
+    const img = new Image();
+    img.onload = () => setDefaultQr(img);
+    img.src = '/images/qrcode-sample-crlv.png';
+  }, []);
+
+  useEffect(() => {
+    if (!qrImage) { setCustomQr(null); return; }
+    const img = new Image();
+    img.onload = () => setCustomQr(img);
+    img.src = qrImage;
+  }, [qrImage]);
+
+  useEffect(() => {
     if (!bgImage || !fontLoaded) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -137,14 +151,21 @@ function CrlvCanvas({ values }: { values: Record<string, string> }) {
     canvas.height = bgImage.naturalHeight;
     ctx.drawImage(bgImage, 0, 0);
 
-    // Scale: convert pt coordinates to image pixels
     const imgScale = bgImage.naturalWidth / 595;
+
+    // Draw QR code
+    const qrToDraw = customQr || defaultQr;
+    if (qrToDraw) {
+      const qrX = 167.23 * imgScale;
+      const qrY = 92.85 * imgScale;
+      const qrSize = 97.4 * imgScale;
+      ctx.drawImage(qrToDraw, qrX, qrY, qrSize, qrSize);
+    }
 
     for (const f of FIELDS) {
       if (f.tx === 0 && f.ty === 0) continue;
       let val = (values[f.key] || '').toUpperCase();
       if (!val.trim()) continue;
-      // UF field displays as "DETRAN-   UF"
       if (f.key === 'uf') val = `DETRAN-   ${val}`;
 
       const px = f.tx * imgScale;
@@ -161,7 +182,6 @@ function CrlvCanvas({ values }: { values: Record<string, string> }) {
       ctx.fillText(val, px, py);
     }
 
-    // "Documento emitido por DETRAN UF ..." line
     const uf = values.uf || 'SP';
     const hashCode = values.docHash || '364525021238D00';
     const brDate = values.docData || '';
@@ -176,7 +196,7 @@ function CrlvCanvas({ values }: { values: Record<string, string> }) {
     ctx.font = `normal ${docFontSize}px Arial, "OpenSans", sans-serif`;
     ctx.textBaseline = 'top';
     ctx.fillText(docText, docX, docY);
-  }, [values, bgImage, fontLoaded]);
+  }, [values, bgImage, fontLoaded, defaultQr, customQr]);
 
   return (
     <canvas ref={canvasRef} className="w-full h-auto block" />
@@ -187,6 +207,8 @@ export default function CrlvPositionTool() {
   const now = new Date();
   const defaultDate = now.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric' });
   const defaultTime = now.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+  const [qrImage, setQrImage] = useState<string | null>(null);
 
   const { register, watch, setValue } = useForm<Record<string, string>>({
     defaultValues: {
@@ -335,7 +357,32 @@ export default function CrlvPositionTool() {
                     </Button>
                   </div>
                   <Input {...register('docHash')} className="h-7 text-xs uppercase" placeholder="364525021238D00" />
-                </div>
+            </div>
+
+            {/* QR Code Upload */}
+            <div className="space-y-1">
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">QR Code</p>
+              {qrImage && (
+                <img src={qrImage} alt="QR Preview" className="w-20 h-20 object-contain border border-border rounded" />
+              )}
+              <Input
+                type="file"
+                accept="image/*"
+                className="h-8 text-xs"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = () => setQrImage(reader.result as string);
+                  reader.readAsDataURL(file);
+                }}
+              />
+              {qrImage && (
+                <Button type="button" variant="ghost" size="sm" className="h-5 text-[9px] text-destructive" onClick={() => setQrImage(null)}>
+                  Remover QR personalizado
+                </Button>
+              )}
+            </div>
               </div>
             </div>
 
@@ -405,7 +452,7 @@ export default function CrlvPositionTool() {
       <div className="flex-1 overflow-auto bg-muted/30">
         <ScrollArea className="h-screen">
           <div className="p-4">
-            <CrlvCanvas values={values} />
+            <CrlvCanvas values={values} qrImage={qrImage} />
           </div>
         </ScrollArea>
       </div>
