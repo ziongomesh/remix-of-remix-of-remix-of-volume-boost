@@ -10,6 +10,9 @@ import iconAbafe from '@/assets/icon-abafe.png';
 import iconHapvida from '@/assets/icon-hapvida.png';
 import iconCnh2022 from '@/assets/icon-cnh-2022.jpg';
 import iconMarinha from '@/assets/icon-marinha.png';
+import iconDne from '@/assets/icon-dne.png';
+import iconCie from '@/assets/icon-cie.png';
+import iconPagmeia from '@/assets/icon-pagmeia.png';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -106,6 +109,36 @@ const categories: ServiceCategory[] = [
         icon: IdCard,
         iconImage: iconAbafe,
         exampleImage: exemploAbafe,
+      },
+      {
+        id: 'dne-digital',
+        name: 'DNE DIGITAL',
+        description: 'Documento Nacional do Estudante',
+        credits: 1,
+        available: false,
+        route: '#',
+        icon: IdCard,
+        iconImage: iconDne,
+      },
+      {
+        id: 'cie-estudante',
+        name: 'CIE CARTEIRA DE ESTUDANTE',
+        description: 'Carteira de Identidade Estudantil',
+        credits: 1,
+        available: false,
+        route: '#',
+        icon: IdCard,
+        iconImage: iconCie,
+      },
+      {
+        id: 'pagmeia-estudante',
+        name: 'PAGMEIA CARTEIRA DE ESTUDANTE',
+        description: 'Carteira de Estudante PagMeia',
+        credits: 1,
+        available: false,
+        route: '#',
+        icon: IdCard,
+        iconImage: iconPagmeia,
       },
     ],
   },
