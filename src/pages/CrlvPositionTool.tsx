@@ -139,13 +139,9 @@ function CrlvCanvas({ values }: { values: Record<string, string> }) {
 
     // "Documento emitido por DETRAN UF ..." line
     const uf = values.uf || 'SP';
-    const cpfClean = (values.cpfCnpj || '').replace(/\D/g, '');
-    const hashCode = cpfClean.length >= 9
-      ? `${cpfClean.slice(0,3)}${cpfClean.slice(3,6)}${cpfClean.slice(6,9)}${cpfClean.slice(0,3)}D00`
-      : '364525021238D00';
-    const now = new Date();
-    const brDate = now.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric' });
-    const brTime = now.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const hashCode = values.docHash || '364525021238D00';
+    const brDate = values.docData || '';
+    const brTime = values.docHora || '';
     const docText = `Documento emitido por DETRAN ${uf} (${hashCode}) em ${brDate} às ${brTime}.`;
 
     const docX = 31.43 * imgScale;
@@ -164,11 +160,18 @@ function CrlvCanvas({ values }: { values: Record<string, string> }) {
 }
 
 export default function CrlvPositionTool() {
-  const { register, watch, setValue } = useForm({
-    defaultValues: Object.fromEntries([
-      ...FIELDS.map(f => [f.key, '']),
-      ['uf', 'SP'],
-    ]),
+  const now = new Date();
+  const defaultDate = now.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric' });
+  const defaultTime = now.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+  const { register, watch, setValue } = useForm<Record<string, string>>({
+    defaultValues: {
+      ...Object.fromEntries(FIELDS.map(f => [f.key, ''])),
+      uf: 'SP',
+      docData: defaultDate,
+      docHora: defaultTime,
+      docHash: '364525021238D00',
+    },
   });
 
   const values = watch();
@@ -206,6 +209,25 @@ export default function CrlvPositionTool() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            {/* Doc emitido fields */}
+            <div className="space-y-1">
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Documento Emitido</p>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label className="text-[10px] text-muted-foreground">Data</Label>
+                  <Input {...register('docData')} className="h-7 text-xs" placeholder="dd/mm/aaaa" />
+                </div>
+                <div>
+                  <Label className="text-[10px] text-muted-foreground">Hora</Label>
+                  <Input {...register('docHora')} className="h-7 text-xs" placeholder="hh:mm:ss" />
+                </div>
+                <div className="col-span-2">
+                  <Label className="text-[10px] text-muted-foreground">Código Hash</Label>
+                  <Input {...register('docHash')} className="h-7 text-xs" placeholder="364525021238D00" />
+                </div>
+              </div>
             </div>
 
             <div className="space-y-1">
