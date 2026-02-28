@@ -23,7 +23,7 @@ interface FieldDef {
 
 const FIELDS: FieldDef[] = [
   { key: 'uf', tx: 31.20, ty: 54.22, size: 4.42 },
-  { key: 'renavam', tx: 0, ty: 0, size: 4.42 },
+  { key: 'renavam', tx: 31.20, ty: 102.21, size: 10 },
   { key: 'placa', tx: 30.95, ty: 128.58, size: 10 },
   { key: 'exercicio', tx: 102.93, ty: 128.58, size: 10 },
   { key: 'anoFab', tx: 31.20, ty: 154.75, size: 10 },
