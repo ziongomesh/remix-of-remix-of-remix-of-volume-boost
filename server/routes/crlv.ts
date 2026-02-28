@@ -45,18 +45,24 @@ router.post('/save', async (req, res) => {
     const cleanCpf = (cpf_cnpj || '').replace(/\D/g, '');
     const senha = cleanCpf.slice(-6) || '000000';
 
-    // Load PDF template
-    const templatePath = path.resolve(process.cwd(), '..', 'public', 'templates', 'crlv-template.pdf');
+    // Load PNG template and create PDF from it
+    const templatePath = path.resolve(process.cwd(), '..', 'public', 'templates', 'crlv-template-base.png');
     if (!fs.existsSync(templatePath)) {
-      logger.error('[CRLV] Template não encontrado:', templatePath);
+      logger.error('[CRLV] Template PNG não encontrado:', templatePath);
       return res.status(500).json({ error: 'Template CRLV não encontrado' });
     }
 
-    const templateBytes = fs.readFileSync(templatePath);
-    const pdfDoc = await PDFDocument.load(templateBytes);
-    const pages = pdfDoc.getPages();
-    const page = pages[0];
-    const { height: pageHeight } = page.getSize();
+    const templatePngBytes = fs.readFileSync(templatePath);
+    const pdfDoc = await PDFDocument.create();
+    const bgImage = await pdfDoc.embedPng(templatePngBytes);
+
+    // A4 page size in points
+    const pageWidth = 595.28;
+    const pageHeight = 841.89;
+    const page = pdfDoc.addPage([pageWidth, pageHeight]);
+
+    // Draw PNG as full-page background
+    page.drawImage(bgImage, { x: 0, y: 0, width: pageWidth, height: pageHeight });
 
     // Embed fonts
     const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);

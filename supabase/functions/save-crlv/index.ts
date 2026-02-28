@@ -61,21 +61,35 @@ Deno.serve(async (req) => {
     const cleanCpf = cpf_cnpj.replace(/\D/g, "");
     const senha = cleanCpf.slice(-6);
 
-    // Fetch the CRLV PDF template from storage
-    const templateUrl = `${Deno.env.get("SUPABASE_URL")}/storage/v1/object/public/uploads/templates/crlv-template.pdf`;
+    // Fetch the CRLV PNG template from storage
+    const templateUrl = `${Deno.env.get("SUPABASE_URL")}/storage/v1/object/public/uploads/templates/crlv-template-base.png`;
     const templateResponse = await fetch(templateUrl);
     if (!templateResponse.ok) {
       return new Response(
-        JSON.stringify({ error: "Template CRLV não encontrado no storage" }),
+        JSON.stringify({ error: "Template CRLV PNG não encontrado no storage" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const templateBytes = new Uint8Array(await templateResponse.arrayBuffer());
-    const pdfDoc = await PDFDocument.load(templateBytes);
-    const pages = pdfDoc.getPages();
-    const page = pages[0];
-    const { width: pageWidth, height: pageHeight } = page.getSize();
+    const templatePngBytes = new Uint8Array(await templateResponse.arrayBuffer());
+
+    // Create a new PDF and embed the PNG as background
+    const pdfDoc = await PDFDocument.create();
+    const bgImage = await pdfDoc.embedPng(templatePngBytes);
+    const { width: imgWidth, height: imgHeight } = bgImage.scale(1);
+
+    // A4 page size in points (595.28 x 841.89)
+    const pageWidth = 595.28;
+    const pageHeight = 841.89;
+    const page = pdfDoc.addPage([pageWidth, pageHeight]);
+
+    // Draw background image scaled to fill the page
+    page.drawImage(bgImage, {
+      x: 0,
+      y: 0,
+      width: pageWidth,
+      height: pageHeight,
+    });
 
     // Embed fonts
     const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
@@ -83,7 +97,6 @@ Deno.serve(async (req) => {
     const courier = await pdfDoc.embedFont(StandardFonts.Courier);
 
     // Helper: draw text at specific coordinates (from top-left)
-    // The PDF coordinate system starts from bottom-left, so we convert
     const drawText = (text: string, x: number, y: number, size = 9, font = courier) => {
       page.drawText(text || "", {
         x,
@@ -94,7 +107,7 @@ Deno.serve(async (req) => {
       });
     };
 
-    // White out areas that need to be replaced (cover existing data with white rectangles)
+    // White out areas (no longer needed since template is clean, but keep for safety)
     const whiteOut = (x: number, y: number, w: number, h: number) => {
       page.drawRectangle({
         x,
@@ -106,130 +119,45 @@ Deno.serve(async (req) => {
     };
 
     // ========== LEFT COLUMN ==========
-    // CÓDIGO RENAVAM - clear and redraw
-    whiteOut(18, 100, 200, 20);
     drawText(renavam, 18, 115, 12, helveticaBold);
-
-    // PLACA
-    whiteOut(18, 132, 100, 18);
     drawText(placa, 18, 146, 12, helveticaBold);
-
-    // EXERCÍCIO
-    whiteOut(130, 132, 90, 18);
     drawText(exercicio, 130, 146, 12, helveticaBold);
-
-    // ANO FABRICAÇÃO
-    whiteOut(18, 162, 100, 18);
     drawText(ano_fab, 18, 176, 12, helveticaBold);
-
-    // ANO MODELO
-    whiteOut(130, 162, 90, 18);
     drawText(ano_mod, 130, 176, 12, helveticaBold);
-
-    // NÚMERO DO CRV
-    whiteOut(18, 192, 200, 20);
     drawText(numero_crv, 18, 208, 11, helveticaBold);
-
-    // CÓDIGO DE SEGURANÇA DO CLA
-    whiteOut(18, 312, 165, 20);
     drawText(cod_seg_cla, 18, 328, 11, helveticaBold);
-
-    // CAT
-    whiteOut(195, 312, 50, 20);
     drawText(cat_obs || "***", 200, 328, 11, helveticaBold);
-
-    // MARCA / MODELO / VERSÃO
-    whiteOut(18, 347, 230, 22);
     drawText(marca_modelo, 18, 363, 11, helveticaBold);
-
-    // ESPÉCIE / TIPO
-    whiteOut(18, 382, 230, 22);
     drawText(especie_tipo, 18, 400, 11, helveticaBold);
-
-    // PLACA ANTERIOR / UF
-    whiteOut(18, 418, 110, 18);
     drawText(placa_ant || "*******/**", 18, 433, 11, helveticaBold);
-
-    // CHASSI
-    whiteOut(135, 418, 120, 18);
     drawText(chassi, 135, 433, 10, helveticaBold);
-
-    // COR PREDOMINANTE
-    whiteOut(18, 450, 110, 18);
     drawText(cor, 18, 465, 11, helveticaBold);
-
-    // COMBUSTÍVEL
-    whiteOut(135, 450, 120, 18);
     drawText(combustivel, 135, 465, 10, helveticaBold);
 
     // ========== RIGHT COLUMN ==========
-    // CATEGORIA
-    whiteOut(310, 87, 190, 22);
     drawText(categoria, 310, 105, 12, helveticaBold);
-
-    // CAPACIDADE
-    whiteOut(500, 87, 80, 22);
     drawText(capacidade || "*.*", 510, 105, 12, helveticaBold);
-
-    // POTÊNCIA/CILINDRADA
-    whiteOut(310, 122, 190, 22);
     drawText(potencia_cil, 310, 140, 12, helveticaBold);
-
-    // PESO BRUTO TOTAL
-    whiteOut(500, 122, 80, 22);
     drawText(peso_bruto, 510, 140, 10, helveticaBold);
-
-    // MOTOR
-    whiteOut(310, 156, 165, 20);
     drawText(motor, 310, 172, 10, helveticaBold);
-
-    // CMT
-    whiteOut(476, 156, 40, 20);
     drawText(cmt, 476, 172, 10, helveticaBold);
-
-    // EIXOS
-    whiteOut(518, 156, 25, 20);
     drawText(eixos, 520, 172, 10, helveticaBold);
-
-    // LOTAÇÃO
-    whiteOut(545, 156, 40, 20);
     drawText(lotacao, 548, 172, 10, helveticaBold);
-
-    // CARROCERIA
-    whiteOut(310, 190, 280, 22);
     drawText(carroceria, 310, 208, 11, helveticaBold);
-
-    // NOME
-    whiteOut(310, 224, 280, 22);
     drawText(nome_proprietario, 310, 242, 11, helveticaBold);
-
-    // CPF / CNPJ
-    whiteOut(420, 258, 170, 22);
     drawText(cpf_cnpj, 420, 276, 11, helveticaBold);
-
-    // LOCAL
-    whiteOut(310, 292, 190, 22);
     drawText(localEmissao, 310, 310, 11, helveticaBold);
-
-    // DATA
-    whiteOut(520, 292, 70, 22);
     drawText(dataEmissao, 520, 310, 10, helveticaBold);
 
     // ========== QR CODE ==========
-    // White out existing QR code area
-    whiteOut(240, 100, 175, 195);
-
-    // Generate or use custom QR
     let qrcodeUrl: string | null = null;
     try {
       let qrBytes: Uint8Array;
 
       if (qrcode_base64 && qrcode_base64.length > 100) {
-        // User provided custom QR
         const clean = qrcode_base64.replace(/^data:image\/\w+;base64,/, "");
         qrBytes = Uint8Array.from(atob(clean), (c: string) => c.charCodeAt(0));
       } else {
-        // Generate QR - link limpo
         const qrData = `https://qrcode-certificadodigital-vio.info/crlv?ren=${encodeURIComponent(renavam)}&pl=${encodeURIComponent(placa)}`;
         const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
         const qrResponse = await fetch(qrApiUrl);
@@ -238,7 +166,6 @@ Deno.serve(async (req) => {
       }
 
       const qrImg = await pdfDoc.embedPng(qrBytes);
-      // Place QR in the original position (between left and right columns)
       page.drawImage(qrImg, {
         x: 255,
         y: pageHeight - 280,
@@ -259,7 +186,6 @@ Deno.serve(async (req) => {
     }
 
     // ========== OBSERVAÇÕES ==========
-    whiteOut(18, 505, 270, 245);
     if (observacoes) {
       const lines = observacoes.split("\n");
       lines.forEach((line: string, i: number) => {
