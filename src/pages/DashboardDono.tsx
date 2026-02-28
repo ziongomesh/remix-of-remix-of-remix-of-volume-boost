@@ -632,17 +632,16 @@ export default function DashboardDono() {
                         </CardContent>
                       </Card>
 
-                      {/* Most active / least active */}
-                      <Card>
-                        <CardHeader className="pb-3">
-                          <CardTitle className="flex items-center gap-2 text-base">
-                            <Activity className="h-5 w-5 text-primary" />
-                            Atividade dos Admins
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div>
-                            <p className="text-xs font-semibold text-green-600 mb-2 flex items-center gap-1"><TrendingUp className="h-3 w-3" /> Mais Ativos</p>
+                      {/* Most active / least active - side by side */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Card>
+                          <CardHeader className="pb-3">
+                            <CardTitle className="flex items-center gap-2 text-base">
+                              <TrendingUp className="h-5 w-5 text-green-500" />
+                              Mais Ativos
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
                             <div className="space-y-1.5">
                               {mostActive.map((a, i) => (
                                 <div key={a.id} className="flex items-center justify-between text-sm p-2 rounded-lg bg-muted/30">
@@ -668,9 +667,17 @@ export default function DashboardDono() {
                                 </div>
                               ))}
                             </div>
-                          </div>
-                          <div>
-                            <p className="text-xs font-semibold text-orange-500 mb-2 flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> Menos Ativos</p>
+                          </CardContent>
+                        </Card>
+
+                        <Card>
+                          <CardHeader className="pb-3">
+                            <CardTitle className="flex items-center gap-2 text-base">
+                              <AlertTriangle className="h-5 w-5 text-orange-500" />
+                              Inativos
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
                             <div className="space-y-1.5">
                               {leastActive.map((a) => (
                                 <div key={a.id} className="flex items-center justify-between text-sm p-2 rounded-lg bg-muted/30">
@@ -695,9 +702,9 @@ export default function DashboardDono() {
                                 </div>
                               ))}
                             </div>
-                          </div>
-                        </CardContent>
-                      </Card>
+                          </CardContent>
+                        </Card>
+                      </div>
                     </div>
                   </>
                 )}
