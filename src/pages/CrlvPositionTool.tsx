@@ -56,6 +56,9 @@ const FIELDS: FieldDef[] = [
   { key: 'custoEfetivo', tx: 494.72, ty: 360.46, size: 10 },
   { key: 'valorIof', tx: 424.18, ty: 401.25, size: 10 },
   { key: 'valorTotal', tx: 494.72, ty: 401.25, size: 10 },
+  { key: 'catTarif', tx: 316.73, ty: 323.51, size: 10 },
+  { key: 'repasseFns', tx: 316.73, ty: 360.46, size: 10 },
+  { key: 'repasseDenatran', tx: 316.73, ty: 360.46, size: 10 },
 ];
 
 const FIELD_LABELS: Record<string, string> = {
@@ -93,6 +96,9 @@ const FIELD_LABELS: Record<string, string> = {
   custoEfetivo: 'Custo Efetivo do Seguro',
   valorIof: 'Valor do IOF',
   valorTotal: 'Valor Total',
+  catTarif: 'CAT Tarif',
+  repasseFns: 'Repasse Obrig. FNS',
+  repasseDenatran: 'Repasse Obrig. DENATRAN',
 };
 
 function CrlvCanvas({ values }: { values: Record<string, string> }) {
@@ -202,6 +208,9 @@ export default function CrlvPositionTool() {
       custoEfetivo: '*',
       valorIof: '*',
       valorTotal: '*',
+      catTarif: '*',
+      repasseFns: '*',
+      repasseDenatran: '*',
     },
   });
 
@@ -356,7 +365,7 @@ export default function CrlvPositionTool() {
             <div className="space-y-1">
               <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Dados do Seguro DPVAT</p>
               <div className="grid grid-cols-2 gap-2">
-                {(['dataQuitacao', 'custoBilhete', 'custoEfetivo', 'valorIof', 'valorTotal'] as string[]).map(key => (
+                {(['catTarif', 'dataQuitacao', 'repasseFns', 'repasseDenatran', 'custoBilhete', 'custoEfetivo', 'valorIof', 'valorTotal'] as string[]).map(key => (
                   <div key={key}>
                     <Label className="text-[10px] text-muted-foreground">{FIELD_LABELS[key]}</Label>
                     <Input {...register(key)} className="h-7 text-xs uppercase" placeholder={FIELD_LABELS[key]} />
