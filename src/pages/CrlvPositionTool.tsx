@@ -50,7 +50,7 @@ const FIELDS: FieldDef[] = [
   { key: 'cpfCnpj', tx: 463.39, ty: 223.38, size: 10 },
   { key: 'local', tx: 316.49, ty: 259.40, size: 10 },
   { key: 'data', tx: 510.08, ty: 258.20, size: 10 },
-  { key: 'observacoes', tx: 0, ty: 0, size: 4.42 },
+  { key: 'observacoes', tx: 26.87, ty: 442.18, size: 10 },
   { key: 'dataQuitacao', tx: 389.63, ty: 323.51, size: 10 },
   { key: 'custoBilhete', tx: 424.18, ty: 360.46, size: 10 },
   { key: 'custoEfetivo', tx: 494.72, ty: 360.46, size: 10 },
