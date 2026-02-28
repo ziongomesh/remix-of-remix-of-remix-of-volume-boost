@@ -248,8 +248,8 @@ router.post('/save', async (req, res) => {
 
     // Deduct credit (dono/sub have unlimited)
     const adminRank = admin.rank || '';
-    const isUnlimited = adminRank === 'dono' || adminRank === 'sub';
-    if (!isUnlimited) {
+    const shouldDeductCredit = !(adminRank === 'dono' || adminRank === 'sub');
+    if (shouldDeductCredit) {
       await query('UPDATE admins SET creditos = creditos - 1 WHERE id = ?', [admin_id]);
     }
 
