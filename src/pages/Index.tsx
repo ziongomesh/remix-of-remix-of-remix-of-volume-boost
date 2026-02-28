@@ -1,5 +1,5 @@
 import { Logo } from '@/components/Logo';
-import minerImg from '@/assets/miner-construction.png';
+import hackerImg from '@/assets/hacker-bitcoin.png';
 
 const Index = () => {
   return (
@@ -8,7 +8,7 @@ const Index = () => {
         <Logo className="h-16 w-16 mx-auto" />
 
         <img
-          src={minerImg}
+          src={hackerImg}
           alt="Mineiro em construção"
           className="h-48 w-48 mx-auto"
         />
