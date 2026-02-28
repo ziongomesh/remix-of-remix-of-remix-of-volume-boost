@@ -37,6 +37,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   History, Search, IdCard, Eye, Edit, Loader2, Clock, FileText, ChevronDown, ChevronUp, ExternalLink, Trash2, AlertTriangle, CreditCard, RefreshCw, Timer, GraduationCap, Copy, Check, Anchor, FileDown, Truck
 } from 'lucide-react';
@@ -115,7 +116,7 @@ function ExpirationBadge({ dataExpiracao }: { dataExpiracao: string | null }) {
 }
 
 export default function HistoricoServicos() {
-  const { admin, loading, refreshCredits } = useAuth();
+  const { admin, loading, refreshCredits, role } = useAuth();
   const [usuarios, setUsuarios] = useState<UsuarioRecord[]>([]);
   const [rgRegistros, setRgRegistros] = useState<RgRecord[]>([]);
   const [estudanteRegistros, setEstudanteRegistros] = useState<EstudanteRecord[]>([]);
@@ -131,6 +132,8 @@ export default function HistoricoServicos() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [renewingId, setRenewingId] = useState<string | null>(null);
   const [expiringOpen, setExpiringOpen] = useState(false);
+  const [historyView, setHistoryView] = useState<'mine' | 'base'>('mine');
+  const isAdminView = role === 'dono' || role === 'sub';
 
   const handleDeleteCnh = async (usuarioId: number) => {
     if (!admin) return;
@@ -370,36 +373,42 @@ export default function HistoricoServicos() {
     );
   }
 
-  const filteredUsuarios = usuarios.filter(u => {
+  const applyViewFilter = <T extends { admin_id?: number }>(records: T[]): T[] => {
+    if (!isAdminView) return records;
+    if (historyView === 'mine') return records.filter(r => (r as any).admin_id === admin?.id);
+    return records.filter(r => (r as any).admin_id !== admin?.id);
+  };
+
+  const filteredUsuarios = applyViewFilter(usuarios.filter(u => {
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase();
     return (u.nome || '').toLowerCase().includes(q) || (u.cpf || '').includes(q);
-  });
+  }));
 
-  const filteredRgs = rgRegistros.filter(r => {
+  const filteredRgs = applyViewFilter(rgRegistros.filter(r => {
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase();
     const nome = r.nome_completo || r.nome || '';
     return nome.toLowerCase().includes(q) || (r.cpf || '').includes(q);
-  });
+  }));
 
-  const filteredEstudantes = estudanteRegistros.filter(e => {
+  const filteredEstudantes = applyViewFilter(estudanteRegistros.filter(e => {
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase();
     return (e.nome || '').toLowerCase().includes(q) || (e.cpf || '').includes(q);
-  });
+  }));
 
-  const filteredNauticas = nauticaRegistros.filter(n => {
+  const filteredNauticas = applyViewFilter(nauticaRegistros.filter(n => {
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase();
     return (n.nome || '').toLowerCase().includes(q) || (n.cpf || '').includes(q);
-  });
+  }));
 
-  const filteredCrlvs = crlvRegistros.filter(c => {
+  const filteredCrlvs = applyViewFilter(crlvRegistros.filter(c => {
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase();
     return (c.nome_proprietario || '').toLowerCase().includes(q) || (c.cpf_cnpj || '').includes(q) || (c.placa || '').toLowerCase().includes(q);
-  });
+  }));
 
   const totalRecords = filteredUsuarios.length + filteredRgs.length + filteredEstudantes.length + filteredNauticas.length + filteredCrlvs.length;
 
@@ -485,6 +494,16 @@ export default function HistoricoServicos() {
             className="pl-10"
           />
         </div>
+
+        {/* View Toggle for Dono/Sub */}
+        {isAdminView && (
+          <Tabs value={historyView} onValueChange={(v) => setHistoryView(v as 'mine' | 'base')} className="w-full">
+            <TabsList className="grid w-full max-w-md grid-cols-2">
+              <TabsTrigger value="mine">Seu Histórico</TabsTrigger>
+              <TabsTrigger value="base">Histórico da Base</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        )}
 
         {loadingData ? (
           <div className="flex items-center justify-center py-20">

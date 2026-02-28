@@ -18,7 +18,7 @@ export default function CriarMaster() {
     email: '',
     password: '',
   });
-  const [selectedRole, setSelectedRole] = useState<'sub' | 'master' | 'revendedor'>('master');
+  const [selectedRole, setSelectedRole] = useState<'sub' | 'master' | 'revendedor'>(role === 'sub' ? 'revendedor' : 'master');
   const [withCredits, setWithCredits] = useState(false);
   const [credits, setCredits] = useState('');
   const [isCreating, setIsCreating] = useState(false);
@@ -35,6 +35,7 @@ export default function CriarMaster() {
     return <Navigate to="/login" replace />;
   }
 
+  // Sub só pode criar revendedor, não master
   if (role !== 'dono' && role !== 'sub') {
     return <Navigate to="/dashboard" replace />;
   }
@@ -104,7 +105,7 @@ export default function CriarMaster() {
               {/* Role Selection */}
               <div className="space-y-2">
                 <Label>Tipo de Conta</Label>
-                <div className={`grid gap-3 ${role === 'dono' ? 'grid-cols-3' : 'grid-cols-2'}`}>
+                <div className={`grid gap-3 ${role === 'dono' ? 'grid-cols-3' : 'grid-cols-1'}`}>
                   {role === 'dono' && (
                     <button
                       type="button"
@@ -119,18 +120,20 @@ export default function CriarMaster() {
                       <span className="font-medium text-sm">Sub Dono</span>
                     </button>
                   )}
-                  <button
-                    type="button"
-                    onClick={() => setSelectedRole('master')}
-                    className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${
-                      selectedRole === 'master'
-                        ? 'border-primary bg-primary/10 text-primary'
-                        : 'border-border bg-muted/30 text-muted-foreground hover:border-primary/50'
-                    }`}
-                  >
-                    <Shield className="h-6 w-6" />
-                    <span className="font-medium text-sm">Master</span>
-                  </button>
+                  {role === 'dono' && (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedRole('master')}
+                      className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${
+                        selectedRole === 'master'
+                          ? 'border-primary bg-primary/10 text-primary'
+                          : 'border-border bg-muted/30 text-muted-foreground hover:border-primary/50'
+                      }`}
+                    >
+                      <Shield className="h-6 w-6" />
+                      <span className="font-medium text-sm">Master</span>
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => setSelectedRole('revendedor')}
