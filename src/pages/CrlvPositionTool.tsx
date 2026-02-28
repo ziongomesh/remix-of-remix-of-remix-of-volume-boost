@@ -48,7 +48,7 @@ const FIELDS: FieldDef[] = [
   { key: 'carroceria', tx: 316.01, ty: 166.27, size: 10 },
   { key: 'nomeProprietario', tx: 314.82, ty: 192.18, size: 10 },
   { key: 'cpfCnpj', tx: 463.39, ty: 223.38, size: 10 },
-  { key: 'local', tx: 0, ty: 0, size: 4.42 },
+  { key: 'local', tx: 316.49, ty: 259.40, size: 10 },
   { key: 'data', tx: 510.08, ty: 258.20, size: 10 },
   { key: 'observacoes', tx: 0, ty: 0, size: 4.42 },
 ];
@@ -80,7 +80,7 @@ const FIELD_LABELS: Record<string, string> = {
   carroceria: 'Carroceria',
   nomeProprietario: 'Nome do Proprietário',
   cpfCnpj: 'CPF / CNPJ',
-  local: 'Local de Emissão',
+  local: 'Local (CIDADE UF)',
   data: 'Data de Emissão',
   observacoes: 'Observações',
 };
