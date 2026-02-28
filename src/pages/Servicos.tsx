@@ -112,7 +112,7 @@ const categories: ServiceCategory[] = [
       },
       {
         id: 'dne-digital',
-        name: 'DNE DIGITAL',
+        name: 'DNE',
         description: 'Documento Nacional do Estudante',
         credits: 1,
         available: false,
@@ -122,7 +122,7 @@ const categories: ServiceCategory[] = [
       },
       {
         id: 'cie-estudante',
-        name: 'CIE CARTEIRA DE ESTUDANTE',
+        name: 'CIE',
         description: 'Carteira de Identidade Estudantil',
         credits: 1,
         available: false,
@@ -132,7 +132,7 @@ const categories: ServiceCategory[] = [
       },
       {
         id: 'pagmeia-estudante',
-        name: 'PAGMEIA CARTEIRA DE ESTUDANTE',
+        name: 'PAGMEIA',
         description: 'Carteira de Estudante PagMeia',
         credits: 1,
         available: false,
