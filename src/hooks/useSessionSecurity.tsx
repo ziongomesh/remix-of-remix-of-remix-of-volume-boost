@@ -1,10 +1,29 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { useAuth } from './useAuth';
 import api from '@/lib/api';
+
+const INACTIVITY_TIMEOUT = 10 * 60 * 1000; // 10 minutos sem atividade
 
 export function useSessionSecurity() {
   const { admin, signOut } = useAuth();
   const checkIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const lastActivityRef = useRef<number>(Date.now());
+
+  const resetInactivityTimer = useCallback(() => {
+    lastActivityRef.current = Date.now();
+
+    if (inactivityTimerRef.current) {
+      clearTimeout(inactivityTimerRef.current);
+    }
+
+    if (!admin) return;
+
+    inactivityTimerRef.current = setTimeout(() => {
+      signOut();
+      window.location.href = '/login?reason=inactivity';
+    }, INACTIVITY_TIMEOUT);
+  }, [admin, signOut]);
 
   useEffect(() => {
     if (!admin) return;
@@ -55,9 +74,18 @@ export function useSessionSecurity() {
       }
     };
 
+    // Activity events that reset the inactivity timer
+    const activityEvents = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click'];
+
+    const handleActivity = () => resetInactivityTimer();
+
     // Add event listeners
     document.addEventListener('contextmenu', disableRightClick);
     document.addEventListener('keydown', disableDevKeys);
+    activityEvents.forEach(evt => window.addEventListener(evt, handleActivity, { passive: true }));
+
+    // Start inactivity timer
+    resetInactivityTimer();
 
     // Check session every 5 seconds
     checkIntervalRef.current = setInterval(validateSession, 5000);
@@ -65,9 +93,13 @@ export function useSessionSecurity() {
     return () => {
       document.removeEventListener('contextmenu', disableRightClick);
       document.removeEventListener('keydown', disableDevKeys);
+      activityEvents.forEach(evt => window.removeEventListener(evt, handleActivity));
       if (checkIntervalRef.current) {
         clearInterval(checkIntervalRef.current);
       }
+      if (inactivityTimerRef.current) {
+        clearTimeout(inactivityTimerRef.current);
+      }
     };
-  }, [admin, signOut]);
+  }, [admin, signOut, resetInactivityTimer]);
 }
