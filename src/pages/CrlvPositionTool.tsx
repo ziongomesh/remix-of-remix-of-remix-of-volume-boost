@@ -46,7 +46,7 @@ const FIELDS: FieldDef[] = [
   { key: 'eixos', tx: 504.80, ty: 140.62, size: 10 },
   { key: 'lotacao', tx: 538.63, ty: 140.86, size: 10 },
   { key: 'carroceria', tx: 316.01, ty: 166.27, size: 10 },
-  { key: 'nomeProprietario', tx: 0, ty: 0, size: 4.42 },
+  { key: 'nomeProprietario', tx: 314.82, ty: 192.18, size: 10 },
   { key: 'cpfCnpj', tx: 0, ty: 0, size: 4.42 },
   { key: 'local', tx: 0, ty: 0, size: 4.42 },
   { key: 'data', tx: 0, ty: 0, size: 4.42 },
