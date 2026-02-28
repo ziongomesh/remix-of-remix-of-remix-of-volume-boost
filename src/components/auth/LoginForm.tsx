@@ -208,8 +208,8 @@ export function LoginForm() {
         <div className="flex justify-center pt-4">
           <Button
             type="submit"
-            disabled={loading || (TURNSTILE_ENABLED && !turnstileToken)}
-            className="h-14 w-14 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 text-white shadow-lg transition-all"
+            disabled={loading || !email || !password || (TURNSTILE_ENABLED && !turnstileToken)}
+            className="h-14 w-14 rounded-xl border border-white/10 text-white shadow-lg transition-all disabled:bg-white/5 disabled:opacity-30 bg-primary/80 hover:bg-primary"
             size="icon"
           >
             {loading ? (
