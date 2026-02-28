@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
 import { Logo } from '@/components/Logo';
 import { Delete, Check, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import waveBg from '@/assets/wave-bg.png';
 
 interface PinPadProps {
   mode: 'register' | 'verify';
@@ -18,13 +18,9 @@ export function PinPad({ mode, onSubmit, loading = false }: PinPadProps) {
 
   const handleNumberClick = (num: string) => {
     if (mode === 'register' && step === 'confirm') {
-      if (confirmPin.length < 4) {
-        setConfirmPin(prev => prev + num);
-      }
+      if (confirmPin.length < 4) setConfirmPin(prev => prev + num);
     } else {
-      if (pin.length < 4) {
-        setPin(prev => prev + num);
-      }
+      if (pin.length < 4) setPin(prev => prev + num);
     }
   };
 
@@ -52,18 +48,16 @@ export function PinPad({ mode, onSubmit, loading = false }: PinPadProps) {
         }
       }
     } else {
-      if (pin.length === 4) {
-        await onSubmit(pin);
-      }
+      if (pin.length === 4) await onSubmit(pin);
     }
   };
 
   const currentPin = mode === 'register' && step === 'confirm' ? confirmPin : pin;
-  const canSubmit = mode === 'register' 
+  const canSubmit = mode === 'register'
     ? (step === 'enter' ? pin.length === 4 : confirmPin.length === 4)
     : pin.length === 4;
 
-  const title = mode === 'register' 
+  const title = mode === 'register'
     ? (step === 'enter' ? 'Registrar PIN' : 'Confirmar PIN')
     : 'Digite seu PIN';
 
@@ -72,27 +66,47 @@ export function PinPad({ mode, onSubmit, loading = false }: PinPadProps) {
     : 'Digite seu PIN de 4 dígitos para acessar';
 
   return (
-    <Card className="w-full max-w-sm shadow-lg border-0">
-      <CardHeader className="space-y-4 text-center pb-2">
-        <div className="flex justify-center">
-          <Logo className="h-16 w-16" />
+    <div className="min-h-screen bg-black flex items-center justify-center relative overflow-hidden">
+      {/* Animated wave background */}
+      <div
+        className="absolute inset-0 opacity-40 pointer-events-none"
+        style={{
+          backgroundImage: `url(${waveBg})`,
+          backgroundSize: '200% 200%',
+          backgroundPosition: 'center',
+          animation: 'pinWaveMove 12s ease-in-out infinite alternate',
+        }}
+      />
+      <style>{`
+        @keyframes pinWaveMove {
+          0% { background-position: 0% 30%; transform: scale(1.05); }
+          25% { background-position: 50% 60%; }
+          50% { background-position: 100% 40%; transform: scale(1.15); }
+          75% { background-position: 60% 20%; }
+          100% { background-position: 20% 70%; transform: scale(1.05); }
+        }
+      `}</style>
+
+      <div className="relative z-10 w-full max-w-sm mx-4 animate-fade-in">
+        {/* Header */}
+        <div className="text-center mb-8 space-y-4">
+          <div className="flex justify-center">
+            <Logo className="h-14 w-14" />
+          </div>
+          <h2 className="text-xl font-semibold text-white">{title}</h2>
+          <p className="text-sm text-gray-500">{description}</p>
         </div>
-        <div>
-          <h2 className="text-xl font-semibold">{title}</h2>
-          <CardDescription className="text-sm mt-1">{description}</CardDescription>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-6">
+
         {/* PIN Display */}
-        <div className="flex justify-center gap-3">
+        <div className="flex justify-center gap-4 mb-8">
           {[0, 1, 2, 3].map((index) => (
             <div
               key={index}
               className={cn(
                 "w-12 h-12 rounded-xl border-2 flex items-center justify-center transition-all duration-200",
-                currentPin.length > index 
-                  ? "border-primary bg-primary/10" 
-                  : "border-border bg-muted/50"
+                currentPin.length > index
+                  ? "border-primary bg-primary/15"
+                  : "border-gray-700 bg-gray-900/50"
               )}
             >
               {currentPin.length > index && (
@@ -108,7 +122,7 @@ export function PinPad({ mode, onSubmit, loading = false }: PinPadProps) {
             <Button
               key={num}
               variant="outline"
-              className="h-14 text-xl font-semibold hover:bg-primary/10 hover:border-primary transition-all"
+              className="h-14 text-xl font-semibold bg-gray-900/60 border-gray-700 text-white hover:bg-primary/20 hover:border-primary transition-all backdrop-blur-sm"
               onClick={() => handleNumberClick(num)}
               disabled={loading}
             >
@@ -117,7 +131,7 @@ export function PinPad({ mode, onSubmit, loading = false }: PinPadProps) {
           ))}
           <Button
             variant="outline"
-            className="h-14 hover:bg-destructive/10 hover:border-destructive hover:text-destructive transition-all"
+            className="h-14 bg-gray-900/60 border-gray-700 text-gray-400 hover:bg-red-500/20 hover:border-red-500 hover:text-red-400 transition-all backdrop-blur-sm"
             onClick={handleDelete}
             disabled={loading || currentPin.length === 0}
           >
@@ -125,14 +139,14 @@ export function PinPad({ mode, onSubmit, loading = false }: PinPadProps) {
           </Button>
           <Button
             variant="outline"
-            className="h-14 text-xl font-semibold hover:bg-primary/10 hover:border-primary transition-all"
+            className="h-14 text-xl font-semibold bg-gray-900/60 border-gray-700 text-white hover:bg-primary/20 hover:border-primary transition-all backdrop-blur-sm"
             onClick={() => handleNumberClick('0')}
             disabled={loading}
           >
             0
           </Button>
           <Button
-            className="h-14"
+            className="h-14 bg-primary hover:bg-primary/80 transition-all"
             onClick={handleSubmit}
             disabled={!canSubmit || loading}
           >
@@ -145,9 +159,9 @@ export function PinPad({ mode, onSubmit, loading = false }: PinPadProps) {
         </div>
 
         {mode === 'register' && step === 'confirm' && (
-          <Button 
-            variant="ghost" 
-            className="w-full text-muted-foreground"
+          <Button
+            variant="ghost"
+            className="w-full mt-4 text-gray-500 hover:text-white"
             onClick={() => {
               setStep('enter');
               setConfirmPin('');
@@ -157,7 +171,7 @@ export function PinPad({ mode, onSubmit, loading = false }: PinPadProps) {
             Voltar
           </Button>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
