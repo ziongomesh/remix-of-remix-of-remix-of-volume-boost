@@ -645,13 +645,26 @@ export default function DashboardDono() {
                             <p className="text-xs font-semibold text-green-600 mb-2 flex items-center gap-1"><TrendingUp className="h-3 w-3" /> Mais Ativos</p>
                             <div className="space-y-1.5">
                               {mostActive.map((a, i) => (
-                                <div key={a.id} className="flex items-center justify-between text-sm p-1.5 rounded bg-muted/30">
-                                  <div className="flex items-center gap-2">
-                                    <span className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center text-[10px] font-bold text-green-600">{i + 1}</span>
-                                    <span className="text-xs font-medium truncate max-w-[120px]">{a.nome}</span>
-                                    {getRankBadge(a.rank)}
+                                <div key={a.id} className="flex items-center justify-between text-sm p-2 rounded-lg bg-muted/30">
+                                  <div className="flex items-center gap-2 min-w-0">
+                                    <span className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center text-[10px] font-bold text-green-600 shrink-0">{i + 1}</span>
+                                    <div className="min-w-0">
+                                      <div className="flex items-center gap-1.5">
+                                        <span className="text-xs font-medium truncate max-w-[100px]">{a.nome}</span>
+                                        {getRankBadge(a.rank)}
+                                      </div>
+                                      <p className="text-[10px] text-muted-foreground truncate">{a.email}</p>
+                                    </div>
                                   </div>
-                                  <span className="text-xs font-semibold">{a.total_services} serviços</span>
+                                  <div className="flex items-center gap-3 shrink-0">
+                                    {!isSub && (
+                                      <span className="text-[10px] text-muted-foreground">
+                                        <CreditCard className="h-2.5 w-2.5 inline mr-0.5" />{a.creditos.toLocaleString('pt-BR')}
+                                      </span>
+                                    )}
+                                    <span className="text-xs font-semibold">{a.total_services} serviços</span>
+                                    <span className="text-[10px] text-muted-foreground hidden sm:inline">{a.last_active ? timeAgo(a.last_active) : '-'}</span>
+                                  </div>
                                 </div>
                               ))}
                             </div>
@@ -660,12 +673,22 @@ export default function DashboardDono() {
                             <p className="text-xs font-semibold text-orange-500 mb-2 flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> Menos Ativos</p>
                             <div className="space-y-1.5">
                               {leastActive.map((a) => (
-                                <div key={a.id} className="flex items-center justify-between text-sm p-1.5 rounded bg-muted/30">
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-xs font-medium truncate max-w-[120px]">{a.nome}</span>
-                                    {getRankBadge(a.rank)}
+                                <div key={a.id} className="flex items-center justify-between text-sm p-2 rounded-lg bg-muted/30">
+                                  <div className="flex items-center gap-2 min-w-0">
+                                    <div className="min-w-0">
+                                      <div className="flex items-center gap-1.5">
+                                        <span className="text-xs font-medium truncate max-w-[100px]">{a.nome}</span>
+                                        {getRankBadge(a.rank)}
+                                      </div>
+                                      <p className="text-[10px] text-muted-foreground truncate">{a.email}</p>
+                                    </div>
                                   </div>
-                                  <div className="flex items-center gap-2">
+                                  <div className="flex items-center gap-3 shrink-0">
+                                    {!isSub && (
+                                      <span className="text-[10px] text-muted-foreground">
+                                        <CreditCard className="h-2.5 w-2.5 inline mr-0.5" />{a.creditos.toLocaleString('pt-BR')}
+                                      </span>
+                                    )}
                                     <span className="text-xs">{a.total_services} serviços</span>
                                     <span className="text-[10px] text-muted-foreground">{a.last_active ? timeAgo(a.last_active) : 'Nunca'}</span>
                                   </div>
