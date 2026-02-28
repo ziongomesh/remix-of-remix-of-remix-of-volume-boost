@@ -117,11 +117,11 @@ function CrlvCanvas({ values }: { values: Record<string, string> }) {
     canvas.height = bgImage.naturalHeight;
     ctx.drawImage(bgImage, 0, 0);
 
-    // Scale: convert PDF points to image pixels
+    // Scale: convert pt coordinates to image pixels
     const imgScale = bgImage.naturalWidth / 595;
 
     for (const f of FIELDS) {
-      if (f.tx === 0 && f.ty === 0) continue; // skip uncalibrated fields
+      if (f.tx === 0 && f.ty === 0) continue;
       const val = values[f.key] || '';
       if (!val.trim()) continue;
 
@@ -134,6 +134,25 @@ function CrlvCanvas({ values }: { values: Record<string, string> }) {
       ctx.textBaseline = 'top';
       ctx.fillText(val, px, py);
     }
+
+    // "Documento emitido por DETRAN UF ..." line
+    const uf = values.uf || 'SP';
+    const cpfClean = (values.cpfCnpj || '').replace(/\D/g, '');
+    const cpfHash = cpfClean.slice(0, 9) || '000000000';
+    const hashCode = `${cpfHash.slice(0,3)}${cpfHash.slice(3,6)}${cpfHash.slice(6,9)}${cpfHash.slice(0,3)}D00`;
+    const now = new Date();
+    const brDate = now.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric' });
+    const brTime = now.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const docText = `Documento emitido por DETRAN ${uf} (${hashCode}) em ${brDate} às ${brTime}.`;
+
+    const docX = 130.16 * imgScale;
+    const docY = 1719.11 * imgScale;
+    const docFontSize = 4.42 * imgScale;
+
+    ctx.fillStyle = '#000000';
+    ctx.font = `normal ${docFontSize}px Arial, "OpenSans", sans-serif`;
+    ctx.textBaseline = 'top';
+    ctx.fillText(docText, docX, docY);
   }, [values, bgImage, fontLoaded]);
 
   return (
