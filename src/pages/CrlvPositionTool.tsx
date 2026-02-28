@@ -593,9 +593,11 @@ export default function CrlvPositionTool() {
             {saving ? 'Gerando...' : 'Gerar CRLV (1 crédito)'}
           </Button>
         </div>
-        <ScrollArea className="h-auto lg:h-screen">
-          <div className="p-4">
-            <CrlvCanvas values={values} qrImage={qrImage} />
+        <ScrollArea className="h-[calc(100vh-50px)]">
+          <div className="p-4 flex justify-center">
+            <div className="max-w-[550px] w-full">
+              <CrlvCanvas values={values} qrImage={qrImage} />
+            </div>
           </div>
         </ScrollArea>
       </div>
