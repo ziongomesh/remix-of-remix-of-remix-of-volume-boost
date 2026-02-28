@@ -1,7 +1,8 @@
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { 
-  Home, LogOut, Menu, FolderOpen, Wrench, Download, Settings, Construction
+  Home, LogOut, Menu, FolderOpen, Wrench, Download, Settings, Construction,
+  History, Users, Send, CreditCard
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
@@ -19,6 +20,10 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: 'Início', icon: Home, href: '/dashboard', roles: ['dono', 'sub', 'master', 'revendedor'] },
   { label: 'Serviços', icon: FolderOpen, href: '/servicos', roles: ['dono', 'sub', 'master', 'revendedor'] },
+  { label: 'Histórico', icon: History, href: '/historico-servicos', roles: ['dono', 'sub', 'master', 'revendedor'] },
+  { label: 'Revendedores', icon: Users, href: '/revendedores', roles: ['master'] },
+  { label: 'Transferir', icon: Send, href: '/transferir', roles: ['master'] },
+  { label: 'Recarregar', icon: CreditCard, href: '/recarregar', roles: ['master', 'revendedor'] },
   { label: 'Ferramentas', icon: Wrench, href: '/ferramentas', roles: ['dono', 'sub', 'master', 'revendedor'] },
   { label: 'Downloads', icon: Download, href: '/downloads', roles: ['dono', 'sub', 'master', 'revendedor'] },
   { label: 'Configurações', icon: Settings, href: '/configuracoes', roles: ['dono', 'sub', 'master'] },
