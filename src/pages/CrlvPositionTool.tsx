@@ -58,7 +58,7 @@ const FIELDS: FieldDef[] = [
   { key: 'valorTotal', tx: 494.72, ty: 401.25, size: 10 },
   { key: 'catTarif', tx: 316.73, ty: 323.51, size: 10 },
   { key: 'repasseFns', tx: 316.73, ty: 360.46, size: 10 },
-  { key: 'repasseDenatran', tx: 316.73, ty: 360.46, size: 10 },
+  { key: 'repasseDenatran', tx: 316.73, ty: 401.25, size: 10 },
 ];
 
 const FIELD_LABELS: Record<string, string> = {
