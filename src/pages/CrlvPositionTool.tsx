@@ -4,48 +4,55 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import openSansFont from '@/assets/OpenSans-VariableFont_wdth_wght.ttf';
 
-const SCALE = 2.0;
+const ESTADOS_BR = [
+  'AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA',
+  'PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO',
+];
 
 interface FieldDef {
   key: string;
-  wx: number; wy: number; ww: number; wh: number;
+  // Coordinates in Photoshop px (same as PDF points at 72dpi)
   tx: number; ty: number;
-  size: number;
+  size: number; // font size in pt
 }
 
 const FIELDS: FieldDef[] = [
-  { key: 'renavam', wx: 0, wy: 0, ww: 0, wh: 0, tx: 0, ty: 0, size: 8 },
-  { key: 'placa', wx: 0, wy: 0, ww: 0, wh: 0, tx: 0, ty: 0, size: 8 },
-  { key: 'exercicio', wx: 0, wy: 0, ww: 0, wh: 0, tx: 0, ty: 0, size: 8 },
-  { key: 'anoFab', wx: 0, wy: 0, ww: 0, wh: 0, tx: 0, ty: 0, size: 8 },
-  { key: 'anoMod', wx: 0, wy: 0, ww: 0, wh: 0, tx: 0, ty: 0, size: 8 },
-  { key: 'numeroCrv', wx: 0, wy: 0, ww: 0, wh: 0, tx: 0, ty: 0, size: 8 },
-  { key: 'codSegCla', wx: 0, wy: 0, ww: 0, wh: 0, tx: 0, ty: 0, size: 8 },
-  { key: 'catObs', wx: 0, wy: 0, ww: 0, wh: 0, tx: 0, ty: 0, size: 8 },
-  { key: 'marcaModelo', wx: 0, wy: 0, ww: 0, wh: 0, tx: 0, ty: 0, size: 8 },
-  { key: 'especieTipo', wx: 0, wy: 0, ww: 0, wh: 0, tx: 0, ty: 0, size: 8 },
-  { key: 'placaAnt', wx: 0, wy: 0, ww: 0, wh: 0, tx: 0, ty: 0, size: 8 },
-  { key: 'chassi', wx: 0, wy: 0, ww: 0, wh: 0, tx: 0, ty: 0, size: 8 },
-  { key: 'cor', wx: 0, wy: 0, ww: 0, wh: 0, tx: 0, ty: 0, size: 8 },
-  { key: 'combustivel', wx: 0, wy: 0, ww: 0, wh: 0, tx: 0, ty: 0, size: 8 },
-  { key: 'categoria', wx: 0, wy: 0, ww: 0, wh: 0, tx: 0, ty: 0, size: 8 },
-  { key: 'capacidade', wx: 0, wy: 0, ww: 0, wh: 0, tx: 0, ty: 0, size: 8 },
-  { key: 'potenciaCil', wx: 0, wy: 0, ww: 0, wh: 0, tx: 0, ty: 0, size: 8 },
-  { key: 'pesoBruto', wx: 0, wy: 0, ww: 0, wh: 0, tx: 0, ty: 0, size: 8 },
-  { key: 'motor', wx: 0, wy: 0, ww: 0, wh: 0, tx: 0, ty: 0, size: 8 },
-  { key: 'cmt', wx: 0, wy: 0, ww: 0, wh: 0, tx: 0, ty: 0, size: 8 },
-  { key: 'eixos', wx: 0, wy: 0, ww: 0, wh: 0, tx: 0, ty: 0, size: 8 },
-  { key: 'lotacao', wx: 0, wy: 0, ww: 0, wh: 0, tx: 0, ty: 0, size: 8 },
-  { key: 'carroceria', wx: 0, wy: 0, ww: 0, wh: 0, tx: 0, ty: 0, size: 8 },
-  { key: 'nomeProprietario', wx: 0, wy: 0, ww: 0, wh: 0, tx: 0, ty: 0, size: 8 },
-  { key: 'cpfCnpj', wx: 0, wy: 0, ww: 0, wh: 0, tx: 0, ty: 0, size: 8 },
-  { key: 'local', wx: 0, wy: 0, ww: 0, wh: 0, tx: 0, ty: 0, size: 8 },
-  { key: 'data', wx: 0, wy: 0, ww: 0, wh: 0, tx: 0, ty: 0, size: 8 },
-  { key: 'observacoes', wx: 0, wy: 0, ww: 0, wh: 0, tx: 0, ty: 0, size: 8 },
+  { key: 'uf', tx: 129.16, ty: 224.13, size: 4.42 },
+  { key: 'renavam', tx: 0, ty: 0, size: 4.42 },
+  { key: 'placa', tx: 0, ty: 0, size: 4.42 },
+  { key: 'exercicio', tx: 0, ty: 0, size: 4.42 },
+  { key: 'anoFab', tx: 0, ty: 0, size: 4.42 },
+  { key: 'anoMod', tx: 0, ty: 0, size: 4.42 },
+  { key: 'numeroCrv', tx: 0, ty: 0, size: 4.42 },
+  { key: 'codSegCla', tx: 0, ty: 0, size: 4.42 },
+  { key: 'catObs', tx: 0, ty: 0, size: 4.42 },
+  { key: 'marcaModelo', tx: 0, ty: 0, size: 4.42 },
+  { key: 'especieTipo', tx: 0, ty: 0, size: 4.42 },
+  { key: 'placaAnt', tx: 0, ty: 0, size: 4.42 },
+  { key: 'chassi', tx: 0, ty: 0, size: 4.42 },
+  { key: 'cor', tx: 0, ty: 0, size: 4.42 },
+  { key: 'combustivel', tx: 0, ty: 0, size: 4.42 },
+  { key: 'categoria', tx: 0, ty: 0, size: 4.42 },
+  { key: 'capacidade', tx: 0, ty: 0, size: 4.42 },
+  { key: 'potenciaCil', tx: 0, ty: 0, size: 4.42 },
+  { key: 'pesoBruto', tx: 0, ty: 0, size: 4.42 },
+  { key: 'motor', tx: 0, ty: 0, size: 4.42 },
+  { key: 'cmt', tx: 0, ty: 0, size: 4.42 },
+  { key: 'eixos', tx: 0, ty: 0, size: 4.42 },
+  { key: 'lotacao', tx: 0, ty: 0, size: 4.42 },
+  { key: 'carroceria', tx: 0, ty: 0, size: 4.42 },
+  { key: 'nomeProprietario', tx: 0, ty: 0, size: 4.42 },
+  { key: 'cpfCnpj', tx: 0, ty: 0, size: 4.42 },
+  { key: 'local', tx: 0, ty: 0, size: 4.42 },
+  { key: 'data', tx: 0, ty: 0, size: 4.42 },
+  { key: 'observacoes', tx: 0, ty: 0, size: 4.42 },
 ];
 
 const FIELD_LABELS: Record<string, string> = {
+  uf: 'UF do CRLV',
   renavam: 'Código Renavam',
   placa: 'Placa',
   exercicio: 'Exercício',
@@ -73,13 +80,25 @@ const FIELD_LABELS: Record<string, string> = {
   cpfCnpj: 'CPF / CNPJ',
   local: 'Local de Emissão',
   data: 'Data de Emissão',
-  uf: 'UF',
   observacoes: 'Observações',
 };
 
 function CrlvCanvas({ values }: { values: Record<string, string> }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [bgImage, setBgImage] = useState<HTMLImageElement | null>(null);
+  const [fontLoaded, setFontLoaded] = useState(false);
+
+  // Load OpenSans font for canvas
+  useEffect(() => {
+    const font = new FontFace('OpenSans', `url(${openSansFont})`);
+    font.load().then((loaded) => {
+      document.fonts.add(loaded);
+      setFontLoaded(true);
+    }).catch(err => {
+      console.error('Erro ao carregar fonte OpenSans:', err);
+      setFontLoaded(true); // fallback
+    });
+  }, []);
 
   useEffect(() => {
     const img = new Image();
@@ -88,7 +107,7 @@ function CrlvCanvas({ values }: { values: Record<string, string> }) {
   }, []);
 
   useEffect(() => {
-    if (!bgImage) return;
+    if (!bgImage || !fontLoaded) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -98,32 +117,24 @@ function CrlvCanvas({ values }: { values: Record<string, string> }) {
     canvas.height = bgImage.naturalHeight;
     ctx.drawImage(bgImage, 0, 0);
 
+    // Scale: convert PDF points to image pixels
     const imgScale = bgImage.naturalWidth / 595;
-    const ps = (v: number) => v * imgScale;
 
     for (const f of FIELDS) {
+      if (f.tx === 0 && f.ty === 0) continue; // skip uncalibrated fields
       const val = values[f.key] || '';
-      ctx.fillStyle = '#FFFFFF';
-      ctx.fillRect(ps(f.wx), ps(f.wy), ps(f.ww), ps(f.wh));
-      if (val.trim()) {
-        ctx.fillStyle = '#000000';
-        ctx.font = `bold ${ps(f.size)}px "FreeMono", "Courier New", monospace`;
-        ctx.textBaseline = 'alphabetic';
-        ctx.fillText(val, ps(f.tx), ps(f.ty));
-      }
-    }
+      if (!val.trim()) continue;
 
-    // DETRAN-UF
-    if (values.uf) {
-      ctx.fillStyle = '#FFFFFF';
-      ctx.fillRect(ps(268), ps(30), ps(30), ps(12));
+      const px = f.tx * imgScale;
+      const py = f.ty * imgScale;
+      const fontSize = f.size * imgScale;
+
       ctx.fillStyle = '#000000';
-      ctx.font = `bold ${ps(8)}px "FreeMono", "Courier New", monospace`;
-      ctx.textBaseline = 'alphabetic';
-      ctx.fillText(values.uf, ps(270), ps(39));
+      ctx.font = `600 ${fontSize}px "OpenSans", "Open Sans", sans-serif`;
+      ctx.textBaseline = 'top';
+      ctx.fillText(val, px, py);
     }
-
-  }, [values, bgImage]);
+  }, [values, bgImage, fontLoaded]);
 
   return (
     <canvas ref={canvasRef} className="w-full h-auto block" />
@@ -131,10 +142,10 @@ function CrlvCanvas({ values }: { values: Record<string, string> }) {
 }
 
 export default function CrlvPositionTool() {
-  const { register, watch } = useForm({
+  const { register, watch, setValue } = useForm({
     defaultValues: Object.fromEntries([
       ...FIELDS.map(f => [f.key, '']),
-      ['uf', ''],
+      ['uf', 'SP'],
     ]),
   });
 
@@ -148,7 +159,7 @@ export default function CrlvPositionTool() {
 
   const rightFields = [
     'categoria', 'capacidade', 'potenciaCil', 'pesoBruto', 'motor', 'cmt',
-    'eixos', 'lotacao', 'carroceria', 'nomeProprietario', 'cpfCnpj', 'local', 'data', 'uf',
+    'eixos', 'lotacao', 'carroceria', 'nomeProprietario', 'cpfCnpj', 'local', 'data',
   ];
 
   return (
@@ -159,6 +170,21 @@ export default function CrlvPositionTool() {
           <div className="p-4 space-y-4">
             <h2 className="text-lg font-bold text-foreground">CRLV Digital — Teste</h2>
             <p className="text-xs text-muted-foreground">Preencha os campos para visualizar no CRLV ao lado</p>
+
+            {/* UF Select - first field */}
+            <div className="space-y-1">
+              <Label className="text-[10px] text-muted-foreground">UF do CRLV</Label>
+              <Select value={values.uf} onValueChange={(val) => setValue('uf', val)}>
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue placeholder="Selecione o estado" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ESTADOS_BR.map(uf => (
+                    <SelectItem key={uf} value={uf}>{uf}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
             <div className="space-y-1">
               <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Coluna Esquerda</p>
