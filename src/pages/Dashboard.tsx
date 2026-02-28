@@ -1,15 +1,20 @@
 import { useAuth } from '@/hooks/useAuth';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { StatsCard } from '@/components/dashboard/StatsCard';
 import ResellerGoals from '@/components/dashboard/ResellerGoals';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CreditCard, Crown, Sparkles, TrendingUp, Users, Clock, FileText, IdCard, GraduationCap, Car, Trophy, Medal, Award, Wallet, BarChart3, Megaphone, History, Search, Filter, Calendar, Anchor, ChevronDown, ChevronRight } from 'lucide-react';
-import { Navigate } from 'react-router-dom';
+import { 
+  CreditCard, Crown, Users, Clock, FileText, IdCard, GraduationCap, Car, 
+  Trophy, Medal, Award, Wallet, BarChart3, Megaphone, History, 
+  Calendar, Anchor, ChevronDown, ChevronRight, Shield, Zap, 
+  FolderOpen, Send, Wrench, Download, UserPlus, Settings, ArrowRight
+} from 'lucide-react';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import api from '@/lib/api';
 import OnboardingWizard from '@/components/tutorial/OnboardingWizard';
 import MasterOnboardingWizard from '@/components/tutorial/MasterOnboardingWizard';
+
 interface TopReseller {
   id: number;
   nome: string;
@@ -47,6 +52,7 @@ interface Noticia {
 export default function Dashboard() {
   const { admin, role: rawRole, credits, creditsTransf, loading } = useAuth();
   const role = rawRole as string;
+  const navigate = useNavigate();
   const [topResellers, setTopResellers] = useState<TopReseller[]>([]);
   const [recentResellers, setRecentResellers] = useState<RecentReseller[]>([]);
   const [topCreditResellers, setTopCreditResellers] = useState<{id: number; nome: string; creditos: number}[]>([]);
@@ -57,6 +63,7 @@ export default function Dashboard() {
   const [showMasterOnboarding, setShowMasterOnboarding] = useState(false);
   const [noticias, setNoticias] = useState<Noticia[]>([]);
   const [myDocStats, setMyDocStats] = useState<{ today: number; week: number; month: number }>({ today: 0, week: 0, month: 0 });
+  const [activeTab, setActiveTab] = useState<'overview' | 'stats' | 'history'>('overview');
 
   // Master daily history state
   const [masterHistory, setMasterHistory] = useState<Record<string, any[]>>({});
@@ -83,7 +90,6 @@ export default function Dashboard() {
     }
   }, [admin, loading]);
 
-  // Fetch noticias and own document stats for all roles
   useEffect(() => {
     const fetchCommon = async () => {
       if (!admin) return;
@@ -104,38 +110,27 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       if (!admin) return;
-      
       try {
-        // Fetch resellers using Node.js API
         const resellers = await api.admins.getResellers(admin.id);
-        
         if (resellers) {
           setTotalResellers(resellers.length);
           setRecentResellers(resellers.slice(0, 3).map((r: any) => ({
-            id: r.id,
-            nome: r.nome,
-            created_at: r.created_at || ''
+            id: r.id, nome: r.nome, created_at: r.created_at || ''
           })));
-
-          // Top resellers by credit balance
           const sortedByCredits = [...resellers]
             .sort((a: any, b: any) => (b.creditos || 0) - (a.creditos || 0))
             .slice(0, 5)
             .map((r: any) => ({ id: r.id, nome: r.nome, creditos: r.creditos || 0 }));
           setTopCreditResellers(sortedByCredits);
-
-          // Calculate top resellers from transactions
           try {
             const transactions = await api.credits.getTransactions(admin.id);
             const resellerIds = resellers.map((r: any) => r.id);
             const totals: Record<number, number> = {};
-            
             transactions?.forEach((t: any) => {
               if (t.transaction_type === 'transfer' && resellerIds.includes(t.to_admin_id)) {
                 totals[t.to_admin_id] = (totals[t.to_admin_id] || 0) + t.amount;
               }
             });
-
             const topList = Object.entries(totals)
               .map(([id, total]) => ({
                 id: parseInt(id),
@@ -144,14 +139,11 @@ export default function Dashboard() {
               }))
               .sort((a, b) => b.total_received - a.total_received)
               .slice(0, 5);
-
             setTopResellers(topList);
           } catch (error) {
             console.error('Error fetching transactions:', error);
           }
         }
-
-        // Buscar estatísticas de documentos para master
         if (role === 'master') {
           try {
             const docStats = await api.admins.getDocumentStats(admin.id);
@@ -166,7 +158,6 @@ export default function Dashboard() {
         setLoadingStats(false);
       }
     };
-
     if (admin && (role === 'master' || role === 'dono')) {
       fetchStats();
     } else {
@@ -174,7 +165,6 @@ export default function Dashboard() {
     }
   }, [admin, role]);
 
-  // Fetch master daily history
   useEffect(() => {
     const fetchMasterHistory = async () => {
       if (!admin || role !== 'master') return;
@@ -187,7 +177,6 @@ export default function Dashboard() {
         const data = await (api as any).admins.getMasterDailyHistory(admin.id, filters);
         setMasterHistory(data.grouped || {});
         setMasterHistoryAdmins(data.admins || []);
-        // Auto-expand today
         const today = new Date().toISOString().slice(0, 10);
         setMasterExpandedDays(prev => ({ ...prev, [today]: true }));
       } catch (e) {
@@ -207,119 +196,280 @@ export default function Dashboard() {
     );
   }
 
-  if (!admin) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (role === 'dono') {
-    return <Navigate to="/dashboard-dono" replace />;
-  }
+  if (!admin) return <Navigate to="/login" replace />;
+  if (role === 'dono') return <Navigate to="/dashboard-dono" replace />;
 
   const getRoleBadge = () => {
     switch (role) {
-      case 'dono':
-        return { label: 'Dono', stars: 3 };
-      case 'sub':
-        return { label: 'Sub Dono', stars: 3 };
-      case 'master':
-        return { label: 'Master', stars: 2 };
-      case 'revendedor':
-        return { label: 'Revendedor', stars: 1 };
-      default:
-        return { label: 'Usuário', stars: 0 };
+      case 'dono': return { label: 'Dono', stars: 3 };
+      case 'sub': return { label: 'Sub Dono', stars: 3 };
+      case 'master': return { label: 'Master', stars: 2 };
+      case 'revendedor': return { label: 'Revendedor', stars: 1 };
+      default: return { label: 'Usuário', stars: 0 };
     }
   };
 
   const roleBadge = getRoleBadge();
+  const firstName = admin.nome?.split(' ')[0] || 'Usuário';
 
-  const formatDate = (dateString: string) => {
-    if (!dateString) return 'Data não disponível';
-    return new Date(dateString).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
+  // Quick access tiles for the launcher
+  const quickActions = [
+    { label: 'Serviços', icon: FolderOpen, href: '/servicos', color: 'from-blue-600 to-blue-800', desc: 'Gerar documentos' },
+    { label: 'Histórico', icon: History, href: '/historico-servicos', color: 'from-purple-600 to-purple-800', desc: 'Serviços gerados' },
+    ...(role === 'master' || role === 'sub' ? [
+      { label: 'Revendedores', icon: Users, href: '/revendedores', color: 'from-emerald-600 to-emerald-800', desc: 'Gerenciar equipe' },
+      { label: 'Transferir', icon: Send, href: '/transferir', color: 'from-amber-600 to-amber-800', desc: 'Enviar créditos' },
+    ] : []),
+    { label: 'Ferramentas', icon: Wrench, href: '/ferramentas', color: 'from-rose-600 to-rose-800', desc: 'Utilitários' },
+    { label: 'Downloads', icon: Download, href: '/downloads', color: 'from-cyan-600 to-cyan-800', desc: 'Apps e arquivos' },
+  ];
 
   return (
     <DashboardLayout>
       {showOnboarding && admin && (
         <OnboardingWizard
-          userName={admin.nome?.split(' ')[0] || 'Usuário'}
+          userName={firstName}
           adminId={admin.id}
           onClose={() => setShowOnboarding(false)}
         />
       )}
       {showMasterOnboarding && admin && (
         <MasterOnboardingWizard
-          userName={admin.nome?.split(' ')[0] || 'Usuário'}
+          userName={firstName}
           adminId={admin.id}
           onClose={() => setShowMasterOnboarding(false)}
         />
       )}
-      <div className="space-y-6 sm:space-y-8 animate-fade-in">
-        {/* Header */}
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground">
-            Olá, {admin.nome}!
-          </h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            Bem-vindo de volta ao seu painel de controle
-          </p>
+
+      <div className="space-y-6 animate-fade-in">
+        {/* ═══ HEADER BAR ═══ */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+              Olá, {firstName}!
+            </h1>
+            <p className="text-muted-foreground text-sm mt-0.5">
+              Painel de controle • {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Badge variant="outline" className="px-3 py-1.5 text-xs font-semibold border-primary/30 text-primary">
+              <Shield className="h-3 w-3 mr-1.5" />
+              {roleBadge.label} {'★'.repeat(roleBadge.stars)}
+            </Badge>
+          </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className={`grid grid-cols-1 sm:grid-cols-2 ${role === 'master' ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-4 sm:gap-6`}>
-          <StatsCard
-            title="Créditos de Uso"
-            value={(role === 'dono' || role === 'sub') ? 'Ilimitado' : credits.toLocaleString('pt-BR')}
-            subtitle="Para gerar documentos"
-            variant="green"
-            icon={<CreditCard className="h-6 w-6 sm:h-8 sm:w-8" />}
-          />
+        {/* ═══ STATUS BAR - Launcher style ═══ */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          {/* Credits */}
+          <div className="relative group overflow-hidden rounded-xl bg-gradient-to-br from-emerald-500/15 to-emerald-600/5 border border-emerald-500/20 p-4 hover:border-emerald-500/40 transition-all">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-medium text-emerald-400/80 uppercase tracking-wider">Créditos</span>
+              <Zap className="h-4 w-4 text-emerald-400/60" />
+            </div>
+            <p className="text-2xl font-bold text-foreground">
+              {(role === 'dono' || role === 'sub') ? '∞' : credits.toLocaleString('pt-BR')}
+            </p>
+            <p className="text-[11px] text-muted-foreground mt-1">Para gerar documentos</p>
+          </div>
+
+          {/* Transfer Credits - Master only */}
           {role === 'master' && (
-            <StatsCard
-              title="Créditos p/ Transferir"
-              value={creditsTransf.toLocaleString('pt-BR')}
-              subtitle="Para enviar aos revendedores"
-              variant="blue"
-              icon={<Wallet className="h-6 w-6 sm:h-8 sm:w-8" />}
-            />
+            <div className="relative group overflow-hidden rounded-xl bg-gradient-to-br from-blue-500/15 to-blue-600/5 border border-blue-500/20 p-4 hover:border-blue-500/40 transition-all">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-blue-400/80 uppercase tracking-wider">Transferência</span>
+                <Wallet className="h-4 w-4 text-blue-400/60" />
+              </div>
+              <p className="text-2xl font-bold text-foreground">{creditsTransf.toLocaleString('pt-BR')}</p>
+              <p className="text-[11px] text-muted-foreground mt-1">Para revendedores</p>
+            </div>
           )}
-          <StatsCard
-            title="Seu Status"
-            value={`${roleBadge.label} ${'★'.repeat(roleBadge.stars)}`}
-            subtitle="Nível de acesso premium"
-            variant="pink"
-            icon={<Crown className="h-6 w-6 sm:h-8 sm:w-8" />}
-          />
-          {(role === 'master' || role === 'dono') && (
-            <StatsCard
-              title="Total de Revendas"
-              value={totalResellers}
-              subtitle="Revendedores ativos"
-              variant="blue"
-              icon={<Users className="h-6 w-6 sm:h-8 sm:w-8" />}
-            />
+
+          {/* Today production */}
+          <div className="relative group overflow-hidden rounded-xl bg-gradient-to-br from-violet-500/15 to-violet-600/5 border border-violet-500/20 p-4 hover:border-violet-500/40 transition-all">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-medium text-violet-400/80 uppercase tracking-wider">Hoje</span>
+              <FileText className="h-4 w-4 text-violet-400/60" />
+            </div>
+            <p className="text-2xl font-bold text-foreground">{myDocStats.today}</p>
+            <p className="text-[11px] text-muted-foreground mt-1">Documentos gerados</p>
+          </div>
+
+          {/* Resellers count - Master/Sub */}
+          {(role === 'master' || role === 'sub') && (
+            <div className="relative group overflow-hidden rounded-xl bg-gradient-to-br from-amber-500/15 to-amber-600/5 border border-amber-500/20 p-4 hover:border-amber-500/40 transition-all">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-amber-400/80 uppercase tracking-wider">Equipe</span>
+                <Users className="h-4 w-4 text-amber-400/60" />
+              </div>
+              <p className="text-2xl font-bold text-foreground">{totalResellers}</p>
+              <p className="text-[11px] text-muted-foreground mt-1">Revendedores ativos</p>
+            </div>
+          )}
+
+          {/* Month production for revendedor */}
+          {role === 'revendedor' && (
+            <div className="relative group overflow-hidden rounded-xl bg-gradient-to-br from-amber-500/15 to-amber-600/5 border border-amber-500/20 p-4 hover:border-amber-500/40 transition-all">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-amber-400/80 uppercase tracking-wider">Mês</span>
+                <Trophy className="h-4 w-4 text-amber-400/60" />
+              </div>
+              <p className="text-2xl font-bold text-foreground">{myDocStats.month}</p>
+              <p className="text-[11px] text-muted-foreground mt-1">Documentos no mês</p>
+            </div>
           )}
         </div>
 
-        {/* Statistics Grid */}
-        {(role === 'master' || role === 'dono') && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-            {/* Top Resellers */}
-            <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-amber-500/5">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                  <Trophy className="h-5 w-5 text-yellow-500" />
-                  Top Revendedores
-                  <Badge variant="secondary" className="text-[10px] ml-auto">Ranking</Badge>
+        {/* ═══ QUICK ACCESS - Launcher tiles ═══ */}
+        <div>
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Acesso Rápido</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            {quickActions.map((action) => {
+              const Icon = action.icon;
+              return (
+                <button
+                  key={action.href}
+                  onClick={() => navigate(action.href)}
+                  className={`group relative overflow-hidden rounded-xl bg-gradient-to-br ${action.color} p-4 text-left transition-all hover:scale-[1.02] hover:shadow-lg hover:shadow-black/20 active:scale-[0.98]`}
+                >
+                  <Icon className="h-6 w-6 text-white/90 mb-3" />
+                  <p className="text-sm font-semibold text-white">{action.label}</p>
+                  <p className="text-[10px] text-white/60 mt-0.5">{action.desc}</p>
+                  <ArrowRight className="absolute bottom-3 right-3 h-4 w-4 text-white/30 group-hover:text-white/60 transition-colors" />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ═══ TAB NAVIGATION ═══ */}
+        {(role === 'master' || role === 'sub') && (
+          <div className="flex gap-1 bg-muted/50 rounded-lg p-1 w-fit">
+            {[
+              { id: 'overview' as const, label: 'Visão Geral' },
+              { id: 'stats' as const, label: 'Rankings' },
+              ...(role === 'master' ? [{ id: 'history' as const, label: 'Histórico' }] : []),
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                  activeTab === tab.id
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* ═══ OVERVIEW TAB ═══ */}
+        {(activeTab === 'overview' || role === 'revendedor') && (
+          <div className="space-y-6">
+            {/* Metas */}
+            {admin && (
+              <ResellerGoals
+                adminId={admin.id}
+                totalDocumentsToday={myDocStats.today}
+                totalDocumentsWeek={myDocStats.week}
+                totalDocumentsMonth={myDocStats.month}
+              />
+            )}
+
+            {/* Master doc stats */}
+            {role === 'master' && documentStats && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[
+                  { label: 'Total Docs', value: documentStats.totalDocuments, icon: FileText, color: 'blue' },
+                  { label: 'CNHs', value: documentStats.totalCnh, icon: Car, color: 'green' },
+                  { label: 'RGs', value: documentStats.totalRg, icon: IdCard, color: 'purple' },
+                  { label: 'Carteiras', value: documentStats.totalCarteira, icon: GraduationCap, color: 'amber' },
+                ].map(stat => {
+                  const Icon = stat.icon;
+                  return (
+                    <div key={stat.label} className={`rounded-xl border border-${stat.color}-500/20 bg-${stat.color}-500/5 p-4`}>
+                      <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-lg bg-${stat.color}-500/20`}>
+                          <Icon className={`h-4 w-4 text-${stat.color}-500`} />
+                        </div>
+                        <div>
+                          <p className="text-xl font-bold">{stat.value}</p>
+                          <p className="text-[11px] text-muted-foreground">{stat.label}</p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Recent resellers */}
+            {(role === 'master' || role === 'sub') && recentResellers.length > 0 && (
+              <Card className="border-border/50">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+                    <Clock className="h-4 w-4 text-primary" />
+                    Últimos Criados
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {recentResellers.map((r) => (
+                      <div key={r.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                        <span className="font-medium text-sm">{r.nome}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {r.created_at ? new Date(r.created_at).toLocaleDateString('pt-BR') : ''}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Comunicados */}
+            <Card className="border-border/50">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+                  <Megaphone className="h-4 w-4 text-primary" />
+                  Comunicados
                 </CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  Revendedores que mais receberam créditos
-                </p>
+              </CardHeader>
+              <CardContent>
+                {noticias.length > 0 ? (
+                  <div className="space-y-3">
+                    {noticias.slice(0, 5).map((n) => (
+                      <div key={n.id} className="border-l-2 border-primary/40 pl-4 py-1.5">
+                        <h4 className="font-medium text-sm">{n.titulo}</h4>
+                        <p className="text-xs text-muted-foreground whitespace-pre-line mt-0.5">{n.informacao}</p>
+                        <p className="text-[10px] text-muted-foreground mt-1.5">
+                          📅 {new Date(n.data_post).toLocaleDateString('pt-BR')}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-center text-muted-foreground py-4 text-sm">Nenhum comunicado</p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* ═══ STATS/RANKINGS TAB ═══ */}
+        {activeTab === 'stats' && (role === 'master' || role === 'sub') && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Top Resellers */}
+            <Card className="border-border/50">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+                  <Trophy className="h-4 w-4 text-yellow-500" />
+                  Top Revendedores
+                  <Badge variant="secondary" className="text-[10px] ml-auto">Créditos Recebidos</Badge>
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 {loadingStats ? (
@@ -327,203 +477,141 @@ export default function Dashboard() {
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
                   </div>
                 ) : topResellers.length > 0 ? (
-                  <div className="space-y-3">
-                    {topResellers.map((reseller, index) => (
-                      <div 
-                        key={reseller.id} 
-                        className={`flex items-center justify-between p-3 rounded-lg transition-all ${
-                          index === 0 
-                            ? 'bg-gradient-to-r from-yellow-500/20 via-amber-500/10 to-transparent border border-yellow-500/30 shadow-sm' 
-                            : index === 1 
-                              ? 'bg-gradient-to-r from-gray-400/20 via-gray-300/10 to-transparent border border-gray-400/30' 
-                              : index === 2 
-                                ? 'bg-gradient-to-r from-amber-600/20 via-orange-500/10 to-transparent border border-amber-600/30' 
-                                : 'bg-muted/50'
-                        }`}
-                      >
+                  <div className="space-y-2">
+                    {topResellers.map((r, i) => (
+                      <div key={r.id} className={`flex items-center justify-between p-3 rounded-lg transition-all ${
+                        i === 0 ? 'bg-yellow-500/10 border border-yellow-500/20' :
+                        i === 1 ? 'bg-gray-400/10 border border-gray-400/15' :
+                        i === 2 ? 'bg-amber-600/10 border border-amber-600/15' : 'bg-muted/30'
+                      }`}>
                         <div className="flex items-center gap-3">
-                          {index === 0 ? (
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center shadow-md">
-                              <Trophy className="h-4 w-4 text-yellow-950" />
-                            </div>
-                          ) : index === 1 ? (
-                            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center">
-                              <Medal className="h-4 w-4 text-gray-700" />
-                            </div>
-                          ) : index === 2 ? (
-                            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
-                              <Award className="h-4 w-4 text-amber-950" />
-                            </div>
-                          ) : (
-                            <span className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground">
-                              {index + 1}
-                            </span>
-                          )}
-                          <span className={`font-medium text-sm sm:text-base ${index === 0 ? 'text-yellow-600 dark:text-yellow-400' : ''}`}>
-                            {reseller.nome}
-                          </span>
+                          <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                            i === 0 ? 'bg-yellow-500 text-yellow-950' :
+                            i === 1 ? 'bg-gray-400 text-gray-950' :
+                            i === 2 ? 'bg-amber-600 text-amber-950' : 'bg-muted text-muted-foreground'
+                          }`}>{i + 1}</span>
+                          <span className="font-medium text-sm">{r.nome}</span>
                         </div>
-                        <Badge variant={index === 0 ? "default" : "secondary"} className={`${index === 0 ? 'bg-gradient-to-r from-yellow-500 to-amber-500 text-yellow-950 border-0' : ''}`}>
-                          <CreditCard className="h-3 w-3 mr-1" />
-                          {reseller.total_received.toLocaleString('pt-BR')}
+                        <Badge variant="secondary" className="text-[11px]">
+                          <CreditCard className="h-3 w-3 mr-1" />{r.total_received.toLocaleString('pt-BR')}
                         </Badge>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-center text-muted-foreground py-4 text-sm">
-                    Nenhuma transferência realizada ainda
-                  </p>
+                  <p className="text-center text-muted-foreground py-4 text-sm">Nenhuma transferência</p>
                 )}
               </CardContent>
             </Card>
 
-            {/* Recent Resellers */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                  <Clock className="h-5 w-5 text-primary" />
-                  Últimos Criados
+            {/* Ranking by Credits */}
+            <Card className="border-border/50">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+                  <Wallet className="h-4 w-4 text-emerald-500" />
+                  Ranking por Saldo
+                  <Badge variant="secondary" className="text-[10px] ml-auto">Créditos</Badge>
                 </CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  Revendedores criados recentemente
-                </p>
               </CardHeader>
               <CardContent>
                 {loadingStats ? (
                   <div className="flex justify-center py-4">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
                   </div>
-                ) : recentResellers.length > 0 ? (
-                  <div className="space-y-3">
-                    {recentResellers.map((reseller) => (
-                      <div 
-                        key={reseller.id} 
-                        className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 rounded-lg bg-muted/50 gap-1 sm:gap-0"
-                      >
-                        <span className="font-medium text-sm sm:text-base">{reseller.nome}</span>
-                        <span className="text-xs sm:text-sm text-muted-foreground">
-                          {formatDate(reseller.created_at)}
-                        </span>
+                ) : topCreditResellers.length > 0 ? (
+                  <div className="space-y-2">
+                    {topCreditResellers.map((r, i) => (
+                      <div key={r.id} className={`flex items-center justify-between p-3 rounded-lg ${
+                        i === 0 ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-muted/30'
+                      }`}>
+                        <div className="flex items-center gap-3">
+                          <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                            i === 0 ? 'bg-emerald-500 text-white' : 'bg-muted text-muted-foreground'
+                          }`}>{i + 1}</span>
+                          <span className="font-medium text-sm">{r.nome}</span>
+                        </div>
+                        <Badge variant="secondary" className="text-[11px]">{r.creditos.toLocaleString('pt-BR')}</Badge>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-center text-muted-foreground py-4 text-sm">
-                    Nenhum revendedor criado ainda
-                  </p>
+                  <p className="text-center text-muted-foreground py-4 text-sm">Nenhum revendedor</p>
                 )}
               </CardContent>
             </Card>
-          </div>
-        )}
 
-        {/* Document Statistics for Master */}
-        {role === 'master' && documentStats && (
-          <div className="space-y-4">
-            {/* Document Stats Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-500/20">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-blue-500/20">
-                      <FileText className="h-5 w-5 text-blue-500" />
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold">{documentStats.totalDocuments}</p>
-                      <p className="text-xs text-muted-foreground">Total Docs</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="bg-gradient-to-br from-green-500/10 to-green-600/5 border-green-500/20">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-green-500/20">
-                      <Car className="h-5 w-5 text-green-500" />
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold">{documentStats.totalCnh}</p>
-                      <p className="text-xs text-muted-foreground">CNHs</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 border-purple-500/20">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-purple-500/20">
-                      <IdCard className="h-5 w-5 text-purple-500" />
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold">{documentStats.totalRg}</p>
-                      <p className="text-xs text-muted-foreground">RGs</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="bg-gradient-to-br from-amber-500/10 to-amber-600/5 border-amber-500/20">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-amber-500/20">
-                      <GraduationCap className="h-5 w-5 text-amber-500" />
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold">{documentStats.totalCarteira}</p>
-                      <p className="text-xs text-muted-foreground">Carteiras</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Documents by Reseller */}
-            {documentStats.byReseller.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                    <FileText className="h-5 w-5 text-primary" />
-                    Documentos por Revendedor
+            {/* Services popularity */}
+            {role === 'master' && documentStats && (
+              <Card className="border-border/50 lg:col-span-2">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+                    <BarChart3 className="h-4 w-4 text-blue-500" />
+                    Serviços Mais Usados
                   </CardTitle>
-                  <p className="text-sm text-muted-foreground">
-                    Quantidade de documentos criados por cada revendedor
-                  </p>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    {documentStats.byReseller.slice(0, 5).map((reseller, index) => (
-                      <div 
-                        key={reseller.id} 
-                        className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className={`
-                            w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold
-                            ${index === 0 ? 'bg-yellow-500 text-yellow-950' : 
-                              index === 1 ? 'bg-gray-400 text-gray-950' : 
-                              index === 2 ? 'bg-amber-600 text-amber-950' : 
-                              'bg-muted text-muted-foreground'}
-                          `}>
-                            {index + 1}
-                          </span>
-                          <span className="font-medium text-sm sm:text-base">{reseller.nome}</span>
+                  {(() => {
+                    const services = [
+                      { name: 'CNH Digital', count: documentStats.totalCnh, icon: Car, color: 'bg-green-500' },
+                      { name: 'RG Digital', count: documentStats.totalRg, icon: IdCard, color: 'bg-purple-500' },
+                      { name: 'Carteira Estudante', count: documentStats.totalCarteira, icon: GraduationCap, color: 'bg-amber-500' },
+                    ].sort((a, b) => b.count - a.count);
+                    const maxCount = services[0]?.count || 1;
+                    return (
+                      <div className="space-y-4">
+                        {services.map((s) => {
+                          const Icon = s.icon;
+                          const pct = maxCount > 0 ? (s.count / maxCount) * 100 : 0;
+                          return (
+                            <div key={s.name} className="space-y-1.5">
+                              <div className="flex items-center justify-between text-sm">
+                                <div className="flex items-center gap-2">
+                                  <Icon className="h-4 w-4 text-muted-foreground" />
+                                  <span className="font-medium">{s.name}</span>
+                                </div>
+                                <span className="font-bold">{s.count.toLocaleString('pt-BR')}</span>
+                              </div>
+                              <div className="w-full bg-muted rounded-full h-2">
+                                <div className={`${s.color} h-2 rounded-full transition-all duration-500 opacity-70`} style={{ width: `${pct}%` }} />
+                              </div>
+                            </div>
+                          );
+                        })}
+                        <div className="pt-2 border-t border-border text-center text-sm">
+                          <span className="text-muted-foreground">Total: </span>
+                          <span className="font-bold text-primary">{documentStats.totalDocuments.toLocaleString('pt-BR')}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-xs sm:text-sm">
-                          <span className="flex items-center gap-1 text-green-500">
-                            <Car className="h-3 w-3" />
-                            {reseller.cnh}
-                          </span>
-                          <span className="flex items-center gap-1 text-purple-500">
-                            <IdCard className="h-3 w-3" />
-                            {reseller.rg}
-                          </span>
-                          <span className="flex items-center gap-1 text-amber-500">
-                            <GraduationCap className="h-3 w-3" />
-                            {reseller.carteira}
-                          </span>
-                          <span className="font-semibold text-primary ml-2">
-                            = {reseller.total}
-                          </span>
+                      </div>
+                    );
+                  })()}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Docs by Reseller */}
+            {role === 'master' && documentStats && documentStats.byReseller.length > 0 && (
+              <Card className="border-border/50 lg:col-span-2">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+                    <FileText className="h-4 w-4 text-primary" />
+                    Documentos por Revendedor
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {documentStats.byReseller.slice(0, 5).map((r, i) => (
+                      <div key={r.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                        <div className="flex items-center gap-3">
+                          <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                            i === 0 ? 'bg-yellow-500 text-yellow-950' : 'bg-muted text-muted-foreground'
+                          }`}>{i + 1}</span>
+                          <span className="font-medium text-sm">{r.nome}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs">
+                          <span className="text-green-500">{r.cnh}</span>
+                          <span className="text-purple-500">{r.rg}</span>
+                          <span className="text-amber-500">{r.carteira}</span>
+                          <span className="font-semibold text-primary ml-1">= {r.total}</span>
                         </div>
                       </div>
                     ))}
@@ -534,202 +622,36 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Rankings Section */}
-        {(role === 'master' || role === 'dono') && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-            {/* Ranking by Credits */}
-            <Card className="border border-border">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                  <Wallet className="h-5 w-5 text-emerald-500" />
-                  Ranking por Créditos
-                  <Badge variant="secondary" className="text-[10px] ml-auto">Saldo</Badge>
-                </CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  Revendedores com maior saldo de créditos
-                </p>
-              </CardHeader>
-              <CardContent>
-                {loadingStats ? (
-                  <div className="flex justify-center py-4">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
-                  </div>
-                ) : topCreditResellers.length > 0 ? (
-                  <div className="space-y-3">
-                    {topCreditResellers.map((reseller, index) => (
-                      <div 
-                        key={reseller.id} 
-                        className={`flex items-center justify-between p-3 rounded-lg transition-all ${
-                          index === 0 
-                            ? 'bg-gradient-to-r from-emerald-500/20 via-emerald-400/10 to-transparent border border-emerald-500/30 shadow-sm' 
-                            : index === 1 
-                              ? 'bg-gradient-to-r from-emerald-400/15 via-emerald-300/5 to-transparent border border-emerald-400/20' 
-                              : index === 2 
-                                ? 'bg-gradient-to-r from-emerald-300/10 via-emerald-200/5 to-transparent border border-emerald-300/20' 
-                                : 'bg-muted/50'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className={`
-                            w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold
-                            ${index === 0 ? 'bg-emerald-500 text-white' : 
-                              index === 1 ? 'bg-emerald-400/80 text-white' : 
-                              index === 2 ? 'bg-emerald-300/80 text-emerald-900' : 
-                              'bg-muted text-muted-foreground'}
-                          `}>
-                            {index + 1}
-                          </span>
-                          <span className={`font-medium text-sm sm:text-base ${index === 0 ? 'text-emerald-600 dark:text-emerald-400' : ''}`}>
-                            {reseller.nome}
-                          </span>
-                        </div>
-                        <Badge variant="secondary">
-                          <CreditCard className="h-3 w-3 mr-1" />
-                          {reseller.creditos.toLocaleString('pt-BR')}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-center text-muted-foreground py-4 text-sm">
-                    Nenhum revendedor encontrado
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Most Used Services */}
-            <Card className="border border-border">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                  <BarChart3 className="h-5 w-5 text-blue-500" />
-                  Serviços Mais Usados
-                  <Badge variant="secondary" className="text-[10px] ml-auto">Popularidade</Badge>
-                </CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  Ranking dos serviços mais utilizados no sistema
-                </p>
-              </CardHeader>
-              <CardContent>
-                {loadingStats ? (
-                  <div className="flex justify-center py-4">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
-                  </div>
-                ) : documentStats ? (() => {
-                  const services = [
-                    { name: 'CNH Digital', count: documentStats.totalCnh, icon: Car, color: 'text-green-500', bg: 'bg-green-500' },
-                    { name: 'RG Digital', count: documentStats.totalRg, icon: IdCard, color: 'text-purple-500', bg: 'bg-purple-500' },
-                    { name: 'Carteira Estudante', count: documentStats.totalCarteira, icon: GraduationCap, color: 'text-amber-500', bg: 'bg-amber-500' },
-                  ].sort((a, b) => b.count - a.count);
-                  const maxCount = services[0]?.count || 1;
-
-                  return (
-                    <div className="space-y-4">
-                      {services.map((service, index) => {
-                        const Icon = service.icon;
-                        const percentage = maxCount > 0 ? (service.count / maxCount) * 100 : 0;
-                        return (
-                          <div key={service.name} className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <span className={`
-                                  w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white
-                                  ${index === 0 ? 'bg-yellow-500' : index === 1 ? 'bg-gray-400' : 'bg-amber-600'}
-                                `}>
-                                  {index + 1}
-                                </span>
-                                <Icon className={`h-4 w-4 ${service.color}`} />
-                                <span className="font-medium text-sm">{service.name}</span>
-                              </div>
-                              <span className="font-bold text-sm">{service.count.toLocaleString('pt-BR')}</span>
-                            </div>
-                            <div className="w-full bg-muted rounded-full h-2.5">
-                              <div 
-                                className={`${service.bg} h-2.5 rounded-full transition-all duration-500`}
-                                style={{ width: `${percentage}%`, opacity: 0.7 }}
-                              />
-                            </div>
-                          </div>
-                        );
-                      })}
-                      <div className="pt-2 border-t border-border text-center">
-                        <span className="text-sm text-muted-foreground">Total: </span>
-                        <span className="font-bold text-primary">{documentStats.totalDocuments.toLocaleString('pt-BR')}</span>
-                        <span className="text-sm text-muted-foreground"> documentos</span>
-                      </div>
-                    </div>
-                  );
-                })() : (
-                  <p className="text-center text-muted-foreground py-4 text-sm">
-                    Nenhum dado de serviço disponível
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {/* Metas de Serviços */}
-        {admin && (
-          <ResellerGoals
-            adminId={admin.id}
-            totalDocumentsToday={myDocStats.today}
-            totalDocumentsWeek={myDocStats.week}
-            totalDocumentsMonth={myDocStats.month}
-          />
-        )}
-
-        {/* Histórico Diário - Master */}
-        {role === 'master' && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                <History className="h-5 w-5 text-primary" />
+        {/* ═══ HISTORY TAB ═══ */}
+        {activeTab === 'history' && role === 'master' && (
+          <Card className="border-border/50">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+                <History className="h-4 w-4 text-primary" />
                 Histórico Diário
-                <Badge variant="secondary" className="text-[10px] ml-auto">Revendedores</Badge>
               </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Serviços gerados pelos seus revendedores
-              </p>
-              {/* Filters */}
-              <div className="flex flex-wrap gap-2 pt-3">
-                <select
-                  value={masterFilterAdmin}
-                  onChange={e => setMasterFilterAdmin(e.target.value)}
-                  className="text-xs px-3 py-1.5 rounded-md border border-border bg-background text-foreground"
-                >
-                  <option value="all">Todos os admins</option>
+              <div className="flex flex-wrap gap-2 pt-2">
+                <select value={masterFilterAdmin} onChange={e => setMasterFilterAdmin(e.target.value)}
+                  className="text-xs px-3 py-1.5 rounded-md border border-border bg-background text-foreground">
+                  <option value="all">Todos</option>
                   {masterHistoryAdmins.map((a: any) => (
-                    <option key={a.id} value={a.id}>
-                      {a.nome} ({a.rank})
-                    </option>
+                    <option key={a.id} value={a.id}>{a.nome}</option>
                   ))}
                 </select>
-                <select
-                  value={masterFilterModule}
-                  onChange={e => setMasterFilterModule(e.target.value)}
-                  className="text-xs px-3 py-1.5 rounded-md border border-border bg-background text-foreground"
-                >
-                  <option value="all">Todos os módulos</option>
+                <select value={masterFilterModule} onChange={e => setMasterFilterModule(e.target.value)}
+                  className="text-xs px-3 py-1.5 rounded-md border border-border bg-background text-foreground">
+                  <option value="all">Módulos</option>
                   <option value="CNH">CNH</option>
                   <option value="RG">RG</option>
-                  <option value="Carteira">Carteira Estudante</option>
+                  <option value="Carteira">Carteira</option>
                   <option value="CRLV">CRLV</option>
                   <option value="Nautica">Náutica</option>
                 </select>
-                <input
-                  type="date"
-                  value={masterFilterDate}
-                  onChange={e => setMasterFilterDate(e.target.value)}
-                  className="text-xs px-3 py-1.5 rounded-md border border-border bg-background text-foreground"
-                />
+                <input type="date" value={masterFilterDate} onChange={e => setMasterFilterDate(e.target.value)}
+                  className="text-xs px-3 py-1.5 rounded-md border border-border bg-background text-foreground" />
                 {(masterFilterAdmin !== 'all' || masterFilterModule !== 'all' || masterFilterDate) && (
-                  <button
-                    onClick={() => { setMasterFilterAdmin('all'); setMasterFilterModule('all'); setMasterFilterDate(''); }}
-                    className="text-xs px-3 py-1.5 rounded-md bg-destructive/10 text-destructive hover:bg-destructive/20"
-                  >
-                    Limpar
-                  </button>
+                  <button onClick={() => { setMasterFilterAdmin('all'); setMasterFilterModule('all'); setMasterFilterDate(''); }}
+                    className="text-xs px-3 py-1.5 rounded-md bg-destructive/10 text-destructive hover:bg-destructive/20">Limpar</button>
                 )}
               </div>
             </CardHeader>
@@ -739,43 +661,42 @@ export default function Dashboard() {
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
                 </div>
               ) : Object.keys(masterHistory).length > 0 ? (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {Object.entries(masterHistory).sort(([a], [b]) => b.localeCompare(a)).map(([day, items]) => {
                     const isExpanded = masterExpandedDays[day] ?? false;
                     const dayLabel = new Date(day + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
+                    const moduleColors: Record<string, string> = {
+                      'CNH': 'bg-green-500/10 text-green-700 dark:text-green-400',
+                      'RG': 'bg-purple-500/10 text-purple-700 dark:text-purple-400',
+                      'Carteira': 'bg-amber-500/10 text-amber-700 dark:text-amber-400',
+                      'CRLV': 'bg-blue-500/10 text-blue-700 dark:text-blue-400',
+                      'Náutica': 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-400',
+                    };
+                    const moduleIcons: Record<string, any> = {
+                      'CNH': Car, 'RG': IdCard, 'Carteira': GraduationCap, 'CRLV': FileText, 'Náutica': Anchor
+                    };
                     return (
-                      <div key={day} className="border border-border rounded-lg overflow-hidden">
+                      <div key={day} className="border border-border/50 rounded-lg overflow-hidden">
                         <button
                           onClick={() => setMasterExpandedDays(prev => ({ ...prev, [day]: !isExpanded }))}
-                          className="w-full flex items-center justify-between px-4 py-3 bg-muted/50 hover:bg-muted transition-colors"
+                          className="w-full flex items-center justify-between px-4 py-3 bg-muted/30 hover:bg-muted/50 transition-colors"
                         >
                           <div className="flex items-center gap-2">
                             {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                             <Calendar className="h-4 w-4 text-primary" />
                             <span className="font-medium text-sm capitalize">{dayLabel}</span>
                           </div>
-                          <Badge variant="secondary">{items.length} serviço{items.length > 1 ? 's' : ''}</Badge>
+                          <Badge variant="secondary" className="text-[10px]">{items.length}</Badge>
                         </button>
                         {isExpanded && (
-                          <div className="divide-y divide-border">
+                          <div className="divide-y divide-border/50">
                             {items.map((svc: any, idx: number) => {
-                              const moduleColors: Record<string, string> = {
-                                'CNH': 'bg-green-500/10 text-green-700 dark:text-green-400',
-                                'RG': 'bg-purple-500/10 text-purple-700 dark:text-purple-400',
-                                'Carteira': 'bg-amber-500/10 text-amber-700 dark:text-amber-400',
-                                'CRLV': 'bg-blue-500/10 text-blue-700 dark:text-blue-400',
-                                'Náutica': 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-400',
-                              };
-                              const moduleIcons: Record<string, any> = {
-                                'CNH': Car, 'RG': IdCard, 'Carteira': GraduationCap, 'CRLV': FileText, 'Náutica': Anchor
-                              };
                               const ModIcon = moduleIcons[svc.modulo] || FileText;
                               return (
                                 <div key={`${svc.modulo}-${svc.id}-${idx}`} className={`flex items-center justify-between px-4 py-2.5 text-sm ${svc.is_mine ? 'bg-primary/5' : ''}`}>
                                   <div className="flex items-center gap-3 min-w-0 flex-1">
                                     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold ${moduleColors[svc.modulo] || 'bg-muted text-muted-foreground'}`}>
-                                      <ModIcon className="h-3 w-3" />
-                                      {svc.modulo}
+                                      <ModIcon className="h-3 w-3" />{svc.modulo}
                                     </span>
                                     <span className="font-medium truncate">{svc.nome}</span>
                                     {svc.is_mine && <Badge variant="default" className="text-[9px] px-1.5 py-0">Eu</Badge>}
@@ -794,47 +715,11 @@ export default function Dashboard() {
                   })}
                 </div>
               ) : (
-                <p className="text-center text-muted-foreground py-8 text-sm">
-                  Nenhum serviço encontrado para os filtros selecionados
-                </p>
+                <p className="text-center text-muted-foreground py-8 text-sm">Nenhum serviço encontrado</p>
               )}
             </CardContent>
           </Card>
         )}
-
-        {/* Notícias / Comunicados */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Megaphone className="h-5 w-5 text-primary" />
-              Comunicados
-            </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Fique por dentro das novidades do sistema
-            </p>
-          </CardHeader>
-          <CardContent>
-            {noticias.length > 0 ? (
-              <div className="space-y-4">
-                {noticias.slice(0, 5).map((noticia) => (
-                  <div key={noticia.id} className="border-l-4 border-primary pl-4 py-2">
-                    <h4 className="font-medium">{noticia.titulo}</h4>
-                    <p className="text-sm text-muted-foreground whitespace-pre-line">
-                      {noticia.informacao}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      📅 {new Date(noticia.data_post).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-center text-muted-foreground py-4 text-sm">
-                Nenhum comunicado disponível
-              </p>
-            )}
-          </CardContent>
-        </Card>
       </div>
     </DashboardLayout>
   );
