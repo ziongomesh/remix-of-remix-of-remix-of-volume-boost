@@ -172,7 +172,7 @@ export function LoginForm() {
       </div>
 
       {/* Title */}
-      <h1 className="text-2xl font-bold text-white text-center">Iniciar Sessão</h1>
+      <h1 className="text-xl font-semibold text-white text-center">Iniciar Sessão</h1>
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -183,7 +183,7 @@ export function LoginForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="h-12 bg-white/5 border-white/10 text-white placeholder:text-gray-500 rounded-lg focus:border-primary/50 focus:ring-primary/20"
+            className="h-11 bg-white/5 border-white/8 text-white placeholder:text-gray-600 rounded-lg focus:border-primary/50 focus:ring-primary/20 text-sm"
           />
         </div>
         <div>
@@ -193,7 +193,7 @@ export function LoginForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="h-12 bg-white/5 border-white/10 text-white placeholder:text-gray-500 rounded-lg focus:border-primary/50 focus:ring-primary/20"
+            className="h-11 bg-white/5 border-white/8 text-white placeholder:text-gray-600 rounded-lg focus:border-primary/50 focus:ring-primary/20 text-sm"
           />
         </div>
 
@@ -209,7 +209,7 @@ export function LoginForm() {
           <Button
             type="submit"
             disabled={loading || !email || !password || (TURNSTILE_ENABLED && !turnstileToken)}
-            className="h-14 w-14 rounded-xl border border-white/10 text-white shadow-lg transition-all disabled:bg-white/5 disabled:opacity-30 bg-primary/80 hover:bg-primary"
+            className="h-12 w-12 rounded-xl border border-white/8 text-white shadow-lg transition-all disabled:bg-white/5 disabled:opacity-30 bg-primary/80 hover:bg-primary"
             size="icon"
           >
             {loading ? (
