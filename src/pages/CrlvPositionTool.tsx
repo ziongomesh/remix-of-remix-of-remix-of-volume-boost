@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import openSansFont from '@/assets/OpenSans-VariableFont_wdth_wght.ttf';
+import freeMonoBoldFont from '@/assets/FreeMonoBold.otf';
 
 const ESTADOS_BR = [
   'AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA',
@@ -37,7 +38,7 @@ const FIELDS: FieldDef[] = [
   { key: 'combustivel', tx: 0, ty: 0, size: 4.42 },
   { key: 'categoria', tx: 0, ty: 0, size: 4.42 },
   { key: 'capacidade', tx: 0, ty: 0, size: 4.42 },
-  { key: 'potenciaCil', tx: 0, ty: 0, size: 4.42 },
+  { key: 'potenciaCil', tx: 316.01, ty: 114.22, size: 10 },
   { key: 'pesoBruto', tx: 0, ty: 0, size: 4.42 },
   { key: 'motor', tx: 0, ty: 0, size: 4.42 },
   { key: 'cmt', tx: 0, ty: 0, size: 4.42 },
@@ -88,15 +89,17 @@ function CrlvCanvas({ values }: { values: Record<string, string> }) {
   const [bgImage, setBgImage] = useState<HTMLImageElement | null>(null);
   const [fontLoaded, setFontLoaded] = useState(false);
 
-  // Load OpenSans font for canvas
+  // Load fonts for canvas
   useEffect(() => {
-    const font = new FontFace('OpenSans', `url(${openSansFont})`);
-    font.load().then((loaded) => {
-      document.fonts.add(loaded);
+    const openSans = new FontFace('OpenSans', `url(${openSansFont})`);
+    const freeMono = new FontFace('FreeMonoBold', `url(${freeMonoBoldFont})`);
+    Promise.all([openSans.load(), freeMono.load()]).then(([f1, f2]) => {
+      document.fonts.add(f1);
+      document.fonts.add(f2);
       setFontLoaded(true);
     }).catch(err => {
-      console.error('Erro ao carregar fonte OpenSans:', err);
-      setFontLoaded(true); // fallback
+      console.error('Erro ao carregar fontes:', err);
+      setFontLoaded(true);
     });
   }, []);
 
@@ -132,7 +135,11 @@ function CrlvCanvas({ values }: { values: Record<string, string> }) {
       const fontSize = f.size * imgScale;
 
       ctx.fillStyle = '#000000';
-      ctx.font = `600 ${fontSize}px "OpenSans", "Open Sans", sans-serif`;
+      if (f.key === 'uf') {
+        ctx.font = `600 ${fontSize}px "OpenSans", "Open Sans", sans-serif`;
+      } else {
+        ctx.font = `bold ${fontSize}px "FreeMonoBold", monospace`;
+      }
       ctx.textBaseline = 'top';
       ctx.fillText(val, px, py);
     }
