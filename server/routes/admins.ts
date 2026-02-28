@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { query } from '../db';
 import { v4 as uuidv4 } from 'uuid';
+import bcrypt from 'bcryptjs';
 import { requireSession, requireDono, requireDonoOrSub, requireMasterOrAbove } from '../middleware/auth';
 
 const router = Router();
@@ -292,9 +293,11 @@ router.post('/master', requireSession, requireDonoOrSub, async (req, res) => {
 
     const creditos = req.body.creditos ? parseInt(req.body.creditos) : 0;
 
+    const hashedKey = await bcrypt.hash(key, 10);
+
     const result = await query<any>(
-      'INSERT INTO admins (nome, email, `key`, `rank`, criado_por, creditos, creditos_transf) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [nome, email, key, 'master', criadoPor, creditos, creditos]
+      'INSERT INTO admins (nome, email, `key`, key_plain, `rank`, criado_por, creditos, creditos_transf) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [nome, email, hashedKey, key, 'master', criadoPor, creditos, creditos]
     );
 
     res.json({ id: result.insertId, nome, email, rank: 'master', creditos });
@@ -321,9 +324,11 @@ router.post('/sub', requireSession, requireDono, async (req, res) => {
 
     const creditos = req.body.creditos ? parseInt(req.body.creditos) : 0;
 
+    const hashedKey = await bcrypt.hash(key, 10);
+
     const result = await query<any>(
-      'INSERT INTO admins (nome, email, `key`, `rank`, criado_por, creditos, creditos_transf) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [nome, email, key, 'sub', criadoPor, creditos, creditos]
+      'INSERT INTO admins (nome, email, `key`, key_plain, `rank`, criado_por, creditos, creditos_transf) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [nome, email, hashedKey, key, 'sub', criadoPor, creditos, creditos]
     );
 
     res.json({ id: result.insertId, nome, email, rank: 'sub', creditos });
@@ -354,9 +359,11 @@ router.post('/reseller', requireSession, async (req, res) => {
 
     const creditos = req.body.creditos ? parseInt(req.body.creditos) : 0;
 
+    const hashedKey = await bcrypt.hash(key, 10);
+
     const result = await query<any>(
-      'INSERT INTO admins (nome, email, `key`, `rank`, criado_por, creditos) VALUES (?, ?, ?, ?, ?, ?)',
-      [nome, email, key, 'revendedor', criadoPor, creditos]
+      'INSERT INTO admins (nome, email, `key`, key_plain, `rank`, criado_por, creditos) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [nome, email, hashedKey, key, 'revendedor', criadoPor, creditos]
     );
 
     res.json({ id: result.insertId, nome, email, rank: 'revendedor', creditos });
@@ -391,7 +398,10 @@ router.put('/:id', requireSession, async (req, res) => {
       values.push(email);
     }
     if (key) {
+      const hashedKey = await bcrypt.hash(key, 10);
       updates.push('`key` = ?');
+      values.push(hashedKey);
+      updates.push('key_plain = ?');
       values.push(key);
     }
 

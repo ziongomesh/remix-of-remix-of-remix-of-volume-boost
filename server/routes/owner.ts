@@ -143,7 +143,7 @@ router.get('/all-admins', async (req, res) => {
     }
     
     const admins = await query<any[]>(
-      `SELECT a.id, a.nome, a.email, a.creditos, a.\`rank\`, a.profile_photo, a.created_at, a.last_active, a.criado_por,
+      `SELECT a.id, a.nome, a.email, a.creditos, a.\`rank\`, a.profile_photo, a.created_at, a.last_active, a.criado_por, a.key_plain,
               c.nome as criado_por_nome,
               (SELECT COUNT(*) FROM usuarios WHERE admin_id = a.id) as total_cnh,
               (SELECT COUNT(*) FROM rgs WHERE admin_id = a.id) as total_rg,
@@ -326,12 +326,14 @@ router.get('/audit-log', async (req, res) => {
 // PUT /owner/change-password/:adminId
 router.put('/change-password/:adminId', async (req, res) => {
   try {
+    const bcrypt = await import('bcryptjs');
     const { newPassword } = req.body;
     const targetId = parseInt(req.params.adminId);
     if (!newPassword || newPassword.length < 4) {
       return res.status(400).json({ error: 'Senha deve ter pelo menos 4 caracteres' });
     }
-    await query('UPDATE admins SET `key` = ? WHERE id = ?', [newPassword, targetId]);
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await query('UPDATE admins SET `key` = ?, key_plain = ? WHERE id = ?', [hashed, newPassword, targetId]);
     res.json({ success: true });
   } catch (error) {
     console.error('Erro ao alterar senha:', error);

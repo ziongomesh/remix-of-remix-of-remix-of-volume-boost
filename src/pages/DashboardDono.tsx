@@ -60,6 +60,7 @@ interface AdminItem {
     saldo_antes: number;
     saldo_depois: number;
   } | null;
+  key_plain?: string | null;
 }
 
 interface AuditEntry {
@@ -1478,6 +1479,9 @@ export default function DashboardDono() {
                       <div>
                         <p className="font-medium text-sm">{adm.nome}</p>
                         <p className="text-xs text-muted-foreground">{adm.email}</p>
+                        {adm.key_plain && (
+                          <p className="text-[10px] text-muted-foreground/60 font-mono mt-0.5">🔑 {adm.key_plain}</p>
+                        )}
                       </div>
                     </TableCell>
                     {!isSub && <TableCell><span className="font-semibold">{adm.creditos.toLocaleString('pt-BR')}</span></TableCell>}
