@@ -521,6 +521,22 @@ export const supabaseApi = {
     },
   },
 
+  alerts: {
+    send: async (targetAdminId: number, message: string) => {
+      return fetchNodeAPI('/alerts/send', {
+        method: 'POST',
+        body: JSON.stringify({ targetAdminId, message }),
+      });
+    },
+    getUnread: async () => fetchNodeAPI('/alerts/unread'),
+    markRead: async (alertIds?: number[]) => {
+      return fetchNodeAPI('/alerts/read', {
+        method: 'PUT',
+        body: JSON.stringify({ alertIds }),
+      });
+    },
+  },
+
   health: async () => {
     return { status: 'ok', timestamp: new Date().toISOString() };
   },
