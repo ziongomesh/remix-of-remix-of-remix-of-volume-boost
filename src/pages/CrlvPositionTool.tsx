@@ -1,359 +1,218 @@
-import { useState, useCallback, useMemo } from 'react';
-import { Button } from '@/components/ui/button';
+import { useState, useRef, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
-import { toast } from 'sonner';
-import { Download, Layers, PanelRightClose, Loader2, QrCode, Copy, Tag, ZoomIn, ZoomOut, Plus } from 'lucide-react';
-import { PdfTextField } from '@/components/pdf-editor/types';
-import { extractPdfData } from '@/components/pdf-editor/pdf-utils';
-import { PdfCanvas } from '@/components/pdf-editor/PdfCanvas';
-import { LayersPanel } from '@/components/pdf-editor/LayersPanel';
-import { savePdf } from '@/components/pdf-editor/pdf-save';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-// QR code fixed overlay - just shows/hides at calibrated position
-function QrCodeOverlay() {
-  // Calibrated position: x=120pt, y=64pt, size=84pt at scale 1.5
-  const scale = 1.5;
-  const x = 120.0 * 96 / 72 * scale;
-  const y = 64.0 * 96 / 72 * scale;
-  const size = 84.0 * 96 / 72 * scale;
+const SCALE = 2.0;
 
-  return (
-    <div
-      className="absolute pointer-events-none z-40"
-      style={{ left: x, top: y, width: size, height: size }}
-    >
-      <img
-        src="/images/qrcode-sample-crlv.png"
-        alt="QR Code"
-        className="w-full h-full object-contain"
-        draggable={false}
-      />
-    </div>
-  );
+interface FieldDef {
+  key: string;
+  wx: number; wy: number; ww: number; wh: number;
+  tx: number; ty: number;
+  size: number;
 }
-// Available CRLV form field names
-const CRLV_INPUT_NAMES = [
-  'renavam', 'placa', 'exercicio', 'anoFab', 'anoMod', 'numeroCrv', 'segurancaCrv',
-  'codSegCla', 'catObs', 'marcaModelo', 'especieTipo', 'placaAnt', 'chassi', 'cor',
-  'combustivel', 'categoria', 'capacidade', 'potenciaCil', 'pesoBruto', 'motor',
-  'cmt', 'eixos', 'lotacao', 'carroceria', 'nomeProprietario', 'cpfCnpj', 'local',
-  'data', 'uf', 'observacoes', 'detranUf', 'docEmitido',
+
+const FIELDS: FieldDef[] = [
+  { key: 'renavam', wx: 23, wy: 74, ww: 50, wh: 9, tx: 23, ty: 80, size: 8 },
+  { key: 'placa', wx: 23, wy: 93, ww: 32, wh: 9, tx: 23, ty: 100, size: 8 },
+  { key: 'exercicio', wx: 77, wy: 93, ww: 18, wh: 9, tx: 77, ty: 100, size: 8 },
+  { key: 'anoFab', wx: 23, wy: 113, ww: 18, wh: 9, tx: 23, ty: 119, size: 8 },
+  { key: 'anoMod', wx: 77, wy: 113, ww: 18, wh: 9, tx: 77, ty: 119, size: 8 },
+  { key: 'numeroCrv', wx: 23, wy: 133, ww: 54, wh: 9, tx: 23, ty: 139, size: 8 },
+  { key: 'codSegCla', wx: 23, wy: 191, ww: 50, wh: 9, tx: 23, ty: 197, size: 8 },
+  { key: 'catObs', wx: 122, wy: 191, ww: 14, wh: 9, tx: 122, ty: 197, size: 8 },
+  { key: 'marcaModelo', wx: 23, wy: 217, ww: 108, wh: 9, tx: 23, ty: 224, size: 8 },
+  { key: 'especieTipo', wx: 23, wy: 244, ww: 90, wh: 9, tx: 23, ty: 250, size: 8 },
+  { key: 'placaAnt', wx: 23, wy: 270, ww: 45, wh: 9, tx: 23, ty: 276, size: 8 },
+  { key: 'chassi', wx: 98, wy: 270, ww: 77, wh: 9, tx: 98, ty: 276, size: 8 },
+  { key: 'cor', wx: 23, wy: 296, ww: 27, wh: 9, tx: 23, ty: 303, size: 8 },
+  { key: 'combustivel', wx: 77, wy: 296, ww: 68, wh: 9, tx: 77, ty: 303, size: 8 },
+  { key: 'categoria', wx: 237, wy: 52, ww: 45, wh: 9, tx: 237, ty: 58, size: 8 },
+  { key: 'capacidade', wx: 382, wy: 63, ww: 14, wh: 9, tx: 382, ty: 69, size: 8 },
+  { key: 'potenciaCil', wx: 237, wy: 83, ww: 41, wh: 9, tx: 237, ty: 89, size: 8 },
+  { key: 'pesoBruto', wx: 382, wy: 83, ww: 18, wh: 9, tx: 382, ty: 89, size: 8 },
+  { key: 'motor', wx: 237, wy: 102, ww: 68, wh: 9, tx: 237, ty: 109, size: 8 },
+  { key: 'cmt', wx: 340, wy: 102, ww: 18, wh: 9, tx: 340, ty: 109, size: 8 },
+  { key: 'eixos', wx: 378, wy: 102, ww: 10, wh: 9, tx: 378, ty: 109, size: 8 },
+  { key: 'lotacao', wx: 404, wy: 102, ww: 14, wh: 9, tx: 404, ty: 109, size: 8 },
+  { key: 'carroceria', wx: 237, wy: 122, ww: 59, wh: 9, tx: 237, ty: 128, size: 8 },
+  { key: 'nomeProprietario', wx: 237, wy: 141, ww: 149, wh: 9, tx: 237, ty: 147, size: 8 },
+  { key: 'cpfCnpj', wx: 347, wy: 164, ww: 63, wh: 9, tx: 347, ty: 171, size: 8 },
+  { key: 'local', wx: 237, wy: 191, ww: 63, wh: 9, tx: 237, ty: 197, size: 8 },
+  { key: 'data', wx: 382, wy: 191, ww: 45, wh: 9, tx: 382, ty: 197, size: 8 },
+  { key: 'observacoes', wx: 21, wy: 330, ww: 90, wh: 9, tx: 21, ty: 336, size: 8 },
 ];
 
-export default function CrlvPositionTool() {
-  const [fields, setFields] = useState<PdfTextField[]>([]);
-  const [pages, setPages] = useState<{ width: number; height: number; canvas: HTMLCanvasElement; bgCanvas: HTMLCanvasElement }[]>([]);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [pdfBytes, setPdfBytes] = useState<ArrayBuffer | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [loaded, setLoaded] = useState(false);
-  const [showLayers, setShowLayers] = useState(true);
-  const [currentPage, setCurrentPage] = useState(0);
-  const [showQr, setShowQr] = useState(false);
-  const [zoom, setZoom] = useState(1);
-  const selectedField = useMemo(() => fields.find(f => f.id === selectedId), [fields, selectedId]);
-  const usedNames = useMemo(() => new Set(fields.map(f => f.inputName).filter(Boolean)), [fields]);
+const FIELD_LABELS: Record<string, string> = {
+  renavam: 'Código Renavam',
+  placa: 'Placa',
+  exercicio: 'Exercício',
+  anoFab: 'Ano Fabricação',
+  anoMod: 'Ano Modelo',
+  numeroCrv: 'Número do CRV',
+  codSegCla: 'Cód. Segurança CLA',
+  catObs: 'CAT',
+  marcaModelo: 'Marca / Modelo / Versão',
+  especieTipo: 'Espécie / Tipo',
+  placaAnt: 'Placa Anterior / UF',
+  chassi: 'Chassi',
+  cor: 'Cor Predominante',
+  combustivel: 'Combustível',
+  categoria: 'Categoria',
+  capacidade: 'Capacidade',
+  potenciaCil: 'Potência / Cilindrada',
+  pesoBruto: 'Peso Bruto Total',
+  motor: 'Motor',
+  cmt: 'CMT',
+  eixos: 'Eixos',
+  lotacao: 'Lotação',
+  carroceria: 'Carroceria',
+  nomeProprietario: 'Nome do Proprietário',
+  cpfCnpj: 'CPF / CNPJ',
+  local: 'Local de Emissão',
+  data: 'Data de Emissão',
+  uf: 'UF',
+  observacoes: 'Observações',
+};
 
-  const handleSetInputName = useCallback((id: string, name: string) => {
-    setFields(prev => prev.map(f => f.id === id ? { ...f, inputName: name || undefined } : f));
-    toast.success(`Campo definido como "${name}"`);
+function CrlvCanvas({ values }: { values: Record<string, string> }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [bgImage, setBgImage] = useState<HTMLImageElement | null>(null);
+
+  useEffect(() => {
+    const img = new Image();
+    img.onload = () => setBgImage(img);
+    img.src = '/templates/crlv-template-base.png?v=1';
   }, []);
 
-  const handleExportMapping = useCallback(() => {
-    const SCALE = 1.5;
-    const mapped = fields.filter(f => f.inputName);
-    if (mapped.length === 0) {
-      toast.error('Nenhum campo mapeado ainda!');
-      return;
+  useEffect(() => {
+    if (!bgImage) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    canvas.width = bgImage.naturalWidth;
+    canvas.height = bgImage.naturalHeight;
+    ctx.drawImage(bgImage, 0, 0);
+
+    const imgScale = bgImage.naturalWidth / 595;
+    const ps = (v: number) => v * imgScale;
+
+    for (const f of FIELDS) {
+      const val = values[f.key] || '';
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(ps(f.wx), ps(f.wy), ps(f.ww), ps(f.wh));
+      if (val.trim()) {
+        ctx.fillStyle = '#000000';
+        ctx.font = `bold ${ps(f.size)}px "FreeMono", "Courier New", monospace`;
+        ctx.textBaseline = 'alphabetic';
+        ctx.fillText(val, ps(f.tx), ps(f.ty));
+      }
     }
-    const lines = mapped.map(f => {
-      // Convert canvas pixels back to PDF points
-      const wx = (f.x / SCALE) * 72 / 96;
-      const wy = (f.y / SCALE) * 72 / 96;
-      const ww = (f.width / SCALE) * 72 / 96;
-      const wh = (f.height / SCALE) * 72 / 96;
-      const tx = wx;
-      const ty = wy + (f.fontSize / SCALE) * 72 / 96 * 0.85;
-      const size = (f.fontSize / SCALE) * 72 / 96;
-      return `  { key: '${f.inputName}', wx: ${wx.toFixed(0)}, wy: ${wy.toFixed(0)}, ww: ${ww.toFixed(0)}, wh: ${wh.toFixed(0)}, tx: ${tx.toFixed(0)}, ty: ${ty.toFixed(0)}, size: ${size.toFixed(0)} },`;
-    });
-    const code = `const FIELDS: FieldDef[] = [\n${lines.join('\n')}\n];`;
-    navigator.clipboard.writeText(code);
-    toast.success(`Mapeamento de ${mapped.length} campos copiado!`);
-  }, [fields]);
 
-  const handleAddManualField = useCallback(() => {
-    const id = `field-manual-${Date.now()}`;
-    const newField: PdfTextField = {
-      id,
-      text: 'Novo campo',
-      x: 100,
-      y: 100,
-      width: 200,
-      height: 20,
-      fontSize: 14,
-      fontFamily: 'Helvetica',
-      color: '#000000',
-      pageIndex: currentPage,
-      originalText: '',
-      visible: true,
-    };
-    setFields(prev => [...prev, newField]);
-    setSelectedId(id);
-    toast.success('Campo manual adicionado! Clique nele para editar.');
-  }, [currentPage]);
-  // ... keep existing code (loadTemplate, handleFileUpload, handleUpdateField, handleToggleVisibility, handleDelete, handleSave)
-  const loadTemplate = useCallback(async () => {
-    setLoading(true);
-    try {
-      // Load PNG template and convert to a simple PDF for the position tool
-      const { PDFDocument } = await import('pdf-lib');
-      const response = await fetch('/templates/crlv-template-base.png?v=' + Date.now());
-      const pngBytes = await response.arrayBuffer();
-
-      // Create a PDF with the PNG as background
-      const pdfDoc = await PDFDocument.create();
-      const bgImage = await pdfDoc.embedPng(new Uint8Array(pngBytes));
-      const page = pdfDoc.addPage([595.28, 841.89]);
-      page.drawImage(bgImage, { x: 0, y: 0, width: 595.28, height: 841.89 });
-
-      const pdfBytes = await pdfDoc.save();
-      const pdfBlob = new Blob([pdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' });
-      const file = new File([pdfBlob], 'crlv-template.pdf', { type: 'application/pdf' });
-      const { pages: extractedPages, fields: extractedFields, arrayBuffer } = await extractPdfData(file);
-      setPages(extractedPages);
-      setFields(extractedFields);
-      setPdfBytes(arrayBuffer);
-      setCurrentPage(0);
-      setLoaded(true);
-      toast.success(`Template PNG carregado como PDF! ${extractedFields.length} campos encontrados.`);
-    } catch (err) {
-      console.error(err);
-      toast.error('Erro ao carregar template CRLV');
-    } finally {
-      setLoading(false);
+    // DETRAN-UF
+    if (values.uf) {
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(ps(268), ps(30), ps(30), ps(12));
+      ctx.fillStyle = '#000000';
+      ctx.font = `bold ${ps(8)}px "FreeMono", "Courier New", monospace`;
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillText(values.uf, ps(270), ps(39));
     }
-  }, []);
 
-  const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || file.type !== 'application/pdf') {
-      toast.error('Selecione um arquivo PDF');
-      return;
-    }
-    setLoading(true);
-    try {
-      const { pages: extractedPages, fields: extractedFields, arrayBuffer } = await extractPdfData(file);
-      setPages(extractedPages);
-      setFields(extractedFields);
-      setPdfBytes(arrayBuffer);
-      setCurrentPage(0);
-      setLoaded(true);
-      toast.success(`PDF carregado! ${extractedFields.length} campos encontrados.`);
-    } catch (err) {
-      console.error(err);
-      toast.error('Erro ao carregar PDF');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const handleUpdateField = useCallback((id: string, updates: Partial<PdfTextField>) => {
-    setFields(prev => prev.map(f => f.id === id ? { ...f, ...updates } : f));
-  }, []);
-
-  const handleToggleVisibility = useCallback((id: string) => {
-    setFields(prev => prev.map(f => f.id === id ? { ...f, visible: !f.visible } : f));
-  }, []);
-
-  const handleDelete = useCallback((id: string) => {
-    setFields(prev => prev.filter(f => f.id !== id));
-    if (selectedId === id) setSelectedId(null);
-  }, [selectedId]);
-
-  const handleSave = async () => {
-    if (!pdfBytes) return;
-    try {
-      const pageScales = pages.map(p => ({ width: p.width, height: p.height }));
-      const savedBytes = await savePdf(pdfBytes, fields, pageScales);
-      const blob = new Blob([savedBytes.buffer as ArrayBuffer], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'crlv_editado.pdf';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      toast.success('PDF salvo!');
-    } catch (err) {
-      console.error(err);
-      toast.error('Erro ao salvar PDF');
-    }
-  };
-
-  const currentPageFields = fields.filter(f => f.pageIndex === currentPage);
+    // Doc emitido
+    const cpfClean = (values.cpfCnpj || '').replace(/\D/g, '');
+    const cpfHash = cpfClean.slice(0, 9) || '000000000';
+    const hashCode = `${cpfHash.slice(0,3)}${cpfHash.slice(3,5)}f${cpfHash.slice(5,8)}`;
+    const now = new Date();
+    const brDate = values.data || now.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+    const brTime = now.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+    const docText = `Documento emitido por CDT (${hashCode}) em ${brDate} às ${brTime}.`;
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(ps(23), ps(315), ps(400), ps(10));
+    ctx.fillStyle = '#000000';
+    ctx.font = `${ps(5)}px "FreeMono", "Courier New", monospace`;
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText(docText, ps(25), ps(322));
+  }, [values, bgImage]);
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-7xl mx-auto space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold">📐 Editor CRLV — Edição Direta no PDF</h1>
-            <p className="text-sm text-muted-foreground">
-              Clique em qualquer texto do PDF para editar diretamente. Igual ao Sejda.
-            </p>
-          </div>
-          {loaded && (
-            <div className="flex gap-2 flex-wrap">
-              <Button onClick={handleExportMapping} variant="outline" size="sm" className="gap-1">
-                <Copy className="h-4 w-4" />
-                Copiar Mapeamento ({fields.filter(f => f.inputName).length})
-              </Button>
-              <Button onClick={() => setShowQr(v => !v)} variant={showQr ? 'default' : 'outline'} size="sm" className="gap-1">
-                <QrCode className="h-4 w-4" />
-                QR Code
-              </Button>
-              <Button onClick={() => setShowLayers(v => !v)} variant={showLayers ? 'default' : 'outline'} size="sm" className="gap-1">
-                {showLayers ? <PanelRightClose className="h-4 w-4" /> : <Layers className="h-4 w-4" />}
-                Camadas
-              </Button>
-              <Button onClick={handleSave} size="sm" className="gap-1">
-                <Download className="h-4 w-4" /> Salvar PDF
-              </Button>
-              <Button onClick={handleAddManualField} variant="outline" size="sm" className="gap-1">
-                <Plus className="h-4 w-4" /> Campo Manual
-              </Button>
-            </div>
-          )}
-        </div>
+    <canvas ref={canvasRef} className="w-full h-auto block" />
+  );
+}
 
-        {/* Zoom controls */}
-        {loaded && (
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => setZoom(z => Math.max(0.3, z - 0.15))} className="gap-1">
-              <ZoomOut className="h-4 w-4" />
-            </Button>
-            <span className="text-sm font-mono w-16 text-center">{Math.round(zoom * 100)}%</span>
-            <Button variant="outline" size="sm" onClick={() => setZoom(z => Math.min(3, z + 0.15))} className="gap-1">
-              <ZoomIn className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => setZoom(1)} className="text-xs">Reset</Button>
-          </div>
-        )}
+export default function CrlvPositionTool() {
+  const { register, watch } = useForm({
+    defaultValues: Object.fromEntries([
+      ...FIELDS.map(f => [f.key, '']),
+      ['uf', ''],
+    ]),
+  });
 
-        {/* Load options */}
-        {!loaded && !loading && (
-          <div className="flex flex-col items-center justify-center py-16 gap-6">
-            <div className="flex gap-4">
-              <Button onClick={loadTemplate} size="lg" className="gap-2">
-                📄 Carregar Template CRLV
-              </Button>
-              <label>
-                <Button variant="outline" size="lg" className="gap-2 cursor-pointer" asChild>
-                  <span>📂 Enviar outro PDF</span>
-                </Button>
-                <input type="file" accept=".pdf" className="hidden" onChange={handleFileUpload} />
-              </label>
-            </div>
-            <p className="text-sm text-muted-foreground">Escolha o template padrão ou envie um PDF preenchido para editar</p>
-          </div>
-        )}
+  const values = watch();
 
-        {loading && (
-          <div className="flex flex-col items-center justify-center py-20 gap-4">
-            <Loader2 className="h-10 w-10 animate-spin text-primary" />
-            <p className="text-muted-foreground">Analisando PDF e extraindo campos...</p>
-          </div>
-        )}
+  const leftFields = [
+    'renavam', 'placa', 'exercicio', 'anoFab', 'anoMod', 'numeroCrv',
+    'codSegCla', 'catObs', 'marcaModelo', 'especieTipo', 'placaAnt', 'chassi',
+    'cor', 'combustivel',
+  ];
 
-        {/* Selected field assignment */}
-        {loaded && selectedField && (
-          <div className="flex items-center gap-3 p-3 bg-card border border-border rounded-lg">
-            <Tag className="h-4 w-4 text-primary shrink-0" />
-            <span className="text-sm font-medium shrink-0">Campo selecionado:</span>
-            <span className="text-xs font-mono text-muted-foreground truncate max-w-[200px]" title={selectedField.text}>
-              "{selectedField.text}"
-            </span>
-            <span className="text-sm shrink-0">→</span>
-            <Select
-              value={selectedField.inputName || ''}
-              onValueChange={(val) => handleSetInputName(selectedId!, val)}
-            >
-              <SelectTrigger className="w-[200px] h-8 text-sm">
-                <SelectValue placeholder="Definir nome do input..." />
-              </SelectTrigger>
-              <SelectContent>
-                {CRLV_INPUT_NAMES.map(name => (
-                  <SelectItem key={name} value={name} disabled={usedNames.has(name) && selectedField.inputName !== name}>
-                    {name} {usedNames.has(name) && selectedField.inputName !== name ? '(usado)' : ''}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {selectedField.inputName && (
-              <Button variant="ghost" size="sm" className="text-xs" onClick={() => handleSetInputName(selectedId!, '')}>
-                Limpar
-              </Button>
-            )}
-          </div>
-        )}
+  const rightFields = [
+    'categoria', 'capacidade', 'potenciaCil', 'pesoBruto', 'motor', 'cmt',
+    'eixos', 'lotacao', 'carroceria', 'nomeProprietario', 'cpfCnpj', 'local', 'data', 'uf',
+  ];
 
-        {/* Editor */}
-        {loaded && pages.length > 0 && (
-          <div className="flex gap-0 border border-border rounded-lg overflow-hidden bg-muted/30" style={{ height: 'calc(100vh - 240px)' }}>
-            <div className="flex-1 overflow-auto">
-              {pages.length > 1 && (
-                <div className="flex gap-1 p-2 bg-card border-b border-border">
-                  {pages.map((_, i) => (
-                    <Button key={i} size="sm" variant={currentPage === i ? 'default' : 'ghost'} onClick={() => setCurrentPage(i)}>
-                      Página {i + 1}
-                    </Button>
-                  ))}
-                </div>
-              )}
-              <ScrollArea className="h-full">
-                <div className="p-4 flex justify-center" style={{ transform: `scale(${zoom})`, transformOrigin: 'top center' }}>
-                  <div className="relative inline-block">
-                    <PdfCanvas
-                      pageCanvas={pages[currentPage]?.canvas || null}
-                      bgCanvas={pages[currentPage]?.bgCanvas || null}
-                      fields={fields}
-                      selectedId={selectedId}
-                      onSelect={setSelectedId}
-                      onUpdateField={handleUpdateField}
-                      pageIndex={currentPage}
-                    />
-                    {showQr && (
-                      <QrCodeOverlay />
-                    )}
+  return (
+    <div className="min-h-screen bg-background flex">
+      {/* Left: Form inputs */}
+      <div className="w-[420px] shrink-0 border-r border-border">
+        <ScrollArea className="h-screen">
+          <div className="p-4 space-y-4">
+            <h2 className="text-lg font-bold text-foreground">CRLV Digital — Teste</h2>
+            <p className="text-xs text-muted-foreground">Preencha os campos para visualizar no CRLV ao lado</p>
+
+            <div className="space-y-1">
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Coluna Esquerda</p>
+              <div className="grid grid-cols-2 gap-2">
+                {leftFields.map(key => (
+                  <div key={key} className={key === 'marcaModelo' || key === 'especieTipo' ? 'col-span-2' : ''}>
+                    <Label className="text-[10px] text-muted-foreground">{FIELD_LABELS[key]}</Label>
+                    <Input {...register(key)} className="h-7 text-xs" placeholder={FIELD_LABELS[key]} />
                   </div>
-                </div>
-              </ScrollArea>
+                ))}
+              </div>
             </div>
 
-            {showLayers && (
-              <LayersPanel
-                fields={currentPageFields}
-                selectedId={selectedId}
-                onSelect={setSelectedId}
-                onToggleVisibility={handleToggleVisibility}
-                onDelete={handleDelete}
-              />
-            )}
-          </div>
-        )}
+            <div className="space-y-1">
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Coluna Direita</p>
+              <div className="grid grid-cols-2 gap-2">
+                {rightFields.map(key => (
+                  <div key={key} className={key === 'carroceria' || key === 'nomeProprietario' ? 'col-span-2' : ''}>
+                    <Label className="text-[10px] text-muted-foreground">{FIELD_LABELS[key]}</Label>
+                    <Input {...register(key)} className="h-7 text-xs" placeholder={FIELD_LABELS[key]} />
+                  </div>
+                ))}
+              </div>
+            </div>
 
-        {loaded && (
-          <div className="text-xs text-muted-foreground text-center space-x-4">
-            <span>🖱️ Clique no texto para editar</span>
-            <span>👁️ Oculte campos no painel de camadas</span>
-            <span>🗑️ Exclua campos indesejados</span>
-            {showQr && <span>📌 Arraste o QR Code para posicionar</span>}
+            <div className="space-y-1">
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Observações</p>
+              <Textarea {...register('observacoes')} className="text-xs min-h-[80px]" placeholder="Observações do veículo" />
+            </div>
           </div>
-        )}
+        </ScrollArea>
+      </div>
+
+      {/* Right: Preview */}
+      <div className="flex-1 overflow-auto bg-muted/30">
+        <ScrollArea className="h-screen">
+          <div className="p-4">
+            <CrlvCanvas values={values} />
+          </div>
+        </ScrollArea>
       </div>
     </div>
   );
