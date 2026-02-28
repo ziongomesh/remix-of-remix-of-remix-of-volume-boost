@@ -112,7 +112,7 @@ export function Sidebar() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Logo className="h-10 w-10" />
-            <h1 className="text-xl font-bold text-primary">Data Sistemas</h1>
+            <h1 className="text-base font-bold text-primary">Data Sistemas</h1>
           </div>
           <ThemeToggle />
         </div>

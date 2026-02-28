@@ -488,7 +488,6 @@ export default function DashboardDono() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <p className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground">Data Sistemas</p>
             <h1 className="text-xl sm:text-2xl font-bold text-foreground">
               Dashboard
             </h1>
