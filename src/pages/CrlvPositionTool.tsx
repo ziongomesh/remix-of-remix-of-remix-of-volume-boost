@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Maximize2, X, FileText, Loader2 } from 'lucide-react';
+import { Maximize2, X, FileText, Loader2, Car, MapPin, User } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -7,6 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useAuth } from '@/hooks/useAuth';
 import { crlvService } from '@/lib/crlv-service';
 import { toast } from 'sonner';
@@ -420,63 +422,79 @@ export default function CrlvPositionTool() {
   const seguroFields = ['observacoes'] as const;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col lg:flex-row overflow-hidden">
-      {/* Form inputs - full on mobile, left sidebar on desktop */}
-      <div className="w-full lg:w-[420px] shrink-0 border-b lg:border-b-0 lg:border-r border-border lg:max-h-screen overflow-auto">
-        <ScrollArea className="h-auto lg:h-screen">
-          <div className="p-4 pb-20 lg:pb-4 space-y-6">
-            <div>
-              <h2 className="text-lg font-bold text-foreground">CRLV Digital</h2>
-              <p className="text-xs text-muted-foreground mt-1">Preencha os dados do veículo para gerar o CRLV</p>
-            </div>
+    <DashboardLayout>
+      <div className="p-4 md:p-6 max-w-[1600px] mx-auto">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <Car className="h-7 w-7 text-primary" />
+            CRLV Digital 2026
+          </h1>
+          <p className="text-muted-foreground text-sm mt-1">Preencha os dados do veículo — o preview é atualizado em tempo real.</p>
+        </div>
 
-            {/* UF Select */}
-            <div className="space-y-2 p-3 rounded-lg border border-border bg-card">
-              <p className="text-[11px] font-semibold text-foreground uppercase tracking-wider">Estado</p>
-              <div>
-                <Label className="text-[10px] text-muted-foreground">UF do CRLV</Label>
-                <Select value={values.uf} onValueChange={(val) => setValue('uf', val)}>
-                  <SelectTrigger className="h-8 text-xs">
-                    <SelectValue placeholder="Selecione o estado" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ESTADOS_BR.map(uf => (
-                      <SelectItem key={uf} value={uf}>{uf}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* ── FORMULÁRIO ── */}
+          <div className="w-full lg:w-1/2 space-y-4">
+
+            {/* Estado */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-primary" /> Estado
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div>
+                  <Label className="text-xs text-muted-foreground">UF do CRLV</Label>
+                  <Select value={values.uf} onValueChange={(val) => setValue('uf', val)}>
+                    <SelectTrigger className="h-9 text-sm">
+                      <SelectValue placeholder="Selecione o estado" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ESTADOS_BR.map(uf => (
+                        <SelectItem key={uf} value={uf}>{uf}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Documento Emitido */}
-            <div className="space-y-2 p-3 rounded-lg border border-border bg-card">
-              <p className="text-[11px] font-semibold text-foreground uppercase tracking-wider">Documento Emitido</p>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <div className="flex items-center justify-between">
-                    <Label className="text-[10px] text-muted-foreground">Data</Label>
-                    <Button type="button" variant="ghost" size="sm" className="h-4 px-1 text-[9px] text-primary"
-                      onClick={() => {
-                        const now = new Date();
-                        setValue('docData', now.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric' }));
-                      }}>Definir atual</Button>
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-primary" /> Documento Emitido
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs text-muted-foreground">Data</Label>
+                      <Button type="button" variant="ghost" size="sm" className="h-4 px-1 text-[9px] text-primary"
+                        onClick={() => {
+                          const now = new Date();
+                          setValue('docData', now.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric' }));
+                        }}>Definir atual</Button>
+                    </div>
+                    <Input value={values.docData || ''} onChange={(e) => setValue('docData', formatDate(e.target.value))} className="h-8 text-sm uppercase" placeholder="dd/mm/aaaa" maxLength={10} />
                   </div>
-                  <Input value={values.docData || ''} onChange={(e) => setValue('docData', formatDate(e.target.value))} className="h-7 text-xs uppercase" placeholder="dd/mm/aaaa" maxLength={10} />
-                </div>
-                <div>
-                  <div className="flex items-center justify-between">
-                    <Label className="text-[10px] text-muted-foreground">Hora</Label>
-                    <Button type="button" variant="ghost" size="sm" className="h-4 px-1 text-[9px] text-primary"
-                      onClick={() => {
-                        const now = new Date();
-                        setValue('docHora', now.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', second: '2-digit' }));
-                      }}>Definir atual</Button>
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs text-muted-foreground">Hora</Label>
+                      <Button type="button" variant="ghost" size="sm" className="h-4 px-1 text-[9px] text-primary"
+                        onClick={() => {
+                          const now = new Date();
+                          setValue('docHora', now.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+                        }}>Definir atual</Button>
+                    </div>
+                    <Input value={values.docHora || ''} onChange={(e) => setValue('docHora', formatTime(e.target.value))} className="h-8 text-sm uppercase" placeholder="hh:mm:ss" maxLength={8} />
                   </div>
-                  <Input value={values.docHora || ''} onChange={(e) => setValue('docHora', formatTime(e.target.value))} className="h-7 text-xs uppercase" placeholder="hh:mm:ss" maxLength={8} />
                 </div>
-                <div className="col-span-2">
+                <div className="space-y-1">
                   <div className="flex items-center justify-between">
-                    <Label className="text-[10px] text-muted-foreground">Código Hash</Label>
+                    <Label className="text-xs text-muted-foreground">Código Hash</Label>
                     <Button type="button" variant="ghost" size="sm" className="h-4 px-1 text-[9px] text-primary"
                       onClick={() => {
                         const chars = '0123456789ABCDEF';
@@ -485,138 +503,154 @@ export default function CrlvPositionTool() {
                         setValue('docHash', hash + 'D00');
                       }}>Gerar</Button>
                   </div>
-                  <Input {...register('docHash')} className="h-7 text-xs uppercase" placeholder="364525021238D00" />
+                  <Input {...register('docHash')} className="h-8 text-sm uppercase font-mono" placeholder="364525021238D00" />
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
-            {/* QR Code Upload */}
-            <div className="space-y-2 p-3 rounded-lg border border-border bg-card">
-              <p className="text-[11px] font-semibold text-foreground uppercase tracking-wider">QR Code</p>
-              {qrImage && (
-                <img src={qrImage} alt="QR Preview" className="w-20 h-20 object-contain border border-border rounded" />
-              )}
-              <div className="flex items-center gap-2">
-                <Button type="button" variant="outline" size="sm" className="h-7 text-xs"
-                  onClick={() => document.getElementById('qr-upload-input')?.click()}>
-                  {qrImage ? 'Trocar QR Code' : 'Enviar QR Code'}
-                </Button>
+            {/* QR Code */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-primary" /> QR Code
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
                 {qrImage && (
-                  <Button type="button" variant="ghost" size="sm" className="h-7 text-[10px] text-destructive" onClick={() => setQrImage(null)}>
-                    Remover
-                  </Button>
+                  <img src={qrImage} alt="QR Preview" className="w-20 h-20 object-contain border border-border rounded" />
                 )}
-              </div>
-              <input id="qr-upload-input" type="file" accept="image/*" className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-                  const reader = new FileReader();
-                  reader.onload = () => setQrImage(reader.result as string);
-                  reader.readAsDataURL(file);
-                }}
-              />
-            </div>
+                <div className="flex items-center gap-2">
+                  <Button type="button" variant="outline" size="sm" className="text-xs"
+                    onClick={() => document.getElementById('qr-upload-input')?.click()}>
+                    {qrImage ? 'Trocar QR Code' : 'Enviar QR Code'}
+                  </Button>
+                  {qrImage && (
+                    <Button type="button" variant="ghost" size="sm" className="text-xs text-destructive" onClick={() => setQrImage(null)}>
+                      Remover
+                    </Button>
+                  )}
+                </div>
+                <input id="qr-upload-input" type="file" accept="image/*" className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = () => setQrImage(reader.result as string);
+                    reader.readAsDataURL(file);
+                  }}
+                />
+              </CardContent>
+            </Card>
 
             {/* Dados de Emissão */}
-            <div className="space-y-2 p-3 rounded-lg border border-border bg-card">
-              <p className="text-[11px] font-semibold text-foreground uppercase tracking-wider">Dados de Emissão do CRLV</p>
-              <div className="grid grid-cols-2 gap-2">
-                {emissaoFields.map(key => (
-                  <div key={key} className={key === 'nomeProprietario' ? 'col-span-2' : ''}>
-                    <div className="flex items-center justify-between">
-                      <Label className="text-[10px] text-muted-foreground">{FIELD_LABELS[key]}</Label>
-                      {key === 'data' && (
-                        <Button type="button" variant="ghost" size="sm" className="h-4 px-1 text-[9px] text-primary"
-                          onClick={() => {
-                            const now = new Date();
-                            setValue('data', now.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric' }));
-                          }}>Definir atual</Button>
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <User className="h-4 w-4 text-primary" /> Dados de Emissão do CRLV
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  {emissaoFields.map(key => (
+                    <div key={key} className={key === 'nomeProprietario' ? 'col-span-2' : ''}>
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs text-muted-foreground">{FIELD_LABELS[key]}</Label>
+                        {key === 'data' && (
+                          <Button type="button" variant="ghost" size="sm" className="h-4 px-1 text-[9px] text-primary"
+                            onClick={() => {
+                              const now = new Date();
+                              setValue('data', now.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric' }));
+                            }}>Definir atual</Button>
+                        )}
+                      </div>
+                      {key === 'data' ? (
+                        <Input value={values.data || ''} onChange={(e) => setValue('data', formatDate(e.target.value))} className="h-8 text-sm uppercase" placeholder="dd/mm/aaaa" maxLength={10} />
+                      ) : key === 'cpfCnpj' ? (
+                        <Input value={values.cpfCnpj || ''} onChange={(e) => setValue('cpfCnpj', formatCpfCnpj(e.target.value))} className="h-8 text-sm uppercase" placeholder="000.000.000-00" maxLength={18} />
+                      ) : (
+                        <Input {...register(key)} className="h-8 text-sm uppercase" placeholder={FIELD_LABELS[key]} />
                       )}
                     </div>
-                    {key === 'data' ? (
-                      <Input value={values.data || ''} onChange={(e) => setValue('data', formatDate(e.target.value))} className="h-7 text-xs uppercase" placeholder="dd/mm/aaaa" maxLength={10} />
-                    ) : key === 'cpfCnpj' ? (
-                      <Input value={values.cpfCnpj || ''} onChange={(e) => setValue('cpfCnpj', formatCpfCnpj(e.target.value))} className="h-7 text-xs uppercase" placeholder="000.000.000-00" maxLength={18} />
-                    ) : (
-                      <Input {...register(key)} className="h-7 text-xs uppercase" placeholder={FIELD_LABELS[key]} />
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Dados do Veículo */}
-            <div className="space-y-2 p-3 rounded-lg border border-border bg-card">
-              <p className="text-[11px] font-semibold text-foreground uppercase tracking-wider">Dados do Veículo</p>
-              <div className="grid grid-cols-2 gap-2">
-                {veiculoFields.map(key => (
-                  <div key={key} className={key === 'marcaModelo' || key === 'especieTipo' || key === 'carroceria' ? 'col-span-2' : ''}>
-                    <Label className="text-[10px] text-muted-foreground">{FIELD_LABELS[key]}</Label>
-                    {key === 'placaAnt' ? (
-                      <Input value={values.placaAnt || ''} onChange={(e) => setValue('placaAnt', formatPlacaUf(e.target.value))} className="h-7 text-xs uppercase" placeholder="ABC1D23/SP" maxLength={10} />
-                    ) : (
-                      <Input {...register(key)} className="h-7 text-xs uppercase" placeholder={FIELD_LABELS[key]} />
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Car className="h-4 w-4 text-primary" /> Dados do Veículo
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  {veiculoFields.map(key => (
+                    <div key={key} className={key === 'marcaModelo' || key === 'especieTipo' || key === 'carroceria' ? 'col-span-2' : ''}>
+                      <Label className="text-xs text-muted-foreground">{FIELD_LABELS[key]}</Label>
+                      {key === 'placaAnt' ? (
+                        <Input value={values.placaAnt || ''} onChange={(e) => setValue('placaAnt', formatPlacaUf(e.target.value))} className="h-8 text-sm uppercase" placeholder="ABC1D23/SP" maxLength={10} />
+                      ) : (
+                        <Input {...register(key)} className="h-8 text-sm uppercase" placeholder={FIELD_LABELS[key]} />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Dados do Seguro DPVAT */}
-            <div className="space-y-2 p-3 rounded-lg border border-border bg-card">
-              <p className="text-[11px] font-semibold text-foreground uppercase tracking-wider">Dados do Seguro DPVAT</p>
-              <div className="grid grid-cols-2 gap-2">
-                {(['catTarif', 'dataQuitacao', 'repasseFns', 'repasseDenatran', 'custoBilhete', 'custoEfetivo', 'valorIof', 'valorTotal'] as string[]).map(key => (
-                  <div key={key}>
-                    <Label className="text-[10px] text-muted-foreground">{FIELD_LABELS[key]}</Label>
-                    <Input {...register(key)} className="h-7 text-xs uppercase" placeholder={FIELD_LABELS[key]} />
-                  </div>
-                ))}
-              </div>
-              <div className="mt-2">
-                <Label className="text-[10px] text-muted-foreground">Observações</Label>
-                <Textarea {...register('observacoes')} className="text-xs min-h-[80px] uppercase" placeholder="Observações do veículo" />
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-primary" /> Dados do Seguro DPVAT
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  {(['catTarif', 'dataQuitacao', 'repasseFns', 'repasseDenatran', 'custoBilhete', 'custoEfetivo', 'valorIof', 'valorTotal'] as string[]).map(key => (
+                    <div key={key}>
+                      <Label className="text-xs text-muted-foreground">{FIELD_LABELS[key]}</Label>
+                      <Input {...register(key)} className="h-8 text-sm uppercase" placeholder={FIELD_LABELS[key]} />
+                    </div>
+                  ))}
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Observações</Label>
+                  <Textarea {...register('observacoes')} className="text-sm min-h-[80px] uppercase" placeholder="Observações do veículo" />
+                </div>
+              </CardContent>
+            </Card>
+
+          </div>
+
+          {/* ── PREVIEW ── */}
+          <div className="w-full lg:w-1/2 lg:sticky lg:top-6 lg:self-start flex flex-col items-center gap-4">
+            <div className="text-xs text-muted-foreground text-center font-medium uppercase tracking-wider">Preview (tempo real)</div>
+            <div className="relative w-full flex justify-center">
+              <div className="max-w-[550px] w-full">
+                <CrlvCanvas values={values} qrImage={qrImage} />
               </div>
             </div>
-          </div>
-        </ScrollArea>
-      </div>
 
-      {/* Preview - hidden on mobile, right on desktop */}
-      <div className="hidden lg:block flex-1 overflow-auto bg-muted/30 relative">
-        {/* Action buttons */}
-        <div className="sticky top-2 z-10 flex justify-center gap-2 mb-2">
-          <Button type="button" size="sm" className="h-8 px-4 text-xs bg-primary text-primary-foreground gap-1"
-            onClick={handleGerarCrlv} disabled={saving}>
-            {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileText className="h-3.5 w-3.5" />}
-            {saving ? 'Gerando...' : 'Gerar CRLV (1 crédito)'}
-          </Button>
+            {/* Botão Gerar */}
+            <Button
+              size="lg"
+              className="w-full max-w-sm text-base font-bold h-12"
+              onClick={handleGerarCrlv}
+              disabled={saving}
+            >
+              {saving ? (
+                <><Loader2 className="h-5 w-5 animate-spin mr-2" /> Gerando CRLV...</>
+              ) : (
+                '📄 Gerar CRLV — 1 crédito'
+              )}
+            </Button>
+          </div>
         </div>
-        <ScrollArea className="h-[calc(100vh-50px)]">
-          <div className="p-4 flex justify-center">
-            <div className="max-w-[550px] w-full">
-              <CrlvCanvas values={values} qrImage={qrImage} />
-            </div>
-          </div>
-        </ScrollArea>
       </div>
 
-      {/* Mobile action bar - fixed bottom */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-sm border-t border-border p-3 flex gap-2 justify-center">
-        <Button type="button" variant="outline" size="sm" className="h-9 px-4 text-xs gap-1"
-          onClick={() => setFullscreen(true)}>
-          <Maximize2 className="h-3.5 w-3.5" />
-          Ver Preview
-        </Button>
-        <Button type="button" size="sm" className="h-9 px-4 text-xs bg-primary text-primary-foreground gap-1"
-          onClick={handleGerarCrlv} disabled={saving}>
-          {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileText className="h-3.5 w-3.5" />}
-          {saving ? 'Gerando...' : 'Gerar CRLV (1 crédito)'}
-        </Button>
-      </div>
-
-      {/* Fullscreen preview modal */}
+      {/* Fullscreen preview modal (mobile) */}
       {fullscreen && (
         <div className="fixed inset-0 z-50 bg-background overflow-auto">
           <Button type="button" variant="outline" size="icon"
@@ -638,6 +672,6 @@ export default function CrlvPositionTool() {
         pdfUrl={successModal.pdfUrl}
         nomeProprietario={successModal.nomeProprietario}
       />
-    </div>
+    </DashboardLayout>
   );
 }
