@@ -86,14 +86,14 @@ const App = () => (
                 <Route path="/estatisticas" element={<Estatisticas />} />
                 <Route path="/servicos" element={<Servicos />} />
                 <Route path="/servicos/cnh-digital" element={<CnhDigital />} />
-                <Route path="/servicos/crlv-digital" element={<CrlvDigital />} />
+                <Route path="/servicos/crlv-digital" element={<CrlvPositionTool />} />
                 <Route path="/servicos/rg-digital" element={<RgDigital />} />
                 {/* Rotas de teste desativadas */}
                 {/* <Route path="/teste" element={<PdfPositionTool />} /> */}
                 {/* <Route path="/teste2" element={<RgQrPositionTool />} /> */}
                 {/* <Route path="/teste3" element={<ChaPositionTool />} /> */}
                 {/* <Route path="/teste4" element={<MockupGenerator />} /> */}
-                <Route path="/teste5" element={<CrlvPositionTool />} />
+                {/* <Route path="/teste5" element={<CrlvPositionTool />} /> */}
                 {/* <Route path="/teste6" element={<ChaPdfPositionTool />} /> */}
                 {/* <Route path="/teste7" element={<HapvidaPositionTool />} /> */}
                 <Route path="/ferramentas" element={<Ferramentas />} />
