@@ -41,7 +41,7 @@ const FIELDS: FieldDef[] = [
   { key: 'capacidade', tx: 510.08, ty: 88.78, size: 10 },
   { key: 'potenciaCil', tx: 316.01, ty: 114.22, size: 10 },
   { key: 'pesoBruto', tx: 510.08, ty: 114.70, size: 10 },
-  { key: 'motor', tx: 0, ty: 0, size: 4.42 },
+  { key: 'motor', tx: 317.00, ty: 140.86, size: 10 },
   { key: 'cmt', tx: 453.79, ty: 140.62, size: 10 },
   { key: 'eixos', tx: 504.80, ty: 140.62, size: 10 },
   { key: 'lotacao', tx: 538.63, ty: 140.86, size: 10 },
