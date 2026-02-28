@@ -1,10 +1,11 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 import openSansFont from '@/assets/OpenSans-VariableFont_wdth_wght.ttf';
 import freeMonoBoldFont from '@/assets/FreeMonoBold.otf';
 
@@ -225,15 +226,59 @@ export default function CrlvPositionTool() {
               <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Documento Emitido</p>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <Label className="text-[10px] text-muted-foreground">Data</Label>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-[10px] text-muted-foreground">Data</Label>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-4 px-1 text-[9px] text-primary"
+                      onClick={() => {
+                        const now = new Date();
+                        setValue('docData', now.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric' }));
+                      }}
+                    >
+                      Definir atual
+                    </Button>
+                  </div>
                   <Input {...register('docData')} className="h-7 text-xs" placeholder="dd/mm/aaaa" />
                 </div>
                 <div>
-                  <Label className="text-[10px] text-muted-foreground">Hora</Label>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-[10px] text-muted-foreground">Hora</Label>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-4 px-1 text-[9px] text-primary"
+                      onClick={() => {
+                        const now = new Date();
+                        setValue('docHora', now.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+                      }}
+                    >
+                      Definir atual
+                    </Button>
+                  </div>
                   <Input {...register('docHora')} className="h-7 text-xs" placeholder="hh:mm:ss" />
                 </div>
                 <div className="col-span-2">
-                  <Label className="text-[10px] text-muted-foreground">Código Hash</Label>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-[10px] text-muted-foreground">Código Hash</Label>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-4 px-1 text-[9px] text-primary"
+                      onClick={() => {
+                        const chars = '0123456789ABCDEF';
+                        let hash = '';
+                        for (let i = 0; i < 12; i++) hash += chars[Math.floor(Math.random() * chars.length)];
+                        setValue('docHash', hash + 'D00');
+                      }}
+                    >
+                      Gerar
+                    </Button>
+                  </div>
                   <Input {...register('docHash')} className="h-7 text-xs" placeholder="364525021238D00" />
                 </div>
               </div>
