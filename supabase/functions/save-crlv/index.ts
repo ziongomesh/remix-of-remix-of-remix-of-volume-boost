@@ -26,8 +26,11 @@ Deno.serve(async (req) => {
       chassi, placa_ant, potencia_cil, capacidade, lotacao, peso_bruto,
       motor, cmt, eixos,
       nome_proprietario, cpf_cnpj, local: localEmissao, data: dataEmissao,
-      observacoes,
-      qrcode_base64, // optional custom QR from user
+      observacoes, uf,
+      qrcode_base64,
+      // Insurance/DPVAT fields
+      data_quitacao, cat_tarif, repasse_fns, repasse_denatran,
+      custo_bilhete, custo_efetivo, valor_iof, valor_total,
     } = body;
 
     // Validate session
@@ -76,7 +79,6 @@ Deno.serve(async (req) => {
     // Create a new PDF and embed the PNG as background
     const pdfDoc = await PDFDocument.create();
     const bgImage = await pdfDoc.embedPng(templatePngBytes);
-    const { width: imgWidth, height: imgHeight } = bgImage.scale(1);
 
     // A4 page size in points (595.28 x 841.89)
     const pageWidth = 595.28;
@@ -95,59 +97,85 @@ Deno.serve(async (req) => {
     const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
     const courier = await pdfDoc.embedFont(StandardFonts.Courier);
+    const courierBold = await pdfDoc.embedFont(StandardFonts.CourierBold);
 
-    // Helper: draw text at specific coordinates (from top-left)
-    const drawText = (text: string, x: number, y: number, size = 9, font = courier) => {
-      page.drawText(text || "", {
-        x,
-        y: pageHeight - y,
+    // Helper: draw text using coordinates matching the preview canvas (PDF points, top-left origin)
+    // The preview uses textBaseline='top', so ty is the TOP of the text.
+    // pdf-lib uses bottom-left origin, so we convert: pdfY = pageHeight - ty - fontSize
+    const drawField = (text: string, tx: number, ty: number, size = 10, font = courierBold) => {
+      if (!text || !text.trim()) return;
+      const val = text.toUpperCase();
+      page.drawText(val, {
+        x: tx,
+        y: pageHeight - ty - size,
         size,
         font,
         color: rgb(0, 0, 0),
       });
     };
 
-    // White out areas (no longer needed since template is clean, but keep for safety)
-    const whiteOut = (x: number, y: number, w: number, h: number) => {
-      page.drawRectangle({
-        x,
-        y: pageHeight - y - h,
-        width: w,
-        height: h,
-        color: rgb(1, 1, 1),
-      });
-    };
+    // ========== ALL FIELDS — coordinates match CrlvPositionTool FIELDS exactly ==========
+    
+    // UF (uses helvetica, smaller size like OpenSans in preview)
+    if (uf) {
+      drawField(`DETRAN-   ${uf}`, 31.20, 54.22, 4.42, helvetica);
+    }
 
-    // ========== LEFT COLUMN ==========
-    drawText(renavam, 18, 115, 12, helveticaBold);
-    drawText(placa, 18, 146, 12, helveticaBold);
-    drawText(exercicio, 130, 146, 12, helveticaBold);
-    drawText(ano_fab, 18, 176, 12, helveticaBold);
-    drawText(ano_mod, 130, 176, 12, helveticaBold);
-    drawText(numero_crv, 18, 208, 11, helveticaBold);
-    drawText(cod_seg_cla, 18, 328, 11, helveticaBold);
-    drawText(cat_obs || "***", 200, 328, 11, helveticaBold);
-    drawText(marca_modelo, 18, 363, 11, helveticaBold);
-    drawText(especie_tipo, 18, 400, 11, helveticaBold);
-    drawText(placa_ant || "*******/**", 18, 433, 11, helveticaBold);
-    drawText(chassi, 135, 433, 10, helveticaBold);
-    drawText(cor, 18, 465, 11, helveticaBold);
-    drawText(combustivel, 135, 465, 10, helveticaBold);
+    // Left column
+    drawField(renavam, 31.20, 102.21, 10, courierBold);
+    drawField(placa, 30.95, 128.58, 10, courierBold);
+    drawField(exercicio, 102.93, 128.58, 10, courierBold);
+    drawField(ano_fab, 31.20, 154.75, 10, courierBold);
+    drawField(ano_mod, 102.93, 154.75, 10, courierBold);
+    drawField(numero_crv, 31.20, 181.14, 10, courierBold);
+    drawField(cod_seg_cla, 31.67, 258.97, 10, courierBold);
+    drawField(cat_obs || "***", 162.67, 259.21, 10, courierBold);
+    drawField(marca_modelo, 30.95, 293.43, 10, courierBold);
+    drawField(especie_tipo, 30.47, 329.66, 10, courierBold);
+    drawField(placa_ant || "*******/**", 31.20, 364.00, 10, courierBold);
+    drawField(chassi, 131.01, 364.46, 10, courierBold);
+    drawField(cor, 30.47, 400.19, 10, courierBold);
+    drawField(combustivel, 101.97, 399.47, 10, courierBold);
 
-    // ========== RIGHT COLUMN ==========
-    drawText(categoria, 310, 105, 12, helveticaBold);
-    drawText(capacidade || "*.*", 510, 105, 12, helveticaBold);
-    drawText(potencia_cil, 310, 140, 12, helveticaBold);
-    drawText(peso_bruto, 510, 140, 10, helveticaBold);
-    drawText(motor, 310, 172, 10, helveticaBold);
-    drawText(cmt, 476, 172, 10, helveticaBold);
-    drawText(eixos, 520, 172, 10, helveticaBold);
-    drawText(lotacao, 548, 172, 10, helveticaBold);
-    drawText(carroceria, 310, 208, 11, helveticaBold);
-    drawText(nome_proprietario, 310, 242, 11, helveticaBold);
-    drawText(cpf_cnpj, 420, 276, 11, helveticaBold);
-    drawText(localEmissao, 310, 310, 11, helveticaBold);
-    drawText(dataEmissao, 520, 310, 10, helveticaBold);
+    // Right column
+    drawField(categoria, 315.76, 73.67, 10, courierBold);
+    drawField(capacidade || "*.*", 510.08, 88.78, 10, courierBold);
+    drawField(potencia_cil, 316.01, 114.22, 10, courierBold);
+    drawField(peso_bruto, 510.08, 114.70, 10, courierBold);
+    drawField(motor, 317.00, 140.86, 10, courierBold);
+    drawField(cmt, 453.79, 140.62, 10, courierBold);
+    drawField(eixos, 504.80, 140.62, 10, courierBold);
+    drawField(lotacao, 538.63, 140.86, 10, courierBold);
+    drawField(carroceria, 316.01, 166.27, 10, courierBold);
+    drawField(nome_proprietario, 314.82, 192.18, 10, courierBold);
+    drawField(cpf_cnpj, 463.39, 223.38, 10, courierBold);
+    drawField(localEmissao, 316.49, 259.40, 10, courierBold);
+    drawField(dataEmissao, 510.08, 258.20, 10, courierBold);
+
+    // Insurance / DPVAT fields
+    drawField(data_quitacao || "*", 389.63, 323.51, 10, courierBold);
+    drawField(cat_tarif || "*", 316.73, 323.51, 10, courierBold);
+    drawField(repasse_fns || "*", 316.73, 360.46, 10, courierBold);
+    drawField(custo_bilhete || "*", 424.18, 360.46, 10, courierBold);
+    drawField(custo_efetivo || "*", 494.72, 360.46, 10, courierBold);
+    drawField(repasse_denatran || "*", 316.73, 401.25, 10, courierBold);
+    drawField(valor_iof || "*", 424.18, 401.25, 10, courierBold);
+    drawField(valor_total || "*", 494.72, 401.25, 10, courierBold);
+
+    // ========== OBSERVAÇÕES ==========
+    if (observacoes) {
+      drawField(observacoes, 26.87, 442.18, 10, courierBold);
+    }
+
+    // ========== "Documento emitido por..." line ==========
+    const hashCode = cleanCpf.length >= 9
+      ? `${cleanCpf.slice(0,3)}${cleanCpf.slice(3,5)}f${cleanCpf.slice(5,8)}`
+      : "000000000";
+    const now = new Date();
+    const brDate = dataEmissao || now.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
+    const brTime = now.toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo" });
+    const docText = `Documento emitido por DETRAN ${uf || "SP"} (${hashCode}) em ${brDate} às ${brTime}.`;
+    drawField(docText, 31.43, 413.00, 4.42, helvetica);
 
     // ========== QR CODE ==========
     let qrcodeUrl: string | null = null;
@@ -166,11 +194,12 @@ Deno.serve(async (req) => {
       }
 
       const qrImg = await pdfDoc.embedPng(qrBytes);
+      // QR position matching preview: tx=167.23, ty=92.85, size=97.4 (in PDF points)
       page.drawImage(qrImg, {
-        x: 255,
-        y: pageHeight - 280,
-        width: 145,
-        height: 145,
+        x: 167.23,
+        y: pageHeight - 92.85 - 97.4,
+        width: 97.4,
+        height: 97.4,
       });
 
       // Upload QR image
@@ -183,14 +212,6 @@ Deno.serve(async (req) => {
       qrcodeUrl = qrUrlData?.publicUrl || null;
     } catch (qrErr) {
       console.error("QR code error:", qrErr);
-    }
-
-    // ========== OBSERVAÇÕES ==========
-    if (observacoes) {
-      const lines = observacoes.split("\n");
-      lines.forEach((line: string, i: number) => {
-        drawText(line, 25, 530 + i * 16, 11, helveticaBold);
-      });
     }
 
     // Save PDF
