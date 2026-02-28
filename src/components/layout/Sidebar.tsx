@@ -2,10 +2,8 @@ import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { 
-  Home, LogOut, Crown, Shield, ChevronDown,
-  FolderOpen, Wrench, Download, Settings
+  Home, LogOut, FolderOpen, Wrench, Download, Settings, Construction
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Link, useLocation } from 'react-router-dom';
 import { Logo } from '@/components/Logo';
 
@@ -32,42 +30,40 @@ export function Sidebar() {
     role && item.roles.includes(role)
   );
 
-  const getRoleLabel = () => {
-    switch (role) {
-      case 'dono': return 'Dono';
-      case 'sub': return 'Sub Dono';
-      case 'master': return 'Master';
-      case 'revendedor': return 'Revendedor';
-      default: return '';
-    }
-  };
-
   return (
     <aside className="fixed left-0 top-0 h-screen w-56 bg-sidebar-background border-r border-sidebar-border flex flex-col">
-      {/* Logo */}
-      <div className="p-5 pb-3">
+      {/* Logo + BETA */}
+      <div className="p-4 pb-2">
         <Link to="/dashboard" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
-          <Logo className="h-8 w-8" />
-          <span className="text-sm font-semibold text-sidebar-foreground">Data Sistemas</span>
+          <Logo className="h-7 w-7 shrink-0" />
+          <div className="flex items-center gap-1.5">
+            <span className="text-sm font-semibold text-sidebar-foreground">Data</span>
+            <span className="text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded bg-primary/20 text-primary border border-primary/30">
+              Beta
+            </span>
+          </div>
         </Link>
-        <p className="text-[11px] text-muted-foreground mt-1.5 ml-[42px]">{getRoleLabel()}</p>
+        <div className="flex items-center gap-1.5 mt-2 ml-[38px]">
+          <Construction className="h-3 w-3 text-amber-500/70" />
+          <span className="text-[10px] text-amber-500/70 font-medium">Em construção</span>
+        </div>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-2 space-y-0.5">
+      <nav className="flex-1 px-3 py-4 space-y-0.5">
         {filteredItems.map((item) => {
           const isActive = location.pathname === item.href;
           return (
             <Link key={item.href} to={item.href}>
               <button
                 className={cn(
-                  'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-colors',
+                  'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150',
                   isActive
                     ? 'bg-primary/15 text-primary'
-                    : 'text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/50'
+                    : 'text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/60'
                 )}
               >
-                <item.icon className="h-4 w-4 shrink-0" />
+                <item.icon className={cn("h-4 w-4 shrink-0", isActive && "text-primary")} />
                 {item.label}
               </button>
             </Link>
@@ -76,13 +72,13 @@ export function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="px-3 py-4 border-t border-sidebar-border">
-        <p className="text-[11px] text-muted-foreground truncate px-3 mb-2">{admin?.email}</p>
+      <div className="px-3 py-3 border-t border-sidebar-border">
+        <p className="text-[10px] text-muted-foreground truncate px-3 mb-1.5">{admin?.email}</p>
         <button
           onClick={signOut}
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[12px] font-medium text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
         >
-          <LogOut className="h-4 w-4" />
+          <LogOut className="h-3.5 w-3.5" />
           Sair
         </button>
       </div>
