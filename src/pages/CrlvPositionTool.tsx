@@ -122,8 +122,10 @@ function CrlvCanvas({ values }: { values: Record<string, string> }) {
 
     for (const f of FIELDS) {
       if (f.tx === 0 && f.ty === 0) continue;
-      const val = values[f.key] || '';
+      let val = values[f.key] || '';
       if (!val.trim()) continue;
+      // UF field displays as "DETRAN-   UF"
+      if (f.key === 'uf') val = `DETRAN-   ${val}`;
 
       const px = f.tx * imgScale;
       const py = f.ty * imgScale;
