@@ -488,11 +488,11 @@ export default function DashboardDono() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
-              {isSub ? <Shield className="h-6 w-6 text-orange-500" /> : <Crown className="h-6 w-6 text-yellow-500" />}
-              {isSub ? 'Painel Sub Dono' : 'Painel do Dono'}
+            <p className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground">Data Sistemas</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">
+              Dashboard
             </h1>
-            <p className="text-sm text-muted-foreground">{isSub ? 'Acompanhe toda a base' : 'Controle total do sistema'}</p>
+            <p className="text-xs text-muted-foreground">Inovando e Recriando o Futuro Digital</p>
           </div>
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="text-sm">
