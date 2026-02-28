@@ -367,28 +367,36 @@ export default function Servicos() {
           </TabsContent>
 
           <TabsContent value="internacional" className="space-y-3 mt-0">
-            {/* VIP Banner - Gold */}
+            {/* VIP Banner - Gold compact */}
             <div
-              className="relative overflow-hidden rounded-xl p-4"
+              className="relative overflow-hidden rounded-xl p-3"
               style={{
                 background: 'linear-gradient(135deg, hsl(43, 60%, 22%) 0%, hsl(38, 55%, 30%) 40%, hsl(48, 70%, 40%) 100%)',
-                border: '2px solid hsl(43, 60%, 40%)',
+                border: '1px solid hsl(43, 60%, 40%)',
               }}
             >
-              <div className="flex items-center gap-3">
-                <div className="h-12 w-12 rounded-full flex items-center justify-center" style={{ background: 'hsl(43, 50%, 30%)' }}>
-                  <Crown className="h-7 w-7" style={{ color: 'hsl(43, 80%, 70%)' }} />
+              <div className="flex items-center gap-2.5">
+                <div className="h-9 w-9 rounded-full flex items-center justify-center shrink-0" style={{ background: 'hsl(43, 50%, 30%)' }}>
+                  <Crown className="h-5 w-5" style={{ color: 'hsl(43, 80%, 70%)' }} />
                 </div>
-                <div>
-                  <h3 className="font-bold text-lg flex items-center gap-2" style={{ color: 'hsl(43, 80%, 80%)' }}>
-                    Documentos Internacionais
-                    <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ background: 'hsl(43, 50%, 25%)', color: 'hsl(43, 80%, 70%)' }}>VIP</span>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-sm flex items-center gap-2" style={{ color: 'hsl(43, 80%, 80%)' }}>
+                    Internacional VIP
+                    <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium" style={{ background: 'hsl(43, 50%, 25%)', color: 'hsl(43, 80%, 70%)' }}>VIP</span>
                   </h3>
-                  <p className="text-xs" style={{ color: 'hsl(43, 40%, 60%)' }}>Módulos premium com documentos de diversos países. Em breve disponível.</p>
+                  <p className="text-[11px] leading-tight mt-0.5" style={{ color: 'hsl(43, 40%, 60%)' }}>Em breve disponível.</p>
                 </div>
               </div>
-              <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full" style={{ background: 'hsla(43, 60%, 50%, 0.1)' }} />
-              <div className="absolute -right-2 -bottom-6 h-16 w-16 rounded-full" style={{ background: 'hsla(43, 60%, 50%, 0.05)' }} />
+              <div className="absolute -right-3 -top-3 h-16 w-16 rounded-full" style={{ background: 'hsla(43, 60%, 50%, 0.1)' }} />
+            </div>
+
+            {/* Observação */}
+            <div className="rounded-lg border border-border bg-muted/30 p-3">
+              <p className="text-xs font-semibold text-foreground mb-1">ℹ️ Como funciona?</p>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                Após todos os módulos do Brasil nativos da base estiverem disponíveis, iremos disponibilizar o internacional.
+                Você poderá gerar passaportes em foto, extratos, PDFs, licenças de dirigir, militares — idênticas 100% ao original.
+              </p>
             </div>
 
             {vipCategories.map((cat) => (
