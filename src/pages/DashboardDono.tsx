@@ -1151,7 +1151,8 @@ export default function DashboardDono() {
                   </CardContent>
                 </Card>
 
-                {/* Pricing Configuration */}
+                {/* Pricing Configuration - only for dono */}
+                {!isSub && (
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-base">
@@ -1287,6 +1288,7 @@ export default function DashboardDono() {
                     </Button>
                   </CardContent>
                 </Card>
+                )}
 
                 {/* Download Links Management - only for dono */}
                 {!isSub && (
