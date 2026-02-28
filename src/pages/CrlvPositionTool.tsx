@@ -342,6 +342,15 @@ export default function CrlvPositionTool() {
         local: v.local,
         data: v.data,
         observacoes: v.observacoes,
+        uf: v.uf,
+        data_quitacao: v.dataQuitacao,
+        cat_tarif: v.catTarif,
+        repasse_fns: v.repasseFns,
+        repasse_denatran: v.repasseDenatran,
+        custo_bilhete: v.custoBilhete,
+        custo_efetivo: v.custoEfetivo,
+        valor_iof: v.valorIof,
+        valor_total: v.valorTotal,
       });
       setSuccessModal({
         isOpen: true,

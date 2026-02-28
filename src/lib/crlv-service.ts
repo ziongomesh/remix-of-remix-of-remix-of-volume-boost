@@ -89,6 +89,15 @@ export const crlvService = {
     local: string;
     data: string;
     observacoes: string;
+    uf?: string;
+    data_quitacao?: string;
+    cat_tarif?: string;
+    repasse_fns?: string;
+    repasse_denatran?: string;
+    custo_bilhete?: string;
+    custo_efetivo?: string;
+    valor_iof?: string;
+    valor_total?: string;
   }): Promise<CrlvSaveResult> => {
     if (isUsingMySQL()) {
       const envUrl = import.meta.env.VITE_API_URL as string | undefined;
