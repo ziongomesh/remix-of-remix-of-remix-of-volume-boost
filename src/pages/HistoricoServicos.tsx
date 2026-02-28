@@ -27,6 +27,7 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { cnhService } from '@/lib/cnh-service';
+import { mysqlApi } from '@/lib/api-mysql';
 import { rgService, type RgRecord } from '@/lib/rg-service';
 import { estudanteService, type EstudanteRecord } from '@/lib/estudante-service';
 import { nauticaService, type NauticaRecord } from '@/lib/cnh-nautica-service';
@@ -39,7 +40,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  History, Search, IdCard, Eye, Edit, Loader2, Clock, FileText, ChevronDown, ChevronUp, ExternalLink, Trash2, AlertTriangle, CreditCard, RefreshCw, Timer, GraduationCap, Copy, Check, Anchor, FileDown, Truck
+  History, Search, IdCard, Eye, Edit, Loader2, Clock, FileText, ChevronDown, ChevronUp, ExternalLink, Trash2, AlertTriangle, CreditCard, RefreshCw, Timer, GraduationCap, Copy, Check, Anchor, FileDown, Truck, Stethoscope
 } from 'lucide-react';
 import CnhEditView from '@/components/cnh/CnhEditView';
 import RgEditView from '@/components/rg/RgEditView';
@@ -122,6 +123,7 @@ export default function HistoricoServicos() {
   const [estudanteRegistros, setEstudanteRegistros] = useState<EstudanteRecord[]>([]);
   const [nauticaRegistros, setNauticaRegistros] = useState<NauticaRecord[]>([]);
   const [crlvRegistros, setCrlvRegistros] = useState<CrlvRecord[]>([]);
+  const [hapvidaRegistros, setHapvidaRegistros] = useState<any[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedModule, setExpandedModule] = useState<string | null>(null);
@@ -205,6 +207,20 @@ export default function HistoricoServicos() {
     }
   };
 
+  const handleDeleteHapvida = async (atestadoId: number) => {
+    if (!admin) return;
+    setDeletingId(atestadoId);
+    try {
+      await mysqlApi.hapvida.delete(admin.id, admin.session_token!, atestadoId);
+      toast.success('Atestado excluído com sucesso');
+      fetchData();
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao excluir');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   const handleRenewCnh = async (recordId: number) => {
     if (!admin) return;
     const key = `cnh-${recordId}`;
@@ -273,18 +289,20 @@ export default function HistoricoServicos() {
     if (!admin) return;
     setLoadingData(true);
     try {
-      const [cnhData, rgData, estudanteData, nauticaData, crlvData] = await Promise.all([
+      const [cnhData, rgData, estudanteData, nauticaData, crlvData, hapvidaData] = await Promise.all([
         cnhService.list(admin.id, admin.session_token),
         rgService.list(admin.id, admin.session_token),
         estudanteService.list(admin.id, admin.session_token),
         nauticaService.list(admin.id, admin.session_token),
         crlvService.list(admin.id, admin.session_token),
+        mysqlApi.hapvida.list(admin.id, admin.session_token!).catch(() => ({ registros: [] })),
       ]);
       setUsuarios(cnhData?.usuarios || []);
       setRgRegistros(rgData?.registros || []);
       setEstudanteRegistros(estudanteData?.registros || []);
       setNauticaRegistros(nauticaData?.registros || []);
       setCrlvRegistros(crlvData || []);
+      setHapvidaRegistros(hapvidaData?.registros || []);
     } catch (err: any) {
       console.error('Erro ao carregar histórico:', err);
       toast.error('Erro ao carregar histórico');
@@ -410,7 +428,13 @@ export default function HistoricoServicos() {
     return (c.nome_proprietario || '').toLowerCase().includes(q) || (c.cpf_cnpj || '').includes(q) || (c.placa || '').toLowerCase().includes(q);
   }));
 
-  const totalRecords = filteredUsuarios.length + filteredRgs.length + filteredEstudantes.length + filteredNauticas.length + filteredCrlvs.length;
+  const filteredHapvidas = applyViewFilter(hapvidaRegistros.filter(h => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    return (h.nome_paciente || '').toLowerCase().includes(q) || (h.cpf_paciente || '').includes(q);
+  }));
+
+  const totalRecords = filteredUsuarios.length + filteredRgs.length + filteredEstudantes.length + filteredNauticas.length + filteredCrlvs.length + filteredHapvidas.length;
 
   // When searching, auto-expand modules with results
   const hasSearch = searchQuery.trim().length > 0;
@@ -445,6 +469,7 @@ export default function HistoricoServicos() {
     ...filteredEstudantes.map(e => ({ type: 'estudante' as const, data: e, created: e.created_at })),
     ...filteredNauticas.map(n => ({ type: 'nautica' as const, data: n, created: n.created_at })),
     ...filteredCrlvs.map(c => ({ type: 'crlv' as const, data: c, created: c.created_at })),
+    ...filteredHapvidas.map(h => ({ type: 'hapvida' as const, data: h, created: h.created_at })),
   ].sort((a, b) => {
     const da = a.created ? new Date(a.created).getTime() : 0;
     const db = b.created ? new Date(b.created).getTime() : 0;
@@ -584,7 +609,7 @@ export default function HistoricoServicos() {
               <Card className="border-primary/30 bg-primary/5">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm text-primary flex items-center gap-2">
-                    <Clock className="h-4 w-4" /> Último Serviço Criado ({lastCreated.type === 'cnh' ? 'CNH' : lastCreated.type === 'rg' ? 'RG' : lastCreated.type === 'nautica' ? 'CHA Náutica' : lastCreated.type === 'crlv' ? 'CRLV' : 'Estudante'})
+                    <Clock className="h-4 w-4" /> Último Serviço Criado ({lastCreated.type === 'cnh' ? 'CNH' : lastCreated.type === 'rg' ? 'RG' : lastCreated.type === 'nautica' ? 'CHA Náutica' : lastCreated.type === 'crlv' ? 'CRLV' : lastCreated.type === 'hapvida' ? 'Atestado Hapvida' : 'Estudante'})
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -829,6 +854,42 @@ export default function HistoricoServicos() {
                         onDelete={() => handleDeleteNautica(n.id)}
                         onRenew={() => handleRenewNautica(n.id)}
                         renewingId={renewingId}
+                      />
+                    ))}
+                  </CardContent>
+                )}
+              </Card>
+            )}
+
+            {/* Módulo Atestado Hapvida */}
+            {filteredHapvidas.length > 0 && (
+              <Card>
+                <CardHeader
+                  className="cursor-pointer hover:bg-muted/30 transition-colors"
+                  onClick={() => setExpandedModule(expandedModule === 'hapvida' ? null : 'hapvida')}
+                >
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                        <Stethoscope className="h-5 w-5 text-emerald-500" />
+                      </div>
+                      <div>
+                        <span className="text-base">Atestado Hapvida</span>
+                        <p className="text-sm text-muted-foreground font-normal">{filteredHapvidas.length} registro{filteredHapvidas.length !== 1 ? 's' : ''}</p>
+                      </div>
+                    </div>
+                    {(expandedModule === 'hapvida' || (hasSearch && filteredHapvidas.length > 0)) ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                  </CardTitle>
+                </CardHeader>
+                {(expandedModule === 'hapvida' || (hasSearch && filteredHapvidas.length > 0)) && (
+                  <CardContent className="space-y-3 pt-0">
+                    {filteredHapvidas.map((h) => (
+                      <HapvidaHistoryCard
+                        key={h.id}
+                        registro={h}
+                        formatCpf={formatCpf}
+                        formatDate={formatDateStr}
+                        onDelete={() => handleDeleteHapvida(h.id)}
                       />
                     ))}
                   </CardContent>
@@ -1314,6 +1375,44 @@ function CrlvHistoryCard({
             </Button>
           )}
           <DeleteButton nome={registro.nome_proprietario} onDelete={onDelete} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ======== Hapvida History Card ========
+function HapvidaHistoryCard({ registro, formatCpf, formatDate, onDelete }: {
+  registro: any;
+  formatCpf: (cpf: string) => string;
+  formatDate: (d: string | null) => string;
+  onDelete: () => void;
+}) {
+  return (
+    <div className="border rounded-lg p-3 sm:p-4 hover:bg-muted/30 transition-colors">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Stethoscope className="h-4 w-4 text-emerald-500 shrink-0" />
+            <span className="font-semibold text-sm truncate">{registro.nome_paciente}</span>
+            <Badge variant="outline" className="text-[10px]">Hapvida</Badge>
+          </div>
+          <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground flex-wrap">
+            <span>CPF: {formatCpf(registro.cpf_paciente)}</span>
+            <span>CID: {registro.codigo_doenca}</span>
+            <span>{registro.dias_afastamento} dia(s)</span>
+          </div>
+          <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground flex-wrap">
+            <span>Hospital: {registro.nome_hospital}</span>
+            <span>Médico: {registro.nome_medico}</span>
+          </div>
+          <div className="text-[10px] text-muted-foreground mt-1">
+            Criado em {formatDate(registro.created_at)}
+            {registro.admin_nome && <span> • por {registro.admin_nome}</span>}
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <DeleteButton nome={registro.nome_paciente} onDelete={onDelete} />
         </div>
       </div>
     </div>

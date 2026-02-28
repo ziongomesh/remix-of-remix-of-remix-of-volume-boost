@@ -95,14 +95,14 @@ router.post('/save', async (req, res) => {
     const helvetica = labelFont;
 
     // Helper: draw text using coordinates matching the preview canvas (PDF points, top-left origin)
-    // ty = distance from top of page to TOP of the text
-    // pdf-lib uses bottom-left, so: pdfY = pageHeight - ty - fontSize
+    // ty = distance from top of page to the text BASELINE (alphabetic)
+    // pdf-lib uses bottom-left origin, so: pdfY = pageHeight - ty
     const drawField = (text: string, tx: number, ty: number, size = 10, font = courierBold) => {
       if (!text || !text.trim()) return;
       const val = text.toUpperCase();
       page.drawText(val, {
         x: tx,
-        y: pageHeight - ty - size,
+        y: pageHeight - ty,
         size,
         font,
         color: rgb(0, 0, 0),
@@ -210,7 +210,8 @@ router.post('/save', async (req, res) => {
     fs.writeFileSync(pdfFullPath, Buffer.from(pdfBytes));
     const pdfUrl = `/uploads/${pdfFilename}`;
 
-    // No expiration for CRLV
+    // CRLV expires in 45 days
+    const expiresAt = new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
 
     // Insert record in MySQL
     const insertResult = await query<any>(
@@ -230,7 +231,7 @@ router.post('/save', async (req, res) => {
         chassi, placa_ant || '', potencia_cil, capacidade, lotacao, peso_bruto,
         motor, cmt, eixos,
         nome_proprietario, cpf_cnpj, localEmissao, dataEmissao,
-        observacoes || '', qrcodePath, pdfUrl, senha, null,
+        observacoes || '', qrcodePath, pdfUrl, senha, expiresAt,
       ]
     );
 
@@ -256,7 +257,8 @@ router.post('/save', async (req, res) => {
       id: insertedId,
       senha,
       pdf: pdfUrl,
-      dataExpiracao: null,
+      dataExpiracao: expiresAt,
+      createdAt: new Date().toISOString(),
     });
   } catch (error: any) {
     logger.error('[CRLV] Erro ao salvar:', error);
