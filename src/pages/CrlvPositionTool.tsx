@@ -49,7 +49,7 @@ const FIELDS: FieldDef[] = [
   { key: 'nomeProprietario', tx: 314.82, ty: 192.18, size: 10 },
   { key: 'cpfCnpj', tx: 463.39, ty: 223.38, size: 10 },
   { key: 'local', tx: 0, ty: 0, size: 4.42 },
-  { key: 'data', tx: 0, ty: 0, size: 4.42 },
+  { key: 'data', tx: 510.08, ty: 258.20, size: 10 },
   { key: 'observacoes', tx: 0, ty: 0, size: 4.42 },
 ];
 
@@ -307,7 +307,23 @@ export default function CrlvPositionTool() {
               <div className="grid grid-cols-2 gap-2">
                 {rightFields.map(key => (
                   <div key={key} className={key === 'carroceria' || key === 'nomeProprietario' ? 'col-span-2' : ''}>
-                    <Label className="text-[10px] text-muted-foreground">{FIELD_LABELS[key]}</Label>
+                    <div className="flex items-center justify-between">
+                      <Label className="text-[10px] text-muted-foreground">{FIELD_LABELS[key]}</Label>
+                      {key === 'data' && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-4 px-1 text-[9px] text-primary"
+                          onClick={() => {
+                            const now = new Date();
+                            setValue('data', now.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric' }));
+                          }}
+                        >
+                          Definir atual
+                        </Button>
+                      )}
+                    </div>
                     <Input {...register(key)} className="h-7 text-xs uppercase" placeholder={FIELD_LABELS[key]} />
                   </div>
                 ))}
