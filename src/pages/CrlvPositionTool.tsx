@@ -322,8 +322,8 @@ export default function CrlvPositionTool() {
         <ScrollArea className="h-auto lg:h-screen">
           <div className="p-4 space-y-6">
             <div>
-              <h2 className="text-lg font-bold text-foreground">CRLV Digital — Teste</h2>
-              <p className="text-xs text-muted-foreground mt-1">Preencha os campos para visualizar no CRLV</p>
+              <h2 className="text-lg font-bold text-foreground">CRLV Digital</h2>
+              <p className="text-xs text-muted-foreground mt-1">Preencha os dados do veículo para gerar o CRLV</p>
             </div>
 
             {/* UF Select */}
