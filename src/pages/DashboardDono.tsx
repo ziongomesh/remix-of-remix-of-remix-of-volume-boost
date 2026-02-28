@@ -163,6 +163,11 @@ export default function DashboardDono() {
   const [savingPricing, setSavingPricing] = useState(false);
   const [loadingPricing, setLoadingPricing] = useState(false);
 
+  // Alert state
+  const [alertDialogOpen, setAlertDialogOpen] = useState(false);
+  const [alertTargetId, setAlertTargetId] = useState<string>('');
+  const [sendingAlert, setSendingAlert] = useState(false);
+
   // Notícias state
   interface Noticia { id: number; titulo: string; informacao: string; data_post: string; }
   const [noticias, setNoticias] = useState<Noticia[]>([]);
@@ -696,10 +701,20 @@ export default function DashboardDono() {
 
                         <Card>
                           <CardHeader className="pb-2">
-                            <CardTitle className="flex items-center gap-2 text-base">
-                              <AlertTriangle className="h-5 w-5 text-orange-500" />
-                              Inativos
-                            </CardTitle>
+                            <div className="flex items-center justify-between">
+                              <CardTitle className="flex items-center gap-2 text-base">
+                                <AlertTriangle className="h-5 w-5 text-orange-500" />
+                                Inativos
+                              </CardTitle>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-7 text-[10px] gap-1.5 border-amber-500/30 text-amber-500 hover:bg-amber-500/10"
+                                onClick={() => setAlertDialogOpen(true)}
+                              >
+                                <Send className="h-3 w-3" /> Enviar Alerta
+                              </Button>
+                            </div>
                           </CardHeader>
                           <CardContent>
                             <div className="space-y-2">
@@ -729,6 +744,79 @@ export default function DashboardDono() {
                           </CardContent>
                         </Card>
                       </div>
+
+                      {/* Alert Dialog */}
+                      <Dialog open={alertDialogOpen} onOpenChange={setAlertDialogOpen}>
+                        <DialogContent className="max-w-sm">
+                          <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2 text-base">
+                              <Send className="h-4 w-4 text-amber-500" /> Enviar Alerta de Inatividade
+                            </DialogTitle>
+                            <DialogDescription className="text-xs">
+                              Selecione o usuário ou envie para todos os inativos.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-4 pt-2">
+                            <Select value={alertTargetId} onValueChange={setAlertTargetId}>
+                              <SelectTrigger className="h-9">
+                                <SelectValue placeholder="Selecione um admin..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {allAdmins.filter(a => a.rank !== 'dono').map((a) => (
+                                  <SelectItem key={a.id} value={String(a.id)}>
+                                    {a.nome} ({a.rank})
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <div className="flex gap-2">
+                              <Button
+                                onClick={async () => {
+                                  if (!alertTargetId) return;
+                                  setSendingAlert(true);
+                                  try {
+                                    await api.alerts.send(Number(alertTargetId), '⚠️ Você está inativo na base. Use com frequência, pois poderá perder acesso.');
+                                    toast.success('Alerta enviado!');
+                                    setAlertDialogOpen(false);
+                                    setAlertTargetId('');
+                                  } catch (e: any) {
+                                    toast.error(e.message || 'Erro ao enviar alerta');
+                                  } finally {
+                                    setSendingAlert(false);
+                                  }
+                                }}
+                                disabled={!alertTargetId || sendingAlert}
+                                className="flex-1 h-9 text-sm gap-1.5"
+                              >
+                                <Send className="h-3.5 w-3.5" /> Enviar
+                              </Button>
+                              {leastActive.length > 0 && (
+                                <Button
+                                  onClick={async () => {
+                                    setSendingAlert(true);
+                                    try {
+                                      for (const a of leastActive) {
+                                        await api.alerts.send(a.id, '⚠️ Você está inativo na base. Use com frequência, pois poderá perder acesso.');
+                                      }
+                                      toast.success(`Alerta enviado para ${leastActive.length} inativos!`);
+                                      setAlertDialogOpen(false);
+                                    } catch (e: any) {
+                                      toast.error(e.message || 'Erro ao enviar alertas');
+                                    } finally {
+                                      setSendingAlert(false);
+                                    }
+                                  }}
+                                  disabled={sendingAlert}
+                                  variant="destructive"
+                                  className="h-9 text-sm gap-1.5"
+                                >
+                                  <AlertTriangle className="h-3.5 w-3.5" /> Todos ({leastActive.length})
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                     </div>
                   </>
                 )}
