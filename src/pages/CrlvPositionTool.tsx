@@ -147,8 +147,8 @@ function CrlvCanvas({ values }: { values: Record<string, string> }) {
     const brTime = now.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', second: '2-digit' });
     const docText = `Documento emitido por DETRAN ${uf} (${hashCode}) em ${brDate} às ${brTime}.`;
 
-    const docX = 130.16 * imgScale;
-    const docY = 1719.11 * imgScale;
+    const docX = 31.43 * imgScale;
+    const docY = 413.00 * imgScale;
     const docFontSize = 4.42 * imgScale;
 
     ctx.fillStyle = '#000000';
