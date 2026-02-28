@@ -149,7 +149,7 @@ export default function DashboardDono() {
   const [savingLinks, setSavingLinks] = useState(false);
 
   // Create master/reseller
-  const [createType, setCreateType] = useState<'sub' | 'master' | 'revendedor'>('master');
+  const [createType, setCreateType] = useState<'sub' | 'master' | 'revendedor'>(role === 'sub' ? 'revendedor' : 'master');
   const [createForm, setCreateForm] = useState({ name: '', email: '', password: '' });
   const [initialCredits, setInitialCredits] = useState('0');
   const [giveCredits, setGiveCredits] = useState(false);
@@ -1069,7 +1069,7 @@ export default function DashboardDono() {
                       <UserPlus className="h-5 w-5 text-primary" />
                       Criar Conta
                     </CardTitle>
-                    <CardDescription>Crie uma conta {!isSub ? 'Sub Dono, ' : ''}Master ou Revendedor diretamente</CardDescription>
+                    <CardDescription>Crie uma conta {!isSub ? 'Sub Dono, Master ou ' : ''}Revendedor diretamente</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex gap-2">
@@ -1082,13 +1082,15 @@ export default function DashboardDono() {
                           <Crown className="h-4 w-4 mr-1" /> Sub Dono
                         </Button>
                       )}
-                      <Button
-                        variant={createType === 'master' ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setCreateType('master')}
-                      >
-                        <Shield className="h-4 w-4 mr-1" /> Master
-                      </Button>
+                      {!isSub && (
+                        <Button
+                          variant={createType === 'master' ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setCreateType('master')}
+                        >
+                          <Shield className="h-4 w-4 mr-1" /> Master
+                        </Button>
+                      )}
                       <Button
                         variant={createType === 'revendedor' ? 'default' : 'outline'}
                         size="sm"
