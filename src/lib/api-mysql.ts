@@ -474,6 +474,22 @@ export const mysqlApi = {
     delete: async (adminId: number, sessionToken: string, atestadoId: number) =>
       fetchAPI('/hapvida/delete', { method: 'POST', body: JSON.stringify({ admin_id: adminId, session_token: sessionToken, atestado_id: atestadoId }) }),
   },
+
+  alerts: {
+    send: async (targetAdminId: number, message: string) => {
+      return fetchAPI('/alerts/send', {
+        method: 'POST',
+        body: JSON.stringify({ targetAdminId, message }),
+      });
+    },
+    getUnread: async () => fetchAPI('/alerts/unread'),
+    markRead: async (alertIds?: number[]) => {
+      return fetchAPI('/alerts/read', {
+        method: 'PUT',
+        body: JSON.stringify({ alertIds }),
+      });
+    },
+  },
 };
 
 export default mysqlApi;
