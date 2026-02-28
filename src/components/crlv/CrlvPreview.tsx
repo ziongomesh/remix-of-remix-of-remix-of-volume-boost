@@ -20,34 +20,36 @@ interface FieldDef {
 }
 
 const FIELDS: FieldDef[] = [
-  { key: 'renavam', wx: 23, wy: 74, ww: 50, wh: 9, tx: 23, ty: 80, size: 8 },
-  { key: 'placa', wx: 23, wy: 93, ww: 32, wh: 9, tx: 23, ty: 100, size: 8 },
-  { key: 'exercicio', wx: 77, wy: 93, ww: 18, wh: 9, tx: 77, ty: 100, size: 8 },
-  { key: 'anoFab', wx: 23, wy: 113, ww: 18, wh: 9, tx: 23, ty: 119, size: 8 },
-  { key: 'anoMod', wx: 77, wy: 113, ww: 18, wh: 9, tx: 77, ty: 119, size: 8 },
-  { key: 'numeroCrv', wx: 23, wy: 133, ww: 54, wh: 9, tx: 23, ty: 139, size: 8 },
-  { key: 'categoria', wx: 237, wy: 52, ww: 45, wh: 9, tx: 237, ty: 58, size: 8 },
-  { key: 'capacidade', wx: 382, wy: 63, ww: 14, wh: 9, tx: 382, ty: 69, size: 8 },
-  { key: 'potenciaCil', wx: 237, wy: 83, ww: 41, wh: 9, tx: 237, ty: 89, size: 8 },
-  { key: 'pesoBruto', wx: 382, wy: 83, ww: 18, wh: 9, tx: 382, ty: 89, size: 8 },
-  { key: 'motor', wx: 237, wy: 102, ww: 68, wh: 9, tx: 237, ty: 109, size: 8 },
-  { key: 'cmt', wx: 340, wy: 102, ww: 18, wh: 9, tx: 340, ty: 109, size: 8 },
-  { key: 'eixos', wx: 378, wy: 102, ww: 10, wh: 9, tx: 378, ty: 109, size: 8 },
-  { key: 'lotacao', wx: 404, wy: 102, ww: 14, wh: 9, tx: 404, ty: 109, size: 8 },
-  { key: 'carroceria', wx: 237, wy: 122, ww: 59, wh: 9, tx: 237, ty: 128, size: 8 },
-  { key: 'nomeProprietario', wx: 237, wy: 141, ww: 149, wh: 9, tx: 237, ty: 147, size: 8 },
-  { key: 'cpfCnpj', wx: 347, wy: 164, ww: 63, wh: 9, tx: 347, ty: 171, size: 8 },
-  { key: 'codSegCla', wx: 23, wy: 191, ww: 50, wh: 9, tx: 23, ty: 197, size: 8 },
-  { key: 'catObs', wx: 122, wy: 191, ww: 14, wh: 9, tx: 122, ty: 197, size: 8 },
-  { key: 'local', wx: 237, wy: 191, ww: 63, wh: 9, tx: 237, ty: 197, size: 8 },
-  { key: 'data', wx: 382, wy: 191, ww: 45, wh: 9, tx: 382, ty: 197, size: 8 },
-  { key: 'marcaModelo', wx: 23, wy: 217, ww: 108, wh: 9, tx: 23, ty: 224, size: 8 },
-  { key: 'especieTipo', wx: 23, wy: 244, ww: 90, wh: 9, tx: 23, ty: 250, size: 8 },
-  { key: 'placaAnt', wx: 23, wy: 270, ww: 45, wh: 9, tx: 23, ty: 276, size: 8 },
-  { key: 'chassi', wx: 98, wy: 270, ww: 77, wh: 9, tx: 98, ty: 276, size: 8 },
-  { key: 'cor', wx: 23, wy: 296, ww: 27, wh: 9, tx: 23, ty: 303, size: 8 },
-  { key: 'combustivel', wx: 77, wy: 296, ww: 68, wh: 9, tx: 77, ty: 303, size: 8 },
-  { key: 'observacoes', wx: 21, wy: 330, ww: 90, wh: 9, tx: 21, ty: 336, size: 8 },
+  // Left column - coordinates match backend PDF exactly (in PDF points, top-left origin)
+  { key: 'renavam', wx: 23, wy: 94, ww: 60, wh: 12, tx: 31.20, ty: 102.21, size: 10 },
+  { key: 'placa', wx: 23, wy: 120, ww: 40, wh: 12, tx: 30.95, ty: 128.58, size: 10 },
+  { key: 'exercicio', wx: 95, wy: 120, ww: 25, wh: 12, tx: 102.93, ty: 128.58, size: 10 },
+  { key: 'anoFab', wx: 23, wy: 146, ww: 25, wh: 12, tx: 31.20, ty: 154.75, size: 10 },
+  { key: 'anoMod', wx: 95, wy: 146, ww: 25, wh: 12, tx: 102.93, ty: 154.75, size: 10 },
+  { key: 'numeroCrv', wx: 23, wy: 173, ww: 60, wh: 12, tx: 31.20, ty: 181.14, size: 10 },
+  { key: 'codSegCla', wx: 23, wy: 250, ww: 60, wh: 12, tx: 31.67, ty: 258.97, size: 10 },
+  { key: 'catObs', wx: 155, wy: 250, ww: 20, wh: 12, tx: 162.67, ty: 259.21, size: 10 },
+  { key: 'marcaModelo', wx: 23, wy: 284, ww: 120, wh: 12, tx: 30.95, ty: 293.43, size: 10 },
+  { key: 'especieTipo', wx: 23, wy: 320, ww: 100, wh: 12, tx: 30.47, ty: 329.66, size: 10 },
+  { key: 'placaAnt', wx: 23, wy: 356, ww: 55, wh: 12, tx: 31.20, ty: 364.00, size: 10 },
+  { key: 'chassi', wx: 123, wy: 356, ww: 90, wh: 12, tx: 131.01, ty: 364.46, size: 10 },
+  { key: 'cor', wx: 23, wy: 391, ww: 40, wh: 12, tx: 30.47, ty: 400.19, size: 10 },
+  { key: 'combustivel', wx: 94, wy: 391, ww: 80, wh: 12, tx: 101.97, ty: 399.47, size: 10 },
+  // Right column
+  { key: 'categoria', wx: 308, wy: 64, ww: 55, wh: 12, tx: 315.76, ty: 73.67, size: 10 },
+  { key: 'capacidade', wx: 502, wy: 80, ww: 22, wh: 12, tx: 510.08, ty: 88.78, size: 10 },
+  { key: 'potenciaCil', wx: 308, wy: 106, ww: 50, wh: 12, tx: 316.01, ty: 114.22, size: 10 },
+  { key: 'pesoBruto', wx: 502, wy: 106, ww: 25, wh: 12, tx: 510.08, ty: 114.70, size: 10 },
+  { key: 'motor', wx: 308, wy: 132, ww: 75, wh: 12, tx: 317.00, ty: 140.86, size: 10 },
+  { key: 'cmt', wx: 446, wy: 132, ww: 25, wh: 12, tx: 453.79, ty: 140.62, size: 10 },
+  { key: 'eixos', wx: 497, wy: 132, ww: 14, wh: 12, tx: 504.80, ty: 140.62, size: 10 },
+  { key: 'lotacao', wx: 530, wy: 132, ww: 20, wh: 12, tx: 538.63, ty: 140.86, size: 10 },
+  { key: 'carroceria', wx: 308, wy: 158, ww: 80, wh: 12, tx: 316.01, ty: 166.27, size: 10 },
+  { key: 'nomeProprietario', wx: 307, wy: 184, ww: 160, wh: 12, tx: 314.82, ty: 192.18, size: 10 },
+  { key: 'cpfCnpj', wx: 455, wy: 215, ww: 80, wh: 12, tx: 463.39, ty: 223.38, size: 10 },
+  { key: 'local', wx: 308, wy: 251, ww: 80, wh: 12, tx: 316.49, ty: 259.40, size: 10 },
+  { key: 'data', wx: 502, wy: 250, ww: 55, wh: 12, tx: 510.08, ty: 258.20, size: 10 },
+  { key: 'observacoes', wx: 19, wy: 434, ww: 170, wh: 12, tx: 26.87, ty: 442.18, size: 10 },
 ];
 
 export function CrlvPreview({ form, customQrPreview, showDenseQr = true }: CrlvPreviewProps) {
@@ -93,9 +95,8 @@ export function CrlvPreview({ form, customQrPreview, showDenseQr = true }: CrlvP
       // Draw background PNG
       ctx.drawImage(bgImage, 0, 0);
 
-      // Calculate scale ratio: image pixels / PDF points
-      // The FIELDS coordinates are in PDF points, we need to map to image pixels
-      const imgScale = bgImage.naturalWidth / (595); // A4 width in points ≈ 595
+      // Calculate scale ratio: image pixels / PDF points (A4 width = 595.28pt)
+      const imgScale = bgImage.naturalWidth / 595.28;
 
       const ps = (v: number) => v * imgScale;
 
@@ -107,48 +108,48 @@ export function CrlvPreview({ form, customQrPreview, showDenseQr = true }: CrlvP
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(ps(f.wx), ps(f.wy), ps(f.ww), ps(f.wh));
 
-        // Draw new text
+        // Draw new text (using exact tx/ty from backend)
         if (formValue.trim()) {
           ctx.fillStyle = '#000000';
           ctx.font = `bold ${ps(f.size)}px "FreeMono", "Courier New", monospace`;
           ctx.textBaseline = 'alphabetic';
-          ctx.fillText(formValue, ps(f.tx), ps(f.ty));
+          ctx.fillText(formValue.toUpperCase(), ps(f.tx), ps(f.ty));
         }
       }
 
-      // DETRAN-UF
+      // DETRAN-UF (small font, OpenSans style - matches backend: 31.20, 54.22, 4.42pt)
       if (v.uf) {
         ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(ps(268), ps(30), ps(30), ps(12));
+        ctx.fillRect(ps(23), ps(46), ps(40), ps(12));
         ctx.fillStyle = '#000000';
-        ctx.font = `bold ${ps(8)}px "FreeMono", "Courier New", monospace`;
+        ctx.font = `${ps(4.42)}px sans-serif`;
         ctx.textBaseline = 'alphabetic';
-        ctx.fillText(v.uf, ps(270), ps(39));
+        ctx.fillText(`DETRAN-   ${v.uf}`, ps(31.20), ps(54.22));
       }
 
-      // "Documento emitido por CDT..."
+      // "Documento emitido por CDT..." (matches backend: 31.43, 413.00, 4.42pt)
       const cpfClean = (v.cpfCnpj || '').replace(/\D/g, '');
       const cpfHash = cpfClean.slice(0, 9) || '000000000';
       const hashCode = `${cpfHash.slice(0,3)}${cpfHash.slice(3,5)}f${cpfHash.slice(5,8)}`;
       const now = new Date();
       const brDate = v.data || now.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
       const brTime = now.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo' });
-      const docText = `Documento emitido por CDT (${hashCode}) em ${brDate} às ${brTime}.`;
+      const docText = `Documento emitido por DETRAN ${v.uf || 'SP'} (${hashCode}) em ${brDate} às ${brTime}.`;
       ctx.fillStyle = '#FFFFFF';
-      ctx.fillRect(ps(23), ps(315), ps(400), ps(10));
+      ctx.fillRect(ps(23), ps(406), ps(400), ps(12));
       ctx.fillStyle = '#000000';
-      ctx.font = `${ps(5)}px "FreeMono", "Courier New", monospace`;
+      ctx.font = `${ps(4.42)}px sans-serif`;
       ctx.textBaseline = 'alphabetic';
-      ctx.fillText(docText, ps(25), ps(322));
+      ctx.fillText(docText, ps(31.43), ps(413.00));
 
-      // QR Code overlay
+      // QR Code overlay - matches backend: x=167.23, y=92.85, size=97.4
       const qrSrc = customQrPreview || (showDenseQr ? '/images/qrcode-sample-crlv.png' : null);
       if (qrSrc) {
         const qrImg = new Image();
         qrImg.onload = () => {
           ctx.fillStyle = '#FFFFFF';
-          ctx.fillRect(ps(150), ps(60), ps(90), ps(95));
-          ctx.drawImage(qrImg, ps(155), ps(65), ps(80), ps(80));
+          ctx.fillRect(ps(160), ps(85), ps(105), ps(105));
+          ctx.drawImage(qrImg, ps(167.23), ps(92.85), ps(97.4), ps(97.4));
         };
         qrImg.src = qrSrc;
       }
