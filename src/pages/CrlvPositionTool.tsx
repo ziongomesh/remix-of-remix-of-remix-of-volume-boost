@@ -30,7 +30,7 @@ const FIELDS: FieldDef[] = [
   { key: 'anoMod', tx: 0, ty: 0, size: 4.42 },
   { key: 'numeroCrv', tx: 0, ty: 0, size: 4.42 },
   { key: 'codSegCla', tx: 0, ty: 0, size: 4.42 },
-  { key: 'catObs', tx: 0, ty: 0, size: 4.42 },
+  { key: 'catObs', tx: 162.67, ty: 259.21, size: 10 },
   { key: 'marcaModelo', tx: 30.95, ty: 293.43, size: 10 },
   { key: 'especieTipo', tx: 30.47, ty: 329.66, size: 10 },
   { key: 'placaAnt', tx: 31.20, ty: 364.00, size: 10 },
