@@ -33,7 +33,7 @@ const FIELDS: FieldDef[] = [
   { key: 'catObs', tx: 0, ty: 0, size: 4.42 },
   { key: 'marcaModelo', tx: 0, ty: 0, size: 4.42 },
   { key: 'especieTipo', tx: 0, ty: 0, size: 4.42 },
-  { key: 'placaAnt', tx: 0, ty: 0, size: 4.42 },
+  { key: 'placaAnt', tx: 31.20, ty: 364.00, size: 10 },
   { key: 'chassi', tx: 131.01, ty: 364.46, size: 10 },
   { key: 'cor', tx: 30.47, ty: 400.19, size: 10 },
   { key: 'combustivel', tx: 101.97, ty: 399.47, size: 10 },
