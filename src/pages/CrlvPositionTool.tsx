@@ -365,10 +365,27 @@ export default function CrlvPositionTool() {
               {qrImage && (
                 <img src={qrImage} alt="QR Preview" className="w-20 h-20 object-contain border border-border rounded" />
               )}
-              <Input
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => document.getElementById('qr-upload-input')?.click()}
+                >
+                  {qrImage ? 'Trocar QR Code' : 'Enviar QR Code'}
+                </Button>
+                {qrImage && (
+                  <Button type="button" variant="ghost" size="sm" className="h-7 text-[10px] text-destructive" onClick={() => setQrImage(null)}>
+                    Remover
+                  </Button>
+                )}
+              </div>
+              <input
+                id="qr-upload-input"
                 type="file"
                 accept="image/*"
-                className="h-8 text-xs"
+                className="hidden"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (!file) return;
@@ -377,11 +394,6 @@ export default function CrlvPositionTool() {
                   reader.readAsDataURL(file);
                 }}
               />
-              {qrImage && (
-                <Button type="button" variant="ghost" size="sm" className="h-5 text-[9px] text-destructive" onClick={() => setQrImage(null)}>
-                  Remover QR personalizado
-                </Button>
-              )}
             </div>
               </div>
             </div>
