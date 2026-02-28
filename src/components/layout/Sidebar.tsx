@@ -110,10 +110,10 @@ export function Sidebar() {
     <aside className="fixed left-0 top-0 h-screen w-64 bg-card border-r border-border flex flex-col">
       <div className="p-6 border-b border-border">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <Link to={role === 'dono' || role === 'sub' ? '/dashboard-dono' : '/dashboard'} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <Logo className="h-10 w-10" />
             <h1 className="text-base font-bold text-primary">Data Sistemas</h1>
-          </div>
+          </Link>
           <ThemeToggle />
         </div>
         <div className="flex items-center gap-2 mt-3 text-sm text-muted-foreground">
