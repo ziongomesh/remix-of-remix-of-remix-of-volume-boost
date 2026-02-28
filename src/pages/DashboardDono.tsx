@@ -489,7 +489,18 @@ export default function DashboardDono() {
   const mostActiveMasters = sortedByActivity.filter(a => a.rank === 'master').slice(0, 5);
   const mostActiveResellers = sortedByActivity.filter(a => a.rank === 'revendedor').slice(0, 5);
   const mostActiveSubs = sortedByActivity.filter(a => a.rank === 'sub').slice(0, 5);
-  const leastActive = [...sortedByActivity].reverse().slice(0, 5);
+  // Inativos: 2+ dias sem atividade
+  const getDaysInactive = (lastActive: string | null, createdAt?: string) => {
+    const ref = lastActive || createdAt;
+    if (!ref) return 999;
+    return Math.floor((Date.now() - new Date(ref).getTime()) / (1000 * 60 * 60 * 24));
+  };
+  const inactiveAdmins = allAdmins
+    .filter(a => a.rank !== 'dono' && getDaysInactive(a.last_active, a.created_at) >= 2)
+    .sort((a, b) => getDaysInactive(b.last_active, b.created_at) - getDaysInactive(a.last_active, a.created_at));
+  const inactiveMasters = inactiveAdmins.filter(a => a.rank === 'master');
+  const inactiveResellers = inactiveAdmins.filter(a => a.rank === 'revendedor');
+  const inactiveSubs = inactiveAdmins.filter(a => a.rank === 'sub');
 
   return (
     <DashboardLayout>
@@ -717,30 +728,50 @@ export default function DashboardDono() {
                             </div>
                           </CardHeader>
                           <CardContent>
-                            <div className="space-y-2">
-                              {leastActive.map((a) => (
-                                <div key={a.id} className="flex items-center justify-between text-sm p-2.5 rounded-lg bg-muted/30">
-                                  <div className="flex items-center gap-2.5 min-w-0">
-                                    <div className="min-w-0">
-                                      <div className="flex items-center gap-1.5">
-                                        <span className="text-sm font-medium truncate max-w-[120px]">{a.nome}</span>
-                                        {getRankBadge(a.rank)}
-                                      </div>
-                                      <p className="text-[11px] text-muted-foreground truncate">{a.email}</p>
-                                    </div>
+                            <Tabs defaultValue="todos" className="w-full">
+                              <TabsList className="w-full mb-3">
+                                <TabsTrigger value="todos" className="flex-1 text-xs">Todos ({inactiveAdmins.length})</TabsTrigger>
+                                <TabsTrigger value="masters" className="flex-1 text-xs">Masters ({inactiveMasters.length})</TabsTrigger>
+                                <TabsTrigger value="revendedores" className="flex-1 text-xs">Revendas ({inactiveResellers.length})</TabsTrigger>
+                                {inactiveSubs.length > 0 && (
+                                  <TabsTrigger value="subs" className="flex-1 text-xs">Sub Donos</TabsTrigger>
+                                )}
+                              </TabsList>
+                              {[
+                                { value: 'todos', list: inactiveAdmins },
+                                { value: 'masters', list: inactiveMasters },
+                                { value: 'revendedores', list: inactiveResellers },
+                                { value: 'subs', list: inactiveSubs },
+                              ].map(tab => (
+                                <TabsContent key={tab.value} value={tab.value} className="mt-0">
+                                  <div className="space-y-2">
+                                    {tab.list.length === 0 ? (
+                                      <p className="text-center text-muted-foreground py-4 text-xs">Nenhum inativo</p>
+                                    ) : tab.list.map((a) => {
+                                      const days = getDaysInactive(a.last_active, a.created_at);
+                                      return (
+                                        <div key={a.id} className="flex items-center justify-between text-sm p-2.5 rounded-lg bg-muted/30">
+                                          <div className="flex items-center gap-2.5 min-w-0">
+                                            <div className="min-w-0">
+                                              <div className="flex items-center gap-1.5">
+                                                <span className="text-sm font-medium truncate max-w-[120px]">{a.nome}</span>
+                                                {getRankBadge(a.rank)}
+                                              </div>
+                                              <p className="text-[11px] text-muted-foreground truncate">{a.email}</p>
+                                            </div>
+                                          </div>
+                                          <div className="flex items-center gap-3 shrink-0">
+                                            <Badge variant="destructive" className="text-[9px] px-1.5 py-0">{days}d off</Badge>
+                                            <span className="text-xs">{a.total_services} serviços</span>
+                                            <span className="text-[11px] text-muted-foreground">{a.last_active ? timeAgo(a.last_active) : 'Nunca'}</span>
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
                                   </div>
-                                  <div className="flex items-center gap-3 shrink-0">
-                                    {!isSub && (
-                                      <span className="text-[11px] text-muted-foreground">
-                                        <CreditCard className="h-3 w-3 inline mr-0.5" />{a.creditos.toLocaleString('pt-BR')}
-                                      </span>
-                                    )}
-                                    <span className="text-xs">{a.total_services} serviços</span>
-                                    <span className="text-[11px] text-muted-foreground">{a.last_active ? timeAgo(a.last_active) : 'Nunca'}</span>
-                                  </div>
-                                </div>
+                                </TabsContent>
                               ))}
-                            </div>
+                            </Tabs>
                           </CardContent>
                         </Card>
                       </div>
@@ -790,15 +821,15 @@ export default function DashboardDono() {
                               >
                                 <Send className="h-3.5 w-3.5" /> Enviar
                               </Button>
-                              {leastActive.length > 0 && (
+                              {inactiveAdmins.length > 0 && (
                                 <Button
                                   onClick={async () => {
                                     setSendingAlert(true);
                                     try {
-                                      for (const a of leastActive) {
+                                      for (const a of inactiveAdmins) {
                                         await api.alerts.send(a.id, '⚠️ Você está inativo na base. Use com frequência, pois poderá perder acesso.');
                                       }
-                                      toast.success(`Alerta enviado para ${leastActive.length} inativos!`);
+                                      toast.success(`Alerta enviado para ${inactiveAdmins.length} inativos!`);
                                       setAlertDialogOpen(false);
                                     } catch (e: any) {
                                       toast.error(e.message || 'Erro ao enviar alertas');
@@ -810,7 +841,7 @@ export default function DashboardDono() {
                                   variant="destructive"
                                   className="h-9 text-sm gap-1.5"
                                 >
-                                  <AlertTriangle className="h-3.5 w-3.5" /> Todos ({leastActive.length})
+                                  <AlertTriangle className="h-3.5 w-3.5" /> Todos ({inactiveAdmins.length})
                                 </Button>
                               )}
                             </div>
