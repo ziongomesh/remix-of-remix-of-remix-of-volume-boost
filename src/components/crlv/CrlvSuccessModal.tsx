@@ -14,7 +14,7 @@ interface CrlvSuccessModalProps {
   createdAt?: string;
 }
 
-export default function CrlvSuccessModal({ isOpen, onClose, placa, pdfUrl }: CrlvSuccessModalProps) {
+export default function CrlvSuccessModal({ isOpen, onClose, placa, pdfUrl, createdAt }: CrlvSuccessModalProps) {
   const [isDownloading, setIsDownloading] = useState(false);
 
   const cleanPlaca = placa.replace(/[^A-Za-z0-9]/g, '');
@@ -58,7 +58,7 @@ export default function CrlvSuccessModal({ isOpen, onClose, placa, pdfUrl }: Crl
             <div>
               <span>CRLV Criado com Sucesso!</span>
               <div className="text-sm text-muted-foreground mt-1">
-                Documento pronto para download
+                {createdAt ? new Date(createdAt).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }) : new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
               </div>
             </div>
           </DialogTitle>
