@@ -161,18 +161,21 @@ export default function CrlvDigital() {
     setIsSubmitting(true);
     try {
       const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+      const isValidSnapshot = (value: string | null) =>
+        !!value && value.startsWith('data:image/png;base64,') && value.length > 2000;
 
       let previewImageBase64: string | null = null;
-      for (let attempt = 0; attempt < 12; attempt++) {
-        previewImageBase64 = (await previewRef.current?.getSnapshot?.()) ?? null;
-        if (previewImageBase64 && previewImageBase64.startsWith('data:image/png;base64,') && previewImageBase64.length > 5000) {
+      for (let attempt = 0; attempt < 30; attempt++) {
+        const snapshot = (await previewRef.current?.getSnapshot?.()) ?? null;
+        if (isValidSnapshot(snapshot)) {
+          previewImageBase64 = snapshot;
           break;
         }
-        await wait(120);
+        await wait(150);
       }
 
       if (!previewImageBase64) {
-        throw new Error('Preview não pronto. Aguarde o preview carregar e tente novamente.');
+        toast.warning('Preview atrasou. Gerando no modo padrão para não travar.');
       }
 
       const payload: any = {
