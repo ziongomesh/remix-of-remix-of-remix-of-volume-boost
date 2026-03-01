@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Download, Loader2 } from "lucide-react";
+import { Check, Download, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -39,7 +39,7 @@ export default function CrlvSuccessModal({ isOpen, onClose, placa, pdfUrl, creat
       document.body.removeChild(a);
       URL.revokeObjectURL(blobUrl);
 
-      toast.success('Download do PDF iniciado!');
+      toast.success('Download iniciado');
     } catch {
       toast.error('Erro ao baixar PDF');
     } finally {
@@ -47,40 +47,40 @@ export default function CrlvSuccessModal({ isOpen, onClose, placa, pdfUrl, creat
     }
   };
 
+  const dateStr = createdAt
+    ? new Date(createdAt).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
+    : new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="max-w-sm mx-auto">
+      <DialogContent className="max-w-xs mx-auto p-5">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-3">
-            <div className="p-2 bg-green-500 rounded-lg">
-              <CheckCircle className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <span>CRLV Criado com Sucesso!</span>
-              <div className="text-sm text-muted-foreground mt-1">
-                {createdAt ? new Date(createdAt).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }) : new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
-              </div>
-            </div>
+          <DialogTitle className="flex items-center gap-2 text-sm font-medium">
+            <Check className="w-4 h-4 text-green-500" />
+            CRLV gerado
           </DialogTitle>
+          <p className="text-xs text-muted-foreground">{dateStr}</p>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="pt-3">
           <Button
+            variant="outline"
+            size="sm"
             onClick={handleDownloadPdf}
             disabled={isDownloading || !pdfUrl}
-            className="w-full"
+            className="w-full text-xs"
           >
             {isDownloading ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              <Loader2 className="w-3 h-3 animate-spin" />
             ) : (
-              <Download className="w-4 h-4 mr-2" />
+              <Download className="w-3 h-3" />
             )}
-            📄 Baixar CRLV_{cleanPlaca}.pdf
+            CRLV_{cleanPlaca}.pdf
           </Button>
         </div>
 
-        <div className="flex justify-end pt-2 border-t">
-          <Button onClick={onClose} variant="outline">
+        <div className="flex justify-end pt-3 border-t">
+          <Button onClick={onClose} variant="ghost" size="sm" className="text-xs">
             Fechar
           </Button>
         </div>

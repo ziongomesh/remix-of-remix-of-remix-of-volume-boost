@@ -697,15 +697,15 @@ export default function CrlvPositionTool() {
 
             {/* Botão Gerar */}
             <Button
-              size="lg"
-              className="w-full max-w-sm text-base font-bold h-12"
+              variant="outline"
+              className="w-full max-w-xs h-10 text-sm font-medium"
               onClick={handleGerarCrlv}
               disabled={saving}
             >
               {saving ? (
-                <><Loader2 className="h-5 w-5 animate-spin mr-2" /> Gerando CRLV...</>
+                <><Loader2 className="h-4 w-4 animate-spin" /> Gerando...</>
               ) : (
-                '📄 Gerar CRLV — 1 crédito'
+                'Gerar CRLV — 1 crédito'
               )}
             </Button>
           </div>
