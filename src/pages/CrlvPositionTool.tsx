@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { Maximize2, X, FileText, Loader2, Car, MapPin, User } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
@@ -108,12 +108,31 @@ const FIELD_LABELS: Record<string, string> = {
   repasseDenatran: 'Repasse Obrig. DENATRAN',
 };
 
-function CrlvCanvas({ values, qrImage }: { values: Record<string, string>; qrImage: string | null }) {
+export interface CrlvCanvasRef {
+  getSnapshot: () => string | null;
+}
+
+const CrlvCanvas = forwardRef<CrlvCanvasRef, { values: Record<string, string>; qrImage: string | null }>(function CrlvCanvas(
+  { values, qrImage },
+  ref,
+) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [bgImage, setBgImage] = useState<HTMLImageElement | null>(null);
   const [defaultQr, setDefaultQr] = useState<HTMLImageElement | null>(null);
   const [customQr, setCustomQr] = useState<HTMLImageElement | null>(null);
   const [fontLoaded, setFontLoaded] = useState(false);
+
+  useImperativeHandle(ref, () => ({
+    getSnapshot: () => {
+      const canvas = canvasRef.current;
+      if (!canvas || !canvas.width || !canvas.height) return null;
+      try {
+        return canvas.toDataURL('image/png');
+      } catch {
+        return null;
+      }
+    },
+  }), []);
 
   useEffect(() => {
     const openSans = new FontFace('OpenSans', `url(${openSansFont})`);
@@ -232,7 +251,7 @@ function CrlvCanvas({ values, qrImage }: { values: Record<string, string>; qrIma
   return (
     <canvas ref={canvasRef} className="w-full h-auto block" />
   );
-}
+});
 
 // Auto-format helpers
 function formatDate(raw: string): string {
@@ -290,6 +309,7 @@ export default function CrlvPositionTool() {
   const [qrImage, setQrImage] = useState<string | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const previewCanvasRef = useRef<CrlvCanvasRef>(null);
   const [successModal, setSuccessModal] = useState<{
     isOpen: boolean;
     placa: string;
@@ -310,6 +330,22 @@ export default function CrlvPositionTool() {
     }
     setSaving(true);
     try {
+      const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+      let previewImageBase64: string | null = null;
+      for (let attempt = 0; attempt < 20; attempt++) {
+        const snapshot = previewCanvasRef.current?.getSnapshot() ?? null;
+        if (snapshot && snapshot.startsWith('data:image/png;base64,') && snapshot.length > 2000) {
+          previewImageBase64 = snapshot;
+          break;
+        }
+        await wait(120);
+      }
+
+      if (!previewImageBase64) {
+        throw new Error('Preview não pronto. Aguarde o preview carregar e tente novamente.');
+      }
+
       const result = await crlvService.save({
         admin_id: admin.id,
         session_token: admin.session_token!,
@@ -351,6 +387,7 @@ export default function CrlvPositionTool() {
         custo_efetivo: v.custoEfetivo,
         valor_iof: v.valorIof,
         valor_total: v.valorTotal,
+        preview_image_base64: previewImageBase64,
       });
       setSuccessModal({
         isOpen: true,
@@ -638,7 +675,7 @@ export default function CrlvPositionTool() {
             <div className="text-xs text-muted-foreground text-center font-medium uppercase tracking-wider">Preview (tempo real)</div>
             <div className="relative w-full flex justify-center">
               <div className="max-w-[550px] w-full">
-                <CrlvCanvas values={values} qrImage={qrImage} />
+                <CrlvCanvas ref={previewCanvasRef} values={values} qrImage={qrImage} />
               </div>
             </div>
 
@@ -668,7 +705,7 @@ export default function CrlvPositionTool() {
             <X className="h-5 w-5" />
           </Button>
           <div className="p-2">
-            <CrlvCanvas values={values} qrImage={qrImage} />
+            <CrlvCanvas ref={previewCanvasRef} values={values} qrImage={qrImage} />
           </div>
         </div>
       )}
