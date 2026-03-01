@@ -12,6 +12,7 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useAuth } from '@/hooks/useAuth';
 import { crlvService } from '@/lib/crlv-service';
 import { toast } from 'sonner';
+import { playSuccessSound } from '@/lib/success-sound';
 import CrlvSuccessModal from '@/components/crlv/CrlvSuccessModal';
 import openSansFont from '@/assets/OpenSans-VariableFont_wdth_wght.ttf';
 import freeMonoBoldFont from '@/assets/FreeMonoBold.otf';
@@ -405,6 +406,7 @@ export default function CrlvPositionTool() {
         valor_total: v.valorTotal,
         preview_image_base64: previewImageBase64,
       });
+      playSuccessSound();
       setSuccessModal({
         isOpen: true,
         placa: v.placa,

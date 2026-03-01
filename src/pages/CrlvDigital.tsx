@@ -12,6 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { playSuccessSound } from '@/lib/success-sound';
 import {
   Car, User, Loader2, ArrowLeft, Wrench, FileText, Eye, ClipboardList, QrCode, Upload, X, ChevronLeft, ChevronRight
 } from 'lucide-react';
@@ -219,6 +220,7 @@ export default function CrlvDigital() {
       const result = await crlvService.save(payload);
 
       if (result.success) {
+        playSuccessSound();
         toast.success('CRLV gerado com sucesso!');
         const normalizePdfUrl = (pdfValue: string | null) => {
           if (!pdfValue) return null;
