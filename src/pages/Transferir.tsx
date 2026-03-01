@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Navigate } from 'react-router-dom';
 import api from '@/lib/api';
+import { playSuccessSound } from '@/lib/success-sound';
 import { toast } from 'sonner';
 import { Send, Loader2, CreditCard } from 'lucide-react';
 
@@ -92,6 +93,7 @@ export default function Transferir() {
       if (!result.success) throw new Error('Saldo insuficiente');
 
       await refreshCredits();
+      playSuccessSound();
       toast.success('Transferência realizada com sucesso!', {
         description: `${amount} créditos transferidos`
       });

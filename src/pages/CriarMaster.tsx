@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Navigate } from 'react-router-dom';
 import api from '@/lib/api';
 import { toast } from 'sonner';
+import { playSuccessSound } from '@/lib/success-sound';
 import { UserPlus, Loader2, Shield, Users, Coins, Crown } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 
@@ -62,6 +63,7 @@ export default function CriarMaster() {
       }
 
       const roleLabel = selectedRole === 'sub' ? 'Sub Dono' : selectedRole === 'master' ? 'Master' : 'Revendedor';
+      playSuccessSound();
       toast.success(`Conta ${roleLabel} criada com sucesso!`, {
         description: `Email: ${formData.email}${withCredits && credits ? ` | Créditos: ${credits}` : ''}`
       });

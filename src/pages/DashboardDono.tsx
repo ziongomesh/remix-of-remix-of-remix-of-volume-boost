@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Navigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { playSuccessSound } from '@/lib/success-sound';
 import { Textarea } from '@/components/ui/textarea';
 import api from '@/lib/api';
 import { mysqlApi } from '@/lib/api-mysql';
@@ -338,6 +339,7 @@ export default function DashboardDono() {
       }
 
       const typeLabel = createType === 'sub' ? 'Sub Dono' : createType === 'master' ? 'Master' : 'Revendedor';
+      playSuccessSound();
       toast.success(`${typeLabel} criado com sucesso!`, {
         description: `${createForm.name} (${createForm.email})${creditsToGive > 0 ? ` • ${creditsToGive} créditos iniciais` : ''}`,
       });
