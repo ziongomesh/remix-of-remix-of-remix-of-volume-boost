@@ -11,10 +11,6 @@ export interface CrlvPreviewRef {
   getSnapshot: () => string | null;
 }
 
-// Scale for canvas rendering
-const SCALE = 2.0;
-const s = (v: number) => v * SCALE;
-
 // Each field: formKey, whiteout rect (x, y, w, h), text position (x, y), fontSize
 interface FieldDef {
   key: string;
@@ -24,7 +20,7 @@ interface FieldDef {
 }
 
 const FIELDS: FieldDef[] = [
-  // Left column - coordinates match backend PDF exactly (in PDF points, top-left origin)
+  // Left column
   { key: 'renavam', wx: 23, wy: 94, ww: 60, wh: 12, tx: 31.20, ty: 102.21, size: 10 },
   { key: 'placa', wx: 23, wy: 120, ww: 40, wh: 12, tx: 30.95, ty: 128.58, size: 10 },
   { key: 'exercicio', wx: 95, wy: 120, ww: 25, wh: 12, tx: 102.93, ty: 128.58, size: 10 },
@@ -56,6 +52,18 @@ const FIELDS: FieldDef[] = [
   { key: 'observacoes', wx: 19, wy: 434, ww: 170, wh: 12, tx: 26.87, ty: 442.18, size: 10 },
 ];
 
+// Insurance/DPVAT fields
+const DPVAT_FIELDS: FieldDef[] = [
+  { key: 'catTarif', wx: 308, wy: 315, ww: 40, wh: 12, tx: 316.73, ty: 323.51, size: 10 },
+  { key: 'dataQuitacao', wx: 381, wy: 315, ww: 50, wh: 12, tx: 389.63, ty: 323.51, size: 10 },
+  { key: 'repasseFns', wx: 308, wy: 352, ww: 50, wh: 12, tx: 316.73, ty: 360.46, size: 10 },
+  { key: 'custoBilhete', wx: 416, wy: 352, ww: 40, wh: 12, tx: 424.18, ty: 360.46, size: 10 },
+  { key: 'custoEfetivo', wx: 486, wy: 352, ww: 40, wh: 12, tx: 494.72, ty: 360.46, size: 10 },
+  { key: 'repasseDenatran', wx: 308, wy: 393, ww: 50, wh: 12, tx: 316.73, ty: 401.25, size: 10 },
+  { key: 'valorIof', wx: 416, wy: 393, ww: 40, wh: 12, tx: 424.18, ty: 401.25, size: 10 },
+  { key: 'valorTotal', wx: 486, wy: 393, ww: 40, wh: 12, tx: 494.72, ty: 401.25, size: 10 },
+];
+
 export const CrlvPreview = forwardRef<CrlvPreviewRef, CrlvPreviewProps>(function CrlvPreview(
   { form, customQrPreview, showDenseQr = true }: CrlvPreviewProps,
   ref,
@@ -63,6 +71,7 @@ export const CrlvPreview = forwardRef<CrlvPreviewRef, CrlvPreviewProps>(function
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [bgImage, setBgImage] = useState<HTMLImageElement | null>(null);
+  const [qrImage, setQrImage] = useState<HTMLImageElement | null>(null);
   const [ready, setReady] = useState(false);
   const rafRef = useRef<number>(0);
 
@@ -84,6 +93,7 @@ export const CrlvPreview = forwardRef<CrlvPreviewRef, CrlvPreviewProps>(function
   useEffect(() => {
     let cancelled = false;
     const img = new Image();
+    img.crossOrigin = 'anonymous';
     img.onload = () => {
       if (cancelled) return;
       setBgImage(img);
@@ -95,6 +105,26 @@ export const CrlvPreview = forwardRef<CrlvPreviewRef, CrlvPreviewProps>(function
     img.src = '/templates/crlv-template-base.png?v=' + Date.now();
     return () => { cancelled = true; };
   }, []);
+
+  // Pre-load QR image whenever source changes
+  const qrSrc = customQrPreview || (showDenseQr ? '/images/qrcode-sample-crlv.png' : null);
+  useEffect(() => {
+    if (!qrSrc) {
+      setQrImage(null);
+      return;
+    }
+    let cancelled = false;
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      if (!cancelled) setQrImage(img);
+    };
+    img.onerror = () => {
+      if (!cancelled) setQrImage(null);
+    };
+    img.src = qrSrc;
+    return () => { cancelled = true; };
+  }, [qrSrc]);
 
   // Redraw on form changes
   useEffect(() => {
@@ -116,18 +146,18 @@ export const CrlvPreview = forwardRef<CrlvPreviewRef, CrlvPreviewProps>(function
 
       // Calculate scale ratio: image pixels / PDF points (A4 width = 595.28pt)
       const imgScale = bgImage.naturalWidth / 595.28;
+      const ps = (val: number) => val * imgScale;
 
-      const ps = (v: number) => v * imgScale;
-
-      // For each field: white-out + redraw with form value
-      for (const f of FIELDS) {
+      // Draw data fields
+      const allFields = [...FIELDS, ...DPVAT_FIELDS];
+      for (const f of allFields) {
         const formValue = v[f.key] || '';
 
         // White-out original area
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(ps(f.wx), ps(f.wy), ps(f.ww), ps(f.wh));
 
-        // Draw new text (using exact tx/ty from backend)
+        // Draw new text
         if (formValue.trim()) {
           ctx.fillStyle = '#000000';
           ctx.font = `bold ${ps(f.size)}px "FreeMono", "Courier New", monospace`;
@@ -136,7 +166,7 @@ export const CrlvPreview = forwardRef<CrlvPreviewRef, CrlvPreviewProps>(function
         }
       }
 
-      // DETRAN-UF (small font, OpenSans style - matches backend: 31.20, 54.22, 4.42pt)
+      // DETRAN-UF
       if (v.uf) {
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(ps(23), ps(46), ps(40), ps(12));
@@ -146,7 +176,7 @@ export const CrlvPreview = forwardRef<CrlvPreviewRef, CrlvPreviewProps>(function
         ctx.fillText(`DETRAN-   ${v.uf}`, ps(31.20), ps(54.22));
       }
 
-      // "Documento emitido por CDT..." (matches backend: 31.43, 413.00, 4.42pt)
+      // "Documento emitido por DETRAN..."
       const cpfClean = (v.cpfCnpj || '').replace(/\D/g, '');
       const cpfHash = cpfClean.slice(0, 9) || '000000000';
       const hashCode = `${cpfHash.slice(0,3)}${cpfHash.slice(3,5)}f${cpfHash.slice(5,8)}`;
@@ -161,21 +191,16 @@ export const CrlvPreview = forwardRef<CrlvPreviewRef, CrlvPreviewProps>(function
       ctx.textBaseline = 'alphabetic';
       ctx.fillText(docText, ps(31.43), ps(413.00));
 
-      // QR Code overlay - matches backend: x=167.23, y=92.85, size=97.4
-      const qrSrc = customQrPreview || (showDenseQr ? '/images/qrcode-sample-crlv.png' : null);
-      if (qrSrc) {
-        const qrImg = new Image();
-        qrImg.onload = () => {
-          ctx.fillStyle = '#FFFFFF';
-          ctx.fillRect(ps(160), ps(85), ps(105), ps(105));
-          ctx.drawImage(qrImg, ps(167.23), ps(92.85), ps(97.4), ps(97.4));
-        };
-        qrImg.src = qrSrc;
+      // QR Code - drawn synchronously from pre-loaded image
+      if (qrImage) {
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(ps(160), ps(85), ps(105), ps(105));
+        ctx.drawImage(qrImage, ps(167.23), ps(92.85), ps(97.4), ps(97.4));
       }
     });
 
     return () => cancelAnimationFrame(rafRef.current);
-  }, [v, customQrPreview, showDenseQr, ready, bgImage]);
+  }, [v, qrImage, showDenseQr, ready, bgImage]);
 
   return (
     <div ref={containerRef} className="rounded-lg border border-border overflow-hidden bg-muted">
