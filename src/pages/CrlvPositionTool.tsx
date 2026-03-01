@@ -122,6 +122,42 @@ const CrlvCanvas = forwardRef<CrlvCanvasRef, { values: Record<string, string>; q
   const [customQr, setCustomQr] = useState<HTMLImageElement | null>(null);
   const [fontLoaded, setFontLoaded] = useState(false);
 
+  // Load fonts
+  useEffect(() => {
+    const openSans = new FontFace('OpenSans', `url(${openSansFont})`);
+    const freeMono = new FontFace('FreeMonoBold', `url(${freeMonoBoldFont})`);
+    Promise.all([openSans.load(), freeMono.load()]).then(([f1, f2]) => {
+      document.fonts.add(f1);
+      document.fonts.add(f2);
+      setFontLoaded(true);
+    }).catch(err => {
+      console.error('Erro ao carregar fontes:', err);
+      setFontLoaded(true);
+    });
+  }, []);
+
+  // Load base template
+  useEffect(() => {
+    const img = new Image();
+    img.onload = () => setBgImage(img);
+    img.src = '/templates/crlv-template-base.png?v=1';
+  }, []);
+
+  // Load default QR
+  useEffect(() => {
+    const img = new Image();
+    img.onload = () => setDefaultQr(img);
+    img.src = '/images/qrcode-sample-crlv.png';
+  }, []);
+
+  // Load custom QR
+  useEffect(() => {
+    if (!qrImage) { setCustomQr(null); return; }
+    const img = new Image();
+    img.onload = () => setCustomQr(img);
+    img.src = qrImage;
+  }, [qrImage]);
+
   const drawCanvas = useCallback((withWatermark: boolean) => {
     if (!bgImage || !fontLoaded) return;
     const canvas = canvasRef.current;
