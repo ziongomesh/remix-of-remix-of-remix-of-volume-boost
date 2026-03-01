@@ -220,12 +220,19 @@ export default function CrlvDigital() {
 
       if (result.success) {
         toast.success('CRLV gerado com sucesso!');
-        // Build full PDF URL for preview
-        const envUrl = import.meta.env.VITE_API_URL as string | undefined;
-        const baseUrl = envUrl || (window.location.hostname !== 'localhost'
-          ? window.location.origin
-          : 'http://localhost:4000');
-        setGeneratedPdfUrl(`${baseUrl}${result.pdf}`);
+        const normalizePdfUrl = (pdfValue: string | null) => {
+          if (!pdfValue) return null;
+          if (/^https?:\/\//i.test(pdfValue)) return pdfValue;
+
+          const envUrl = import.meta.env.VITE_API_URL as string | undefined;
+          const baseUrl = envUrl || (window.location.hostname !== 'localhost'
+            ? window.location.origin
+            : 'http://localhost:4000');
+
+          return `${baseUrl}${pdfValue.startsWith('/') ? pdfValue : `/${pdfValue}`}`;
+        };
+
+        setGeneratedPdfUrl(normalizePdfUrl(result.pdf));
         setGeneratedSenha(result.senha || null);
       }
     } catch (error: any) {
