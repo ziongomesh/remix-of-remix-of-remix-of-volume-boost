@@ -109,7 +109,7 @@ const documentTypes = [
 
 interface VipCountry {
   name: string;
-  flag: string;
+  code: string; // ISO 3166-1 alpha-2 lowercase for flagcdn
 }
 
 interface VipCategory {
@@ -118,45 +118,45 @@ interface VipCategory {
 }
 
 const passportCountries: VipCountry[] = [
-  { name: 'Estados Unidos', flag: '🇺🇸' }, { name: 'Reino Unido', flag: '🇬🇧' }, { name: 'Canadá', flag: '🇨🇦' },
-  { name: 'Austrália', flag: '🇦🇺' }, { name: 'Japão', flag: '🇯🇵' }, { name: 'Alemanha', flag: '🇩🇪' },
-  { name: 'França', flag: '🇫🇷' }, { name: 'Itália', flag: '🇮🇹' }, { name: 'Portugal', flag: '🇵🇹' },
-  { name: 'México', flag: '🇲🇽' },
+  { name: 'Estados Unidos', code: 'us' }, { name: 'Reino Unido', code: 'gb' }, { name: 'Canadá', code: 'ca' },
+  { name: 'Austrália', code: 'au' }, { name: 'Japão', code: 'jp' }, { name: 'Alemanha', code: 'de' },
+  { name: 'França', code: 'fr' }, { name: 'Itália', code: 'it' }, { name: 'Portugal', code: 'pt' },
+  { name: 'México', code: 'mx' },
 ];
 
 const idCountries: VipCountry[] = [
-  { name: 'Eslováquia', flag: '🇸🇰' }, { name: 'Alemanha', flag: '🇩🇪' }, { name: 'Ucrânia', flag: '🇺🇦' },
-  { name: 'Noruega', flag: '🇳🇴' }, { name: 'Armênia', flag: '🇦🇲' }, { name: 'Áustria', flag: '🇦🇹' },
-  { name: 'Bangladesh', flag: '🇧🇩' }, { name: 'Bulgária', flag: '🇧🇬' }, { name: 'Bélgica', flag: '🇧🇪' },
-  { name: 'Camarões', flag: '🇨🇲' }, { name: 'Chile', flag: '🇨🇱' }, { name: 'Croácia', flag: '🇭🇷' },
-  { name: 'Tcheco', flag: '🇨🇿' }, { name: 'Chipre', flag: '🇨🇾' }, { name: 'Dinamarca', flag: '🇩🇰' },
-  { name: 'Dominicano', flag: '🇩🇴' }, { name: 'Egito', flag: '🇪🇬' }, { name: 'Estônia', flag: '🇪🇪' },
-  { name: 'Finlândia', flag: '🇫🇮' }, { name: 'Geórgia', flag: '🇬🇪' }, { name: 'Grécia', flag: '🇬🇷' },
-  { name: 'Hungria', flag: '🇭🇺' }, { name: 'Índia', flag: '🇮🇳' }, { name: 'Indonésia', flag: '🇮🇩' },
-  { name: 'Irlanda', flag: '🇮🇪' }, { name: 'Israel', flag: '🇮🇱' }, { name: 'Itália', flag: '🇮🇹' },
-  { name: 'Costa do Marfim', flag: '🇨🇮' }, { name: 'Cazaquistão', flag: '🇰🇿' }, { name: 'Quênia', flag: '🇰🇪' },
-  { name: 'Quirguistão', flag: '🇰🇬' }, { name: 'Letônia', flag: '🇱🇻' }, { name: 'Lituânia', flag: '🇱🇹' },
-  { name: 'Malásia', flag: '🇲🇾' }, { name: 'Malta', flag: '🇲🇹' }, { name: 'Holanda', flag: '🇳🇱' },
-  { name: 'Nova Zelândia', flag: '🇳🇿' }, { name: 'Nigéria', flag: '🇳🇬' }, { name: 'Macedônia do Norte', flag: '🇲🇰' },
-  { name: 'Peru', flag: '🇵🇪' }, { name: 'Portugal', flag: '🇵🇹' }, { name: 'Polônia', flag: '🇵🇱' },
-  { name: 'Romênia', flag: '🇷🇴' }, { name: 'Sérvia', flag: '🇷🇸' }, { name: 'Cingapura', flag: '🇸🇬' },
-  { name: 'Eslovênia', flag: '🇸🇮' }, { name: 'África do Sul', flag: '🇿🇦' }, { name: 'Coreia do Sul', flag: '🇰🇷' },
-  { name: 'Espanha', flag: '🇪🇸' }, { name: 'Suécia', flag: '🇸🇪' }, { name: 'Suíça', flag: '🇨🇭' },
-  { name: 'Taiwan', flag: '🇹🇼' }, { name: 'Tailândia', flag: '🇹🇭' }, { name: 'Emirados Árabes Unidos', flag: '🇦🇪' },
-  { name: 'Turquia', flag: '🇹🇷' }, { name: 'Venezuela', flag: '🇻🇪' }, { name: 'Vietnã', flag: '🇻🇳' },
-  { name: 'Luxemburgo', flag: '🇱🇺' },
+  { name: 'Eslováquia', code: 'sk' }, { name: 'Alemanha', code: 'de' }, { name: 'Ucrânia', code: 'ua' },
+  { name: 'Noruega', code: 'no' }, { name: 'Armênia', code: 'am' }, { name: 'Áustria', code: 'at' },
+  { name: 'Bangladesh', code: 'bd' }, { name: 'Bulgária', code: 'bg' }, { name: 'Bélgica', code: 'be' },
+  { name: 'Camarões', code: 'cm' }, { name: 'Chile', code: 'cl' }, { name: 'Croácia', code: 'hr' },
+  { name: 'Tcheco', code: 'cz' }, { name: 'Chipre', code: 'cy' }, { name: 'Dinamarca', code: 'dk' },
+  { name: 'Dominicano', code: 'do' }, { name: 'Egito', code: 'eg' }, { name: 'Estônia', code: 'ee' },
+  { name: 'Finlândia', code: 'fi' }, { name: 'Geórgia', code: 'ge' }, { name: 'Grécia', code: 'gr' },
+  { name: 'Hungria', code: 'hu' }, { name: 'Índia', code: 'in' }, { name: 'Indonésia', code: 'id' },
+  { name: 'Irlanda', code: 'ie' }, { name: 'Israel', code: 'il' }, { name: 'Itália', code: 'it' },
+  { name: 'Costa do Marfim', code: 'ci' }, { name: 'Cazaquistão', code: 'kz' }, { name: 'Quênia', code: 'ke' },
+  { name: 'Quirguistão', code: 'kg' }, { name: 'Letônia', code: 'lv' }, { name: 'Lituânia', code: 'lt' },
+  { name: 'Malásia', code: 'my' }, { name: 'Malta', code: 'mt' }, { name: 'Holanda', code: 'nl' },
+  { name: 'Nova Zelândia', code: 'nz' }, { name: 'Nigéria', code: 'ng' }, { name: 'Macedônia do Norte', code: 'mk' },
+  { name: 'Peru', code: 'pe' }, { name: 'Portugal', code: 'pt' }, { name: 'Polônia', code: 'pl' },
+  { name: 'Romênia', code: 'ro' }, { name: 'Sérvia', code: 'rs' }, { name: 'Cingapura', code: 'sg' },
+  { name: 'Eslovênia', code: 'si' }, { name: 'África do Sul', code: 'za' }, { name: 'Coreia do Sul', code: 'kr' },
+  { name: 'Espanha', code: 'es' }, { name: 'Suécia', code: 'se' }, { name: 'Suíça', code: 'ch' },
+  { name: 'Taiwan', code: 'tw' }, { name: 'Tailândia', code: 'th' }, { name: 'Emirados Árabes Unidos', code: 'ae' },
+  { name: 'Turquia', code: 'tr' }, { name: 'Venezuela', code: 've' }, { name: 'Vietnã', code: 'vn' },
+  { name: 'Luxemburgo', code: 'lu' },
 ];
 
 const dlCountries: VipCountry[] = [
-  { name: 'Estados Unidos', flag: '🇺🇸' }, { name: 'Reino Unido', flag: '🇬🇧' }, { name: 'China', flag: '🇨🇳' },
-  { name: 'Hong Kong', flag: '🇭🇰' }, { name: 'França', flag: '🇫🇷' }, { name: 'Canadá', flag: '🇨🇦' },
-  { name: 'Alemanha', flag: '🇩🇪' }, { name: 'Japão', flag: '🇯🇵' }, { name: 'Austrália', flag: '🇦🇺' },
-  { name: 'México', flag: '🇲🇽' },
+  { name: 'Estados Unidos', code: 'us' }, { name: 'Reino Unido', code: 'gb' }, { name: 'China', code: 'cn' },
+  { name: 'Hong Kong', code: 'hk' }, { name: 'França', code: 'fr' }, { name: 'Canadá', code: 'ca' },
+  { name: 'Alemanha', code: 'de' }, { name: 'Japão', code: 'jp' }, { name: 'Austrália', code: 'au' },
+  { name: 'México', code: 'mx' },
 ];
 
 const billCountries: VipCountry[] = [
-  { name: 'Estados Unidos', flag: '🇺🇸' }, { name: 'Reino Unido', flag: '🇬🇧' },
-  { name: 'Canadá', flag: '🇨🇦' }, { name: 'Austrália', flag: '🇦🇺' }, { name: 'Alemanha', flag: '🇩🇪' },
+  { name: 'Estados Unidos', code: 'us' }, { name: 'Reino Unido', code: 'gb' },
+  { name: 'Canadá', code: 'ca' }, { name: 'Austrália', code: 'au' }, { name: 'Alemanha', code: 'de' },
 ];
 
 const vipCategories: VipCategory[] = [
@@ -267,7 +267,7 @@ function CountryCard({ country }: { country: VipCountry }) {
         onClick={() => setOpen(!open)}
         className={`w-full flex items-center gap-3 px-3 py-2.5 transition-colors ${open ? 'bg-amber-900/30' : 'bg-card hover:bg-muted/50'}`}
       >
-        <span className="text-xl">{country.flag}</span>
+        <img src={`https://flagcdn.com/w40/${country.code}.png`} alt={country.name} className="h-5 w-7 rounded-sm object-cover" loading="lazy" />
         <span className="flex-1 text-left font-medium text-sm text-foreground">{country.name}</span>
         {open ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />}
       </button>
