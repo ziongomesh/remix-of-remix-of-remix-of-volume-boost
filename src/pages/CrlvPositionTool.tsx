@@ -122,51 +122,7 @@ const CrlvCanvas = forwardRef<CrlvCanvasRef, { values: Record<string, string>; q
   const [customQr, setCustomQr] = useState<HTMLImageElement | null>(null);
   const [fontLoaded, setFontLoaded] = useState(false);
 
-  useImperativeHandle(ref, () => ({
-    getSnapshot: () => {
-      const canvas = canvasRef.current;
-      if (!canvas || !canvas.width || !canvas.height) return null;
-      try {
-        return canvas.toDataURL('image/png');
-      } catch {
-        return null;
-      }
-    },
-  }), []);
-
-  useEffect(() => {
-    const openSans = new FontFace('OpenSans', `url(${openSansFont})`);
-    const freeMono = new FontFace('FreeMonoBold', `url(${freeMonoBoldFont})`);
-    Promise.all([openSans.load(), freeMono.load()]).then(([f1, f2]) => {
-      document.fonts.add(f1);
-      document.fonts.add(f2);
-      setFontLoaded(true);
-    }).catch(err => {
-      console.error('Erro ao carregar fontes:', err);
-      setFontLoaded(true);
-    });
-  }, []);
-
-  useEffect(() => {
-    const img = new Image();
-    img.onload = () => setBgImage(img);
-    img.src = '/templates/crlv-template-base.png?v=1';
-  }, []);
-
-  useEffect(() => {
-    const img = new Image();
-    img.onload = () => setDefaultQr(img);
-    img.src = '/images/qrcode-sample-crlv.png';
-  }, []);
-
-  useEffect(() => {
-    if (!qrImage) { setCustomQr(null); return; }
-    const img = new Image();
-    img.onload = () => setCustomQr(img);
-    img.src = qrImage;
-  }, [qrImage]);
-
-  useEffect(() => {
+  const drawCanvas = useCallback((withWatermark: boolean) => {
     if (!bgImage || !fontLoaded) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -223,30 +179,54 @@ const CrlvCanvas = forwardRef<CrlvCanvasRef, { values: Record<string, string>; q
     ctx.textBaseline = 'top';
     ctx.fillText(docText, docX, docY);
 
-    // Watermark - marca d'água
-    const wmText = 'PREVIEW - DATA SISTEMAS';
-    const wmFontSize = Math.round(canvas.width * 0.04);
-    const wmSpacingX = canvas.width * 0.65;
-    const wmSpacingY = canvas.height * 0.18;
-    ctx.save();
-    ctx.globalAlpha = 0.06;
-    ctx.fillStyle = '#000';
-    ctx.font = `bold ${wmFontSize}px Arial`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    for (let row = -1; row <= 6; row++) {
-      for (let col = -1; col <= 2; col++) {
-        ctx.save();
-        const cx = col * wmSpacingX + (row % 2 === 0 ? 0 : wmSpacingX * 0.5);
-        const cy = row * wmSpacingY;
-        ctx.translate(cx, cy);
-        ctx.rotate(-Math.PI / 6);
-        ctx.fillText(wmText, 0, 0);
-        ctx.restore();
+    // Watermark - marca d'água (apenas no preview visual)
+    if (withWatermark) {
+      const wmText = 'PREVIEW - DATA SISTEMAS';
+      const wmFontSize = Math.round(canvas.width * 0.04);
+      const wmSpacingX = canvas.width * 0.65;
+      const wmSpacingY = canvas.height * 0.18;
+      ctx.save();
+      ctx.globalAlpha = 0.06;
+      ctx.fillStyle = '#000';
+      ctx.font = `bold ${wmFontSize}px Arial`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      for (let row = -1; row <= 6; row++) {
+        for (let col = -1; col <= 2; col++) {
+          ctx.save();
+          const cx = col * wmSpacingX + (row % 2 === 0 ? 0 : wmSpacingX * 0.5);
+          const cy = row * wmSpacingY;
+          ctx.translate(cx, cy);
+          ctx.rotate(-Math.PI / 6);
+          ctx.fillText(wmText, 0, 0);
+          ctx.restore();
+        }
       }
+      ctx.restore();
     }
-    ctx.restore();
   }, [values, bgImage, fontLoaded, defaultQr, customQr]);
+
+  useImperativeHandle(ref, () => ({
+    getSnapshot: () => {
+      // Redesenha SEM marca d'água, captura, depois redesenha COM
+      drawCanvas(false);
+      const canvas = canvasRef.current;
+      if (!canvas || !canvas.width || !canvas.height) return null;
+      let result: string | null = null;
+      try {
+        result = canvas.toDataURL('image/png');
+      } catch {
+        result = null;
+      }
+      // Restaura preview com marca d'água
+      drawCanvas(true);
+      return result;
+    },
+  }), [drawCanvas]);
+
+  useEffect(() => {
+    drawCanvas(true);
+  }, [drawCanvas]);
 
   return (
     <canvas ref={canvasRef} className="w-full h-auto block" />
