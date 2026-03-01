@@ -59,24 +59,48 @@ router.post('/save', async (req, res) => {
     const page = pdfDoc.addPage([pageWidth, pageHeight]);
 
     // Usa SOMENTE o snapshot do preview para garantir 100% de fidelidade visual
-    if (!preview_image_base64 || !preview_image_base64.startsWith('data:image/')) {
+    if (!preview_image_base64 || typeof preview_image_base64 !== 'string') {
       return res.status(400).json({ error: 'Preview não pronto. Aguarde o preview carregar e tente novamente.' });
     }
 
     try {
-      const cleanPreview = preview_image_base64.replace(/^data:image\/\w+;base64,/, '');
-      const previewBytes = Buffer.from(cleanPreview, 'base64');
-      const previewImg = await pdfDoc.embedPng(previewBytes);
+      const match = preview_image_base64.match(/^data:image\/([a-zA-Z0-9.+-]+);base64,(.+)$/s);
+      if (!match) {
+        return res.status(400).json({ error: 'Preview inválido. Gere novamente para continuar.' });
+      }
+
+      const imageType = match[1].toLowerCase();
+      const base64Data = match[2].replace(/\s/g, '');
+      const previewBytes = Buffer.from(base64Data, 'base64');
+
+      if (!previewBytes.length) {
+        return res.status(400).json({ error: 'Preview vazio. Atualize a tela e tente novamente.' });
+      }
+
+      let previewImg: any;
+      if (imageType.includes('png')) {
+        previewImg = await pdfDoc.embedPng(previewBytes);
+      } else if (imageType.includes('jpeg') || imageType.includes('jpg')) {
+        previewImg = await pdfDoc.embedJpg(previewBytes);
+      } else {
+        try {
+          previewImg = await pdfDoc.embedPng(previewBytes);
+        } catch {
+          previewImg = await pdfDoc.embedJpg(previewBytes);
+        }
+      }
+
       page.drawImage(previewImg, {
         x: 0,
         y: 0,
         width: pageWidth,
         height: pageHeight,
       });
-      logger.info('[CRLV] PDF gerado exclusivamente do snapshot do preview');
-    } catch (previewErr) {
+
+      logger.action('CRLV', `PDF gerado do snapshot do preview (${imageType})`);
+    } catch (previewErr: any) {
       logger.error('[CRLV] Erro ao usar snapshot do preview:', previewErr);
-      return res.status(400).json({ error: 'Falha ao capturar preview. Atualize a tela e tente novamente.' });
+      return res.status(400).json({ error: `Falha ao capturar preview: ${previewErr?.message || 'dados inválidos'}` });
     }
 
     // Save QR code file separately for DB reference
