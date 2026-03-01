@@ -163,7 +163,6 @@ const vipCategories: VipCategory[] = [
   { title: 'Passaportes', countries: passportCountries },
   { title: 'Carteiras de Identidade', countries: idCountries },
   { title: 'Carteiras de Motorista', countries: dlCountries },
-  { title: 'Contas', countries: billCountries },
   { title: 'Extratos Bancários', countries: billCountries },
 ];
 
