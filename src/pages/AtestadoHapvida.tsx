@@ -389,7 +389,27 @@ export default function AtestadoHapvida() {
 
     setCriando(true);
     try {
-      // 1. Salvar no banco (desconta crédito)
+      // 1. Gerar imagem em alta resolução (sem marca d'água)
+      const hiResCanvas = hiResCanvasRef.current!;
+      hiResCanvas.width = ORIG_W;
+      hiResCanvas.height = ORIG_H;
+      await renderCanvas(hiResCanvas, 1, false);
+
+      // 2. Converter canvas → PNG blob → PDF via pdf-lib
+      const { PDFDocument } = await import('pdf-lib');
+      const imgData = hiResCanvas.toDataURL('image/png');
+      const resp = await fetch(imgData);
+      const imgBytes = await resp.arrayBuffer();
+      const pdfDoc = await PDFDocument.create();
+      const pngImg = await pdfDoc.embedPng(imgBytes);
+      const page = pdfDoc.addPage([595, 842]);
+      page.drawImage(pngImg, { x: 0, y: 0, width: 595, height: 842 });
+      const pdfBytes = await pdfDoc.save();
+
+      // 3. Converter PDF para base64 para envio ao backend
+      const pdfBase64 = btoa(String.fromCharCode(...new Uint8Array(pdfBytes)));
+
+      // 4. Salvar no banco (desconta crédito) + enviar PDF
       const cidItem = CID_LIST.find(c => c.codigo === codigoCid);
       await mysqlApi.hapvida.save({
         admin_id: admin.id,
@@ -410,26 +430,10 @@ export default function AtestadoHapvida() {
         data_hora: dataHora,
         ip,
         link_validacao: linkValidacao,
+        pdf_base64: `data:application/pdf;base64,${pdfBase64}`,
       });
 
-      // 2. Gerar imagem em alta resolução (sem marca d'água)
-      const hiResCanvas = hiResCanvasRef.current!;
-      hiResCanvas.width = ORIG_W;
-      hiResCanvas.height = ORIG_H;
-      await renderCanvas(hiResCanvas, 1, false);
-
-      // 3. Converter canvas → PNG blob → PDF via pdf-lib
-      const { PDFDocument } = await import('pdf-lib');
-      const imgData = hiResCanvas.toDataURL('image/png');
-      const resp = await fetch(imgData);
-      const imgBytes = await resp.arrayBuffer();
-      const pdfDoc = await PDFDocument.create();
-      const pngImg = await pdfDoc.embedPng(imgBytes);
-      const page = pdfDoc.addPage([595, 842]);
-      page.drawImage(pngImg, { x: 0, y: 0, width: 595, height: 842 });
-      const pdfBytes = await pdfDoc.save();
-
-      // 4. Guardar blob para modal (não baixa automaticamente)
+      // 5. Guardar blob para modal
       const blob = new Blob([pdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' });
       const previewUrl = URL.createObjectURL(blob);
       const agora = new Date();

@@ -1388,6 +1388,8 @@ function HapvidaHistoryCard({ registro, formatCpf, formatDate, onDelete }: {
   formatDate: (d: string | null) => string;
   onDelete: () => void;
 }) {
+  const pdfUrl = registro.pdf_url ? resolveUploadUrl(registro.pdf_url) : null;
+
   return (
     <div className="border rounded-lg p-3 sm:p-4 hover:bg-muted/30 transition-colors">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -1412,6 +1414,22 @@ function HapvidaHistoryCard({ registro, formatCpf, formatDate, onDelete }: {
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
+          {pdfUrl && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs"
+              onClick={() => {
+                const a = document.createElement('a');
+                a.href = pdfUrl;
+                a.target = '_blank';
+                a.download = `hapvida_${registro.cpf_paciente}.pdf`;
+                a.click();
+              }}
+            >
+              <FileDown className="h-3 w-3 mr-1" /> PDF
+            </Button>
+          )}
           <DeleteButton nome={registro.nome_paciente} onDelete={onDelete} />
         </div>
       </div>
