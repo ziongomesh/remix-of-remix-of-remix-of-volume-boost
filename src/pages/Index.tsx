@@ -1,7 +1,10 @@
-import { Logo } from '@/components/Logo';
+import { useNavigate } from 'react-router-dom';
+import { LogIn } from 'lucide-react';
 import waveBg from '@/assets/wave-bg.png';
 
 const Index = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="flex flex-col min-h-screen bg-black text-white relative overflow-hidden">
       {/* Animated wave background */}
@@ -24,10 +27,15 @@ const Index = () => {
         }
       `}</style>
 
-      {/* Top bar */}
-      <header className="relative z-10 flex items-center justify-between p-6">
-        <Logo className="h-8 w-8" />
-        <div className="h-8 w-8 rounded-full border border-gray-600" />
+      {/* Top bar - login icon only */}
+      <header className="relative z-10 flex items-center justify-end p-6">
+        <button
+          onClick={() => navigate('/login')}
+          className="h-9 w-9 rounded-full border border-gray-600 flex items-center justify-center hover:border-gray-400 hover:bg-white/5 transition-all"
+          title="Acessar sistema"
+        >
+          <LogIn className="h-4 w-4 text-gray-400" />
+        </button>
       </header>
 
       {/* Main content */}
@@ -40,7 +48,6 @@ const Index = () => {
 
       {/* Footer */}
       <footer className="relative z-10 border-t border-gray-800 py-10 flex flex-col items-center gap-6 bg-black/60 backdrop-blur-sm">
-        <Logo className="h-8 w-8 opacity-50" />
         <p className="text-gray-500 text-sm text-center">
           © 2024 – 2026 // <span className="text-white font-semibold">Data Sistemas</span>.
           <br />
