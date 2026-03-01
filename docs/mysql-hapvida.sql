@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS `hapvida_atestados` (
   `data_hora`           VARCHAR(30) DEFAULT NULL COMMENT 'DD/MM/AAAA HH:MM:SS',
   `ip`                  VARCHAR(50) DEFAULT NULL,
   `link_validacao`      VARCHAR(500) DEFAULT NULL,
+  `pdf_url`             VARCHAR(500) DEFAULT NULL COMMENT 'Caminho do PDF gerado',
   `created_at`          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_hapvida_admin_id` (`admin_id`),

@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { query } from '../db';
 import logger from '../utils/logger.ts';
+import * as fs from 'fs';
+import * as path from 'path';
 
 const router = Router();
 
@@ -26,6 +28,7 @@ router.post('/save', async (req, res) => {
       nome_medico, crm,
       codigo_autenticacao, data_hora, ip,
       link_validacao,
+      pdf_base64,
     } = req.body;
 
     if (!await validateSession(admin_id, session_token)) {
@@ -42,14 +45,35 @@ router.post('/save', async (req, res) => {
       return res.status(400).json({ error: 'Créditos insuficientes' });
     }
 
+    // Salvar PDF se enviado
+    let pdfUrl: string | null = null;
+    if (pdf_base64) {
+      try {
+        const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+        if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+
+        const cpfClean = (cpf_paciente || '').replace(/\D/g, '');
+        const fileName = `hapvida_${cpfClean}_${Date.now()}.pdf`;
+        const filePath = path.join(uploadsDir, fileName);
+
+        const match = pdf_base64.match(/^data:[^;]+;base64,(.+)$/s);
+        const base64Data = match ? match[1] : pdf_base64;
+        fs.writeFileSync(filePath, Buffer.from(base64Data.replace(/\s/g, ''), 'base64'));
+
+        pdfUrl = `/uploads/${fileName}`;
+      } catch (pdfErr: any) {
+        logger.error('Hapvida PDF save error:', pdfErr);
+      }
+    }
+
     const result = await query<any>(
       `INSERT INTO hapvida_atestados (
         admin_id, nome_paciente, cpf_paciente, dias_afastamento, data_apartir, horario_atendimento,
         codigo_doenca, descricao_doenca,
         nome_hospital, endereco_hospital, cidade_hospital,
         nome_medico, crm,
-        codigo_autenticacao, data_hora, ip, link_validacao
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        codigo_autenticacao, data_hora, ip, link_validacao, pdf_url
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         admin_id, nome_paciente, cpf_paciente?.replace(/\D/g, ''), dias_afastamento,
         data_apartir, horario_atendimento,
@@ -57,6 +81,7 @@ router.post('/save', async (req, res) => {
         nome_hospital, endereco_hospital || null, cidade_hospital || null,
         nome_medico, crm || null,
         codigo_autenticacao || null, data_hora || null, ip || null, link_validacao || null,
+        pdfUrl,
       ]
     );
 
@@ -73,7 +98,7 @@ router.post('/save', async (req, res) => {
 
     logger.action('HAPVIDA_ATESTADO', `admin_id=${admin_id} paciente=${nome_paciente}`);
 
-    res.json({ success: true, id: result.insertId });
+    res.json({ success: true, id: result.insertId, pdf_url: pdfUrl });
   } catch (error: any) {
     logger.error('Hapvida save error:', error);
     res.status(500).json({ error: 'Erro interno', details: error.message });
