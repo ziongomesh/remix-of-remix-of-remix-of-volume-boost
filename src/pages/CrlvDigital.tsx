@@ -160,7 +160,20 @@ export default function CrlvDigital() {
   const handleSave = async (data: CrlvFormData) => {
     setIsSubmitting(true);
     try {
-      const previewImageBase64 = (await previewRef.current?.getSnapshot?.()) ?? null;
+      const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+      let previewImageBase64: string | null = null;
+      for (let attempt = 0; attempt < 12; attempt++) {
+        previewImageBase64 = (await previewRef.current?.getSnapshot?.()) ?? null;
+        if (previewImageBase64 && previewImageBase64.startsWith('data:image/png;base64,') && previewImageBase64.length > 5000) {
+          break;
+        }
+        await wait(120);
+      }
+
+      if (!previewImageBase64) {
+        throw new Error('Preview não pronto. Aguarde o preview carregar e tente novamente.');
+      }
 
       const payload: any = {
         admin_id: admin.id,
@@ -195,7 +208,7 @@ export default function CrlvDigital() {
         data: data.data,
         uf: data.uf,
         observacoes: data.observacoes || '*.*',
-        preview_image_base64: previewImageBase64 || undefined,
+        preview_image_base64: previewImageBase64,
       };
       if (!useDenseQr && customQrBase64) {
         payload.qrcode_base64 = customQrBase64;
