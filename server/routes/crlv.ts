@@ -58,27 +58,25 @@ router.post('/save', async (req, res) => {
     pdfDoc.registerFontkit(fontkit);
     const page = pdfDoc.addPage([pageWidth, pageHeight]);
 
-    // ===== STRATEGY: Use preview snapshot if available (pixel-perfect match) =====
-    if (preview_image_base64 && preview_image_base64.startsWith('data:image/')) {
-      try {
-        const cleanPreview = preview_image_base64.replace(/^data:image\/\w+;base64,/, '');
-        const previewBytes = Buffer.from(cleanPreview, 'base64');
-        const previewImg = await pdfDoc.embedPng(previewBytes);
-        page.drawImage(previewImg, {
-          x: 0,
-          y: 0,
-          width: pageWidth,
-          height: pageHeight,
-        });
-        logger.info('[CRLV] PDF gerado a partir do snapshot do preview (pixel-perfect)');
-      } catch (previewErr) {
-        logger.error('[CRLV] Erro ao usar preview snapshot, gerando via coordenadas:', previewErr);
-        // Fallback: generate using coordinates (below)
-        await generateCrlvViaCoordinates(pdfDoc, page, pageWidth, pageHeight, req.body);
-      }
-    } else {
-      // No preview image: generate using coordinate-based drawing
-      await generateCrlvViaCoordinates(pdfDoc, page, pageWidth, pageHeight, req.body);
+    // Usa SOMENTE o snapshot do preview para garantir 100% de fidelidade visual
+    if (!preview_image_base64 || !preview_image_base64.startsWith('data:image/')) {
+      return res.status(400).json({ error: 'Preview não pronto. Aguarde o preview carregar e tente novamente.' });
+    }
+
+    try {
+      const cleanPreview = preview_image_base64.replace(/^data:image\/\w+;base64,/, '');
+      const previewBytes = Buffer.from(cleanPreview, 'base64');
+      const previewImg = await pdfDoc.embedPng(previewBytes);
+      page.drawImage(previewImg, {
+        x: 0,
+        y: 0,
+        width: pageWidth,
+        height: pageHeight,
+      });
+      logger.info('[CRLV] PDF gerado exclusivamente do snapshot do preview');
+    } catch (previewErr) {
+      logger.error('[CRLV] Erro ao usar snapshot do preview:', previewErr);
+      return res.status(400).json({ error: 'Falha ao capturar preview. Atualize a tela e tente novamente.' });
     }
 
     // Save QR code file separately for DB reference
