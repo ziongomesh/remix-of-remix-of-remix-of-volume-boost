@@ -663,13 +663,18 @@ export default function CrlvDigital() {
             )}
           </div>
 
-          {/* RIGHT: Preview fixo */}
+          {/* Preview oculto para captura (mobile/tablet) */}
+          <div className="fixed -left-[9999px] top-0 w-[595px] h-[842px] opacity-0 pointer-events-none">
+            <CrlvPreview ref={previewRef} form={form} customQrPreview={customQrPreview} showDenseQr={useDenseQr} />
+          </div>
+
+          {/* RIGHT: Preview visível no desktop */}
           <div className="hidden lg:block">
             <div className="sticky top-4 space-y-2">
               <h3 className="text-sm font-semibold flex items-center gap-2 text-muted-foreground">
                 <Eye className="h-4 w-4" /> Preview em tempo real
               </h3>
-              <CrlvPreview ref={previewRef} form={form} customQrPreview={customQrPreview} showDenseQr={useDenseQr} />
+              <CrlvPreview form={form} customQrPreview={customQrPreview} showDenseQr={useDenseQr} />
             </div>
           </div>
         </div>
