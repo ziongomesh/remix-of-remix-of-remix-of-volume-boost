@@ -112,7 +112,7 @@ export const CrlvPreview = forwardRef<CrlvPreviewRef, CrlvPreviewProps>(function
   }, []);
 
   // Pre-load QR image whenever source changes
-  const qrSrc = customQrPreview || (showDenseQr ? '/images/qrcode-sample-crlv.png' : null);
+  const qrSrc = customQrPreview || (showDenseQr ? '/images/qrcode-dense-sample.png' : null);
   useEffect(() => {
     if (!qrSrc) {
       setQrImage(null);

@@ -581,7 +581,7 @@ export default function CrlvDigital() {
 
                           {useDenseQr && (
                             <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-                              <img src="/images/qrcode-sample-crlv.png" alt="QR Denso" className="h-16 w-16 object-contain" />
+                              <img src="/images/qrcode-dense-sample.png" alt="QR Denso" className="h-16 w-16 object-contain" />
                               <p className="text-xs text-muted-foreground">QR Code denso será gerado com todos os dados do veículo.</p>
                             </div>
                           )}
