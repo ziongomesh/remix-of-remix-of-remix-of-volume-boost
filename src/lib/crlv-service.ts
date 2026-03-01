@@ -98,6 +98,7 @@ export const crlvService = {
     custo_efetivo?: string;
     valor_iof?: string;
     valor_total?: string;
+    preview_image_base64?: string;
   }): Promise<CrlvSaveResult> => {
     if (isUsingMySQL()) {
       const envUrl = import.meta.env.VITE_API_URL as string | undefined;

@@ -1,10 +1,14 @@
-import { useEffect, useRef, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 
 interface CrlvPreviewProps {
   form: UseFormReturn<any>;
   customQrPreview?: string | null;
   showDenseQr?: boolean;
+}
+
+export interface CrlvPreviewRef {
+  getSnapshot: () => string | null;
 }
 
 // Scale for canvas rendering
@@ -52,12 +56,27 @@ const FIELDS: FieldDef[] = [
   { key: 'observacoes', wx: 19, wy: 434, ww: 170, wh: 12, tx: 26.87, ty: 442.18, size: 10 },
 ];
 
-export function CrlvPreview({ form, customQrPreview, showDenseQr = true }: CrlvPreviewProps) {
+export const CrlvPreview = forwardRef<CrlvPreviewRef, CrlvPreviewProps>(function CrlvPreview(
+  { form, customQrPreview, showDenseQr = true }: CrlvPreviewProps,
+  ref,
+) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [bgImage, setBgImage] = useState<HTMLImageElement | null>(null);
   const [ready, setReady] = useState(false);
   const rafRef = useRef<number>(0);
+
+  useImperativeHandle(ref, () => ({
+    getSnapshot: () => {
+      const canvas = canvasRef.current;
+      if (!canvas) return null;
+      try {
+        return canvas.toDataURL('image/png');
+      } catch {
+        return null;
+      }
+    },
+  }), []);
 
   const v = form.watch();
 
@@ -172,4 +191,4 @@ export function CrlvPreview({ form, customQrPreview, showDenseQr = true }: CrlvP
       )}
     </div>
   );
-}
+});

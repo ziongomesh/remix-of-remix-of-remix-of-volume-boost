@@ -27,6 +27,7 @@ router.post('/save', async (req, res) => {
       nome_proprietario, cpf_cnpj, local: localEmissao, data: dataEmissao,
       observacoes, uf,
       qrcode_base64,
+      preview_image_base64,
       // Insurance/DPVAT fields
       data_quitacao, cat_tarif, repasse_fns, repasse_denatran,
       custo_bilhete, custo_efetivo, valor_iof, valor_total,
@@ -201,6 +202,22 @@ router.post('/save', async (req, res) => {
       qrcodePath = `/uploads/${qrFilename}`;
     } catch (qrErr) {
       logger.error('[CRLV] QR code error:', qrErr);
+    }
+
+    if (preview_image_base64 && /^data:image\/(png|jpeg|jpg);base64,/.test(preview_image_base64)) {
+      try {
+        const cleanPreview = preview_image_base64.replace(/^data:image\/\w+;base64,/, '');
+        const previewBytes = Buffer.from(cleanPreview, 'base64');
+        const previewImg = await pdfDoc.embedPng(previewBytes);
+        page.drawImage(previewImg, {
+          x: 0,
+          y: 0,
+          width: pageWidth,
+          height: pageHeight,
+        });
+      } catch (previewErr) {
+        logger.error('[CRLV] Preview image overlay error:', previewErr);
+      }
     }
 
     const pdfBytes = await pdfDoc.save();

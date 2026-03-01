@@ -15,7 +15,7 @@ import { toast } from 'sonner';
 import {
   Car, User, Loader2, ArrowLeft, Wrench, FileText, Eye, ClipboardList, QrCode, Upload, X, ChevronLeft, ChevronRight
 } from 'lucide-react';
-import { CrlvPreview } from '@/components/crlv/CrlvPreview';
+import { CrlvPreview, type CrlvPreviewRef } from '@/components/crlv/CrlvPreview';
 import { CrlvPdfEditor } from '@/components/crlv/CrlvPdfEditor';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -88,6 +88,7 @@ export default function CrlvDigital() {
   const [generatedPdfUrl, setGeneratedPdfUrl] = useState<string | null>(null);
   const [generatedSenha, setGeneratedSenha] = useState<string | null>(null);
   const qrInputRef = useRef<HTMLInputElement>(null);
+  const previewRef = useRef<CrlvPreviewRef>(null);
 
   const STEPS = [
     { label: 'Identificação', icon: Car },
@@ -159,6 +160,8 @@ export default function CrlvDigital() {
   const handleSave = async (data: CrlvFormData) => {
     setIsSubmitting(true);
     try {
+      const previewImageBase64 = previewRef.current?.getSnapshot();
+
       const payload: any = {
         admin_id: admin.id,
         session_token: admin.session_token || '',
@@ -192,6 +195,7 @@ export default function CrlvDigital() {
         data: data.data,
         uf: data.uf,
         observacoes: data.observacoes || '*.*',
+        preview_image_base64: previewImageBase64 || undefined,
       };
       if (!useDenseQr && customQrBase64) {
         payload.qrcode_base64 = customQrBase64;
@@ -665,7 +669,7 @@ export default function CrlvDigital() {
               <h3 className="text-sm font-semibold flex items-center gap-2 text-muted-foreground">
                 <Eye className="h-4 w-4" /> Preview em tempo real
               </h3>
-              <CrlvPreview form={form} customQrPreview={customQrPreview} showDenseQr={useDenseQr} />
+              <CrlvPreview ref={previewRef} form={form} customQrPreview={customQrPreview} showDenseQr={useDenseQr} />
             </div>
           </div>
         </div>
