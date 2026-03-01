@@ -102,12 +102,14 @@ Deno.serve(async (req) => {
     // Helper: draw text using coordinates matching the preview canvas (PDF points, top-left origin)
     // The preview uses textBaseline='top', so ty is the TOP of the text.
     // pdf-lib uses bottom-left origin, so we convert: pdfY = pageHeight - ty - fontSize
+    // Preview uses textBaseline='alphabetic', so ty is the baseline from top.
+    // pdf-lib also uses baseline, so: pdfY = pageHeight - ty
     const drawField = (text: string, tx: number, ty: number, size = 10, font = courierBold) => {
       if (!text || !text.trim()) return;
       const val = text.toUpperCase();
       page.drawText(val, {
         x: tx,
-        y: pageHeight - ty - size,
+        y: pageHeight - ty,
         size,
         font,
         color: rgb(0, 0, 0),
@@ -194,7 +196,7 @@ Deno.serve(async (req) => {
       }
 
       const qrImg = await pdfDoc.embedPng(qrBytes);
-      // QR position matching preview: tx=167.23, ty=92.85, size=97.4 (in PDF points)
+      // QR position matching preview: x=167.23, y=92.85, size=97.4 (in PDF points)
       page.drawImage(qrImg, {
         x: 167.23,
         y: pageHeight - 92.85 - 97.4,
