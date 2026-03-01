@@ -160,7 +160,7 @@ export default function CrlvDigital() {
   const handleSave = async (data: CrlvFormData) => {
     setIsSubmitting(true);
     try {
-      const previewImageBase64 = previewRef.current?.getSnapshot();
+      const previewImageBase64 = (await previewRef.current?.getSnapshot?.()) ?? null;
 
       const payload: any = {
         admin_id: admin.id,

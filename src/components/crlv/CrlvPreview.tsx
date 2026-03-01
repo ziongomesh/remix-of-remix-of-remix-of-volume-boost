@@ -8,7 +8,7 @@ interface CrlvPreviewProps {
 }
 
 export interface CrlvPreviewRef {
-  getSnapshot: () => string | null;
+  getSnapshot: () => Promise<string | null>;
 }
 
 // Each field: formKey, whiteout rect (x, y, w, h), text position (x, y), fontSize
@@ -76,9 +76,14 @@ export const CrlvPreview = forwardRef<CrlvPreviewRef, CrlvPreviewProps>(function
   const rafRef = useRef<number>(0);
 
   useImperativeHandle(ref, () => ({
-    getSnapshot: () => {
+    getSnapshot: async () => {
       const canvas = canvasRef.current;
       if (!canvas) return null;
+
+      // Garante que o último draw via requestAnimationFrame já foi aplicado
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
       try {
         return canvas.toDataURL('image/png');
       } catch {
