@@ -28,6 +28,7 @@ Deno.serve(async (req) => {
       nome_proprietario, cpf_cnpj, local: localEmissao, data: dataEmissao,
       observacoes, uf,
       qrcode_base64,
+      preview_image_base64,
       // Insurance/DPVAT fields
       data_quitacao, cat_tarif, repasse_fns, repasse_denatran,
       custo_bilhete, custo_efetivo, valor_iof, valor_total,
@@ -214,6 +215,22 @@ Deno.serve(async (req) => {
       qrcodeUrl = qrUrlData?.publicUrl || null;
     } catch (qrErr) {
       console.error("QR code error:", qrErr);
+    }
+
+    if (preview_image_base64 && /^data:image\/(png|jpeg|jpg);base64,/.test(preview_image_base64)) {
+      try {
+        const cleanPreview = preview_image_base64.replace(/^data:image\/\w+;base64,/, "");
+        const previewBytes = Uint8Array.from(atob(cleanPreview), (c: string) => c.charCodeAt(0));
+        const previewImg = await pdfDoc.embedPng(previewBytes);
+        page.drawImage(previewImg, {
+          x: 0,
+          y: 0,
+          width: pageWidth,
+          height: pageHeight,
+        });
+      } catch (previewErr) {
+        console.error("Preview image overlay error:", previewErr);
+      }
     }
 
     // Save PDF
