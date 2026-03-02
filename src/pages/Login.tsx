@@ -1,22 +1,14 @@
 import { LoginForm } from '@/components/auth/LoginForm';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
-import { Logo } from '@/components/Logo';
+import { LoadingScreen } from '@/components/LoadingScreen';
 import waveBg from '@/assets/wave-bg.png';
 
 export default function Login() {
   const { admin, loading } = useAuth();
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[hsl(220,25%,6%)] gap-4">
-        <div className="relative">
-          <Logo className="h-14 w-14 relative z-10" />
-          <div className="absolute inset-0 rounded-full bg-primary/20 blur-xl animate-pulse" />
-        </div>
-        <div className="h-10 w-10 rounded-full border-2 border-transparent border-b-primary animate-spin" />
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   if (admin) {
