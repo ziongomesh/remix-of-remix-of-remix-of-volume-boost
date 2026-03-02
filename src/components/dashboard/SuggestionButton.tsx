@@ -97,6 +97,19 @@ export default function SuggestionButton() {
               {sending ? 'Enviando...' : 'Enviar'}
             </Button>
           </div>
+          <div className="border-t pt-3 mt-1 space-y-1">
+            <p className="text-xs text-muted-foreground">
+              Está com dúvidas ou achou algum bug?
+            </p>
+            <a
+              href="https://wa.me/595986741629"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+            >
+              Fale com nosso suporte via WhatsApp
+            </a>
+          </div>
         </DialogContent>
       </Dialog>
 
