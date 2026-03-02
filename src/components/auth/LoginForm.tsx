@@ -75,10 +75,13 @@ export function LoginForm() {
       setLoading(true);
     }
 
+    toast.loading('Carregando...', { id: 'login-loading' });
+
     try {
       const data = await api.auth.login(email, password);
 
       if (!data?.admin) {
+        toast.dismiss('login-loading');
         toast.error('Erro ao fazer login', { description: 'Email ou senha incorretos' });
         setLoading(false);
         return;
@@ -97,8 +100,10 @@ export function LoginForm() {
         hasPin,
       });
 
+      toast.dismiss('login-loading');
       setLoading(false);
     } catch (error: any) {
+      toast.dismiss('login-loading');
       toast.error('Erro ao fazer login', { description: error.message || 'Email ou senha incorretos' });
       setLoading(false);
     }
