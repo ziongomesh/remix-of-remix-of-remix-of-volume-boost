@@ -417,6 +417,11 @@ export default function RgDigital() {
               <CardTitle className="flex items-center gap-2"><Eye className="h-5 w-5" /> Preview do RG Digital</CardTitle>
               <CardDescription>Confira as matrizes antes de salvar</CardDescription>
             </CardHeader>
+            <div className="mx-6 mb-4 p-3 rounded-lg bg-primary/5 border border-primary/20 text-xs text-muted-foreground space-y-1">
+              <p>⚡ Irá gastar <strong className="text-foreground">1 crédito</strong></p>
+              <p>✏️ Você poderá editar após feito, renovar acesso ou excluir</p>
+              <p>📱 O QR Code no documento é possível escanear</p>
+            </div>
             <CardContent className="space-y-6">
               {previewLoading ? (
                 <div className="flex flex-col items-center justify-center py-20 gap-4">
