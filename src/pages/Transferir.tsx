@@ -127,10 +127,11 @@ export default function Transferir() {
     } catch { return d; }
   };
 
-  const getResellerName = (toId: number, name?: string) => {
-    if (name) return name;
-    const r = resellers.find(r => r.id === toId);
-    return r ? (r.nome || r.email) : `#${toId}`;
+  const getResellerName = (t: Transfer) => {
+    if (t.to_admin_name) return t.to_admin_name;
+    if ((t as any).reseller_name) return (t as any).reseller_name;
+    const r = resellers.find(r => r.id === t.to_admin_id);
+    return r ? (r.nome || r.email) : `#${t.to_admin_id}`;
   };
 
   return (
@@ -246,7 +247,7 @@ export default function Transferir() {
                     <div className="flex items-center gap-2.5 min-w-0">
                       <ArrowDownRight className="h-4 w-4 text-orange-500 shrink-0" />
                       <div className="min-w-0">
-                        <p className="text-sm font-medium truncate">{getResellerName(t.to_admin_id, t.to_admin_name)}</p>
+                        <p className="text-sm font-medium truncate">{getResellerName(t)}</p>
                         <p className="text-xs text-muted-foreground">{formatDate(t.created_at)}</p>
                       </div>
                     </div>
