@@ -24,60 +24,59 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex bg-[hsl(220,25%,6%)] relative overflow-hidden">
-      {/* Animated background image */}
-      <div
-        className="absolute inset-0"
-        style={{ animation: 'loginBgFloat 25s ease-in-out infinite alternate' }}
-      >
+      {/* Background image - fast & vivid */}
+      <div className="absolute inset-0">
         <img
           src={waveBg}
           alt=""
-          className="w-full h-full object-cover scale-110"
+          className="w-full h-full object-cover"
           draggable={false}
+          style={{ animation: 'loginBgFloat 20s ease-in-out infinite alternate' }}
         />
       </div>
 
-      {/* Overlay gradient to blend edges */}
-      <div className="absolute inset-0 bg-gradient-to-r from-[hsl(220,25%,6%)] via-[hsl(220,25%,6%)]/60 to-transparent pointer-events-none" />
-      <div className="absolute inset-0 bg-gradient-to-t from-[hsl(220,25%,6%)]/80 via-transparent to-[hsl(220,25%,6%)]/50 pointer-events-none" />
+      {/* Edge fade - soft opacity blend into left panel */}
+      <div className="absolute inset-0 pointer-events-none" style={{
+        background: 'linear-gradient(to right, hsl(220 25% 6%) 26%, hsl(220 25% 6% / 0.7) 32%, transparent 50%)'
+      }} />
+      <div className="absolute inset-0 pointer-events-none" style={{
+        background: 'linear-gradient(to bottom, hsl(220 25% 6% / 0.3) 0%, transparent 20%, transparent 80%, hsl(220 25% 6% / 0.4) 100%)'
+      }} />
 
-      {/* Ambient glow effects */}
-      <div className="absolute top-[10%] right-[15%] w-[500px] h-[500px] bg-primary/15 rounded-full blur-[150px] pointer-events-none" style={{ animation: 'loginGlow 6s ease-in-out infinite alternate' }} />
-      <div className="absolute bottom-[20%] right-[25%] w-80 h-80 bg-cyan-500/10 rounded-full blur-[120px] pointer-events-none" style={{ animation: 'loginGlow 8s ease-in-out infinite alternate-reverse' }} />
-      <div className="absolute top-[40%] right-[5%] w-64 h-64 bg-purple-500/8 rounded-full blur-[100px] pointer-events-none" style={{ animation: 'loginGlow 10s ease-in-out infinite alternate' }} />
+      {/* Blue glow - reluzente, fast pulse */}
+      <div className="absolute top-[5%] left-[25%] w-[600px] h-[600px] rounded-full pointer-events-none blur-[180px]"
+        style={{ background: 'hsl(200 80% 55% / 0.25)', animation: 'loginPulse 3s ease-in-out infinite alternate' }} />
+      <div className="absolute bottom-[10%] left-[30%] w-[400px] h-[400px] rounded-full pointer-events-none blur-[140px]"
+        style={{ background: 'hsl(200 90% 60% / 0.2)', animation: 'loginPulse 4s ease-in-out infinite alternate-reverse' }} />
+      <div className="absolute top-[30%] right-[10%] w-[500px] h-[500px] rounded-full pointer-events-none blur-[160px]"
+        style={{ background: 'hsl(190 70% 50% / 0.15)', animation: 'loginPulse 5s ease-in-out infinite alternate' }} />
       
-      {/* Floating particles effect */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute w-1 h-1 bg-white/20 rounded-full" style={{ top: '20%', right: '30%', animation: 'loginParticle 12s ease-in-out infinite' }} />
-        <div className="absolute w-1.5 h-1.5 bg-primary/30 rounded-full" style={{ top: '60%', right: '20%', animation: 'loginParticle 15s ease-in-out infinite 2s' }} />
-        <div className="absolute w-1 h-1 bg-cyan-400/25 rounded-full" style={{ top: '35%', right: '45%', animation: 'loginParticle 10s ease-in-out infinite 4s' }} />
-        <div className="absolute w-0.5 h-0.5 bg-white/15 rounded-full" style={{ top: '75%', right: '35%', animation: 'loginParticle 18s ease-in-out infinite 1s' }} />
-        <div className="absolute w-1 h-1 bg-primary/20 rounded-full" style={{ top: '45%', right: '15%', animation: 'loginParticle 14s ease-in-out infinite 3s' }} />
-      </div>
+      {/* Bright accent streaks */}
+      <div className="absolute top-[15%] left-[35%] w-[300px] h-[2px] pointer-events-none opacity-30 rotate-[-15deg]"
+        style={{ background: 'linear-gradient(90deg, transparent, hsl(200 80% 65%), transparent)', animation: 'loginStreak 4s ease-in-out infinite' }} />
+      <div className="absolute bottom-[25%] left-[40%] w-[250px] h-[1px] pointer-events-none opacity-20 rotate-[10deg]"
+        style={{ background: 'linear-gradient(90deg, transparent, hsl(190 80% 70%), transparent)', animation: 'loginStreak 5s ease-in-out infinite 1s' }} />
 
       <style>{`
         @keyframes loginBgFloat {
-          0% { transform: scale(1.1) translate(0, 0); }
-          33% { transform: scale(1.15) translate(-1.5%, 1%); }
-          66% { transform: scale(1.12) translate(0.5%, -1%); }
-          100% { transform: scale(1.1) translate(1%, -0.5%); }
+          0% { transform: scale(1.05) translate(0, 0); }
+          50% { transform: scale(1.08) translate(-0.5%, 0.5%); }
+          100% { transform: scale(1.05) translate(0.5%, -0.3%); }
         }
-        @keyframes loginGlow {
-          0% { opacity: 0.3; transform: scale(1); }
-          50% { opacity: 0.8; transform: scale(1.2); }
-          100% { opacity: 0.5; transform: scale(1.4); }
+        @keyframes loginPulse {
+          0% { opacity: 0.4; transform: scale(0.9); }
+          50% { opacity: 1; transform: scale(1.1); }
+          100% { opacity: 0.6; transform: scale(1); }
         }
-        @keyframes loginParticle {
-          0% { transform: translateY(0) translateX(0); opacity: 0; }
-          10% { opacity: 1; }
-          50% { transform: translateY(-80px) translateX(30px); opacity: 0.6; }
-          90% { opacity: 0; }
-          100% { transform: translateY(-160px) translateX(-20px); opacity: 0; }
+        @keyframes loginStreak {
+          0% { opacity: 0; transform: translateX(-60px) scaleX(0.5); }
+          50% { opacity: 0.4; transform: translateX(0) scaleX(1); }
+          100% { opacity: 0; transform: translateX(60px) scaleX(0.5); }
         }
       `}</style>
 
       {/* Left panel - Form */}
-      <div className="relative z-10 w-full lg:w-[420px] lg:min-w-[420px] flex flex-col items-center justify-center px-8 py-10 bg-[hsl(220,25%,6%)]/95 lg:bg-[hsl(220,25%,6%)] backdrop-blur-sm lg:backdrop-blur-none">
+      <div className="relative z-10 w-full lg:w-[420px] lg:min-w-[420px] flex flex-col items-center justify-center px-8 py-10 bg-[hsl(220,25%,6%)]/95 lg:bg-[hsl(220,25%,6%)]">
         <div className="w-full max-w-[340px]">
           <LoginForm />
         </div>
