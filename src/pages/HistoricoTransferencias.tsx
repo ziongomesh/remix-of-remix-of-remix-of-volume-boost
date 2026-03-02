@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Navigate } from 'react-router-dom';
@@ -12,25 +12,14 @@ import {
   TrendingUp, 
   Target, 
   Users, 
-  CreditCard, 
-  DollarSign,
-  Calendar,
+  Wallet,
   Check,
   X,
   Edit2,
   Loader2,
-  Wallet,
-  ArrowUpRight
+  ArrowDownRight
 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 
 interface Transfer {
   id: number;
@@ -89,7 +78,6 @@ export default function HistoricoTransferencias() {
 
   const parseLocalizedNumber = (val: string): number => {
     let str = val.trim().replace(/[R$\s]/g, '');
-    // Brazilian format: 1.234,56
     const lastComma = str.lastIndexOf(',');
     const lastDot = str.lastIndexOf('.');
     if (lastComma > lastDot) {
@@ -101,19 +89,12 @@ export default function HistoricoTransferencias() {
     return isNaN(parsed) ? 0 : parsed;
   };
 
-  const formatGoalInput = (val: string): string => {
-    // Allow typing freely, just prefix with R$
-    const clean = val.replace(/^R\$\s*/, '');
-    return clean;
-  };
-
   const handleSaveGoal = async () => {
     const value = parseLocalizedNumber(newGoal);
     if (value <= 0) {
       toast.error('Digite um valor válido');
       return;
     }
-
     try {
       const now = new Date();
       await api.credits.setMasterGoal(admin!.id, now.getFullYear(), now.getMonth() + 1, value);
@@ -121,14 +102,13 @@ export default function HistoricoTransferencias() {
       setEditingGoal(false);
       toast.success('Meta atualizada!');
     } catch (error) {
-      console.error('Erro ao salvar meta:', error);
       toast.error('Erro ao salvar meta');
     }
   };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR');
+    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' });
   };
 
   const formatTime = (dateString: string) => {
@@ -148,13 +128,8 @@ export default function HistoricoTransferencias() {
     );
   }
 
-  if (!admin) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (role !== 'master' && role !== 'sub') {
-    return <Navigate to="/dashboard" replace />;
-  }
+  if (!admin) return <Navigate to="/login" replace />;
+  if (role !== 'master' && role !== 'sub') return <Navigate to="/dashboard" replace />;
 
   const monthProgress = metrics && metrics.monthlyGoal > 0 
     ? Math.min((metrics.monthTransferred / metrics.monthlyGoal) * 100, 100) 
@@ -162,13 +137,10 @@ export default function HistoricoTransferencias() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6 animate-fade-in">
-        {/* Header */}
+      <div className="space-y-5 animate-fade-in max-w-2xl mx-auto">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Histórico & Métricas</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            Acompanhe suas transferências e desempenho
-          </p>
+          <h1 className="text-xl font-bold text-foreground">Transferências</h1>
+          <p className="text-sm text-muted-foreground">Métricas e histórico</p>
         </div>
 
         {loadingData ? (
@@ -177,242 +149,140 @@ export default function HistoricoTransferencias() {
           </div>
         ) : (
           <>
-            {/* Stats Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-primary/20">
-                      <ArrowRightLeft className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Total Transferido</p>
-                      <p className="text-lg font-bold">{metrics?.totalTransferred.toLocaleString('pt-BR')}</p>
-                      <p className="text-xs text-muted-foreground">{metrics?.totalTransfers} operações</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+            {/* Stats Row */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex items-center gap-3 p-3 rounded-lg border bg-card">
+                <div className="p-1.5 rounded-md bg-primary/15">
+                  <ArrowRightLeft className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Transferido</p>
+                  <p className="text-base font-bold">{metrics?.totalTransferred.toLocaleString('pt-BR')}</p>
+                </div>
+              </div>
 
-              <Card className="bg-gradient-to-br from-success/10 to-success/5 border-success/20">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-success/20">
-                      <TrendingUp className="h-5 w-5 text-success" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Lucro Estimado</p>
-                      <p className="text-lg font-bold text-success">{formatCurrency(metrics?.estimatedProfit || 0)}</p>
-                      <p className="text-xs text-muted-foreground">base R$20/crédito</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="flex items-center gap-3 p-3 rounded-lg border bg-card">
+                <div className="p-1.5 rounded-md bg-emerald-500/15">
+                  <TrendingUp className="h-4 w-4 text-emerald-500" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Lucro Est.</p>
+                  <p className="text-base font-bold text-emerald-500">{formatCurrency(metrics?.estimatedProfit || 0)}</p>
+                </div>
+              </div>
 
-              <Card className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-blue-500/20">
-                      <Wallet className="h-5 w-5 text-blue-500" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Total Recarregado</p>
-                      <p className="text-lg font-bold">{metrics?.totalRecharged.toLocaleString('pt-BR')}</p>
-                      <p className="text-xs text-muted-foreground">{formatCurrency(metrics?.totalSpent || 0)}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="flex items-center gap-3 p-3 rounded-lg border bg-card">
+                <div className="p-1.5 rounded-md bg-blue-500/15">
+                  <Wallet className="h-4 w-4 text-blue-500" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Recarregado</p>
+                  <p className="text-base font-bold">{metrics?.totalRecharged.toLocaleString('pt-BR')}</p>
+                </div>
+              </div>
 
-              <Card className="bg-gradient-to-br from-purple-500/10 to-purple-500/5 border-purple-500/20">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-purple-500/20">
-                      <Users className="h-5 w-5 text-purple-500" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Revendedores</p>
-                      <p className="text-lg font-bold">{metrics?.totalResellers}</p>
-                      <p className="text-xs text-muted-foreground">cadastrados</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="flex items-center gap-3 p-3 rounded-lg border bg-card">
+                <div className="p-1.5 rounded-md bg-purple-500/15">
+                  <Users className="h-4 w-4 text-purple-500" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Revendedores</p>
+                  <p className="text-base font-bold">{metrics?.totalResellers}</p>
+                </div>
+              </div>
             </div>
 
-            {/* Goal and Month Stats */}
-            <div className="grid gap-4 lg:grid-cols-2">
-              {/* Meta do Mês */}
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="flex items-center gap-2">
-                        <Target className="h-5 w-5 text-primary" />
-                        Meta do Mês
-                      </CardTitle>
-                      <CardDescription>Progresso de transferências</CardDescription>
-                    </div>
-                    {!editingGoal && (
-                      <Button variant="ghost" size="icon" onClick={() => setEditingGoal(true)}>
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {editingGoal ? (
-                    <div className="flex items-center gap-2">
-                      <div className="relative flex-1">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">R$</span>
-                        <Input
-                          type="text"
-                          placeholder="0,00"
-                          value={newGoal}
-                          onChange={(e) => setNewGoal(e.target.value)}
-                          className="pl-10"
-                        />
-                      </div>
-                      <Button size="icon" variant="ghost" onClick={handleSaveGoal}>
-                        <Check className="h-4 w-4 text-success" />
-                      </Button>
-                      <Button size="icon" variant="ghost" onClick={() => setEditingGoal(false)}>
-                        <X className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Progresso</span>
-                          <span className="font-medium">{monthProgress.toFixed(1)}%</span>
-                        </div>
-                        <Progress value={monthProgress} className="h-3" />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                          <p className="text-sm text-muted-foreground">Transferido</p>
-                          <p className="text-xl font-bold text-success">
-                            {metrics?.monthTransferred.toLocaleString('pt-BR')}
-                          </p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-sm text-muted-foreground">Meta</p>
-                          <p className="text-xl font-bold text-primary">
-                            {formatCurrency(metrics?.monthlyGoal || 0)}
-                          </p>
-                        </div>
-                      </div>
-
-                      {(metrics?.monthlyGoal || 0) > 0 && (
-                        <p className="text-sm text-muted-foreground border-t pt-3">
-                          Faltam <span className="font-semibold text-foreground">
-                            {Math.max(0, (metrics?.monthlyGoal || 0) - (metrics?.monthTransferred || 0)).toLocaleString('pt-BR')}
-                          </span> créditos para a meta
-                        </p>
-                      )}
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Resumo do Mês */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-primary" />
-                    Resumo do Mês
-                  </CardTitle>
-                  <CardDescription>Performance mensal atual</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="p-3 rounded-lg bg-muted/50">
-                      <div className="flex items-center gap-2 mb-1">
-                        <ArrowUpRight className="h-4 w-4 text-success" />
-                        <p className="text-sm text-muted-foreground">Transferências</p>
-                      </div>
-                      <p className="text-lg font-bold">{metrics?.monthTransfers}</p>
-                    </div>
-                    <div className="p-3 rounded-lg bg-muted/50">
-                      <div className="flex items-center gap-2 mb-1">
-                        <CreditCard className="h-4 w-4 text-blue-500" />
-                        <p className="text-sm text-muted-foreground">Créditos</p>
-                      </div>
-                      <p className="text-lg font-bold">{metrics?.monthTransferred.toLocaleString('pt-BR')}</p>
-                    </div>
-                    <div className="p-3 rounded-lg bg-muted/50">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Wallet className="h-4 w-4 text-purple-500" />
-                        <p className="text-sm text-muted-foreground">Recarregado</p>
-                      </div>
-                      <p className="text-lg font-bold">{metrics?.monthRecharged.toLocaleString('pt-BR')}</p>
-                    </div>
-                    <div className="p-3 rounded-lg bg-muted/50">
-                      <div className="flex items-center gap-2 mb-1">
-                        <DollarSign className="h-4 w-4 text-success" />
-                        <p className="text-sm text-muted-foreground">Investido</p>
-                      </div>
-                      <p className="text-lg font-bold">{formatCurrency(metrics?.monthSpent || 0)}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Histórico de Transferências */}
+            {/* Meta do Mês - Compact */}
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <ArrowRightLeft className="h-5 w-5 text-primary" />
-                  Histórico de Transferências
-                </CardTitle>
-                <CardDescription>Últimas transferências para revendedores</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {transfers.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <ArrowRightLeft className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                    <p>Nenhuma transferência realizada</p>
+              <CardContent className="p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Target className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-semibold">Meta do Mês</span>
+                  </div>
+                  {!editingGoal && (
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditingGoal(true)}>
+                      <Edit2 className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
+                </div>
+
+                {editingGoal ? (
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex-1">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">R$</span>
+                      <Input
+                        type="text"
+                        placeholder="0,00"
+                        value={newGoal}
+                        onChange={(e) => setNewGoal(e.target.value)}
+                        className="pl-10 h-9"
+                      />
+                    </div>
+                    <Button size="icon" variant="ghost" className="h-9 w-9" onClick={handleSaveGoal}>
+                      <Check className="h-4 w-4 text-emerald-500" />
+                    </Button>
+                    <Button size="icon" variant="ghost" className="h-9 w-9" onClick={() => setEditingGoal(false)}>
+                      <X className="h-4 w-4 text-destructive" />
+                    </Button>
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Revendedor</TableHead>
-                          <TableHead className="text-right">Créditos</TableHead>
-                          <TableHead className="text-right">Data</TableHead>
-                          <TableHead className="text-right">Hora</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {transfers.map((transfer) => (
-                          <TableRow key={transfer.id}>
-                            <TableCell>
-                              <div>
-                                <p className="font-medium">{transfer.reseller_name}</p>
-                                <p className="text-xs text-muted-foreground">{transfer.reseller_email}</p>
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-right font-mono font-semibold text-success">
-                              +{transfer.amount.toLocaleString('pt-BR')}
-                            </TableCell>
-                            <TableCell className="text-right text-muted-foreground">
-                              {formatDate(transfer.created_at)}
-                            </TableCell>
-                            <TableCell className="text-right text-muted-foreground">
-                              {formatTime(transfer.created_at)}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
+                  <>
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between text-xs">
+                        <span className="text-muted-foreground">
+                          {metrics?.monthTransferred.toLocaleString('pt-BR')} / {formatCurrency(metrics?.monthlyGoal || 0)}
+                        </span>
+                        <span className="font-medium">{monthProgress.toFixed(0)}%</span>
+                      </div>
+                      <Progress value={monthProgress} className="h-2" />
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3 text-center pt-1">
+                      <div>
+                        <p className="text-[11px] text-muted-foreground">Mês</p>
+                        <p className="text-sm font-bold">{metrics?.monthTransfers} ops</p>
+                      </div>
+                      <div>
+                        <p className="text-[11px] text-muted-foreground">Recarregado</p>
+                        <p className="text-sm font-bold">{metrics?.monthRecharged.toLocaleString('pt-BR')}</p>
+                      </div>
+                      <div>
+                        <p className="text-[11px] text-muted-foreground">Investido</p>
+                        <p className="text-sm font-bold">{formatCurrency(metrics?.monthSpent || 0)}</p>
+                      </div>
+                    </div>
+                  </>
                 )}
               </CardContent>
             </Card>
+
+            {/* Histórico */}
+            <div>
+              <p className="text-sm font-semibold mb-3 flex items-center gap-2">
+                <ArrowRightLeft className="h-4 w-4 text-muted-foreground" />
+                Histórico
+              </p>
+
+              {transfers.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">Nenhuma transferência realizada</p>
+              ) : (
+                <div className="space-y-1.5">
+                  {transfers.map((t) => (
+                    <div key={t.id} className="flex items-center justify-between py-2.5 px-3 rounded-md bg-muted/30 border border-border/50">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <ArrowDownRight className="h-4 w-4 text-orange-500 shrink-0" />
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium truncate">{t.reseller_name}</p>
+                          <p className="text-[11px] text-muted-foreground">{formatDate(t.created_at)} · {formatTime(t.created_at)}</p>
+                        </div>
+                      </div>
+                      <span className="text-sm font-semibold text-orange-500 shrink-0">-{t.amount.toLocaleString('pt-BR')}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </>
         )}
       </div>
