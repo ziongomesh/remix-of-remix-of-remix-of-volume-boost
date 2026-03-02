@@ -9,7 +9,7 @@ import iconGovbr from '@/assets/icon-govbr.png';
 import iconAbafe from '@/assets/icon-abafe.png';
 import iconHapvida from '@/assets/icon-hapvida.png';
 import iconCnh2022 from '@/assets/icon-cnh-2022.jpg';
-import iconMarinha from '@/assets/icon-marinha.png';
+import iconMarinha from '@/assets/icon-marinha-new.png';
 import iconDne from '@/assets/icon-dne.png';
 import iconCie from '@/assets/icon-cie.png';
 import iconPagmeia from '@/assets/icon-pagmeia.png';
