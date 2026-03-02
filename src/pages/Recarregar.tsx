@@ -699,12 +699,12 @@ export default function Recarregar() {
                 <TableBody>
                   {paymentHistory.map((payment) => (
                     <TableRow key={payment.id}>
-                      <TableCell className="text-muted-foreground">
-                        {new Date(payment.created_at).toLocaleString('pt-BR')}
+                      <TableCell className="text-muted-foreground whitespace-nowrap">
+                        {payment.created_at ? new Date(payment.created_at).toLocaleString('pt-BR') : '-'}
                       </TableCell>
-                      <TableCell>R$ {Number(payment.amount).toFixed(2)}</TableCell>
-                      <TableCell className="font-medium">{payment.credits}</TableCell>
-                      <TableCell>{getStatusBadge(payment.status)}</TableCell>
+                      <TableCell className="whitespace-nowrap">R$ {(Number(payment.amount) || 0).toFixed(2)}</TableCell>
+                      <TableCell className="font-medium">{payment.credits ?? 0}</TableCell>
+                      <TableCell>{getStatusBadge(payment.status || 'PENDING')}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
