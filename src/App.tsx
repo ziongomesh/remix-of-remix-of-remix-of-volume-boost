@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./hooks/useAuth";
 import { ThemeProvider } from "next-themes";
-import { Logo } from "./components/Logo";
+import { LoadingScreen } from "./components/LoadingScreen";
 
 // Eagerly loaded (lightweight pages)
 import Login from "./pages/Login";
@@ -57,20 +57,7 @@ const Configuracoes = lazy(() => import("./pages/Configuracoes"));
 const queryClient = new QueryClient();
 
 function LazyFallback() {
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-black gap-6">
-      <div className="relative">
-        <Logo className="h-16 w-16 relative z-10" />
-        <div className="absolute inset-0 rounded-full bg-primary/20 blur-xl animate-pulse" />
-      </div>
-      <div className="flex items-center gap-2">
-        <div className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce [animation-delay:0ms]" />
-        <div className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce [animation-delay:150ms]" />
-        <div className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce [animation-delay:300ms]" />
-      </div>
-      <p className="text-gray-500 text-sm tracking-widest uppercase">Carregando</p>
-    </div>
-  );
+  return <LoadingScreen />;
 }
 
 const App = () => (
