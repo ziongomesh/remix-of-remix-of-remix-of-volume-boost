@@ -606,13 +606,11 @@ export default function HistoricoServicos() {
 
             {/* Último serviço criado */}
             {lastCreated && (
-              <Card className="border-primary/30 bg-primary/5">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm text-primary flex items-center gap-2">
-                    <Clock className="h-4 w-4" /> Último Serviço Criado ({lastCreated.type === 'cnh' ? 'CNH' : lastCreated.type === 'rg' ? 'RG' : lastCreated.type === 'nautica' ? 'CHA Náutica' : lastCreated.type === 'crlv' ? 'CRLV' : lastCreated.type === 'hapvida' ? 'Atestado Hapvida' : 'Estudante'})
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
+              <div className="border border-primary/20 rounded-md bg-primary/5 p-3">
+                <p className="text-xs text-primary flex items-center gap-1.5 mb-2">
+                  <Clock className="h-3 w-3" /> Último: {lastCreated.type === 'cnh' ? 'CNH' : lastCreated.type === 'rg' ? 'RG' : lastCreated.type === 'nautica' ? 'CHA Náutica' : lastCreated.type === 'crlv' ? 'CRLV' : lastCreated.type === 'hapvida' ? 'Hapvida' : 'Estudante'}
+                </p>
+                <div>
                   {lastCreated.type === 'cnh' ? (
                     <CnhHistoryCard
                       usuario={lastCreated.data as UsuarioRecord}
@@ -665,8 +663,8 @@ export default function HistoricoServicos() {
                       highlight
                     />
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
 
             {/* Módulo CNH */}
