@@ -125,12 +125,11 @@ export function LoginForm() {
         await api.auth.setPin(pendingAdmin.id, pin);
         toast.success('PIN registrado com sucesso!');
       }
-
+      toast.loading('Carregando...', { id: 'login-loading' });
       const { error } = await signIn(email, password);
+      toast.dismiss('login-loading');
       if (error) {
         toast.error('Erro ao fazer login');
-      } else {
-        toast.success('Login realizado com sucesso!');
       }
     } catch (err: any) {
       toast.error('Erro ao processar PIN', { description: err.message });
