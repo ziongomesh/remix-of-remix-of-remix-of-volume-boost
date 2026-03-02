@@ -4,11 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { Loader2, Play, Home } from 'lucide-react';
-import { Logo } from '@/components/Logo';
 import { PinPad } from './PinPad';
 import { TurnstileWidget, TURNSTILE_ENABLED } from './TurnstileWidget';
 import api from '@/lib/api';
 import { useNavigate } from 'react-router-dom';
+import logoBluelake from '@/assets/logo-bluelake.webp';
 
 interface PendingAdmin {
   id: number;
@@ -138,6 +138,9 @@ export function LoginForm() {
     setPinLoading(false);
   };
 
+  const isFormValid = !!email && !!password && (!TURNSTILE_ENABLED || !!turnstileToken);
+  const isDisabled = loading || !isFormValid;
+
   // PIN pad view
   if (pendingAdmin) {
     return (
@@ -159,43 +162,52 @@ export function LoginForm() {
   }
 
   return (
-    <div className="w-full space-y-6">
+    <div className="w-full space-y-10">
       {/* Home icon - top left */}
       <button
         onClick={() => navigate('/')}
-        className="text-gray-500 hover:text-white transition-colors"
+        className="text-white/40 hover:text-white transition-colors"
       >
         <Home className="h-5 w-5" />
       </button>
 
       {/* Logo - centered */}
-      <div className="flex justify-center pt-4">
-        <Logo className="h-24 w-24" />
+      <div className="flex flex-col items-center text-center">
+        <img src={logoBluelake} alt="Logo" className="h-28 w-auto" draggable={false} />
+        <h1 className="mt-6 text-[28px] font-extrabold leading-none text-white">
+          Iniciar Sessão
+        </h1>
       </div>
 
-      {/* Title - centered */}
-      <h1 className="text-2xl font-bold text-white text-center">Iniciar Sessão</h1>
-
       {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-3 pt-2">
-        <div className="relative">
-          <label className="absolute top-2 left-3 text-[11px] text-gray-500 pointer-events-none">Usuário</label>
+      <form onSubmit={handleSubmit} className="w-full space-y-4">
+        {/* Usuário input */}
+        <div className="rounded-sm bg-white/[0.08] border border-white/10 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.2)]">
+          <div className="px-4 pt-2 text-[11px] tracking-wider text-white/50">
+            Usuário
+          </div>
           <Input
             type="text"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="h-14 pt-6 pb-2 bg-white/5 border-white/10 text-white placeholder:text-transparent rounded-lg focus:border-primary/50 focus:ring-primary/20 text-sm"
+            autoComplete="username"
+            className="h-8 bg-transparent border-0 px-4 py-1 text-white placeholder:text-white/25 rounded-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
           />
         </div>
-        <div className="relative">
-          <label className="absolute top-2 left-3 text-[11px] text-gray-500 pointer-events-none">Senha</label>
+
+        {/* Senha input */}
+        <div className="rounded-sm bg-white/[0.08] border border-white/10 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.2)]">
+          <div className="px-4 pt-2 text-[11px] tracking-wider text-white/50">
+            Senha
+          </div>
           <Input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="h-14 pt-6 pb-2 bg-white/5 border-white/10 text-white placeholder:text-transparent rounded-lg focus:border-primary/50 focus:ring-primary/20 text-sm"
+            autoComplete="current-password"
+            className="h-8 bg-transparent border-0 px-4 py-1 text-white placeholder:text-white/25 rounded-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
           />
         </div>
 
@@ -206,41 +218,51 @@ export function LoginForm() {
           />
         )}
 
-        {/* Play button - centered, larger, blue */}
-        <div className="flex justify-center pt-6">
-          <Button
-            type="submit"
-            disabled={loading || !email || !password || (TURNSTILE_ENABLED && !turnstileToken)}
-            className="h-16 w-16 rounded-2xl text-white shadow-lg shadow-primary/30 transition-all disabled:opacity-30 disabled:shadow-none bg-primary hover:bg-primary/90"
-            size="icon"
-          >
-            {loading ? (
-              <Loader2 className="h-7 w-7 animate-spin" />
-            ) : (
-              <Play className="h-7 w-7 ml-0.5" />
+        {/* Play button */}
+        <div className="pt-16 flex flex-col items-center gap-6">
+          <div className="relative">
+            {!isDisabled && (
+              <div className="absolute -inset-3 rounded-[28px] bg-sky-300/20 blur-xl pointer-events-none animate-pulse" />
             )}
-          </Button>
+            <Button
+              type="submit"
+              disabled={isDisabled}
+              className={`
+                relative h-20 w-20 rounded-3xl border border-white/15 transition-all
+                ${isDisabled
+                  ? 'bg-gray-500/25 text-gray-300 opacity-40 cursor-not-allowed shadow-none'
+                  : 'bg-sky-300/70 text-black hover:bg-sky-300/80 active:scale-[0.98] shadow-[0_18px_40px_rgba(0,0,0,0.35)]'
+                }
+              `}
+              size="icon"
+            >
+              {loading ? (
+                <Loader2 className="h-6 w-6 animate-spin" />
+              ) : (
+                <Play className="h-7 w-7 ml-0.5" />
+              )}
+            </Button>
+          </div>
+
+          <p className="text-sm text-white/55 text-center">
+            Não tem uma conta?{' '}
+            <button
+              type="button"
+              onClick={() => setShowCreateAccount(true)}
+              className="text-sky-300 hover:underline font-medium"
+            >
+              Criar Conta
+            </button>
+          </p>
         </div>
       </form>
-
-      {/* Footer - centered */}
-      <p className="text-sm text-gray-500 text-center">
-        Não tem uma conta?{' '}
-        <button
-          type="button"
-          onClick={() => setShowCreateAccount(true)}
-          className="text-primary hover:underline font-medium"
-        >
-          Criar Conta
-        </button>
-      </p>
 
       {/* Create Account Modal */}
       {showCreateAccount && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-8 max-w-sm w-full mx-4 space-y-6 shadow-2xl">
             <div className="flex justify-center">
-              <Logo className="h-16 w-16" />
+              <img src={logoBluelake} alt="Logo" className="h-16 w-auto" />
             </div>
             <h2 className="text-xl font-bold text-white text-center">Criar uma Conta</h2>
             <p className="text-gray-400 text-sm text-center leading-relaxed">
