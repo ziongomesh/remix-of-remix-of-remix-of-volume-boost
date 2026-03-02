@@ -649,8 +649,8 @@ export default function RgDigital() {
                   )} />
                   <FormField control={form.control} name="local" render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="opacity-50">Local de Emissão</FormLabel>
-                      <FormControl><Input {...field} disabled className="bg-muted opacity-50 cursor-not-allowed" /></FormControl>
+                      <FormLabel>Local de Emissão</FormLabel>
+                      <FormControl><Input {...field} placeholder="MACAPA/AP" onChange={(e) => field.onChange(toUpper(e.target.value))} /></FormControl>
                     </FormItem>
                   )} />
                 </div>
