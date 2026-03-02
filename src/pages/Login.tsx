@@ -43,19 +43,19 @@ export default function Login() {
         background: 'linear-gradient(to bottom, hsl(220 25% 6% / 0.3) 0%, transparent 20%, transparent 80%, hsl(220 25% 6% / 0.4) 100%)'
       }} />
 
-      {/* Blue glow - reluzente, fast pulse */}
-      <div className="absolute top-[5%] left-[25%] w-[600px] h-[600px] rounded-full pointer-events-none blur-[180px]"
-        style={{ background: 'hsl(200 80% 55% / 0.25)', animation: 'loginPulse 3s ease-in-out infinite alternate' }} />
-      <div className="absolute bottom-[10%] left-[30%] w-[400px] h-[400px] rounded-full pointer-events-none blur-[140px]"
-        style={{ background: 'hsl(200 90% 60% / 0.2)', animation: 'loginPulse 4s ease-in-out infinite alternate-reverse' }} />
-      <div className="absolute top-[30%] right-[10%] w-[500px] h-[500px] rounded-full pointer-events-none blur-[160px]"
-        style={{ background: 'hsl(190 70% 50% / 0.15)', animation: 'loginPulse 5s ease-in-out infinite alternate' }} />
+      {/* Subtle atmospheric glows - muted tones */}
+      <div className="absolute top-[10%] left-[15%] w-[500px] h-[500px] rounded-full pointer-events-none blur-[200px]"
+        style={{ background: 'hsl(200 50% 35% / 0.15)', animation: 'loginPulse 6s ease-in-out infinite alternate' }} />
+      <div className="absolute bottom-[15%] left-[20%] w-[350px] h-[350px] rounded-full pointer-events-none blur-[160px]"
+        style={{ background: 'hsl(195 45% 30% / 0.12)', animation: 'loginPulse 8s ease-in-out infinite alternate-reverse' }} />
+      <div className="absolute top-[40%] right-[15%] w-[400px] h-[400px] rounded-full pointer-events-none blur-[180px]"
+        style={{ background: 'hsl(190 40% 28% / 0.1)', animation: 'loginPulse 10s ease-in-out infinite alternate' }} />
       
-      {/* Bright accent streaks */}
-      <div className="absolute top-[15%] left-[35%] w-[300px] h-[2px] pointer-events-none opacity-30 rotate-[-15deg]"
-        style={{ background: 'linear-gradient(90deg, transparent, hsl(200 80% 65%), transparent)', animation: 'loginStreak 4s ease-in-out infinite' }} />
-      <div className="absolute bottom-[25%] left-[40%] w-[250px] h-[1px] pointer-events-none opacity-20 rotate-[10deg]"
-        style={{ background: 'linear-gradient(90deg, transparent, hsl(190 80% 70%), transparent)', animation: 'loginStreak 5s ease-in-out infinite 1s' }} />
+      {/* Soft accent lines */}
+      <div className="absolute top-[20%] left-[30%] w-[250px] h-[1px] pointer-events-none opacity-15 rotate-[-15deg]"
+        style={{ background: 'linear-gradient(90deg, transparent, hsl(200 40% 50%), transparent)', animation: 'loginStreak 6s ease-in-out infinite' }} />
+      <div className="absolute bottom-[30%] left-[35%] w-[200px] h-[1px] pointer-events-none opacity-10 rotate-[10deg]"
+        style={{ background: 'linear-gradient(90deg, transparent, hsl(190 40% 45%), transparent)', animation: 'loginStreak 8s ease-in-out infinite 2s' }} />
 
       <style>{`
         @keyframes loginBgFloat {
