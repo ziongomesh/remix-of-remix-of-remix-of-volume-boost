@@ -180,9 +180,9 @@ function ServiceCard({ service, hasCredits }: { service: Service; hasCredits: bo
         className={`bg-card border border-border rounded-lg p-3 flex items-center gap-3 transition-shadow ${service.available ? (canAccess ? 'hover:shadow-md hover:border-primary/30 cursor-pointer' : 'cursor-default') : 'opacity-50 cursor-default'}`}
         onClick={() => canAccess && navigate(service.route)}
       >
-        <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden">
+        <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden" style={{ clipPath: 'circle(50%)' }}>
           {service.iconImage
-            ? <img src={service.iconImage} alt={service.name} className="h-14 w-14 object-cover rounded-full" />
+            ? <img src={service.iconImage} alt={service.name} className="h-14 w-14 object-cover" />
             : <Icon className="h-7 w-7 text-primary" />}
         </div>
         <div className="flex-1 min-w-0">
