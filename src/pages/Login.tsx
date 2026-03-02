@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
@@ -6,8 +7,14 @@ import waveBg from '@/assets/wave-bg.png';
 
 export default function Login() {
   const { admin, loading } = useAuth();
+  const [splash, setSplash] = useState(true);
 
-  if (loading) {
+  useEffect(() => {
+    const timer = setTimeout(() => setSplash(false), 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading || splash) {
     return <LoadingScreen />;
   }
 
