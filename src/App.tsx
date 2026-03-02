@@ -82,7 +82,7 @@ const App = () => (
           <AuthProvider>
             <Suspense fallback={<LazyFallback />}>
               <Routes>
-                <Route path="/" element={<Index />} />
+                <Route path="/" element={<Navigate to="/login" replace />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/dashboard-dono" element={<Navigate to="/dashboard" replace />} />
