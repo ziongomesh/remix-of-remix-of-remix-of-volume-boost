@@ -42,9 +42,8 @@ export default function Transferir() {
     if (admin && (role === 'master' || role === 'sub')) {
       fetchResellers();
       fetchTransfers();
-      refreshCredits();
     }
-  }, [admin, role]);
+  }, [admin?.id, role]);
 
   const fetchTransfers = async () => {
     try {

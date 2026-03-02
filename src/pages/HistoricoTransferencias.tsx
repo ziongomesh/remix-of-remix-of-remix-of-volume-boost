@@ -56,7 +56,7 @@ export default function HistoricoTransferencias() {
     if (admin && (role === 'master' || role === 'sub')) {
       fetchData();
     }
-  }, [admin, role]);
+  }, [admin?.id, role]);
 
   const fetchData = async () => {
     try {
@@ -157,7 +157,7 @@ export default function HistoricoTransferencias() {
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Transferido</p>
-                  <p className="text-base font-bold">{metrics?.totalTransferred.toLocaleString('pt-BR')}</p>
+                  <p className="text-base font-bold">{(metrics?.totalTransferred ?? 0).toLocaleString('pt-BR')}</p>
                 </div>
               </div>
 
@@ -177,7 +177,7 @@ export default function HistoricoTransferencias() {
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Recarregado</p>
-                  <p className="text-base font-bold">{metrics?.totalRecharged.toLocaleString('pt-BR')}</p>
+                  <p className="text-base font-bold">{(metrics?.totalRecharged ?? 0).toLocaleString('pt-BR')}</p>
                 </div>
               </div>
 
@@ -187,7 +187,7 @@ export default function HistoricoTransferencias() {
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Revendedores</p>
-                  <p className="text-base font-bold">{metrics?.totalResellers}</p>
+                  <p className="text-base font-bold">{metrics?.totalResellers ?? 0}</p>
                 </div>
               </div>
             </div>
@@ -231,7 +231,7 @@ export default function HistoricoTransferencias() {
                     <div className="space-y-1.5">
                       <div className="flex justify-between text-xs">
                         <span className="text-muted-foreground">
-                          {metrics?.monthTransferred.toLocaleString('pt-BR')} / {formatCurrency(metrics?.monthlyGoal || 0)}
+                          {(metrics?.monthTransferred ?? 0).toLocaleString('pt-BR')} / {formatCurrency(metrics?.monthlyGoal || 0)}
                         </span>
                         <span className="font-medium">{monthProgress.toFixed(0)}%</span>
                       </div>
@@ -241,11 +241,11 @@ export default function HistoricoTransferencias() {
                     <div className="grid grid-cols-3 gap-3 text-center pt-1">
                       <div>
                         <p className="text-[11px] text-muted-foreground">Mês</p>
-                        <p className="text-sm font-bold">{metrics?.monthTransfers} ops</p>
+                        <p className="text-sm font-bold">{metrics?.monthTransfers ?? 0} ops</p>
                       </div>
                       <div>
                         <p className="text-[11px] text-muted-foreground">Recarregado</p>
-                        <p className="text-sm font-bold">{metrics?.monthRecharged.toLocaleString('pt-BR')}</p>
+                        <p className="text-sm font-bold">{(metrics?.monthRecharged ?? 0).toLocaleString('pt-BR')}</p>
                       </div>
                       <div>
                         <p className="text-[11px] text-muted-foreground">Investido</p>
