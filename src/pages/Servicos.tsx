@@ -182,7 +182,7 @@ function ServiceCard({ service, hasCredits }: { service: Service; hasCredits: bo
       >
         <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden" style={{ clipPath: 'circle(50%)' }}>
           {service.iconImage
-            ? <img src={service.iconImage} alt={service.name} className="h-[120%] w-[120%] object-cover" />
+            ? <img src={service.iconImage} alt={service.name} className="h-[140%] w-[140%] object-cover object-center" />
             : <Icon className="h-7 w-7 text-primary" />}
         </div>
         <div className="flex-1 min-w-0">
