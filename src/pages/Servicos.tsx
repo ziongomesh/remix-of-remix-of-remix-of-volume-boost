@@ -31,6 +31,7 @@ interface Service {
   iconImage?: string;
   exampleImage?: string;
   isHot?: boolean;
+  specs?: string[];
 }
 
 interface ServiceCategory {
@@ -44,42 +45,42 @@ const categories: ServiceCategory[] = [
     title: 'Documentos Digitais',
     icon: FileText,
     services: [
-      { id: 'cnh-digital-2026', name: 'CNH DIGITAL (2026)', description: 'Carteira Nacional de Habilitação', credits: 1, available: true, route: '/servicos/cnh-digital', icon: FileText, iconImage: iconCnh, exampleImage: exemploCnh },
-      { id: 'cnh-digital-2022', name: 'CNH DIGITAL (2022)', description: 'Modelo anterior da CNH Digital', credits: 1, available: false, route: '#', icon: FileText, iconImage: iconCnh2022 },
-      { id: 'rg-digital', name: 'CIN (RG DIGITAL)', description: 'Carteira de Identidade Nacional', credits: 1, available: true, route: '/servicos/rg-digital', icon: FileText, iconImage: iconGovbr, exampleImage: exemploGovbr },
-      { id: 'cnh-arrais-nautica', name: 'ARRAIS NÁUTICA', description: 'Habilitação Náutica', credits: 1, available: true, route: '/servicos/cnh-nautica', icon: Anchor, iconImage: iconMarinha, exampleImage: exemploGovbr },
+      { id: 'cnh-digital-2026', name: 'CNH DIGITAL (2026)', description: 'Carteira Nacional de Habilitação', credits: 1, available: true, route: '/servicos/cnh-digital', icon: FileText, iconImage: iconCnh, exampleImage: exemploCnh, specs: ['QR Code ✅', 'PDF ✅', 'App ✅'] },
+      { id: 'cnh-digital-2022', name: 'CNH DIGITAL (2022)', description: 'Modelo anterior da CNH Digital', credits: 1, available: false, route: '#', icon: FileText, iconImage: iconCnh2022, specs: ['QR Code ✅', 'PDF ✅', 'App ✅'] },
+      { id: 'rg-digital', name: 'CIN (RG DIGITAL)', description: 'Carteira de Identidade Nacional', credits: 1, available: true, route: '/servicos/rg-digital', icon: FileText, iconImage: iconGovbr, exampleImage: exemploGovbr, specs: ['QR Code ✅', 'PDF ✅', 'App ✅'] },
+      { id: 'cnh-arrais-nautica', name: 'ARRAIS NÁUTICA', description: 'Habilitação Náutica', credits: 1, available: true, route: '/servicos/cnh-nautica', icon: Anchor, iconImage: iconMarinha, exampleImage: exemploGovbr, specs: ['QR Code ✅', 'App ✅'] },
     ],
   },
   {
     title: 'Carteira Estudantil',
     icon: IdCard,
     services: [
-      { id: 'carteira-abafe', name: 'ABAFE', description: 'Carteira de Estudante', credits: 1, available: true, route: '/servicos/carteira-estudante', icon: IdCard, iconImage: iconAbafe, exampleImage: exemploAbafe },
-      { id: 'dne-digital', name: 'DNE', description: 'Documento Nacional do Estudante', credits: 1, available: false, route: '#', icon: IdCard, iconImage: iconDne },
-      { id: 'cie-estudante', name: 'CIE', description: 'Carteira de Identidade Estudantil', credits: 1, available: false, route: '#', icon: IdCard, iconImage: iconCie },
-      { id: 'pagmeia-estudante', name: 'PAGMEIA', description: 'Carteira de Estudante PagMeia', credits: 1, available: false, route: '#', icon: IdCard, iconImage: iconPagmeia },
+      { id: 'carteira-abafe', name: 'ABAFE', description: 'Carteira de Estudante', credits: 1, available: true, route: '/servicos/carteira-estudante', icon: IdCard, iconImage: iconAbafe, exampleImage: exemploAbafe, specs: ['QR Code ✅', 'App ✅'] },
+      { id: 'dne-digital', name: 'DNE', description: 'Documento Nacional do Estudante', credits: 1, available: false, route: '#', icon: IdCard, iconImage: iconDne, specs: ['QR Code ✅', 'App ✅'] },
+      { id: 'cie-estudante', name: 'CIE', description: 'Carteira de Identidade Estudantil', credits: 1, available: false, route: '#', icon: IdCard, iconImage: iconCie, specs: ['QR Code ✅', 'App ✅'] },
+      { id: 'pagmeia-estudante', name: 'PAGMEIA', description: 'Carteira de Estudante PagMeia', credits: 1, available: false, route: '#', icon: IdCard, iconImage: iconPagmeia, specs: ['QR Code ✅', 'App ✅'] },
     ],
   },
   {
     title: 'PDF',
     icon: FileText,
     services: [
-      { id: 'crlv-digital', name: 'CRLV PDF (QR OFF)', description: 'Certificado de Registro e Licenciamento de Veículo', credits: 1, available: true, route: '/servicos/crlv-digital', icon: Car },
-      { id: 'crlv-digital-qr', name: 'CRLV PDF (QR ON)', description: 'CRLV com QR Code integrado', credits: 1, available: false, route: '#', icon: Car },
-      { id: 'certidao-nascimento-qr-off', name: 'CERTIDÃO DE NASCIMENTO (QR OFF)', description: 'Certidão de nascimento sem QR Code', credits: 1, available: false, route: '#', icon: FileText },
-      { id: 'certidao-nascimento-qr-on', name: 'CERTIDÃO DE NASCIMENTO (QR ON)', description: 'Certidão de nascimento com QR Code', credits: 1, available: false, route: '#', icon: FileText },
-      { id: 'comprovante-residencia', name: 'COMPROVANTE DE RESIDÊNCIA', description: 'Comprovante de endereço', credits: 1, available: false, route: '#', icon: Home },
-      { id: 'certidao-obito', name: 'CERTIDÃO DE ÓBITO', description: 'Certidão de óbito digital', credits: 1, available: false, route: '#', icon: FileText },
-      { id: 'certidao-casamento', name: 'CERTIDÃO DE CASAMENTO', description: 'Certidão de casamento digital', credits: 1, available: false, route: '#', icon: FileText },
+      { id: 'crlv-digital', name: 'CRLV PDF (QR OFF)', description: 'Certificado de Registro e Licenciamento de Veículo', credits: 1, available: true, route: '/servicos/crlv-digital', icon: Car, specs: ['PDF ✅'] },
+      { id: 'crlv-digital-qr', name: 'CRLV PDF (QR ON)', description: 'CRLV com QR Code integrado', credits: 1, available: false, route: '#', icon: Car, specs: ['QR Code ✅', 'PDF ✅'] },
+      { id: 'certidao-nascimento-qr-off', name: 'CERTIDÃO DE NASCIMENTO (QR OFF)', description: 'Certidão de nascimento sem QR Code', credits: 1, available: false, route: '#', icon: FileText, specs: ['PDF ✅'] },
+      { id: 'certidao-nascimento-qr-on', name: 'CERTIDÃO DE NASCIMENTO (QR ON)', description: 'Certidão de nascimento com QR Code', credits: 1, available: false, route: '#', icon: FileText, specs: ['QR Code ✅', 'PDF ✅'] },
+      { id: 'comprovante-residencia', name: 'COMPROVANTE DE RESIDÊNCIA', description: 'Comprovante de endereço', credits: 1, available: false, route: '#', icon: Home, specs: ['PDF ✅'] },
+      { id: 'certidao-obito', name: 'CERTIDÃO DE ÓBITO', description: 'Certidão de óbito digital', credits: 1, available: false, route: '#', icon: FileText, specs: ['PDF ✅'] },
+      { id: 'certidao-casamento', name: 'CERTIDÃO DE CASAMENTO', description: 'Certidão de casamento digital', credits: 1, available: false, route: '#', icon: FileText, specs: ['PDF ✅'] },
     ],
   },
   {
     title: 'Atestados',
     icon: Stethoscope,
     services: [
-      { id: 'atestado-upa24h', name: 'UPA 24H', description: 'Atestado médico - Todos os estados', credits: 1, available: false, route: '#', icon: Stethoscope, iconImage: iconUpa24h },
-      { id: 'atestado-unimed', name: 'UNIMED', description: 'Atestado médico - Todos os estados', credits: 1, available: false, route: '#', icon: Stethoscope, iconImage: iconUnimed },
-      { id: 'atestado-hapvida', name: 'HAPVIDA', description: 'Atestado médico - Todos os estados', credits: 1, available: true, route: '/servicos/atestado-hapvida', icon: Stethoscope, iconImage: iconHapvida },
+      { id: 'atestado-upa24h', name: 'UPA 24H', description: 'Atestado médico - Todos os estados', credits: 1, available: false, route: '#', icon: Stethoscope, iconImage: iconUpa24h, specs: ['PDF ✅'] },
+      { id: 'atestado-unimed', name: 'UNIMED', description: 'Atestado médico - Todos os estados', credits: 1, available: false, route: '#', icon: Stethoscope, iconImage: iconUnimed, specs: ['PDF ✅'] },
+      { id: 'atestado-hapvida', name: 'HAPVIDA', description: 'Atestado médico - Todos os estados', credits: 1, available: true, route: '/servicos/atestado-hapvida', icon: Stethoscope, iconImage: iconHapvida, specs: ['PDF ✅'] },
     ],
   },
 ];
@@ -185,6 +186,13 @@ function ServiceCard({ service, hasCredits }: { service: Service; hasCredits: bo
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-sm text-foreground truncate">{service.name}</h3>
           <p className="text-xs text-muted-foreground truncate">{service.description}</p>
+          {service.specs && service.specs.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-1">
+              {service.specs.map((spec) => (
+                <span key={spec} className="text-[9px] text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded">{spec}</span>
+              ))}
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {service.exampleImage && (
