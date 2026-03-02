@@ -55,7 +55,7 @@ export default function SuggestionButton() {
   return (
     <>
       {/* Floating buttons */}
-      <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+      <div className="fixed top-[70px] right-4 z-50 flex items-center gap-2 lg:top-4">
         {canViewList && (
           <Button
             size="icon"
