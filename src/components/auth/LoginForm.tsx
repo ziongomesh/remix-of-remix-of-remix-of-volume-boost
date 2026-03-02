@@ -155,47 +155,41 @@ export function LoginForm() {
   }
 
   return (
-    <div className="w-full space-y-8">
+    <div className="w-full space-y-6">
       {/* Home icon */}
-      <div className="flex justify-center md:justify-start">
-        <button
-          onClick={() => navigate('/')}
-          className="text-gray-500 hover:text-white transition-colors"
-        >
-          <Home className="h-5 w-5" />
-        </button>
-      </div>
+      <button
+        onClick={() => navigate('/')}
+        className="text-gray-600 hover:text-white transition-colors"
+      >
+        <Home className="h-5 w-5" />
+      </button>
 
       {/* Logo */}
-      <div className="flex justify-center">
+      <div className="pt-2">
         <Logo className="h-20 w-20" />
       </div>
 
       {/* Title */}
-      <h1 className="text-xl font-semibold text-white text-center">Iniciar Sessão</h1>
+      <h1 className="text-xl font-bold text-white">Iniciar Sessão</h1>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <Input
-            type="email"
-            placeholder="E-mail"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="h-11 bg-white/5 border-white/8 text-white placeholder:text-gray-600 rounded-lg focus:border-primary/50 focus:ring-primary/20 text-sm"
-          />
-        </div>
-        <div>
-          <Input
-            type="password"
-            placeholder="Senha"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="h-11 bg-white/5 border-white/8 text-white placeholder:text-gray-600 rounded-lg focus:border-primary/50 focus:ring-primary/20 text-sm"
-          />
-        </div>
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <Input
+          type="email"
+          placeholder="Usuário"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          className="h-12 bg-white/5 border-white/8 text-white placeholder:text-gray-500 rounded-lg focus:border-primary/50 focus:ring-primary/20 text-sm"
+        />
+        <Input
+          type="password"
+          placeholder="Senha"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          className="h-12 bg-white/5 border-white/8 text-white placeholder:text-gray-500 rounded-lg focus:border-primary/50 focus:ring-primary/20 text-sm"
+        />
 
         {TURNSTILE_ENABLED && (
           <TurnstileWidget
@@ -205,11 +199,11 @@ export function LoginForm() {
         )}
 
         {/* Play button */}
-        <div className="flex justify-center pt-4">
+        <div className="flex justify-center pt-6">
           <Button
             type="submit"
             disabled={loading || !email || !password || (TURNSTILE_ENABLED && !turnstileToken)}
-            className="h-12 w-12 rounded-xl border border-white/8 text-white shadow-lg transition-all disabled:bg-white/5 disabled:opacity-30 bg-primary/80 hover:bg-primary"
+            className="h-14 w-14 rounded-2xl border border-white/10 text-white shadow-lg transition-all disabled:bg-white/5 disabled:opacity-30 bg-white/5 hover:bg-white/10"
             size="icon"
           >
             {loading ? (
@@ -222,7 +216,7 @@ export function LoginForm() {
       </form>
 
       {/* Footer */}
-      <p className="text-sm text-gray-500 text-center md:text-left">
+      <p className="text-sm text-gray-500">
         Não tem uma conta?{' '}
         <button
           type="button"

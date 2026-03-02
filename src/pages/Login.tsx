@@ -16,30 +16,20 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex bg-[hsl(220,25%,6%)] relative overflow-hidden">
-      {/* Subtle animated background */}
-      <div
-        className="absolute inset-0 opacity-20 pointer-events-none"
-        style={{
-          backgroundImage: `url(${waveBg})`,
-          backgroundSize: '200% 200%',
-          backgroundPosition: 'center',
-          animation: 'loginWave 20s ease-in-out infinite alternate',
-        }}
-      />
-      <style>{`
-        @keyframes loginWave {
-          0% { background-position: 0% 30%; transform: scale(1.05); }
-          50% { background-position: 100% 40%; transform: scale(1.1); }
-          100% { background-position: 20% 70%; transform: scale(1.05); }
-        }
-      `}</style>
+    <div className="min-h-screen flex bg-[hsl(220,25%,6%)]">
+      {/* Left panel - Form */}
+      <div className="relative z-10 w-full lg:w-[340px] lg:min-w-[340px] flex flex-col justify-center px-8 py-10 bg-[hsl(220,25%,6%)]">
+        <LoginForm />
+      </div>
 
-      {/* Login form - centered */}
-      <div className="relative z-10 w-full flex items-center justify-center px-6">
-        <div className="w-full max-w-sm">
-          <LoginForm />
-        </div>
+      {/* Right panel - Background image (desktop only) */}
+      <div className="hidden lg:block flex-1 relative overflow-hidden">
+        <img
+          src={waveBg}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover"
+          draggable={false}
+        />
       </div>
     </div>
   );
