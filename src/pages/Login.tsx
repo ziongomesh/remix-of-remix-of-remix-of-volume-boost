@@ -76,12 +76,12 @@ export default function Login() {
       `}</style>
 
       {/* Left panel - Form */}
-      <div className="relative z-10 w-full lg:w-[420px] lg:min-w-[420px] flex flex-col items-center justify-center px-8 py-10"
+      <div className="relative z-10 w-full lg:w-[480px] lg:min-w-[480px] flex flex-col items-center justify-center px-10 py-10"
         style={{
           background: 'linear-gradient(to right, hsl(220 25% 6%) 85%, hsl(220 25% 6% / 0.85) 92%, hsl(220 25% 6% / 0.5) 96%, transparent 100%)',
         }}
       >
-        <div className="w-full max-w-[340px]">
+        <div className="w-full max-w-[380px]">
           <LoginForm />
         </div>
       </div>
