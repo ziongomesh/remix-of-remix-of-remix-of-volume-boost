@@ -80,6 +80,31 @@ export function AsciiBackground() {
     let maskFlicker: number[] = [];
     let time = 0;
 
+    // Mouse/keyboard reactive offset
+    let mouseX = 0;
+    let mouseY = 0;
+    let targetOffsetX = 0;
+    let targetOffsetY = 0;
+    let currentOffsetX = 0;
+    let currentOffsetY = 0;
+    let shakeIntensity = 0;
+
+    const onMouseMove = (e: MouseEvent) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      const cx = window.innerWidth / 2;
+      const cy = window.innerHeight / 2;
+      targetOffsetX = ((e.clientX - cx) / cx) * 18;
+      targetOffsetY = ((e.clientY - cy) / cy) * 12;
+    };
+
+    const onKeyDown = () => {
+      shakeIntensity = 8;
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('keydown', onKeyDown);
+
     const resize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
@@ -114,6 +139,22 @@ export function AsciiBackground() {
     const draw = () => {
       time++;
 
+      // Smoothly interpolate reactive offset
+      currentOffsetX += (targetOffsetX - currentOffsetX) * 0.08;
+      currentOffsetY += (targetOffsetY - currentOffsetY) * 0.08;
+
+      // Decay shake from keyboard
+      if (shakeIntensity > 0.1) {
+        shakeIntensity *= 0.9;
+      } else {
+        shakeIntensity = 0;
+      }
+      const shakeX = shakeIntensity * (Math.random() - 0.5) * 2;
+      const shakeY = shakeIntensity * (Math.random() - 0.5) * 2;
+
+      const reactX = currentOffsetX + shakeX;
+      const reactY = currentOffsetY + shakeY;
+
       // Clear with slight trail
       ctx.fillStyle = 'rgb(8, 10, 14)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -131,7 +172,7 @@ export function AsciiBackground() {
 
         ctx.fillStyle = `rgba(80, 140, 160, ${alpha})`;
         ctx.font = `${c.size}px "Courier New", monospace`;
-        ctx.fillText(c.char, c.x, c.y);
+        ctx.fillText(c.char, c.x + reactX * 0.3, c.y + reactY * 0.3);
 
         if (c.life > c.maxLife || c.y > canvas.height + 20) {
           floatingChars[i] = createFloating();
@@ -149,9 +190,9 @@ export function AsciiBackground() {
       const totalW = cols * charWidth;
       const totalH = rows * lineHeight;
 
-      // Center on the right side of the screen (offset from left panel)
-      const offsetX = Math.max(canvas.width * 0.55 - totalW / 2, canvas.width * 0.35);
-      const offsetY = (canvas.height - totalH) / 2;
+      // Center on the right side of the screen (offset from left panel) + reactive offset
+      const offsetX = Math.max(canvas.width * 0.55 - totalW / 2, canvas.width * 0.35) + reactX;
+      const offsetY = (canvas.height - totalH) / 2 + reactY;
 
       ctx.font = `14px "Courier New", monospace`;
 
@@ -208,6 +249,8 @@ export function AsciiBackground() {
     window.addEventListener('resize', resize);
     return () => {
       window.removeEventListener('resize', resize);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('keydown', onKeyDown);
       cancelAnimationFrame(animationId);
     };
   }, []);
