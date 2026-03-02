@@ -40,7 +40,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  History, Search, IdCard, Eye, Edit, Loader2, Clock, FileText, ChevronDown, ChevronUp, ExternalLink, Trash2, AlertTriangle, CreditCard, RefreshCw, Timer, GraduationCap, Copy, Check, Anchor, FileDown, Truck, Stethoscope
+  History, Search, IdCard, Eye, Edit, Loader2, Clock, FileText, ChevronDown, ChevronUp, ExternalLink, Trash2, AlertTriangle, CreditCard, RefreshCw, Timer, GraduationCap, Copy, Check, Anchor, FileDown, Truck, Stethoscope, User
 } from 'lucide-react';
 import CnhEditView from '@/components/cnh/CnhEditView';
 import RgEditView from '@/components/rg/RgEditView';
@@ -1006,7 +1006,11 @@ function CnhHistoryCard({
               <img src={resolveUploadUrl(usuario.foto_url)} alt="Foto" className="h-12 w-12 sm:h-16 sm:w-16 object-cover rounded-full border cursor-pointer hover:ring-2 hover:ring-muted-foreground/30 shrink-0" onClick={() => setShowPreview(!showPreview)} {...imgProps} />
             ) : usuario.cnh_frente_url ? (
               <img src={resolveUploadUrl(usuario.cnh_frente_url)} alt="CNH Frente" className="h-12 w-16 sm:h-16 sm:w-24 object-cover rounded border cursor-pointer hover:ring-2 hover:ring-muted-foreground/30 shrink-0" onClick={() => setShowPreview(!showPreview)} {...imgProps} />
-            ) : null}
+            ) : (
+              <div className="h-12 w-12 sm:h-16 sm:w-16 rounded-full border bg-muted flex items-center justify-center shrink-0">
+                <User className="h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground" />
+              </div>
+            )}
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="font-semibold text-foreground text-sm sm:text-base truncate">{usuario.nome}</h3>
@@ -1108,7 +1112,11 @@ function RgHistoryCard({
               <img src={resolveUploadUrl(registro.foto_url)} alt="Foto" className="h-12 w-12 sm:h-16 sm:w-16 object-cover rounded-full border cursor-pointer hover:ring-2 hover:ring-muted-foreground/30 shrink-0" onClick={() => setShowPreview(!showPreview)} {...imgProps} />
             ) : registro.rg_frente_url ? (
               <img src={resolveUploadUrl(registro.rg_frente_url)} alt="RG Frente" className="h-12 w-16 sm:h-16 sm:w-24 object-cover rounded border cursor-pointer hover:ring-2 hover:ring-muted-foreground/30 shrink-0" onClick={() => setShowPreview(!showPreview)} {...imgProps} />
-            ) : null}
+            ) : (
+              <div className="h-12 w-12 sm:h-16 sm:w-16 rounded-full border bg-muted flex items-center justify-center shrink-0">
+                <User className="h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground" />
+              </div>
+            )}
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="font-semibold text-foreground text-sm sm:text-base truncate">{nome}</h3>
@@ -1216,8 +1224,12 @@ function EstudanteHistoryCard({
     <div className={`border rounded-lg p-4 ${highlight ? 'border-primary/30' : 'border-border'} hover:bg-muted/20 transition-colors`}>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-          {registro.perfil_imagem && (
+          {registro.perfil_imagem ? (
             <img src={resolveUploadUrl(registro.perfil_imagem)} alt="Foto" className="h-12 w-12 sm:h-16 sm:w-16 object-cover rounded-full border shrink-0" />
+          ) : (
+            <div className="h-12 w-12 sm:h-16 sm:w-16 rounded-full border bg-muted flex items-center justify-center shrink-0">
+              <User className="h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground" />
+            </div>
           )}
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
@@ -1297,8 +1309,12 @@ function NauticaHistoryCard({
     <div className={`border rounded-lg p-4 ${highlight ? 'border-primary/30' : 'border-border'} hover:bg-muted/20 transition-colors`}>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-          {registro.foto && (
+          {registro.foto ? (
             <img src={resolveUploadUrl(registro.foto)} alt="Foto" className="h-12 w-12 sm:h-16 sm:w-16 object-cover rounded-full border shrink-0" />
+          ) : (
+            <div className="h-12 w-12 sm:h-16 sm:w-16 rounded-full border bg-muted flex items-center justify-center shrink-0">
+              <User className="h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground" />
+            </div>
           )}
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
