@@ -10,12 +10,20 @@ import { Navigate } from 'react-router-dom';
 import api from '@/lib/api';
 import { playSuccessSound } from '@/lib/success-sound';
 import { toast } from 'sonner';
-import { Send, Loader2, CreditCard } from 'lucide-react';
+import { Send, Loader2, CreditCard, ArrowDownRight, Clock } from 'lucide-react';
 
 interface Reseller {
   id: number;
   email: string;
   nome: string;
+}
+
+interface Transfer {
+  id: number;
+  amount: number;
+  to_admin_id: number;
+  to_admin_name?: string;
+  created_at: string;
 }
 
 export default function Transferir() {
@@ -25,30 +33,33 @@ export default function Transferir() {
   const [amount, setAmount] = useState(0);
   const [isTransferring, setIsTransferring] = useState(false);
   const [loadingResellers, setLoadingResellers] = useState(true);
-  const [transferCount, setTransferCount] = useState(0);
+  const [transfers, setTransfers] = useState<Transfer[]>([]);
+  const [loadingTransfers, setLoadingTransfers] = useState(true);
 
   const minTransfer = 3;
 
   useEffect(() => {
     if (admin && (role === 'master' || role === 'sub')) {
       fetchResellers();
-      fetchTransferCount();
+      fetchTransfers();
       refreshCredits();
     }
   }, [admin, role]);
 
-  const fetchTransferCount = async () => {
+  const fetchTransfers = async () => {
     try {
-      const transfers = await api.credits.getMasterTransfers(admin!.id);
-      setTransferCount(Array.isArray(transfers) ? transfers.length : 0);
+      setLoadingTransfers(true);
+      const data = await api.credits.getMasterTransfers(admin!.id);
+      setTransfers(Array.isArray(data) ? data.slice(0, 10) : []);
     } catch (error) {
-      console.error('Error fetching transfer count:', error);
+      console.error('Error fetching transfers:', error);
+    } finally {
+      setLoadingTransfers(false);
     }
   };
 
   const fetchResellers = async () => {
     try {
-      // Get resellers created by this master using Node.js API
       const data = await api.admins.getResellers(admin!.id);
       setResellers(data || []);
     } catch (error) {
@@ -100,6 +111,7 @@ export default function Transferir() {
       
       setAmount(0);
       setSelectedReseller('');
+      fetchTransfers();
     } catch (error: any) {
       toast.error('Erro na transferência', {
         description: error.message
@@ -107,6 +119,19 @@ export default function Transferir() {
     } finally {
       setIsTransferring(false);
     }
+  };
+
+  const formatDate = (d: string) => {
+    try {
+      const date = new Date(d);
+      return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
+    } catch { return d; }
+  };
+
+  const getResellerName = (toId: number, name?: string) => {
+    if (name) return name;
+    const r = resellers.find(r => r.id === toId);
+    return r ? (r.nome || r.email) : `#${toId}`;
   };
 
   return (
@@ -196,6 +221,40 @@ export default function Transferir() {
                   Transferir Créditos
                 </Button>
               </>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Últimas Transferências */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              Últimas Transferências
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {loadingTransfers ? (
+              <div className="flex justify-center py-4">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              </div>
+            ) : transfers.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">Nenhuma transferência realizada</p>
+            ) : (
+              <div className="space-y-2">
+                {transfers.map((t) => (
+                  <div key={t.id} className="flex items-center justify-between py-2 px-3 rounded-md bg-muted/30 border border-border/50">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <ArrowDownRight className="h-4 w-4 text-orange-500 shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium truncate">{getResellerName(t.to_admin_id, t.to_admin_name)}</p>
+                        <p className="text-xs text-muted-foreground">{formatDate(t.created_at)}</p>
+                      </div>
+                    </div>
+                    <span className="text-sm font-semibold text-orange-500 shrink-0">-{t.amount}</span>
+                  </div>
+                ))}
+              </div>
             )}
           </CardContent>
         </Card>
