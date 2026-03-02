@@ -169,8 +169,8 @@ export function LoginForm() {
         <Logo className="h-24 w-24" />
       </div>
 
-      {/* Title - centered, italic */}
-      <h1 className="text-2xl font-bold text-white text-center italic">Iniciar Sessão</h1>
+      {/* Title - centered */}
+      <h1 className="text-2xl font-bold text-white text-center">Iniciar Sessão</h1>
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-3 pt-2">
