@@ -57,29 +57,11 @@ export default function CnhSuccessModal({ isOpen, onClose, cpf, senha, nome, pdf
     });
   };
 
-  const dataText = `Olá! Sua CNH Digital está pronta!
-
-📋 *DADOS DE ACESSO:*
-
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-
-┃ 👤 *CPF:* ${formatCpf(cpf)}
-
-┃ 🔑 *Senha:* ${getPassword()}
-
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-
-📅 *VALIDADE:*
-
-⏳ Documento válido por 45 dias!
-
-🗓️ Expiração automática após esse período.
-
-⚠️ *IMPORTANTE:*
-
-✅ Mantenha suas credenciais seguras
-
-🎉 *Obrigado por adquirir seu acesso!*`;
+  const dataText = `CNH Digital ✅
+👤 CPF: ${formatCpf(cpf)}
+🔑 Senha: ${getPassword()}
+📅 Validade: 45 dias
+⚠️ Mantenha suas credenciais seguras`;
 
   const handleDownloadPdf = async () => {
     try {
