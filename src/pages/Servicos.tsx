@@ -180,7 +180,7 @@ function ServiceCard({ service, hasCredits }: { service: Service; hasCredits: bo
       >
         <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden">
           {service.iconImage
-            ? <img src={service.iconImage} alt={service.name} className="h-10 w-10 object-contain rounded-full" />
+            ? <img src={service.iconImage} alt={service.name} className="h-12 w-12 object-cover rounded-full" />
             : <Icon className="h-6 w-6 text-primary" />}
         </div>
         <div className="flex-1 min-w-0">
