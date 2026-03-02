@@ -8,7 +8,7 @@ import { PinPad } from './PinPad';
 import { TurnstileWidget, TURNSTILE_ENABLED } from './TurnstileWidget';
 import api from '@/lib/api';
 import { useNavigate } from 'react-router-dom';
-import logoBluelake from '@/assets/logo-bluelake.webp';
+import logoImage from '@/assets/logo-new.png';
 
 interface PendingAdmin {
   id: number;
@@ -173,7 +173,7 @@ export function LoginForm() {
 
       {/* Logo - centered */}
       <div className="flex flex-col items-center text-center">
-        <img src={logoBluelake} alt="Logo" className="h-28 w-auto" draggable={false} />
+        <img src={logoImage} alt="Logo" className="h-32 w-auto" draggable={false} />
         <h1 className="mt-6 text-[28px] font-extrabold leading-none text-white">
           Iniciar Sessão
         </h1>
@@ -262,7 +262,7 @@ export function LoginForm() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-8 max-w-sm w-full mx-4 space-y-6 shadow-2xl">
             <div className="flex justify-center">
-              <img src={logoBluelake} alt="Logo" className="h-16 w-auto" />
+              <img src={logoImage} alt="Logo" className="h-16 w-auto" />
             </div>
             <h2 className="text-xl font-bold text-white text-center">Criar uma Conta</h2>
             <p className="text-gray-400 text-sm text-center leading-relaxed">

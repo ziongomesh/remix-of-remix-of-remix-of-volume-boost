@@ -42,7 +42,7 @@ export default function Login() {
         style={{ background: 'hsl(190 40% 30% / 0.08)' }} />
 
       {/* Left panel - Form */}
-      <div className="relative z-10 w-full lg:w-[480px] lg:min-w-[480px] flex flex-col items-center justify-center px-10 py-10"
+      <div className="relative z-10 w-full lg:w-[560px] lg:min-w-[560px] flex flex-col items-center justify-center px-14 py-10"
         style={{
           background: 'linear-gradient(to right, hsl(220 20% 5%) 80%, hsl(220 20% 5% / 0.9) 88%, hsl(220 20% 5% / 0.5) 94%, transparent 100%)',
         }}
