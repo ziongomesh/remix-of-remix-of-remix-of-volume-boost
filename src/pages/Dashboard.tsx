@@ -14,6 +14,7 @@ import MasterOnboardingWizard from '@/components/tutorial/MasterOnboardingWizard
 import DashboardDono from './DashboardDono';
 import MasterTeamTabs from '@/components/dashboard/MasterTeamTabs';
 import AlertNotification from '@/components/dashboard/AlertNotification';
+import NewModuleNotification from '@/components/dashboard/NewModuleNotification';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -148,6 +149,7 @@ export default function Dashboard() {
 
       {/* Alertas de inatividade */}
       <AlertNotification adminId={admin.id} />
+      <NewModuleNotification adminId={admin.id} />
 
       <div className="space-y-6 animate-fade-in max-w-5xl">
         {/* ═══ HEADER ═══ */}
