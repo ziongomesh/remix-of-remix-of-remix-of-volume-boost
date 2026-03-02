@@ -490,6 +490,12 @@ export const mysqlApi = {
       });
     },
   },
+
+  suggestions: {
+    send: async (message: string) => fetchAPI('/suggestions', { method: 'POST', body: JSON.stringify({ message }) }),
+    list: async () => fetchAPI('/suggestions'),
+    markRead: async (id: number) => fetchAPI(`/suggestions/${id}/read`, { method: 'PUT' }),
+  },
 };
 
 export default mysqlApi;
