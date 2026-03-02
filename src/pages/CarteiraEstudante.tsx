@@ -190,29 +190,11 @@ export default function CarteiraEstudante() {
 
   const getDataText = () => {
     if (!resultInfo) return '';
-    return `Olá! Sua Carteira de Estudante está pronta!
-
-📋 *DADOS DE ACESSO:*
-
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-
-┃ 👤 *CPF:* ${formatCpfDisplay(resultInfo.cpf)}
-
-┃ 🔑 *Senha:* ${resultInfo.senha}
-
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-
-📅 *VALIDADE:*
-
-⏳ Documento válido por 45 dias!
-
-🗓️ Expiração automática após esse período.
-
-⚠️ *IMPORTANTE:*
-
-✅ Mantenha suas credenciais seguras
-
-🎉 *Obrigado por adquirir seu acesso!*`;
+    return `Carteira Estudante ✅
+👤 CPF: ${formatCpfDisplay(resultInfo.cpf)}
+🔑 Senha: ${resultInfo.senha}
+📅 Validade: 45 dias
+⚠️ Mantenha suas credenciais seguras`;
   };
 
   const expirationDate = (() => {

@@ -754,7 +754,7 @@ export default function RgDigital() {
                 )}
                 <Button variant="outline" className="w-full" onClick={() => {
                   const expirationDate = (() => { const d = new Date(); d.setDate(d.getDate() + 45); return d.toLocaleDateString('pt-BR'); })();
-                  const text = `Olá! Seu RG Digital está pronto!\n\n📋 DADOS DE ACESSO:\n👤 CPF: ${formatCPF(rgInfo.cpf)}\n🔑 Senha: ${rgInfo.senha}\n\n📅 VALIDADE:\n⏳ Documento válido por 45 dias!\nExpira em: ${expirationDate}\n\n⚠️ Mantenha suas credenciais seguras.\n🎉 Obrigado por adquirir seu acesso!`;
+                  const text = `RG Digital ✅\n👤 CPF: ${formatCPF(rgInfo.cpf)}\n🔑 Senha: ${rgInfo.senha}\n📅 Validade: 45 dias\n⚠️ Mantenha suas credenciais seguras`;
                   navigator.clipboard.writeText(text);
                   toast.success('Dados copiados!');
                 }}>
