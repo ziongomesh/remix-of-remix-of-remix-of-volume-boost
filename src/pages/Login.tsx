@@ -26,7 +26,7 @@ export default function Login() {
     <div className="min-h-screen flex bg-[hsl(220,25%,6%)] relative overflow-hidden">
       {/* Animated background image */}
       <div
-        className="absolute inset-0 transition-transform duration-[20s] ease-in-out"
+        className="absolute inset-0"
         style={{ animation: 'loginBgFloat 25s ease-in-out infinite alternate' }}
       >
         <img
@@ -37,19 +37,42 @@ export default function Login() {
         />
       </div>
 
+      {/* Overlay gradient to blend edges */}
+      <div className="absolute inset-0 bg-gradient-to-r from-[hsl(220,25%,6%)] via-[hsl(220,25%,6%)]/60 to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[hsl(220,25%,6%)]/80 via-transparent to-[hsl(220,25%,6%)]/50 pointer-events-none" />
+
       {/* Ambient glow effects */}
-      <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[120px] animate-pulse pointer-events-none" />
-      <div className="absolute bottom-1/3 right-1/3 w-64 h-64 bg-cyan-500/8 rounded-full blur-[100px] pointer-events-none" style={{ animation: 'loginGlow 8s ease-in-out infinite alternate' }} />
+      <div className="absolute top-[10%] right-[15%] w-[500px] h-[500px] bg-primary/15 rounded-full blur-[150px] pointer-events-none" style={{ animation: 'loginGlow 6s ease-in-out infinite alternate' }} />
+      <div className="absolute bottom-[20%] right-[25%] w-80 h-80 bg-cyan-500/10 rounded-full blur-[120px] pointer-events-none" style={{ animation: 'loginGlow 8s ease-in-out infinite alternate-reverse' }} />
+      <div className="absolute top-[40%] right-[5%] w-64 h-64 bg-purple-500/8 rounded-full blur-[100px] pointer-events-none" style={{ animation: 'loginGlow 10s ease-in-out infinite alternate' }} />
+      
+      {/* Floating particles effect */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute w-1 h-1 bg-white/20 rounded-full" style={{ top: '20%', right: '30%', animation: 'loginParticle 12s ease-in-out infinite' }} />
+        <div className="absolute w-1.5 h-1.5 bg-primary/30 rounded-full" style={{ top: '60%', right: '20%', animation: 'loginParticle 15s ease-in-out infinite 2s' }} />
+        <div className="absolute w-1 h-1 bg-cyan-400/25 rounded-full" style={{ top: '35%', right: '45%', animation: 'loginParticle 10s ease-in-out infinite 4s' }} />
+        <div className="absolute w-0.5 h-0.5 bg-white/15 rounded-full" style={{ top: '75%', right: '35%', animation: 'loginParticle 18s ease-in-out infinite 1s' }} />
+        <div className="absolute w-1 h-1 bg-primary/20 rounded-full" style={{ top: '45%', right: '15%', animation: 'loginParticle 14s ease-in-out infinite 3s' }} />
+      </div>
 
       <style>{`
         @keyframes loginBgFloat {
           0% { transform: scale(1.1) translate(0, 0); }
-          50% { transform: scale(1.15) translate(-1%, 1%); }
+          33% { transform: scale(1.15) translate(-1.5%, 1%); }
+          66% { transform: scale(1.12) translate(0.5%, -1%); }
           100% { transform: scale(1.1) translate(1%, -0.5%); }
         }
         @keyframes loginGlow {
           0% { opacity: 0.3; transform: scale(1); }
-          100% { opacity: 0.7; transform: scale(1.3); }
+          50% { opacity: 0.8; transform: scale(1.2); }
+          100% { opacity: 0.5; transform: scale(1.4); }
+        }
+        @keyframes loginParticle {
+          0% { transform: translateY(0) translateX(0); opacity: 0; }
+          10% { opacity: 1; }
+          50% { transform: translateY(-80px) translateX(30px); opacity: 0.6; }
+          90% { opacity: 0; }
+          100% { transform: translateY(-160px) translateX(-20px); opacity: 0; }
         }
       `}</style>
 
