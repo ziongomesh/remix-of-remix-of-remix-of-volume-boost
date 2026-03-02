@@ -177,7 +177,7 @@ export function LoginForm() {
         <div className="relative">
           <label className="absolute top-2 left-3 text-[11px] text-gray-500 pointer-events-none">Usuário</label>
           <Input
-            type="email"
+            type="text"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
