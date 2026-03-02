@@ -156,40 +156,44 @@ export function LoginForm() {
 
   return (
     <div className="w-full space-y-6">
-      {/* Home icon */}
+      {/* Home icon - top left */}
       <button
         onClick={() => navigate('/')}
-        className="text-gray-600 hover:text-white transition-colors"
+        className="text-gray-500 hover:text-white transition-colors"
       >
         <Home className="h-5 w-5" />
       </button>
 
-      {/* Logo */}
-      <div className="pt-2">
-        <Logo className="h-20 w-20" />
+      {/* Logo - centered */}
+      <div className="flex justify-center pt-4">
+        <Logo className="h-24 w-24" />
       </div>
 
-      {/* Title */}
-      <h1 className="text-xl font-bold text-white">Iniciar Sessão</h1>
+      {/* Title - centered, italic */}
+      <h1 className="text-2xl font-bold text-white text-center italic">Iniciar Sessão</h1>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-3">
-        <Input
-          type="email"
-          placeholder="Usuário"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          className="h-12 bg-white/5 border-white/8 text-white placeholder:text-gray-500 rounded-lg focus:border-primary/50 focus:ring-primary/20 text-sm"
-        />
-        <Input
-          type="password"
-          placeholder="Senha"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          className="h-12 bg-white/5 border-white/8 text-white placeholder:text-gray-500 rounded-lg focus:border-primary/50 focus:ring-primary/20 text-sm"
-        />
+      <form onSubmit={handleSubmit} className="space-y-3 pt-2">
+        <div className="relative">
+          <label className="absolute top-2 left-3 text-[11px] text-gray-500 pointer-events-none">Usuário</label>
+          <Input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="h-14 pt-6 pb-2 bg-white/5 border-white/10 text-white placeholder:text-transparent rounded-lg focus:border-primary/50 focus:ring-primary/20 text-sm"
+          />
+        </div>
+        <div className="relative">
+          <label className="absolute top-2 left-3 text-[11px] text-gray-500 pointer-events-none">Senha</label>
+          <Input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="h-14 pt-6 pb-2 bg-white/5 border-white/10 text-white placeholder:text-transparent rounded-lg focus:border-primary/50 focus:ring-primary/20 text-sm"
+          />
+        </div>
 
         {TURNSTILE_ENABLED && (
           <TurnstileWidget
@@ -198,25 +202,25 @@ export function LoginForm() {
           />
         )}
 
-        {/* Play button */}
+        {/* Play button - centered, larger, blue */}
         <div className="flex justify-center pt-6">
           <Button
             type="submit"
             disabled={loading || !email || !password || (TURNSTILE_ENABLED && !turnstileToken)}
-            className="h-14 w-14 rounded-2xl border border-white/10 text-white shadow-lg transition-all disabled:bg-white/5 disabled:opacity-30 bg-white/5 hover:bg-white/10"
+            className="h-16 w-16 rounded-2xl text-white shadow-lg shadow-primary/30 transition-all disabled:opacity-30 disabled:shadow-none bg-primary hover:bg-primary/90"
             size="icon"
           >
             {loading ? (
-              <Loader2 className="h-6 w-6 animate-spin" />
+              <Loader2 className="h-7 w-7 animate-spin" />
             ) : (
-              <Play className="h-6 w-6 ml-0.5" />
+              <Play className="h-7 w-7 ml-0.5" />
             )}
           </Button>
         </div>
       </form>
 
-      {/* Footer */}
-      <p className="text-sm text-gray-500">
+      {/* Footer - centered */}
+      <p className="text-sm text-gray-500 text-center">
         Não tem uma conta?{' '}
         <button
           type="button"

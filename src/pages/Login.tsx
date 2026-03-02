@@ -16,21 +16,26 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex bg-[hsl(220,25%,6%)]">
-      {/* Left panel - Form */}
-      <div className="relative z-10 w-full lg:w-[340px] lg:min-w-[340px] flex flex-col justify-center px-8 py-10 bg-[hsl(220,25%,6%)]">
-        <LoginForm />
-      </div>
-
-      {/* Right panel - Background image (desktop only) */}
-      <div className="hidden lg:block flex-1 relative overflow-hidden">
+    <div className="min-h-screen flex bg-[hsl(220,25%,6%)] relative">
+      {/* Background image - visible on all sizes, behind everything */}
+      <div className="absolute inset-0">
         <img
           src={waveBg}
           alt=""
-          className="absolute inset-0 w-full h-full object-cover"
+          className="w-full h-full object-cover"
           draggable={false}
         />
       </div>
+
+      {/* Left panel - Form */}
+      <div className="relative z-10 w-full lg:w-[420px] lg:min-w-[420px] flex flex-col items-center justify-center px-8 py-10 bg-[hsl(220,25%,6%)]/95 lg:bg-[hsl(220,25%,6%)]">
+        <div className="w-full max-w-[340px]">
+          <LoginForm />
+        </div>
+      </div>
+
+      {/* Right spacer (desktop) - image shows through */}
+      <div className="hidden lg:block flex-1" />
     </div>
   );
 }
