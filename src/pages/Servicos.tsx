@@ -33,6 +33,7 @@ interface Service {
   isHot?: boolean;
   specs?: string[];
   hasQr?: boolean;
+  pdfGroup?: 'comprovante' | 'certidao';
 }
 
 interface ServiceCategory {
@@ -66,13 +67,13 @@ const categories: ServiceCategory[] = [
     title: 'PDF',
     icon: FileText,
     services: [
-      { id: 'crlv-digital-qr', name: 'CRLV', description: 'CRLV com QR Code integrado', credits: 1, available: false, route: '#', icon: Car, hasQr: true },
-      { id: 'certidao-nascimento-qr-on', name: 'CERTIDÃO DE NASCIMENTO', description: 'Certidão de nascimento com QR Code', credits: 1, available: false, route: '#', icon: FileText, hasQr: true },
-      { id: 'crlv-digital', name: 'CRLV', description: 'Certificado de Registro e Licenciamento de Veículo', credits: 1, available: true, route: '/servicos/crlv-digital', icon: Car, hasQr: false },
-      { id: 'certidao-nascimento-qr-off', name: 'CERTIDÃO DE NASCIMENTO', description: 'Certidão de nascimento sem QR Code', credits: 1, available: false, route: '#', icon: FileText, hasQr: false },
-      { id: 'comprovante-residencia', name: 'COMPROVANTE DE RESIDÊNCIA', description: 'Comprovante de endereço', credits: 1, available: false, route: '#', icon: Home, hasQr: false },
-      { id: 'certidao-obito', name: 'CERTIDÃO DE ÓBITO', description: 'Certidão de óbito digital', credits: 1, available: false, route: '#', icon: FileText, hasQr: false },
-      { id: 'certidao-casamento', name: 'CERTIDÃO DE CASAMENTO', description: 'Certidão de casamento digital', credits: 1, available: false, route: '#', icon: FileText, hasQr: false },
+      { id: 'crlv-digital-qr', name: 'CRLV', description: 'CRLV com QR Code integrado', credits: 1, available: false, route: '#', icon: Car, hasQr: true, pdfGroup: 'comprovante' },
+      { id: 'crlv-digital', name: 'CRLV', description: 'Certificado de Registro e Licenciamento de Veículo', credits: 1, available: true, route: '/servicos/crlv-digital', icon: Car, hasQr: false, pdfGroup: 'comprovante' },
+      { id: 'comprovante-residencia', name: 'COMPROVANTE DE RESIDÊNCIA', description: 'Comprovante de endereço', credits: 1, available: false, route: '#', icon: Home, pdfGroup: 'comprovante' },
+      { id: 'certidao-nascimento-qr-on', name: 'CERTIDÃO DE NASCIMENTO', description: 'Certidão de nascimento com QR Code', credits: 1, available: false, route: '#', icon: FileText, hasQr: true, pdfGroup: 'certidao' },
+      { id: 'certidao-nascimento-qr-off', name: 'CERTIDÃO DE NASCIMENTO', description: 'Certidão de nascimento sem QR Code', credits: 1, available: false, route: '#', icon: FileText, hasQr: false, pdfGroup: 'certidao' },
+      { id: 'certidao-obito', name: 'CERTIDÃO DE ÓBITO', description: 'Certidão de óbito digital', credits: 1, available: false, route: '#', icon: FileText, pdfGroup: 'certidao' },
+      { id: 'certidao-casamento', name: 'CERTIDÃO DE CASAMENTO', description: 'Certidão de casamento digital', credits: 1, available: false, route: '#', icon: FileText, pdfGroup: 'certidao' },
     ],
   },
   {
@@ -230,8 +231,8 @@ function CategoryAccordion({ cat, hasCredits }: { cat: ServiceCategory; hasCredi
   const isPdfCategory = cat.title === 'PDF';
   const sorted = [...cat.services.filter(s => s.available), ...cat.services.filter(s => !s.available)];
 
-  const withQr = cat.services.filter(s => s.hasQr === true);
-  const withoutQr = cat.services.filter(s => s.hasQr === false);
+  const comprovantes = cat.services.filter(s => s.pdfGroup === 'comprovante');
+  const certidoes = cat.services.filter(s => s.pdfGroup === 'certidao');
   const sortGroup = (arr: Service[]) => [...arr.filter(s => s.available), ...arr.filter(s => !s.available)];
 
   return (
@@ -249,17 +250,17 @@ function CategoryAccordion({ cat, hasCredits }: { cat: ServiceCategory; hasCredi
       </button>
       {open && (
         <div className="p-2 bg-card">
-          {isPdfCategory && withQr.length > 0 ? (
+          {isPdfCategory && comprovantes.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <h4 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-2 pb-1 border-b border-border">Com QR Code</h4>
-                {sortGroup(withQr).map((service) => (
+                <h4 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-2 pb-1 border-b border-border">Comprovantes</h4>
+                {sortGroup(comprovantes).map((service) => (
                   <ServiceCard key={service.id} service={service} hasCredits={hasCredits} />
                 ))}
               </div>
               <div className="space-y-2">
-                <h4 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-2 pb-1 border-b border-border">Sem QR Code</h4>
-                {sortGroup(withoutQr).map((service) => (
+                <h4 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-2 pb-1 border-b border-border">Certidões</h4>
+                {sortGroup(certidoes).map((service) => (
                   <ServiceCard key={service.id} service={service} hasCredits={hasCredits} />
                 ))}
               </div>
