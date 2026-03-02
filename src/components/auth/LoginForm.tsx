@@ -173,7 +173,7 @@ export function LoginForm() {
 
       {/* Logo - centered */}
       <div className="flex flex-col items-center text-center">
-        <img src={logoImage} alt="Logo" className="h-32 w-auto" draggable={false} />
+        <img src={logoImage} alt="Logo" className="h-32 w-auto invert brightness-200" draggable={false} />
         <h1 className="mt-6 text-[28px] font-extrabold leading-none text-white">
           Iniciar Sessão
         </h1>
