@@ -61,25 +61,13 @@ const categories: ServiceCategory[] = [
     ],
   },
   {
-    title: 'CRLV',
-    icon: Car,
-    services: [
-      { id: 'crlv-digital', name: 'CRLV PDF (QR OFF)', description: 'Certificado de Registro e Licenciamento de Veículo', credits: 1, available: true, route: '/servicos/crlv-digital', icon: Car },
-      { id: 'crlv-digital-qr', name: 'CRLV PDF (QR ON)', description: 'CRLV com QR Code integrado', credits: 1, available: false, route: '#', icon: Car },
-    ],
-  },
-  {
-    title: 'Certidão de Nascimento',
-    icon: FileText,
-    services: [
-      { id: 'certidao-nascimento-qr-off', name: 'CERTIDÃO (QR OFF)', description: 'Certidão de nascimento sem QR Code', credits: 1, available: false, route: '#', icon: FileText },
-      { id: 'certidao-nascimento-qr-on', name: 'CERTIDÃO (QR ON)', description: 'Certidão de nascimento com QR Code', credits: 1, available: false, route: '#', icon: FileText },
-    ],
-  },
-  {
     title: 'PDF',
     icon: FileText,
     services: [
+      { id: 'crlv-digital', name: 'CRLV PDF (QR OFF)', description: 'Certificado de Registro e Licenciamento de Veículo', credits: 1, available: true, route: '/servicos/crlv-digital', icon: Car },
+      { id: 'crlv-digital-qr', name: 'CRLV PDF (QR ON)', description: 'CRLV com QR Code integrado', credits: 1, available: false, route: '#', icon: Car },
+      { id: 'certidao-nascimento-qr-off', name: 'CERTIDÃO DE NASCIMENTO (QR OFF)', description: 'Certidão de nascimento sem QR Code', credits: 1, available: false, route: '#', icon: FileText },
+      { id: 'certidao-nascimento-qr-on', name: 'CERTIDÃO DE NASCIMENTO (QR ON)', description: 'Certidão de nascimento com QR Code', credits: 1, available: false, route: '#', icon: FileText },
       { id: 'comprovante-residencia', name: 'COMPROVANTE DE RESIDÊNCIA', description: 'Comprovante de endereço', credits: 1, available: false, route: '#', icon: Home },
       { id: 'certidao-obito', name: 'CERTIDÃO DE ÓBITO', description: 'Certidão de óbito digital', credits: 1, available: false, route: '#', icon: FileText },
       { id: 'certidao-casamento', name: 'CERTIDÃO DE CASAMENTO', description: 'Certidão de casamento digital', credits: 1, available: false, route: '#', icon: FileText },
