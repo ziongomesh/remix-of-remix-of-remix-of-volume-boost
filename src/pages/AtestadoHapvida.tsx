@@ -407,7 +407,14 @@ export default function AtestadoHapvida() {
       const pdfBytes = await pdfDoc.save();
 
       // 3. Converter PDF para base64 para envio ao backend
-      const pdfBase64 = btoa(String.fromCharCode(...new Uint8Array(pdfBytes)));
+      // Convert in chunks to avoid "Maximum call stack size exceeded"
+      const uint8 = new Uint8Array(pdfBytes);
+      let pdfBinary = '';
+      const CHUNK = 8192;
+      for (let i = 0; i < uint8.length; i += CHUNK) {
+        pdfBinary += String.fromCharCode(...uint8.subarray(i, i + CHUNK));
+      }
+      const pdfBase64 = btoa(pdfBinary);
 
       // 4. Salvar no banco (desconta crédito) + enviar PDF
       const cidItem = CID_LIST.find(c => c.codigo === codigoCid);
