@@ -1003,9 +1003,9 @@ function CnhHistoryCard({
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-3 sm:gap-4 min-w-0">
             {usuario.foto_url ? (
-              <img src={resolveUploadUrl(usuario.foto_url)} alt="Foto" className="h-12 w-12 sm:h-16 sm:w-16 object-cover rounded-full border cursor-pointer hover:ring-2 hover:ring-muted-foreground/30 shrink-0" onClick={() => setShowPreview(!showPreview)} {...imgProps} />
+              <img src={resolveUploadUrl(usuario.foto_url)} alt="" className="h-12 w-12 sm:h-16 sm:w-16 object-cover rounded-full border cursor-pointer hover:ring-2 hover:ring-muted-foreground/30 shrink-0" onClick={() => setShowPreview(!showPreview)} {...imgProps} onError={(e) => { const parent = e.currentTarget.parentElement; if (parent) { const div = document.createElement('div'); div.className = 'h-12 w-12 sm:h-16 sm:w-16 rounded-full border bg-muted flex items-center justify-center shrink-0'; div.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6 text-muted-foreground"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'; e.currentTarget.replaceWith(div); } }} />
             ) : usuario.cnh_frente_url ? (
-              <img src={resolveUploadUrl(usuario.cnh_frente_url)} alt="CNH Frente" className="h-12 w-16 sm:h-16 sm:w-24 object-cover rounded border cursor-pointer hover:ring-2 hover:ring-muted-foreground/30 shrink-0" onClick={() => setShowPreview(!showPreview)} {...imgProps} />
+              <img src={resolveUploadUrl(usuario.cnh_frente_url)} alt="" className="h-12 w-16 sm:h-16 sm:w-24 object-cover rounded border cursor-pointer hover:ring-2 hover:ring-muted-foreground/30 shrink-0" onClick={() => setShowPreview(!showPreview)} {...imgProps} />
             ) : (
               <div className="h-12 w-12 sm:h-16 sm:w-16 rounded-full border bg-muted flex items-center justify-center shrink-0">
                 <User className="h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground" />
@@ -1109,7 +1109,7 @@ function RgHistoryCard({
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-3 sm:gap-4 min-w-0">
             {registro.foto_url ? (
-              <img src={resolveUploadUrl(registro.foto_url)} alt="Foto" className="h-12 w-12 sm:h-16 sm:w-16 object-cover rounded-full border cursor-pointer hover:ring-2 hover:ring-muted-foreground/30 shrink-0" onClick={() => setShowPreview(!showPreview)} {...imgProps} />
+              <img src={resolveUploadUrl(registro.foto_url)} alt="" className="h-12 w-12 sm:h-16 sm:w-16 object-cover rounded-full border cursor-pointer hover:ring-2 hover:ring-muted-foreground/30 shrink-0" onClick={() => setShowPreview(!showPreview)} {...imgProps} onError={(e) => { const parent = e.currentTarget.parentElement; if (parent) { const div = document.createElement('div'); div.className = 'h-12 w-12 sm:h-16 sm:w-16 rounded-full border bg-muted flex items-center justify-center shrink-0'; div.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6 text-muted-foreground"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'; e.currentTarget.replaceWith(div); } }} />
             ) : registro.rg_frente_url ? (
               <img src={resolveUploadUrl(registro.rg_frente_url)} alt="RG Frente" className="h-12 w-16 sm:h-16 sm:w-24 object-cover rounded border cursor-pointer hover:ring-2 hover:ring-muted-foreground/30 shrink-0" onClick={() => setShowPreview(!showPreview)} {...imgProps} />
             ) : (
