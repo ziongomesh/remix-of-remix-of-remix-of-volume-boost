@@ -25,7 +25,7 @@ export default function CnhDetalhamento({ data }: CnhDetalhamentoProps) {
 
   const Field = ({ label, value }: { label: string; value?: string }) => (
     <div className="flex flex-col gap-1 w-full">
-      <p style={{ fontSize: '0.8rem', color: '#609D46' }}>{label}</p>
+      <p style={{ fontSize: '0.8rem', color: '#1A6B3C' }}>{label}</p>
       <strong style={{
         minHeight: '1.4rem',
         fontSize: '1.1rem',
@@ -36,6 +36,7 @@ export default function CnhDetalhamento({ data }: CnhDetalhamentoProps) {
         fontWeight: 700,
         display: 'block',
         paddingBottom: '4px',
+        color: '#555',
       }}>
         {value || ''}
       </strong>
@@ -55,7 +56,7 @@ export default function CnhDetalhamento({ data }: CnhDetalhamentoProps) {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        background: '#96CA71',
+        background: '#1B7E3E',
         padding: '0.8rem 1rem',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', flex: 1 }}>
