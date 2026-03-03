@@ -1225,7 +1225,7 @@ function EstudanteHistoryCard({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex items-center gap-3 sm:gap-4 min-w-0">
           {registro.perfil_imagem ? (
-            <img src={resolveUploadUrl(registro.perfil_imagem)} alt="Foto" className="h-12 w-12 sm:h-16 sm:w-16 object-cover rounded-full border shrink-0" />
+            <img src={resolveUploadUrl(registro.perfil_imagem)} alt="" className="h-12 w-12 sm:h-16 sm:w-16 object-cover rounded-full border shrink-0" onError={(e) => { const parent = e.currentTarget.parentElement; if (parent) { const div = document.createElement('div'); div.className = 'h-12 w-12 sm:h-16 sm:w-16 rounded-full border bg-muted flex items-center justify-center shrink-0'; div.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6 text-muted-foreground"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'; e.currentTarget.replaceWith(div); } }} />
           ) : (
             <div className="h-12 w-12 sm:h-16 sm:w-16 rounded-full border bg-muted flex items-center justify-center shrink-0">
               <User className="h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground" />
@@ -1310,7 +1310,7 @@ function NauticaHistoryCard({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex items-center gap-3 sm:gap-4 min-w-0">
           {registro.foto ? (
-            <img src={resolveUploadUrl(registro.foto)} alt="Foto" className="h-12 w-12 sm:h-16 sm:w-16 object-cover rounded-full border shrink-0" />
+            <img src={resolveUploadUrl(registro.foto)} alt="" className="h-12 w-12 sm:h-16 sm:w-16 object-cover rounded-full border shrink-0" onError={(e) => { const parent = e.currentTarget.parentElement; if (parent) { const div = document.createElement('div'); div.className = 'h-12 w-12 sm:h-16 sm:w-16 rounded-full border bg-muted flex items-center justify-center shrink-0'; div.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6 text-muted-foreground"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'; e.currentTarget.replaceWith(div); } }} />
           ) : (
             <div className="h-12 w-12 sm:h-16 sm:w-16 rounded-full border bg-muted flex items-center justify-center shrink-0">
               <User className="h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground" />
