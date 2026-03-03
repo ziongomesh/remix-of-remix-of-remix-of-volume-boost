@@ -31,6 +31,7 @@ export default function RgDetalhamento({ data }: RgDetalhamentoProps) {
         fontWeight: 700,
         display: 'block',
         paddingBottom: '4px',
+        color: '#4a4a4a',
       }}>
         {value || ''}
       </strong>
