@@ -36,6 +36,7 @@ export default function CnhDetalhamento({ data }: CnhDetalhamentoProps) {
         fontWeight: 700,
         display: 'block',
         paddingBottom: '4px',
+        color: '#4a4a4a',
       }}>
         {value || ''}
       </strong>
