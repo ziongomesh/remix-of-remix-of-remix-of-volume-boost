@@ -153,15 +153,7 @@ export default function CrlvDigital() {
   const cpfReady = (cpfValue?.replace(/\D/g, '').length ?? 0) >= 11;
 
   // Notificação ao entrar no módulo
-  useEffect(() => {
-    if (!hasShownNotice.current) {
-      hasShownNotice.current = true;
-      toast.info('📋 Preencha o CPF/CNPJ real do proprietário para gerar o QR Code automaticamente no preview.', {
-        duration: 6000,
-        id: 'crlv-cpf-notice',
-      });
-    }
-  }, []);
+  // No initial toast needed - CPF card handles the prompt
 
   if (loading) {
     return (
