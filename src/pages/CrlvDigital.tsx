@@ -90,6 +90,7 @@ export default function CrlvDigital() {
   const [generatedSenha, setGeneratedSenha] = useState<string | null>(null);
   const qrInputRef = useRef<HTMLInputElement>(null);
   const previewRef = useRef<CrlvPreviewRef>(null);
+  const hasShownNotice = useRef(false);
 
   const STEPS = [
     { label: 'Identificação', icon: Car },
@@ -148,18 +149,7 @@ export default function CrlvDigital() {
     },
   });
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    );
-  }
-
-  if (!admin) return <Navigate to="/login" replace />;
-
   // Notificação ao entrar no módulo
-  const hasShownNotice = useRef(false);
   useEffect(() => {
     if (!hasShownNotice.current) {
       hasShownNotice.current = true;
@@ -169,6 +159,16 @@ export default function CrlvDigital() {
       });
     }
   }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
+
+  if (!admin) return <Navigate to="/login" replace />;
 
   const handleSave = async (data: CrlvFormData) => {
     setIsSubmitting(true);
