@@ -228,7 +228,7 @@ function ServiceCard({ service, hasCredits, isMaintenance }: { service: Service;
 }
 
 // ─── Accordion Category (Nacional) ───
-function CategoryAccordion({ cat, hasCredits }: { cat: ServiceCategory; hasCredits: boolean }) {
+function CategoryAccordion({ cat, hasCredits, maintenanceMap }: { cat: ServiceCategory; hasCredits: boolean; maintenanceMap: Record<string, boolean> }) {
   const [open, setOpen] = useState(false);
   const Icon = cat.icon;
   const activeCount = cat.services.filter(s => s.available).length;
