@@ -731,7 +731,8 @@ export default function CrlvPositionTool() {
             </Card>
 
             {/* Dados de Emissão */}
-            <Card>
+            <Card className={`relative transition-all duration-300 ${onboardingClass('emissao')}`}>
+              {onboardingTip('emissao')}
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
                   <User className="h-4 w-4 text-primary" /> Dados de Emissão do CRLV
