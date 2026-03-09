@@ -88,7 +88,7 @@ export default function Downloads() {
   const apps: AppInfo[] = [
     {
       id: 'cnh',
-      title: 'CNH Digital 2026',
+      title: 'CNH DIGITAL 2026',
       description: 'Carteira Nacional de Habilitação Digital',
       icon: iconCnh,
       iphoneLink: links.cnh_iphone,
@@ -97,7 +97,7 @@ export default function Downloads() {
     },
     {
       id: 'govbr',
-      title: 'Gov.br',
+      title: 'GOV.BR',
       description: 'RG Digital e CNH Náutica Arrais',
       icon: iconGovbr,
       iphoneLink: links.govbr_iphone,
@@ -165,21 +165,24 @@ function AppDownloadCard({
         onClick={() => setOpen(!open)}
         className={`w-full flex items-center gap-4 p-5 bg-gradient-to-r ${app.color} text-left transition-colors hover:brightness-110`}
       >
-        <img
-          src={app.icon}
-          alt={app.title}
-          className="h-14 w-14 rounded-2xl shadow-lg object-cover border-2 border-background/50"
-        />
+        <div className="h-14 w-14 rounded-2xl shadow-lg border-2 border-background/50 overflow-hidden shrink-0 bg-background">
+          <img
+            src={app.icon}
+            alt={app.title}
+            className="h-full w-full object-cover"
+            style={{ transform: 'scale(1.1)' }}
+          />
+        </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="text-lg font-bold text-foreground">{app.title}</h3>
+            <h3 className="text-base font-bold text-foreground">{app.title}</h3>
             {!hasAnyLink && (
               <Badge variant="secondary" className="text-[10px] gap-1">
                 <Wrench className="h-3 w-3" /> Manutenção
               </Badge>
             )}
           </div>
-          <p className="text-sm text-muted-foreground mt-0.5">{app.description}</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">{app.description}</p>
         </div>
         {open ? <ChevronUp className="h-5 w-5 text-muted-foreground shrink-0" /> : <ChevronDown className="h-5 w-5 text-muted-foreground shrink-0" />}
       </button>
