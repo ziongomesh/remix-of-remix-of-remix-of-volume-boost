@@ -85,6 +85,8 @@ export function LoginForm() {
       if (!data?.admin) {
         toast.dismiss('login-loading');
         toast.error('Erro ao fazer login', { description: 'Email ou senha incorretos' });
+        setTurnstileToken(null);
+        setTurnstileKey(k => k + 1);
         setLoading(false);
         return;
       }
