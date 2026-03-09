@@ -29,6 +29,7 @@ export function LoginForm() {
   const [pendingAdmin, setPendingAdmin] = useState<PendingAdmin | null>(null);
   const [pinLoading, setPinLoading] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [turnstileKey, setTurnstileKey] = useState(0);
   const [showCreateAccount, setShowCreateAccount] = useState(false);
 
   const handleTurnstileVerify = useCallback((token: string) => {
