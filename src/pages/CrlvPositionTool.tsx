@@ -448,8 +448,8 @@ export default function CrlvPositionTool() {
       eixos: '*',
       lotacao: '05P',
       carroceria: 'NÃO APLICAVEL',
-      nomeProprietario: 'FELIPE DA SILVA PEREIRA',
-      cpfCnpj: '123.456.789-00',
+      nomeProprietario: 'NOME DO PROPRIETARIO',
+      cpfCnpj: '',
       local: 'SAO PAULO SP',
       data: defaultDate,
       observacoes: 'ALIENAÇÃO FIDUCIÁRIA',
@@ -468,6 +468,7 @@ export default function CrlvPositionTool() {
   });
 
   const values = watch();
+  const cpfReady = (values.cpfCnpj?.replace(/\D/g, '').length ?? 0) >= 11;
 
   // Dados de Emissão do CRLV
   const emissaoFields = [
@@ -496,7 +497,26 @@ export default function CrlvPositionTool() {
           <p className="text-muted-foreground text-sm mt-1">Preencha os dados do veículo — o preview é atualizado em tempo real.</p>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-6">
+        {!cpfReady && (
+          <Card className="mb-4 border-primary/40 bg-primary/5">
+            <CardContent className="pt-4">
+              <div className="space-y-2 max-w-sm">
+                <Label className="text-xs text-muted-foreground">CPF / CNPJ do proprietário</Label>
+                <Input
+                  value={values.cpfCnpj || ''}
+                  onChange={(e) => setValue('cpfCnpj', formatCpfCnpj(e.target.value))}
+                  className="h-9 text-sm uppercase"
+                  placeholder="000.000.000-00"
+                  maxLength={18}
+                />
+                <p className="text-xs text-muted-foreground">Preencha para liberar edição completa.</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        <div className="relative">
+          <div className={`flex flex-col lg:flex-row gap-6 transition-all duration-200 ${!cpfReady ? 'opacity-40 saturate-50 pointer-events-none select-none' : 'opacity-100'}`}>
           {/* ── FORMULÁRIO ── */}
           <div className="w-full lg:w-1/2 space-y-4">
 
@@ -711,7 +731,16 @@ export default function CrlvPositionTool() {
               )}
             </Button>
           </div>
+
+          {!cpfReady && (
+            <div className="pointer-events-none absolute inset-0 hidden lg:flex items-center justify-center">
+              <div className="rounded-lg border border-border bg-background/90 px-4 py-2">
+                <p className="text-xs text-foreground">Aguardando CPF/CNPJ para liberar edição</p>
+              </div>
+            </div>
+          )}
         </div>
+      </div>
       </div>
 
       {/* Fullscreen preview modal (mobile) */}
