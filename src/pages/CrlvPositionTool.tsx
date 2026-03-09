@@ -837,19 +837,59 @@ export default function CrlvPositionTool() {
               </div>
             </div>
 
-            {/* Botão Gerar */}
-            <Button
-              variant="outline"
-              className="w-full max-w-xs h-10 text-sm font-medium"
-              onClick={handleGerarCrlv}
-              disabled={saving}
-            >
-              {saving ? (
-                <><Loader2 className="h-4 w-4 animate-spin" /> Gerando...</>
-              ) : (
-                'Gerar CRLV — 1 crédito'
-              )}
-            </Button>
+            {/* Botão Gerar com confirmação */}
+            {!confirmGenerate ? (
+              <Button
+                variant="outline"
+                className="w-full max-w-xs h-10 text-sm font-medium"
+                onClick={() => {
+                  const v = watch();
+                  if (!v.renavam || !v.placa || !v.nomeProprietario || !v.cpfCnpj) {
+                    toast.error('Preencha os campos obrigatórios: Renavam, Placa, Nome e CPF/CNPJ');
+                    return;
+                  }
+                  setConfirmGenerate(true);
+                }}
+                disabled={saving}
+              >
+                Gerar CRLV — 1 crédito
+              </Button>
+            ) : (
+              <div className="w-full max-w-sm space-y-3">
+                <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/5 p-3 space-y-1.5">
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="h-4 w-4 text-yellow-500 shrink-0 mt-0.5" />
+                    <div className="space-y-1">
+                      <p className="text-xs font-semibold text-foreground">Atenção antes de gerar:</p>
+                      <ul className="text-[11px] text-muted-foreground space-y-0.5 list-disc list-inside">
+                        <li>Após gerado, <span className="text-foreground font-medium">não será possível editar</span></li>
+                        <li>Ficará salvo no seu <span className="text-foreground font-medium">histórico de serviços</span></li>
+                        <li>Expira automaticamente em <span className="text-foreground font-medium">45 dias</span> e será excluído</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="flex-1 text-xs"
+                    onClick={() => setConfirmGenerate(false)}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="flex-1 text-xs"
+                    onClick={() => { setConfirmGenerate(false); handleGerarCrlv(); }}
+                    disabled={saving}
+                  >
+                    {saving ? <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Gerando...</> : 'Confirmar e Gerar'}
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
 
           {!cpfReady && (
