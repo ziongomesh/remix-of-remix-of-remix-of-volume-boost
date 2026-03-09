@@ -799,14 +799,6 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
         </Button>
         <div className="flex gap-2">
           <Button
-            variant="outline"
-            onClick={handleRegenerate}
-            disabled={regenerating}
-          >
-            {regenerating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
-            Regenerar Preview
-          </Button>
-          <Button
             onClick={handleSave}
             disabled={saving || changedMatrices.size === 0}
           >
