@@ -259,7 +259,7 @@ function CategoryAccordion({ cat, hasCredits, maintenanceMap }: { cat: ServiceCa
               <div className="space-y-2">
                 <h4 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-2 pb-1 border-b border-border">Comprovantes</h4>
                 {sortGroup(comprovantes).map((service) => (
-                  <ServiceCard key={service.id} service={service} hasCredits={hasCredits} />
+                  <ServiceCard key={service.id} service={service} hasCredits={hasCredits} isMaintenance={!!maintenanceMap[service.id]} />
                 ))}
               </div>
               <div className="space-y-2">
