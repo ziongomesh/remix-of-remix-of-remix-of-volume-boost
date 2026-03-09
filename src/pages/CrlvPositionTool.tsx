@@ -710,6 +710,14 @@ export default function CrlvPositionTool() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
+                <div className="rounded-lg bg-muted/40 border border-border p-3 space-y-1">
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    O <span className="text-foreground font-medium">QR Code atual</span> é gerado automaticamente a partir do CPF/CNPJ inserido e pode ser lido normalmente.
+                  </p>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    Se preferir, você pode <span className="text-foreground font-medium">substituí-lo</span> por um QR Code personalizado enviando sua própria imagem abaixo.
+                  </p>
+                </div>
                 {qrImage && (
                   <img src={qrImage} alt="QR Preview" className="w-20 h-20 object-contain border border-border rounded" />
                 )}
