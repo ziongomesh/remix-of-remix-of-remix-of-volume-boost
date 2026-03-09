@@ -535,20 +535,11 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
               </Select>
             </div>
             <div>
-              <Label className="text-xs">Data Nasc</Label>
+              <Label className="text-xs">Data Nascimento, Cidade, UF</Label>
               <Input 
-                value={form.dataNascimentoDate} 
-                placeholder="DD/MM/AAAA"
-                maxLength={10}
-                onChange={(e) => updateField('dataNascimentoDate', formatDate(e.target.value))} 
-              />
-            </div>
-            <div>
-              <Label className="text-xs">Local Nascimento (Cidade, UF)</Label>
-              <Input 
-                value={form.dataNascimentoLocal} 
-                placeholder="EX: RIO DE JANEIRO, RJ"
-                onChange={(e) => updateField('dataNascimentoLocal', e.target.value.toUpperCase())} 
+                value={form.dataNascimento} 
+                placeholder="DD/MM/AAAA, CIDADE, UF"
+                onChange={(e) => updateField('dataNascimento', e.target.value.toUpperCase())} 
               />
             </div>
             <div>
