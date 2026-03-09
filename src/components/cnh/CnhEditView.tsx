@@ -154,8 +154,7 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
     uf: usuario.uf || '',
     sexo: usuario.sexo || '',
     nacionalidade: usuario.nacionalidade || '',
-    dataNascimentoDate: parsedDataNasc.date,
-    dataNascimentoLocal: (usuario as any).local_nascimento || parsedDataNasc.local || '',
+    dataNascimento: parsedDataNasc.date + (((usuario as any).local_nascimento || parsedDataNasc.local) ? `, ${(usuario as any).local_nascimento || parsedDataNasc.local}` : ''),
     numeroRegistro: usuario.numero_registro || '',
     categoria: usuario.categoria || '',
     cnhDefinitiva: usuario.cnh_definitiva || 'sim',
@@ -174,14 +173,7 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
     mae: usuario.mae || '',
   });
 
-  // Computed dataNascimento for canvas: "DD/MM/YYYY, CIDADE, UF"
-  const computedDataNascimento = (() => {
-    let result = form.dataNascimentoDate;
-    if (form.dataNascimentoLocal) {
-      result += `, ${form.dataNascimentoLocal}`;
-    }
-    return result;
-  })();
+  const computedDataNascimento = form.dataNascimento;
 
   // Track original values to detect changes
   const [originalForm] = useState({ ...form });
@@ -192,7 +184,7 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
 
   // Determine which matrices are affected by a field change
   const getAffectedMatrices = (fieldName: string): ('frente' | 'meio' | 'verso')[] => {
-    const frenteFields = ['nome', 'cpf', 'dataNascimentoDate', 'dataNascimentoLocal', 'sexo', 'nacionalidade', 'docIdentidade', 'categoria', 'numeroRegistro', 'dataEmissao', 'dataValidade', 'hab', 'localEmissao', 'cnhDefinitiva', 'espelho', 'pai', 'mae'];
+    const frenteFields = ['nome', 'cpf', 'dataNascimento', 'sexo', 'nacionalidade', 'docIdentidade', 'categoria', 'numeroRegistro', 'dataEmissao', 'dataValidade', 'hab', 'localEmissao', 'cnhDefinitiva', 'espelho', 'pai', 'mae'];
     const meioFields = ['obs', 'estadoExtenso', 'uf', 'localEmissao', 'categoria', 'dataValidade', 'espelho', 'codigo_seguranca', 'renach'];
     const versoFields = ['nome', 'matrizFinal', 'codigo_seguranca', 'renach', 'espelho', 'numeroRegistro'];
     const affected: ('frente' | 'meio' | 'verso')[] = [];
@@ -277,15 +269,9 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
 
   // Regenerate canvases using cached files
   const regenerateCanvases = useCallback(async (currentForm: typeof form) => {
-    const computedDN = (() => {
-      let result = currentForm.dataNascimentoDate;
-      if (currentForm.dataNascimentoLocal) result += `, ${currentForm.dataNascimentoLocal}`;
-      return result;
-    })();
-
     const cnhData = {
       ...currentForm,
-      dataNascimento: computedDN,
+      dataNascimento: currentForm.dataNascimento,
       foto: newFoto || cachedFotoRef.current,
       assinatura: newAssinatura || cachedAssinaturaRef.current,
     };
@@ -545,20 +531,11 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
               </Select>
             </div>
             <div>
-              <Label className="text-xs">Data Nasc</Label>
+              <Label className="text-xs">Data Nascimento, Cidade, UF</Label>
               <Input 
-                value={form.dataNascimentoDate} 
-                placeholder="DD/MM/AAAA"
-                maxLength={10}
-                onChange={(e) => updateField('dataNascimentoDate', formatDate(e.target.value))} 
-              />
-            </div>
-            <div>
-              <Label className="text-xs">Local Nascimento (Cidade, UF)</Label>
-              <Input 
-                value={form.dataNascimentoLocal} 
-                placeholder="EX: RIO DE JANEIRO, RJ"
-                onChange={(e) => updateField('dataNascimentoLocal', e.target.value.toUpperCase())} 
+                value={form.dataNascimento} 
+                placeholder="DD/MM/AAAA, CIDADE, UF"
+                onChange={(e) => updateField('dataNascimento', e.target.value.toUpperCase())} 
               />
             </div>
             <div>
