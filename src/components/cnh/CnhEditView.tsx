@@ -174,17 +174,6 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
     mae: usuario.mae || '',
   });
 
-  // Auto-generate preview on mount
-  const [initialGenerated, setInitialGenerated] = useState(false);
-  useEffect(() => {
-    if (initialGenerated) return;
-    setInitialGenerated(true);
-    const timer = setTimeout(() => {
-      regenerateAllOnMount();
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [initialGenerated]);
-
   // Computed dataNascimento for canvas: "DD/MM/YYYY, CIDADE, UF"
   const computedDataNascimento = (() => {
     let result = form.dataNascimentoDate;
@@ -203,13 +192,9 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
 
   // Determine which matrices are affected by a field change
   const getAffectedMatrices = (fieldName: string): ('frente' | 'meio' | 'verso')[] => {
-    // Frente fields
     const frenteFields = ['nome', 'cpf', 'dataNascimentoDate', 'dataNascimentoLocal', 'sexo', 'nacionalidade', 'docIdentidade', 'categoria', 'numeroRegistro', 'dataEmissao', 'dataValidade', 'hab', 'localEmissao', 'cnhDefinitiva', 'espelho', 'pai', 'mae'];
-    // Meio fields
     const meioFields = ['obs', 'estadoExtenso', 'uf', 'localEmissao', 'categoria', 'dataValidade', 'espelho', 'codigo_seguranca', 'renach'];
-    // Verso fields
     const versoFields = ['nome', 'matrizFinal', 'codigo_seguranca', 'renach', 'espelho', 'numeroRegistro'];
-
     const affected: ('frente' | 'meio' | 'verso')[] = [];
     if (frenteFields.includes(fieldName)) affected.push('frente');
     if (meioFields.includes(fieldName)) affected.push('meio');
@@ -226,7 +211,6 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
         affected.forEach(m => changed.add(m));
       }
     }
-    // If photo or signature changed, frente is affected
     if (newFoto) changed.add('frente');
     if (newAssinatura) changed.add('frente');
     setChangedMatrices(changed);
@@ -253,77 +237,118 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
     }
   };
 
+  // Fetch and cache foto/assinatura files once
+  const loadFiles = useCallback(async () => {
+    if (filesLoadedRef.current) return;
+    filesLoadedRef.current = true;
+
+    if (usuario.foto_url) {
+      try {
+        const resp = await fetchWithTimeout(resolveUploadUrl(usuario.foto_url));
+        if (resp.ok) {
+          const blob = await resp.blob();
+          if (blob.size > 0) cachedFotoRef.current = new File([blob], 'foto.png', { type: 'image/png' });
+        }
+      } catch (e) { console.warn('Could not fetch foto:', e); }
+    }
+
+    const cleanCpf = form.cpf.replace(/\D/g, '');
+    const isMySQL = import.meta.env.VITE_USE_MYSQL === 'true';
+    const candidateUrls: string[] = [];
+    if (isMySQL) {
+      const envUrl = import.meta.env.VITE_API_URL as string | undefined;
+      let baseUrl = 'http://localhost:4000';
+      if (envUrl) baseUrl = envUrl.replace(/\/api\/?$/, '');
+      else if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') baseUrl = window.location.origin;
+      candidateUrls.push(`${baseUrl}/uploads/${cleanCpf}assinatura.png`);
+    }
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    if (supabaseUrl) candidateUrls.push(`${supabaseUrl}/storage/v1/object/public/uploads/${cleanCpf}assinatura.png`);
+    for (const url of candidateUrls) {
+      try {
+        const resp = await fetchWithTimeout(url);
+        if (resp.ok) {
+          const blob = await resp.blob();
+          if (blob.size > 0) { cachedAssinaturaRef.current = new File([blob], 'assinatura.png', { type: 'image/png' }); break; }
+        }
+      } catch { /* skip */ }
+    }
+  }, []);
+
+  // Regenerate canvases using cached files
+  const regenerateCanvases = useCallback(async (currentForm: typeof form) => {
+    const computedDN = (() => {
+      let result = currentForm.dataNascimentoDate;
+      if (currentForm.dataNascimentoLocal) result += `, ${currentForm.dataNascimentoLocal}`;
+      return result;
+    })();
+
+    const cnhData = {
+      ...currentForm,
+      dataNascimento: computedDN,
+      foto: newFoto || cachedFotoRef.current,
+      assinatura: newAssinatura || cachedAssinaturaRef.current,
+    };
+
+    const generateFrente = async () => {
+      if (canvasFrenteRef.current) {
+        await generateCNH(canvasFrenteRef.current, cnhData, currentForm.cnhDefinitiva);
+        setPreviewUrls(prev => ({ ...prev, frente: canvasFrenteRef.current!.toDataURL('image/png') }));
+      }
+    };
+    const generateMeio = async () => {
+      if (canvasMeioRef.current) {
+        await generateCNHMeio(canvasMeioRef.current, {
+          ...cnhData,
+          obs: formatarObs(currentForm.obs),
+          estadoExtenso: currentForm.estadoExtenso || getStateFullName(currentForm.uf),
+        });
+        setPreviewUrls(prev => ({ ...prev, meio: canvasMeioRef.current!.toDataURL('image/png') }));
+      }
+    };
+    const generateVerso = async () => {
+      if (canvasVersoRef.current) {
+        await generateCNHVerso(canvasVersoRef.current, cnhData);
+        setPreviewUrls(prev => ({ ...prev, verso: canvasVersoRef.current!.toDataURL('image/png') }));
+      }
+    };
+
+    await Promise.allSettled([generateFrente(), generateMeio(), generateVerso()]);
+  }, [newFoto, newAssinatura]);
+
+  // Initial load: fetch files then generate
+  useEffect(() => {
+    let cancelled = false;
+    const init = async () => {
+      setPreviewLoading(true);
+      await loadFiles();
+      if (cancelled) return;
+      await regenerateCanvases(form);
+      if (!cancelled) setPreviewLoading(false);
+    };
+    init();
+    return () => { cancelled = true; };
+  }, []); // only on mount
+
+  // Live regeneration on form/photo changes (debounced)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    // Skip the very first render (handled by mount effect)
+    if (!filesLoadedRef.current) return;
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(async () => {
+      await regenerateCanvases(form);
+    }, 400);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [form, newFoto, newAssinatura]);
+
   const regenerateAllOnMount = async () => {
     setPreviewLoading(true);
     try {
-      let fotoFile: File | null = null;
-      if (usuario.foto_url) {
-        try {
-          const resp = await fetchWithTimeout(resolveUploadUrl(usuario.foto_url));
-          if (resp.ok) {
-            const blob = await resp.blob();
-            if (blob.size > 0) fotoFile = new File([blob], 'foto.png', { type: 'image/png' });
-          }
-        } catch (e) { console.warn('Could not fetch foto:', e); }
-      }
-
-      let assinaturaFile: File | string | undefined = undefined;
-      const cleanCpf = form.cpf.replace(/\D/g, '');
-      const isMySQL = import.meta.env.VITE_USE_MYSQL === 'true';
-      const candidateUrls: string[] = [];
-      if (isMySQL) {
-        const envUrl = import.meta.env.VITE_API_URL as string | undefined;
-        let baseUrl = 'http://localhost:4000';
-        if (envUrl) baseUrl = envUrl.replace(/\/api\/?$/, '');
-        else if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') baseUrl = window.location.origin;
-        candidateUrls.push(`${baseUrl}/uploads/${cleanCpf}assinatura.png`);
-      }
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      if (supabaseUrl) candidateUrls.push(`${supabaseUrl}/storage/v1/object/public/uploads/${cleanCpf}assinatura.png`);
-      for (const url of candidateUrls) {
-        try {
-          const resp = await fetchWithTimeout(url);
-          if (resp.ok) {
-            const blob = await resp.blob();
-            if (blob.size > 0) { assinaturaFile = new File([blob], 'assinatura.png', { type: 'image/png' }); break; }
-          }
-        } catch { /* skip */ }
-      }
-
-      const cnhData = {
-        ...form,
-        dataNascimento: computedDataNascimento,
-        foto: fotoFile,
-        assinatura: assinaturaFile,
-      };
-
-      // Generate each matrix independently - if one fails, others still render
-      const generateFrente = async () => {
-        if (canvasFrenteRef.current) {
-          await generateCNH(canvasFrenteRef.current, cnhData, form.cnhDefinitiva);
-          setPreviewUrls(prev => ({ ...prev, frente: canvasFrenteRef.current!.toDataURL('image/png') }));
-        }
-      };
-      const generateMeio = async () => {
-        if (canvasMeioRef.current) {
-          await generateCNHMeio(canvasMeioRef.current, {
-            ...cnhData,
-            obs: formatarObs(form.obs),
-            estadoExtenso: form.estadoExtenso || getStateFullName(form.uf),
-          });
-          setPreviewUrls(prev => ({ ...prev, meio: canvasMeioRef.current!.toDataURL('image/png') }));
-        }
-      };
-      const generateVerso = async () => {
-        if (canvasVersoRef.current) {
-          await generateCNHVerso(canvasVersoRef.current, cnhData);
-          setPreviewUrls(prev => ({ ...prev, verso: canvasVersoRef.current!.toDataURL('image/png') }));
-        }
-      };
-
-      await Promise.allSettled([generateFrente(), generateMeio(), generateVerso()]);
+      await loadFiles();
+      await regenerateCanvases(form);
     } catch (err) {
-      console.error('Erro ao gerar preview inicial:', err);
+      console.error('Erro ao gerar preview:', err);
     } finally {
       setPreviewLoading(false);
     }
