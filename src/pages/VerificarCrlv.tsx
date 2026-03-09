@@ -43,57 +43,80 @@ export default function VerificarCrlv() {
       return;
     }
 
-    fetch(`${API_URL}/verify-crlv?cpf=${encodeURIComponent(cpf)}`)
-      .then(res => {
-        if (!res.ok) throw new Error("CRLV não encontrado");
-        return res.json();
-      })
-      .then(result => {
-        // Split potencia_cil into potencia and cilindradas
-        const potCil = result.potencia_cil || '';
-        let potencia = '';
-        let cilindradas = '';
-        if (potCil.includes('/')) {
-          const parts = potCil.split('/').map((s: string) => s.trim());
-          potencia = parts[0] || '';
-          cilindradas = parts[1] || '';
-        } else {
-          potencia = potCil;
-        }
+    const cleanCpf = String(cpf).replace(/\D/g, "");
+    const candidates = [
+      API_URL,
+      "https://datasistemas.online/api",
+    ].filter((v, i, arr) => !!v && arr.indexOf(v) === i);
 
-        setData({
-          codSegCla: result.cod_seg_cla,
-          numeroCrv: result.numero_crv,
-          uf: result.uf,
-          renavam: result.renavam,
-          rntrc: '',
-          exercicio: result.exercicio,
-          nome: result.nome_proprietario,
-          cpfCnpj: result.cpf_cnpj,
-          placa: result.placa,
-          chassi: result.chassi,
-          especieTipo: result.especie_tipo,
-          carroceria: result.carroceria,
-          combustivel: result.combustivel,
-          anoFab: result.ano_fab,
-          anoMod: result.ano_mod,
-          marcaModelo: result.marca_modelo,
-          lotacao: result.lotacao,
-          potencia,
-          cilindradas,
-          categoria: result.categoria,
-          cor: result.cor,
-          motor: result.motor,
-          capacidade: result.capacidade,
-          pesoBruto: result.peso_bruto,
-          cmt: result.cmt,
-          eixos: result.eixos,
-          local: result.local_emissao,
-          dataEmissao: formatDate(result.data_emissao),
-          observacoes: result.observacoes,
-        });
-      })
-      .catch(() => setError("CRLV não encontrado ou link inválido."))
+    (async () => {
+      let lastError = "";
+
+      for (const base of candidates) {
+        try {
+          const res = await fetch(`${base}/verify-crlv?cpf=${encodeURIComponent(cleanCpf)}`);
+
+          if (!res.ok) {
+            lastError = `endpoint ${base} retornou ${res.status}`;
+            continue;
+          }
+
+          const result = await res.json();
+
+          // Split potencia_cil into potencia and cilindradas
+          const potCil = result.potencia_cil || '';
+          let potencia = '';
+          let cilindradas = '';
+          if (potCil.includes('/')) {
+            const parts = potCil.split('/').map((s: string) => s.trim());
+            potencia = parts[0] || '';
+            cilindradas = parts[1] || '';
+          } else {
+            potencia = potCil;
+          }
+
+          setData({
+            codSegCla: result.cod_seg_cla,
+            numeroCrv: result.numero_crv,
+            uf: result.uf,
+            renavam: result.renavam,
+            rntrc: '',
+            exercicio: result.exercicio,
+            nome: result.nome_proprietario,
+            cpfCnpj: result.cpf_cnpj,
+            placa: result.placa,
+            chassi: result.chassi,
+            especieTipo: result.especie_tipo,
+            carroceria: result.carroceria,
+            combustivel: result.combustivel,
+            anoFab: result.ano_fab,
+            anoMod: result.ano_mod,
+            marcaModelo: result.marca_modelo,
+            lotacao: result.lotacao,
+            potencia,
+            cilindradas,
+            categoria: result.categoria,
+            cor: result.cor,
+            motor: result.motor,
+            capacidade: result.capacidade,
+            pesoBruto: result.peso_bruto,
+            cmt: result.cmt,
+            eixos: result.eixos,
+            local: result.local_emissao,
+            dataEmissao: formatDate(result.data_emissao),
+            observacoes: result.observacoes,
+          });
+
+          setError("");
+          return;
+        } catch (err: any) {
+          lastError = err?.message || "falha de rede";
+        }
+      }
+
+      console.error("[VerificarCrlv] Falha em todos os endpoints:", lastError);
+      setError("CRLV não encontrado ou link inválido.");
+    })()
       .finally(() => setLoading(false));
   }, [cpf]);
 
