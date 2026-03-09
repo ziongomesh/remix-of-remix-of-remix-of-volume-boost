@@ -203,7 +203,11 @@ function ServiceCard({ service, hasCredits, isMaintenance }: { service: Service;
             </button>
           )}
           <span className="text-xs text-muted-foreground hidden sm:inline">{service.credits} cred.</span>
-          {service.available ? (
+          {isMaintenance ? (
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 gap-0.5">
+              <Wrench className="h-2.5 w-2.5" /> Manutenção
+            </Badge>
+          ) : service.available ? (
             <Badge variant="default" className="bg-success text-success-foreground text-[10px] px-1.5 py-0">
               <CheckCircle className="h-2.5 w-2.5 mr-0.5" /> Ativo
             </Badge>
