@@ -573,43 +573,48 @@ export default function CrlvPositionTool() {
         </div>
 
         {!cpfReady && (
-          <Card className="mb-4 border-primary/40 bg-primary/5">
-            <CardContent className="pt-5 pb-5">
-              <div className="flex items-center gap-2 mb-3">
-                <Shield className="h-5 w-5 text-primary" />
-                <span className="font-semibold text-sm text-foreground">Identificação do Proprietário</span>
-              </div>
-              <div className="flex flex-col sm:flex-row items-start sm:items-end gap-3 max-w-lg">
-                <div className="flex-1 w-full space-y-1">
-                  <Label className="text-xs text-muted-foreground">CPF ou CNPJ</Label>
-                  <Input
-                    value={values.cpfCnpj || ''}
-                    onChange={(e) => setValue('cpfCnpj', formatCpfCnpj(e.target.value))}
-                    className="h-10 text-sm uppercase"
-                    placeholder="Digite o CPF ou CNPJ"
-                    maxLength={18}
-                    autoFocus
-                  />
-                  <p className="text-[11px] text-muted-foreground">
-                    {cpfDigits === 0 ? 'Insira o CPF (11 dígitos) ou CNPJ (14 dígitos)' :
-                     cpfDigits < 11 ? `${cpfDigits}/11 dígitos (CPF)` :
-                     cpfDigits === 11 ? '✓ CPF completo — confirme para continuar' :
-                     cpfDigits < 14 ? `${cpfDigits}/14 dígitos (CNPJ)` :
-                     '✓ CNPJ completo — confirme para continuar'}
-                  </p>
-                </div>
+          <Card className="mb-4 border-border">
+            <CardContent className="pt-4 pb-4">
+              <Label className="text-xs text-muted-foreground mb-1.5 block">CPF ou CNPJ do proprietário</Label>
+              <div className="flex items-center gap-2 max-w-md">
+                <Input
+                  value={values.cpfCnpj || ''}
+                  onChange={(e) => setValue('cpfCnpj', formatCpfCnpj(e.target.value))}
+                  className="h-9 text-sm uppercase flex-1"
+                  placeholder="Digite o CPF ou CNPJ"
+                  maxLength={18}
+                  autoFocus
+                  onKeyDown={(e) => { if (e.key === 'Enter' && cpfDigits >= 11) handleConfirmCpf(); }}
+                />
                 <Button
                   type="button"
-                  className="h-10 px-6 gap-2"
+                  variant="outline"
+                  size="sm"
+                  className="h-9 px-3 text-xs gap-1.5 shrink-0"
                   disabled={cpfDigits < 11}
-                  onClick={() => setCpfConfirmed(true)}
+                  onClick={handleConfirmCpf}
                 >
-                  <Check className="h-4 w-4" />
+                  <Check className="h-3.5 w-3.5" />
                   Confirmar
                 </Button>
               </div>
+              <p className="text-[11px] text-muted-foreground mt-1.5">
+                {cpfDigits === 0 ? 'CPF (11 dígitos) ou CNPJ (14 dígitos)' :
+                 cpfDigits < 11 ? `${cpfDigits}/11 dígitos` :
+                 cpfDigits === 11 ? '✓ CPF completo' :
+                 cpfDigits < 14 ? `${cpfDigits}/14 dígitos (CNPJ)` :
+                 '✓ CNPJ completo'}
+              </p>
             </CardContent>
           </Card>
+        )}
+
+        {showOnboarding && (
+          <div className="mb-3 flex items-center gap-2 text-xs text-muted-foreground">
+            <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+            <span>Os campos já estão preenchidos com dados de exemplo — altere conforme necessário.</span>
+            <button onClick={dismissOnboarding} className="text-primary hover:underline ml-auto text-[11px]">Pular guia</button>
+          </div>
         )}
 
         <div className="relative">
@@ -618,10 +623,11 @@ export default function CrlvPositionTool() {
           <div className="w-full lg:w-1/2 space-y-4">
 
             {/* Estado */}
-            <Card>
+            <Card className={`relative transition-all duration-300 ${onboardingClass('estado')}`}>
+              {onboardingTip('estado')}
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-primary" /> Estado
+                  <MapPin className="h-4 w-4 text-primary" /> Estado de Emissão
                 </CardTitle>
               </CardHeader>
               <CardContent>
