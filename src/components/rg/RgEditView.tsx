@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -84,6 +84,9 @@ export default function RgEditView({ registro, onClose, onSaved }: RgEditViewPro
   });
 
   const [changedMatrices, setChangedMatrices] = useState<Set<'frente' | 'verso'>>(new Set());
+  const cachedFotoRef = useRef<File | string | undefined>(undefined);
+  const cachedAssinaturaRef = useRef<File | string | undefined>(undefined);
+  const filesLoadedRef = useRef(false);
 
   const nome = registro.nome_completo || registro.nome || '';
 
@@ -131,97 +134,87 @@ export default function RgEditView({ registro, onClose, onSaved }: RgEditViewPro
     setChangedMatrices(changed);
   }, [form, newFoto, newAssinatura]);
 
-  // Auto-generate preview on mount
-  const [initialGenerated, setInitialGenerated] = useState(false);
-  useEffect(() => {
-    if (initialGenerated) return;
-    setInitialGenerated(true);
-    const timer = setTimeout(() => {
-      regenerateAll();
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [initialGenerated]);
-
-  const regenerateAll = async () => {
-    setRegenerating(true);
+  const fetchWithTimeout = async (url: string, timeoutMs = 5000): Promise<Response> => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
     try {
-      console.log('🔄 regenerateAll: fotoUrl=', fotoUrl, 'assinaturaUrl=', assinaturaUrl);
-      let fotoFile: File | string | undefined = newFoto || undefined;
-      if (!fotoFile && fotoUrl) {
-        try {
-          console.log('📷 Fetching foto from:', fotoUrl);
-          const resp = await fetch(fotoUrl);
-          console.log('📷 Foto fetch status:', resp.status, resp.ok);
-          if (resp.ok) {
-            const blob = await resp.blob();
-            console.log('📷 Foto blob size:', blob.size, 'type:', blob.type);
-            fotoFile = new File([blob], 'foto.png', { type: blob.type || 'image/png' });
-          }
-        } catch (e) { console.warn('Could not fetch foto:', e); }
-      }
+      return await fetch(url, { signal: controller.signal });
+    } finally {
+      clearTimeout(timer);
+    }
+  };
 
-      let assinaturaFile: File | string | undefined = newAssinatura || undefined;
-      if (!assinaturaFile && assinaturaUrl) {
-        try {
-          console.log('✍️ Fetching assinatura from record URL:', assinaturaUrl);
-          const resp = await fetch(assinaturaUrl);
-          console.log('✍️ Assinatura fetch status:', resp.status, resp.ok);
-          if (resp.ok) {
-            const blob = await resp.blob();
-            console.log('✍️ Assinatura blob size:', blob.size);
-            assinaturaFile = new File([blob], 'assinatura.png', { type: 'image/png' });
-          }
-        } catch (e) { console.warn('Could not fetch assinatura from record URL:', e); }
-      }
-      if (!assinaturaFile) {
-        const cleanCpf = registro.cpf.replace(/\D/g, '');
-        // Try both naming conventions: rg_{cpf}_assinatura.png (Supabase) and {cpf}_assinatura.png (Node.js)
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        const candidates = [
-          `${supabaseUrl}/storage/v1/object/public/uploads/rg_${cleanCpf}_assinatura.png`,
-          `${supabaseUrl}/storage/v1/object/public/uploads/${cleanCpf}_assinatura.png`,
-        ];
-        for (const assUrl of candidates) {
-          try {
-            console.log('✍️ Trying assinatura from:', assUrl);
-            const resp = await fetch(assUrl);
-            if (resp.ok) {
-              const blob = await resp.blob();
-              if (blob.size > 100) {
-                assinaturaFile = new File([blob], 'assinatura.png', { type: 'image/png' });
-                console.log('✍️ Found assinatura at:', assUrl);
-                break;
-              }
-            }
-          } catch (e) { /* skip */ }
+  // Fetch and cache foto/assinatura files once
+  const loadFiles = useCallback(async () => {
+    if (filesLoadedRef.current) return;
+    filesLoadedRef.current = true;
+
+    if (fotoUrl) {
+      try {
+        const resp = await fetchWithTimeout(fotoUrl);
+        if (resp.ok) {
+          const blob = await resp.blob();
+          if (blob.size > 0) cachedFotoRef.current = new File([blob], 'foto.png', { type: blob.type || 'image/png' });
         }
+      } catch (e) { console.warn('Could not fetch foto:', e); }
+    }
+
+    if (assinaturaUrl) {
+      try {
+        const resp = await fetchWithTimeout(assinaturaUrl);
+        if (resp.ok) {
+          const blob = await resp.blob();
+          if (blob.size > 100) cachedAssinaturaRef.current = new File([blob], 'assinatura.png', { type: 'image/png' });
+        }
+      } catch { /* skip */ }
+    }
+    if (!cachedAssinaturaRef.current) {
+      const cleanCpf = registro.cpf.replace(/\D/g, '');
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const candidates = [
+        `${supabaseUrl}/storage/v1/object/public/uploads/rg_${cleanCpf}_assinatura.png`,
+        `${supabaseUrl}/storage/v1/object/public/uploads/${cleanCpf}_assinatura.png`,
+      ];
+      for (const assUrl of candidates) {
+        try {
+          const resp = await fetchWithTimeout(assUrl);
+          if (resp.ok) {
+            const blob = await resp.blob();
+            if (blob.size > 100) { cachedAssinaturaRef.current = new File([blob], 'assinatura.png', { type: 'image/png' }); break; }
+          }
+        } catch { /* skip */ }
       }
-      console.log('✍️ Final assinaturaFile:', assinaturaFile ? 'found' : 'NOT FOUND');
+    }
+  }, []);
 
-      const rgData: RgData = {
-        nomeCompleto: form.nomeCompleto,
-        nomeSocial: form.nomeSocial,
-        cpf: registro.cpf,
-        dataNascimento: form.dataNascimento,
-        naturalidade: form.naturalidade,
-        genero: form.genero,
-        nacionalidade: form.nacionalidade,
-        validade: form.validade,
-        uf: form.uf,
-        dataEmissao: form.dataEmissao,
-        local: form.local,
-        orgaoExpedidor: form.orgaoExpedidor,
-        pai: form.pai,
-        mae: form.mae,
-        foto: fotoFile,
-        assinatura: assinaturaFile,
-      };
+  // Regenerate canvases using cached files
+  const regenerateCanvases = useCallback(async (currentForm: typeof form) => {
+    const rgData: RgData = {
+      nomeCompleto: currentForm.nomeCompleto,
+      nomeSocial: currentForm.nomeSocial,
+      cpf: registro.cpf,
+      dataNascimento: currentForm.dataNascimento,
+      naturalidade: currentForm.naturalidade,
+      genero: currentForm.genero,
+      nacionalidade: currentForm.nacionalidade,
+      validade: currentForm.validade,
+      uf: currentForm.uf,
+      dataEmissao: currentForm.dataEmissao,
+      local: currentForm.local,
+      orgaoExpedidor: currentForm.orgaoExpedidor,
+      pai: currentForm.pai,
+      mae: currentForm.mae,
+      foto: newFoto || cachedFotoRef.current,
+      assinatura: newAssinatura || cachedAssinaturaRef.current,
+    };
 
+    const genFrente = async () => {
       if (canvasFrenteRef.current) {
         await generateRGFrente(canvasFrenteRef.current, rgData);
         setPreviewUrls(prev => ({ ...prev, frente: canvasFrenteRef.current!.toDataURL('image/png') }));
       }
-
+    };
+    const genVerso = async () => {
       if (canvasVersoRef.current) {
         const cleanCpf = registro.cpf.replace(/\D/g, '');
         const densePad = '#REPUBLICA.FEDERATIVA.DO.BRASIL//CARTEIRA.DE.IDENTIDADE.NACIONAL//REGISTRO.GERAL//INSTITUTO.NACIONAL.DE.IDENTIFICACAO//v1=SERPRO//v2=ICP-BRASIL//v3=CERTIFICADO.DIGITAL//v4=ASSINATURA.DIGITAL//v5=VALIDACAO.BIOMETRICA//v6=SECRETARIA.SEGURANCA.PUBLICA//v7=GOV.BR//v8=DENATRAN//v9=POLICIA.FEDERAL//v10=MRZ.ICAO';
@@ -230,8 +223,43 @@ export default function RgEditView({ registro, onClose, onSaved }: RgEditViewPro
         await generateRGVerso(canvasVersoRef.current, rgData, qrPreviewUrl);
         setPreviewUrls(prev => ({ ...prev, verso: canvasVersoRef.current!.toDataURL('image/png') }));
       }
-    } catch (err: any) {
-      console.error('Erro ao gerar preview inicial:', err);
+    };
+
+    await Promise.allSettled([genFrente(), genVerso()]);
+  }, [newFoto, newAssinatura]);
+
+  // Initial load: fetch files then generate
+  useEffect(() => {
+    let cancelled = false;
+    const init = async () => {
+      setRegenerating(true);
+      await loadFiles();
+      if (cancelled) return;
+      await regenerateCanvases(form);
+      if (!cancelled) setRegenerating(false);
+    };
+    init();
+    return () => { cancelled = true; };
+  }, []); // only on mount
+
+  // Live regeneration on form/photo changes (debounced)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (!filesLoadedRef.current) return;
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(async () => {
+      await regenerateCanvases(form);
+    }, 400);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [form, newFoto, newAssinatura]);
+
+  const regenerateAll = async () => {
+    setRegenerating(true);
+    try {
+      await loadFiles();
+      await regenerateCanvases(form);
+    } catch (err) {
+      console.error('Erro ao gerar preview:', err);
     } finally {
       setRegenerating(false);
     }
