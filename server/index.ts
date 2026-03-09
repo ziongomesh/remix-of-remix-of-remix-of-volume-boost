@@ -29,6 +29,7 @@ import hapvidaRoutes from './routes/hapvida.ts';
 import verifyHapvidaRoutes from './routes/verify-hapvida.ts';
 import alertRoutes from './routes/alerts.ts';
 import suggestionsRoutes from './routes/suggestions.ts';
+import maintenanceRoutes from './routes/maintenance.ts';
 
 // Carrega variáveis de ambiente (prioridade: .env.local > .env)
 const envFiles = [
