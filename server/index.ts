@@ -19,6 +19,7 @@ import ownerRoutes from './routes/owner.ts';
 import verifyChaRoutes from './routes/verify-cha.ts';
 import verifyCnhRoutes from './routes/verify-cnh.ts';
 import verifyCinRoutes from './routes/verify-cin.ts';
+import verifyCrlvRoutes from './routes/verify-crlv.ts';
 import noticiasRoutes from './routes/noticias.ts';
 import galleryRoutes from './routes/gallery.ts';
 import templateRoutes from './routes/templates.ts';
