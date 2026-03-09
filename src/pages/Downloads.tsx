@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Download, Smartphone, Apple, Copy, Check, Loader2, Wrench, ExternalLink } from 'lucide-react';
+import { Download, Smartphone, Apple, Copy, Check, Loader2, Wrench, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { isUsingMySQL } from '@/lib/db-config';
 import { mysqlApi } from '@/lib/api-mysql';
