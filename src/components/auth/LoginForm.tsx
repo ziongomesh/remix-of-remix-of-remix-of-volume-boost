@@ -109,6 +109,8 @@ export function LoginForm() {
     } catch (error: any) {
       toast.dismiss('login-loading');
       toast.error('Erro ao fazer login', { description: error.message || 'Email ou senha incorretos' });
+      setTurnstileToken(null);
+      setTurnstileKey(k => k + 1);
       setLoading(false);
     }
   };
