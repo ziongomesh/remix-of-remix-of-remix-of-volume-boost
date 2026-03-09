@@ -766,7 +766,8 @@ export default function CrlvPositionTool() {
             </Card>
 
             {/* Dados do Veículo */}
-            <Card>
+            <Card className={`relative transition-all duration-300 ${onboardingClass('veiculo')}`}>
+              {onboardingTip('veiculo')}
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
                   <Car className="h-4 w-4 text-primary" /> Dados do Veículo
