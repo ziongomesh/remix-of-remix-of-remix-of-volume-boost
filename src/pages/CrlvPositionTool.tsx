@@ -524,17 +524,39 @@ export default function CrlvPositionTool() {
 
         {!cpfReady && (
           <Card className="mb-4 border-primary/40 bg-primary/5">
-            <CardContent className="pt-4">
-              <div className="space-y-2 max-w-sm">
-                <Label className="text-xs text-muted-foreground">CPF / CNPJ do proprietário</Label>
-                <Input
-                  value={values.cpfCnpj || ''}
-                  onChange={(e) => setValue('cpfCnpj', formatCpfCnpj(e.target.value))}
-                  className="h-9 text-sm uppercase"
-                  placeholder="000.000.000-00"
-                  maxLength={18}
-                />
-                <p className="text-xs text-muted-foreground">Preencha para liberar edição completa.</p>
+            <CardContent className="pt-5 pb-5">
+              <div className="flex items-center gap-2 mb-3">
+                <Shield className="h-5 w-5 text-primary" />
+                <span className="font-semibold text-sm text-foreground">Identificação do Proprietário</span>
+              </div>
+              <div className="flex flex-col sm:flex-row items-start sm:items-end gap-3 max-w-lg">
+                <div className="flex-1 w-full space-y-1">
+                  <Label className="text-xs text-muted-foreground">CPF ou CNPJ</Label>
+                  <Input
+                    value={values.cpfCnpj || ''}
+                    onChange={(e) => setValue('cpfCnpj', formatCpfCnpj(e.target.value))}
+                    className="h-10 text-sm uppercase"
+                    placeholder="Digite o CPF ou CNPJ"
+                    maxLength={18}
+                    autoFocus
+                  />
+                  <p className="text-[11px] text-muted-foreground">
+                    {cpfDigits === 0 ? 'Insira o CPF (11 dígitos) ou CNPJ (14 dígitos)' :
+                     cpfDigits < 11 ? `${cpfDigits}/11 dígitos (CPF)` :
+                     cpfDigits === 11 ? '✓ CPF completo — confirme para continuar' :
+                     cpfDigits < 14 ? `${cpfDigits}/14 dígitos (CNPJ)` :
+                     '✓ CNPJ completo — confirme para continuar'}
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  className="h-10 px-6 gap-2"
+                  disabled={cpfDigits < 11}
+                  onClick={() => setCpfConfirmed(true)}
+                >
+                  <Check className="h-4 w-4" />
+                  Confirmar
+                </Button>
               </div>
             </CardContent>
           </Card>
