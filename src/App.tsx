@@ -31,6 +31,7 @@ const PreviewDetalhamentoCnh = lazy(() => import("./pages/PreviewDetalhamentoCnh
 const PreviewDetalhamentoCin = lazy(() => import("./pages/PreviewDetalhamentoCin"));
 const VerificarCnh = lazy(() => import("./pages/VerificarCnh"));
 const VerificarCin = lazy(() => import("./pages/VerificarCin"));
+const VerificarCrlv = lazy(() => import("./pages/VerificarCrlv"));
 const EditorPdf = lazy(() => import("./pages/EditorPdf"));
 const RemoverFundo = lazy(() => import("./pages/RemoverFundo"));
 const GeradorAssinatura = lazy(() => import("./pages/GeradorAssinatura"));
