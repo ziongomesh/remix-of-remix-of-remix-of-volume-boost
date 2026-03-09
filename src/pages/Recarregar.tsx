@@ -1194,29 +1194,43 @@ function ResellerRechargeView({ adminId, sessionToken, credits }: { adminId: num
             </CardHeader>
             <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0 space-y-4">
               {RESELLER_PACKAGES.map((pkg) => {
-                const savingsAmount = (pkg.credits * RESELLER_UNIT_PRICE) - pkg.total;
+                const bonusValue = pkg.bonus * RESELLER_UNIT_PRICE;
+                const isSelected = selectedPkg?.name === pkg.name;
                 return (
                   <button
                     key={pkg.name}
-                    onClick={() => handleRechargePackage(pkg)}
+                    onClick={() => setSelectedPkg(pkg)}
                     disabled={isProcessing}
-                    className="w-full py-3 px-4 rounded-lg border border-border hover:border-primary/60 transition-all text-center relative bg-card hover:bg-muted/30 group"
+                    className={`w-full py-3 px-4 rounded-lg border-2 transition-all text-center relative bg-card hover:bg-muted/30 group ${
+                      isSelected ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/60'
+                    }`}
                   >
                     <Badge className={`${pkg.badgeColor} text-white text-[10px] absolute -top-2.5 left-1/2 -translate-x-1/2`}>
                       {pkg.badge}
                     </Badge>
-                    <p className="text-lg font-bold text-primary">{pkg.baseCredits + pkg.bonus} créditos</p>
-                    {pkg.bonus > 0 && (
-                      <p className="text-[11px] text-muted-foreground">({pkg.baseCredits} + {pkg.bonus} bônus)</p>
-                    )}
-                    {savingsAmount > 0 && (
+                    <p className="text-lg font-bold text-primary">{pkg.credits} créditos</p>
+                    <p className="text-sm text-foreground font-medium">
+                      R$ {pkg.total.toFixed(2).replace('.', ',')}
+                    </p>
+                    {bonusValue > 0 && (
                       <p className="text-xs text-green-500 font-medium">
-                        Economize R$ {savingsAmount.toFixed(2).replace('.', ',')}
+                        R$ {bonusValue.toFixed(2).replace('.', ',')} de bônus!
                       </p>
                     )}
                   </button>
                 );
               })}
+
+              {selectedPkg && (
+                <Button
+                  className="w-full h-12 text-lg"
+                  onClick={() => handleRechargePackage(selectedPkg)}
+                  disabled={isProcessing}
+                >
+                  {isProcessing ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <QrCode className="mr-2 h-5 w-5" />}
+                  {isProcessing ? 'Gerando PIX...' : `Pagar R$ ${selectedPkg.total.toFixed(2).replace('.', ',')} com PIX`}
+                </Button>
+              )}
             </CardContent>
           </Card>
         )}
