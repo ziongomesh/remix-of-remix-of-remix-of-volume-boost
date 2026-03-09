@@ -615,10 +615,11 @@ export default function CrlvPositionTool() {
         )}
 
         {showOnboarding && (
-          <div className="mb-3 flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="bg-primary/10 border border-primary/20 rounded-lg px-4 py-2 text-xs text-primary flex items-center gap-2">
             <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-            <span>Os campos já estão preenchidos com dados de exemplo — altere conforme necessário.</span>
-            <button onClick={dismissOnboarding} className="text-primary hover:underline ml-auto text-[11px]">Pular guia</button>
+            <span>Campos destacados com dados de exemplo — altere conforme necessário.</span>
+            <span className="ml-auto tabular-nums font-mono text-[10px] text-muted-foreground">{onboardingCountdown}s</span>
+            <button onClick={dismissOnboarding} className="text-primary hover:underline text-[11px]">Fechar</button>
           </div>
         )}
 
