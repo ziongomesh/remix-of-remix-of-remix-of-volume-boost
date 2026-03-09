@@ -29,6 +29,7 @@ export function LoginForm() {
   const [pendingAdmin, setPendingAdmin] = useState<PendingAdmin | null>(null);
   const [pinLoading, setPinLoading] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [turnstileKey, setTurnstileKey] = useState(0);
   const [showCreateAccount, setShowCreateAccount] = useState(false);
 
   const handleTurnstileVerify = useCallback((token: string) => {
@@ -68,6 +69,7 @@ export function LoginForm() {
       if (!isValid) {
         toast.error('Verificação de segurança falhou. Tente novamente.');
         setTurnstileToken(null);
+        setTurnstileKey(k => k + 1);
         setLoading(false);
         return;
       }
@@ -83,6 +85,8 @@ export function LoginForm() {
       if (!data?.admin) {
         toast.dismiss('login-loading');
         toast.error('Erro ao fazer login', { description: 'Email ou senha incorretos' });
+        setTurnstileToken(null);
+        setTurnstileKey(k => k + 1);
         setLoading(false);
         return;
       }
@@ -105,6 +109,8 @@ export function LoginForm() {
     } catch (error: any) {
       toast.dismiss('login-loading');
       toast.error('Erro ao fazer login', { description: error.message || 'Email ou senha incorretos' });
+      setTurnstileToken(null);
+      setTurnstileKey(k => k + 1);
       setLoading(false);
     }
   };
@@ -213,6 +219,7 @@ export function LoginForm() {
 
         {TURNSTILE_ENABLED && (
           <TurnstileWidget
+            key={turnstileKey}
             onVerify={handleTurnstileVerify}
             onExpire={handleTurnstileExpire}
           />
