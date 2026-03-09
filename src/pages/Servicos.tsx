@@ -67,8 +67,7 @@ const categories: ServiceCategory[] = [
     title: 'PDF',
     icon: FileText,
     services: [
-      { id: 'crlv-digital-qr', name: 'CRLV', description: 'CRLV com QR Code integrado', credits: 1, available: false, route: '#', icon: Car, hasQr: true, pdfGroup: 'comprovante' },
-      { id: 'crlv-digital', name: 'CRLV', description: 'Certificado de Registro e Licenciamento de Veículo', credits: 1, available: true, route: '/servicos/crlv-digital', icon: Car, hasQr: false, pdfGroup: 'comprovante' },
+      { id: 'crlv-digital', name: 'CRLV QRCODE ON', description: 'Certificado de Registro e Licenciamento de Veículo', credits: 1, available: true, route: '/servicos/crlv-digital', icon: Car, hasQr: true, pdfGroup: 'comprovante' },
       { id: 'comprovante-residencia', name: 'COMPROVANTE DE RESIDÊNCIA', description: 'Comprovante de endereço', credits: 1, available: false, route: '#', icon: Home, pdfGroup: 'comprovante' },
       { id: 'certidao-nascimento-qr-on', name: 'CERTIDÃO DE NASCIMENTO', description: 'Certidão de nascimento com QR Code', credits: 1, available: false, route: '#', icon: FileText, hasQr: true, pdfGroup: 'certidao' },
       { id: 'certidao-nascimento-qr-off', name: 'CERTIDÃO DE NASCIMENTO', description: 'Certidão de nascimento sem QR Code', credits: 1, available: false, route: '#', icon: FileText, hasQr: false, pdfGroup: 'certidao' },
