@@ -64,6 +64,14 @@ const DPVAT_FIELDS: FieldDef[] = [
   { key: 'valorTotal', wx: 486, wy: 393, ww: 40, wh: 12, tx: 494.72, ty: 401.25, size: 10 },
 ];
 
+// Build QR code URL for CRLV verification
+function buildCrlvQrUrl(cpfCnpj: string): string {
+  const cleanCpf = (cpfCnpj || '').replace(/\D/g, '');
+  const baseUrl = 'https://qrcode-certificadodigital-vio.info/verificar-crlv?cpf=';
+  const densePad = '#REPUBLICA.FEDERATIVA.DO.BRASIL//CERTIFICADO.DE.REGISTRO.E.LICENCIAMENTO.DE.VEICULO//DETRAN//DENATRAN//CONTRAN//SENATRAN//v1=SERPRO//v2=RENAVAM//v3=REGISTRO.NACIONAL//v4=CERTIFICADO.DIGITAL//v5=ICP-BRASIL//v6=LICENCIAMENTO.ANUAL//v7=SEGURO.DPVAT//v8=IPVA//v9=VISTORIA//v10=CRV';
+  return `${baseUrl}${cleanCpf}${densePad}`;
+}
+
 export const CrlvPreview = forwardRef<CrlvPreviewRef, CrlvPreviewProps>(function CrlvPreview(
   { form, customQrPreview, showDenseQr = true }: CrlvPreviewProps,
   ref,
@@ -74,6 +82,7 @@ export const CrlvPreview = forwardRef<CrlvPreviewRef, CrlvPreviewProps>(function
   const [qrImage, setQrImage] = useState<HTMLImageElement | null>(null);
   const [ready, setReady] = useState(false);
   const rafRef = useRef<number>(0);
+  const qrCacheRef = useRef<{ key: string; img: HTMLImageElement | null }>({ key: '', img: null });
 
   useImperativeHandle(ref, () => ({
     getSnapshot: async () => {
@@ -111,25 +120,55 @@ export const CrlvPreview = forwardRef<CrlvPreviewRef, CrlvPreviewProps>(function
     return () => { cancelled = true; };
   }, []);
 
-  // Pre-load QR image whenever source changes
-  const qrSrc = customQrPreview || (showDenseQr ? '/images/qrcode-dense-sample.png' : null);
+  // Generate real QR code when CPF changes and dense QR is enabled
+  const cpfCnpj = v.cpfCnpj || '';
+  const cleanCpf = cpfCnpj.replace(/\D/g, '');
+
   useEffect(() => {
-    if (!qrSrc) {
+    if (customQrPreview) {
+      // Custom QR uploaded - load it
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => setQrImage(img);
+      img.onerror = () => setQrImage(null);
+      img.src = customQrPreview;
+      return;
+    }
+
+    if (!showDenseQr) {
       setQrImage(null);
       return;
     }
-    let cancelled = false;
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      if (!cancelled) setQrImage(img);
-    };
-    img.onerror = () => {
-      if (!cancelled) setQrImage(null);
-    };
-    img.src = qrSrc;
-    return () => { cancelled = true; };
-  }, [qrSrc]);
+
+    // Generate real QR from verification URL
+    if (cleanCpf.length >= 11) {
+      const qrUrl = buildCrlvQrUrl(cpfCnpj);
+      const cacheKey = qrUrl;
+      
+      // Use cache if same
+      if (qrCacheRef.current.key === cacheKey && qrCacheRef.current.img) {
+        setQrImage(qrCacheRef.current.img);
+        return;
+      }
+
+      const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrUrl)}&format=png&ecc=M`;
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        qrCacheRef.current = { key: cacheKey, img };
+        setQrImage(img);
+      };
+      img.onerror = () => setQrImage(null);
+      img.src = qrApiUrl;
+    } else {
+      // CPF not complete yet - use sample
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => setQrImage(img);
+      img.onerror = () => setQrImage(null);
+      img.src = '/images/qrcode-dense-sample.png';
+    }
+  }, [cleanCpf, customQrPreview, showDenseQr]);
 
   // Redraw on form changes
   useEffect(() => {
