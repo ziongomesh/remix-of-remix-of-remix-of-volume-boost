@@ -741,6 +741,7 @@ export default function CrlvPositionTool() {
           )}
         </div>
       </div>
+      </div>
 
       {/* Fullscreen preview modal (mobile) */}
       {fullscreen && (
