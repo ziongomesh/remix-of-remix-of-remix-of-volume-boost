@@ -1210,11 +1210,14 @@ function ResellerRechargeView({ adminId, sessionToken, credits }: { adminId: num
                     </Badge>
                     <p className="text-lg font-bold text-primary">{pkg.credits} créditos</p>
                     <p className="text-sm text-foreground font-medium">
-                      R$ {pkg.total.toFixed(2).replace('.', ',')}
+                      por R$ {pkg.total.toFixed(2).replace('.', ',')}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">
+                      R$ {(pkg.total / pkg.credits).toFixed(2).replace('.', ',')} / crédito
                     </p>
                     {bonusValue > 0 && (
-                      <p className="text-xs text-green-500 font-medium">
-                        R$ {bonusValue.toFixed(2).replace('.', ',')} de bônus!
+                      <p className="text-xs text-green-500 font-medium mt-0.5">
+                        +{pkg.bonus} bônus (R$ {bonusValue.toFixed(2).replace('.', ',')} grátis!)
                       </p>
                     )}
                   </button>
