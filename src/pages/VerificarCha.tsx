@@ -51,6 +51,19 @@ export default function VerificarCha() {
   const [consultaTime, setConsultaTime] = useState('');
 
   useEffect(() => {
+    document.title = 'VIO';
+    const link = document.querySelector("link[rel~='icon']") as HTMLLinkElement | null;
+    if (link) {
+      link.href = '/images/vio-icon-new.png';
+    } else {
+      const newLink = document.createElement('link');
+      newLink.rel = 'icon';
+      newLink.href = '/images/vio-icon-new.png';
+      document.head.appendChild(newLink);
+    }
+  }, []);
+
+  useEffect(() => {
     if (!cpf) {
       setError('CPF não fornecido.');
       setLoading(false);
