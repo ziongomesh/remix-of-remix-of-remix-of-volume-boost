@@ -268,14 +268,10 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
   }, []);
 
   // Regenerate canvases using cached files
+  const regenerateCanvases = useCallback(async (currentForm: typeof form) => {
     const cnhData = {
       ...currentForm,
       dataNascimento: currentForm.dataNascimento,
-    })();
-
-    const cnhData = {
-      ...currentForm,
-      dataNascimento: computedDN,
       foto: newFoto || cachedFotoRef.current,
       assinatura: newAssinatura || cachedAssinaturaRef.current,
     };
