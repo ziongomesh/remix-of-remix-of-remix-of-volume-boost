@@ -491,7 +491,8 @@ export default function CrlvPositionTool() {
   });
 
   const values = watch();
-  const cpfReady = (values.cpfCnpj?.replace(/\D/g, '').length ?? 0) >= 11;
+  const cpfDigits = values.cpfCnpj?.replace(/\D/g, '').length ?? 0;
+  const cpfReady = cpfConfirmed;
 
   // Dados de Emissão do CRLV
   const emissaoFields = [
