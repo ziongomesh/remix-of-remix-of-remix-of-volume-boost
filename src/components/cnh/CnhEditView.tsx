@@ -130,6 +130,10 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
   // Track which matrices changed
   const [changedMatrices, setChangedMatrices] = useState<Set<'frente' | 'meio' | 'verso'>>(new Set());
   const [previewLoading, setPreviewLoading] = useState(true);
+  // Cache fetched foto/assinatura to avoid re-fetching on every keystroke
+  const cachedFotoRef = useRef<File | null>(null);
+  const cachedAssinaturaRef = useRef<File | string | undefined>(undefined);
+  const filesLoadedRef = useRef(false);
 
   // Parse dataNascimento: pode ser "DD/MM/YYYY, CIDADE, UF" ou ISO date
   const parsedDataNasc = (() => {
