@@ -722,7 +722,7 @@ export default function Recarregar() {
         setCheckingPayment(false);
         setShowPixModal(open);
       }}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="max-w-[95vw] sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Pagamento PIX</DialogTitle>
           </DialogHeader>
@@ -1337,7 +1337,7 @@ function ResellerRechargeView({ adminId, sessionToken, credits }: { adminId: num
         setCheckingPayment(false);
         setShowPixModal(open);
       }}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="max-w-[95vw] sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Pagamento PIX</DialogTitle>
           </DialogHeader>
