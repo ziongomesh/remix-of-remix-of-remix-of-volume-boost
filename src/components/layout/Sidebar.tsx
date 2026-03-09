@@ -18,7 +18,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: 'Início', icon: Home, href: '/dashboard', roles: ['dono', 'sub', 'master', 'revendedor'] },
   { label: 'Serviços', icon: FolderOpen, href: '/servicos', roles: ['dono', 'sub', 'master', 'revendedor'] },
-  { label: 'Histórico', icon: History, href: '/historico-servicos', roles: ['dono', 'sub', 'master', 'revendedor'] },
+  
   { label: 'Revendedores', icon: Users, href: '/revendedores', roles: ['master', 'sub'] },
   { label: 'Transferir', icon: Send, href: '/transferir', roles: ['master', 'sub'] },
   { label: 'Recarregar', icon: CreditCard, href: '/recarregar', roles: ['master', 'sub', 'revendedor'] },
