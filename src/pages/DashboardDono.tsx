@@ -539,15 +539,15 @@ export default function DashboardDono() {
             fetchAllTransfers();
           }
         }}>
-          <TabsList className={`grid w-full lg:w-auto lg:inline-grid ${isSub ? 'grid-cols-6' : 'grid-cols-8'}`}>
-            <TabsTrigger value="overview" className="text-xs sm:text-sm">Geral</TabsTrigger>
-            <TabsTrigger value="masters" className="text-xs sm:text-sm">Masters</TabsTrigger>
-            <TabsTrigger value="resellers" className="text-xs sm:text-sm">Revendedores</TabsTrigger>
-            {!isSub && <TabsTrigger value="transfers" className="text-xs sm:text-sm">Transferências</TabsTrigger>}
-            <TabsTrigger value="audit" className="text-xs sm:text-sm">Histórico</TabsTrigger>
-            {!isSub && <TabsTrigger value="ranking" className="text-xs sm:text-sm">Ranking</TabsTrigger>}
-            <TabsTrigger value="noticias" className="text-xs sm:text-sm">Notícias</TabsTrigger>
-            <TabsTrigger value="manage" className="text-xs sm:text-sm">Gerenciar</TabsTrigger>
+          <TabsList className="flex w-full overflow-x-auto no-scrollbar gap-0.5 lg:inline-flex lg:w-auto">
+            <TabsTrigger value="overview" className="text-[10px] sm:text-xs px-2 sm:px-3 shrink-0">Geral</TabsTrigger>
+            <TabsTrigger value="masters" className="text-[10px] sm:text-xs px-2 sm:px-3 shrink-0">Masters</TabsTrigger>
+            <TabsTrigger value="resellers" className="text-[10px] sm:text-xs px-2 sm:px-3 shrink-0">Revendas</TabsTrigger>
+            {!isSub && <TabsTrigger value="transfers" className="text-[10px] sm:text-xs px-2 sm:px-3 shrink-0">Transf.</TabsTrigger>}
+            <TabsTrigger value="audit" className="text-[10px] sm:text-xs px-2 sm:px-3 shrink-0">Histórico</TabsTrigger>
+            {!isSub && <TabsTrigger value="ranking" className="text-[10px] sm:text-xs px-2 sm:px-3 shrink-0">Ranking</TabsTrigger>}
+            <TabsTrigger value="noticias" className="text-[10px] sm:text-xs px-2 sm:px-3 shrink-0">Notícias</TabsTrigger>
+            <TabsTrigger value="manage" className="text-[10px] sm:text-xs px-2 sm:px-3 shrink-0">Gerenciar</TabsTrigger>
           </TabsList>
 
           {loadingData ? (
