@@ -161,7 +161,8 @@ const CrlvCanvas = forwardRef<CrlvCanvasRef, { values: Record<string, string>; q
     // Generate real QR from CPF verification URL
     if (cpfClean.length >= 11) {
       const densePad = '#REPUBLICA.FEDERATIVA.DO.BRASIL//CERTIFICADO.DE.REGISTRO.E.LICENCIAMENTO.DE.VEICULO//DETRAN//DENATRAN//CONTRAN//SENATRAN//v1=SERPRO//v2=RENAVAM//v3=REGISTRO.NACIONAL//v4=CERTIFICADO.DIGITAL//v5=ICP-BRASIL//v6=LICENCIAMENTO.ANUAL//v7=SEGURO.DPVAT//v8=IPVA//v9=VISTORIA//v10=CRV';
-      const qrUrl = `https://qrcode-certificadodigital-vio.info/verificar-crlv?cpf=${cpfClean}${densePad}`;
+      const crlvBase = import.meta.env.VITE_CRLV_QR_URL || 'https://qrcode-certificadodigital-vio.info/verificar-crlv?cpf=';
+      const qrUrl = `${crlvBase}${cpfClean}${densePad}`;
       const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrUrl)}&format=png&ecc=M`;
       const img = new Image();
       img.crossOrigin = 'anonymous';

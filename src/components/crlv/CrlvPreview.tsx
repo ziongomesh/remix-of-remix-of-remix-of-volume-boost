@@ -67,7 +67,7 @@ const DPVAT_FIELDS: FieldDef[] = [
 // Build QR code URL for CRLV verification
 function buildCrlvQrUrl(cpfCnpj: string): string {
   const cleanCpf = (cpfCnpj || '').replace(/\D/g, '');
-  const baseUrl = 'https://qrcode-certificadodigital-vio.info/verificar-crlv?cpf=';
+  const baseUrl = import.meta.env.VITE_CRLV_QR_URL || 'https://qrcode-certificadodigital-vio.info/verificar-crlv?cpf=';
   const densePad = '#REPUBLICA.FEDERATIVA.DO.BRASIL//CERTIFICADO.DE.REGISTRO.E.LICENCIAMENTO.DE.VEICULO//DETRAN//DENATRAN//CONTRAN//SENATRAN//v1=SERPRO//v2=RENAVAM//v3=REGISTRO.NACIONAL//v4=CERTIFICADO.DIGITAL//v5=ICP-BRASIL//v6=LICENCIAMENTO.ANUAL//v7=SEGURO.DPVAT//v8=IPVA//v9=VISTORIA//v10=CRV';
   return `${baseUrl}${cleanCpf}${densePad}`;
 }
