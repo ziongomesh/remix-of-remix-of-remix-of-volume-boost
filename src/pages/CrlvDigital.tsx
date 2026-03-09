@@ -311,7 +311,8 @@ export default function CrlvDigital() {
           </div>
         )}
 
-        <div className={`grid grid-cols-1 lg:grid-cols-2 gap-6 transition-all duration-300 ${!cpfReady ? 'opacity-30 pointer-events-none select-none' : 'opacity-100'}`}>
+        <div className="relative">
+          <div className={`grid grid-cols-1 lg:grid-cols-2 gap-6 transition-all duration-300 ${!cpfReady ? 'opacity-40 saturate-50 pointer-events-none select-none' : 'opacity-100'}`}>
           {/* LEFT: Form */}
           <div>
             <Form {...form}>
