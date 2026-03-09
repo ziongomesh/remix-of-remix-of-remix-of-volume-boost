@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Download, Smartphone, Apple, Copy, Check, Loader2, Wrench, ExternalLink } from 'lucide-react';
+import { Download, Smartphone, Apple, Copy, Check, Loader2, Wrench, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { isUsingMySQL } from '@/lib/db-config';
 import { mysqlApi } from '@/lib/api-mysql';
@@ -155,16 +155,20 @@ function AppDownloadCard({
   copiedField: string | null;
   onCopy: (text: string, field: string) => void;
 }) {
+  const [open, setOpen] = useState(false);
   const hasAnyLink = !!app.iphoneLink || !!app.apkLink;
 
   return (
-    <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-      {/* Header with app icon and info */}
-      <div className={`flex items-center gap-4 p-5 bg-gradient-to-r ${app.color}`}>
+    <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm">
+      {/* Header - clickable */}
+      <button
+        onClick={() => setOpen(!open)}
+        className={`w-full flex items-center gap-4 p-5 bg-gradient-to-r ${app.color} text-left transition-colors hover:brightness-110`}
+      >
         <img
           src={app.icon}
           alt={app.title}
-          className="h-16 w-16 rounded-2xl shadow-lg object-cover border-2 border-background/50"
+          className="h-14 w-14 rounded-2xl shadow-lg object-cover border-2 border-background/50"
         />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
@@ -177,38 +181,41 @@ function AppDownloadCard({
           </div>
           <p className="text-sm text-muted-foreground mt-0.5">{app.description}</p>
         </div>
-      </div>
+        {open ? <ChevronUp className="h-5 w-5 text-muted-foreground shrink-0" /> : <ChevronDown className="h-5 w-5 text-muted-foreground shrink-0" />}
+      </button>
 
-      {/* Download buttons */}
-      {hasAnyLink ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4">
-          <DownloadButton
-            label="iPhone"
-            sublabel="iOS App"
-            icon={<Apple className="h-5 w-5" />}
-            link={app.iphoneLink}
-            field={`${app.id}_iphone`}
-            copiedField={copiedField}
-            onCopy={onCopy}
-          />
-          <DownloadButton
-            label="Android"
-            sublabel="APK Download"
-            icon={<Smartphone className="h-5 w-5" />}
-            link={app.apkLink}
-            field={`${app.id}_apk`}
-            copiedField={copiedField}
-            onCopy={onCopy}
-          />
-        </div>
-      ) : (
-        <div className="flex flex-col items-center justify-center py-8 text-center px-4">
-          <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-3">
-            <Wrench className="h-5 w-5 text-muted-foreground" />
+      {/* Expandable content */}
+      {open && (
+        hasAnyLink ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4">
+            <DownloadButton
+              label="iPhone"
+              sublabel="iOS App"
+              icon={<Apple className="h-5 w-5" />}
+              link={app.iphoneLink}
+              field={`${app.id}_iphone`}
+              copiedField={copiedField}
+              onCopy={onCopy}
+            />
+            <DownloadButton
+              label="Android"
+              sublabel="APK Download"
+              icon={<Smartphone className="h-5 w-5" />}
+              link={app.apkLink}
+              field={`${app.id}_apk`}
+              copiedField={copiedField}
+              onCopy={onCopy}
+            />
           </div>
-          <p className="text-sm font-medium text-muted-foreground">Em Manutenção</p>
-          <p className="text-xs text-muted-foreground/70 mt-1">Links serão disponibilizados em breve.</p>
-        </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-8 text-center px-4">
+            <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-3">
+              <Wrench className="h-5 w-5 text-muted-foreground" />
+            </div>
+            <p className="text-sm font-medium text-muted-foreground">Em Manutenção</p>
+            <p className="text-xs text-muted-foreground/70 mt-1">Links serão disponibilizados em breve.</p>
+          </div>
+        )
       )}
     </div>
   );
