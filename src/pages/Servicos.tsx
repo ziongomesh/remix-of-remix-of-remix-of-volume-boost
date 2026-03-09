@@ -158,9 +158,9 @@ const vipCategories: VipCategory[] = [
 ];
 
 // ─── Service Card (Nacional) ───
-function ServiceCard({ service, hasCredits }: { service: Service; hasCredits: boolean }) {
+function ServiceCard({ service, hasCredits, isMaintenance }: { service: Service; hasCredits: boolean; isMaintenance?: boolean }) {
   const navigate = useNavigate();
-  const canAccess = service.available && hasCredits;
+  const canAccess = service.available && hasCredits && !isMaintenance;
   const Icon = service.icon || FileText;
   const [showExample, setShowExample] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
