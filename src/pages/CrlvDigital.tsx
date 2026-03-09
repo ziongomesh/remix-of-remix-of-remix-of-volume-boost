@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -90,6 +90,7 @@ export default function CrlvDigital() {
   const [generatedSenha, setGeneratedSenha] = useState<string | null>(null);
   const qrInputRef = useRef<HTMLInputElement>(null);
   const previewRef = useRef<CrlvPreviewRef>(null);
+  const hasShownNotice = useRef(false);
 
   const STEPS = [
     { label: 'Identificação', icon: Car },
@@ -147,6 +148,17 @@ export default function CrlvDigital() {
       observacoes: '*.*',
     },
   });
+
+  // Notificação ao entrar no módulo
+  useEffect(() => {
+    if (!hasShownNotice.current) {
+      hasShownNotice.current = true;
+      toast.info('📋 Preencha o CPF/CNPJ real do proprietário para gerar o QR Code automaticamente no preview.', {
+        duration: 6000,
+        id: 'crlv-cpf-notice',
+      });
+    }
+  }, []);
 
   if (loading) {
     return (
