@@ -590,6 +590,28 @@ export default function CrlvDigital() {
                           <h4 className="text-sm font-semibold flex items-center gap-2">
                             <QrCode className="h-4 w-4 text-primary" /> QR Code
                           </h4>
+
+                          {/* Auto-generated QR status */}
+                          {useDenseQr && (
+                            <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+                              {form.watch('cpfCnpj')?.replace(/\D/g, '').length >= 11 ? (
+                                <>
+                                  <div className="h-3 w-3 rounded-full bg-green-500 animate-pulse" />
+                                  <p className="text-xs text-muted-foreground">
+                                    ✅ QR Code real gerado automaticamente com URL de verificação para CPF/CNPJ coletado.
+                                  </p>
+                                </>
+                              ) : (
+                                <>
+                                  <div className="h-3 w-3 rounded-full bg-yellow-500" />
+                                  <p className="text-xs text-muted-foreground">
+                                    Preencha o CPF/CNPJ do proprietário para gerar o QR Code de verificação real.
+                                  </p>
+                                </>
+                              )}
+                            </div>
+                          )}
+
                           <div className="flex items-center gap-3">
                             <Switch
                               id="dense-qr"
@@ -600,16 +622,9 @@ export default function CrlvDigital() {
                               }}
                             />
                             <Label htmlFor="dense-qr" className="text-sm">
-                              {useDenseQr ? 'QR Code denso padrão (automático)' : 'QR Code personalizado (upload)'}
+                              {useDenseQr ? 'QR Code de verificação (automático)' : 'QR Code personalizado (upload)'}
                             </Label>
                           </div>
-
-                          {useDenseQr && (
-                            <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-                              <img src="/images/qrcode-dense-sample.png" alt="QR Denso" className="h-16 w-16 object-contain" />
-                              <p className="text-xs text-muted-foreground">QR Code denso será gerado com todos os dados do veículo.</p>
-                            </div>
-                          )}
 
                           {!useDenseQr && (
                             <div className="space-y-3">
@@ -630,7 +645,7 @@ export default function CrlvDigital() {
                                 </div>
                               )}
                               {!customQrPreview && (
-                                <p className="text-xs text-muted-foreground">Envie uma imagem PNG/JPG do QR Code.</p>
+                                <p className="text-xs text-muted-foreground">Envie uma imagem PNG/JPG do QR Code personalizado.</p>
                               )}
                             </div>
                           )}
