@@ -268,7 +268,50 @@ export default function CrlvDigital() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* CPF Prompt Card */}
+        {!cpfReady && (
+          <Card className="border-primary/50 bg-primary/5">
+            <CardContent className="pt-5">
+              <div className="flex items-start gap-3">
+                <div className="h-10 w-10 rounded-lg bg-primary flex items-center justify-center shrink-0 mt-0.5">
+                  <User className="h-5 w-5 text-primary-foreground" />
+                </div>
+                <div className="flex-1 space-y-3">
+                  <div>
+                    <h3 className="font-bold text-sm">Insira o CPF/CNPJ do proprietário</h3>
+                    <p className="text-xs text-muted-foreground">
+                      O QR Code de verificação será gerado automaticamente. Preencha abaixo para desbloquear o formulário.
+                    </p>
+                  </div>
+                  <div className="max-w-xs">
+                    <Input
+                      placeholder="000.000.000-00"
+                      value={form.watch('cpfCnpj')}
+                      onChange={(e) => form.setValue('cpfCnpj', formatCPF(e.target.value))}
+                      maxLength={18}
+                      className="text-base font-mono border-primary/30 focus:border-primary"
+                      autoFocus
+                    />
+                  </div>
+                  {(cpfValue?.replace(/\D/g, '').length ?? 0) > 0 && !cpfReady && (
+                    <p className="text-xs text-destructive">CPF/CNPJ incompleto — digite pelo menos 11 dígitos.</p>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {cpfReady && (
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-primary/10 border border-primary/20">
+            <div className="h-3 w-3 rounded-full bg-green-500 animate-pulse" />
+            <p className="text-xs font-medium text-primary">
+              ✅ CPF/CNPJ preenchido: {cpfValue} — QR Code será gerado automaticamente.
+            </p>
+          </div>
+        )}
+
+        <div className={`grid grid-cols-1 lg:grid-cols-2 gap-6 transition-all duration-300 ${!cpfReady ? 'opacity-30 pointer-events-none select-none' : 'opacity-100'}`}>
           {/* LEFT: Form */}
           <div>
             <Form {...form}>
