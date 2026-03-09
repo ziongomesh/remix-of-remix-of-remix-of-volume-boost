@@ -1204,9 +1204,9 @@ function ResellerRechargeView({ adminId, sessionToken, credits }: { adminId: num
                     <Badge className={`${pkg.badgeColor} text-white text-[10px] absolute -top-2.5 left-1/2 -translate-x-1/2`}>
                       {pkg.badge}
                     </Badge>
-                    <p className="text-lg font-bold text-primary">{pkg.credits} créditos</p>
+                    <p className="text-lg font-bold text-primary">{pkg.baseCredits + pkg.bonus} créditos</p>
                     {pkg.bonus > 0 && (
-                      <p className="text-[11px] text-muted-foreground">+{pkg.bonus} bônus</p>
+                      <p className="text-[11px] text-muted-foreground">({pkg.baseCredits} + {pkg.bonus} bônus)</p>
                     )}
                     {savingsAmount > 0 && (
                       <p className="text-xs text-green-500 font-medium">
