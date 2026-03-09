@@ -69,6 +69,7 @@ export function LoginForm() {
       if (!isValid) {
         toast.error('Verificação de segurança falhou. Tente novamente.');
         setTurnstileToken(null);
+        setTurnstileKey(k => k + 1);
         setLoading(false);
         return;
       }
