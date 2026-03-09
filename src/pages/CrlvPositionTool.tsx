@@ -348,6 +348,8 @@ export default function CrlvPositionTool() {
   const { admin } = useAuth();
   const [qrImage, setQrImage] = useState<string | null>(null);
   const [cpfConfirmed, setCpfConfirmed] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingStep, setOnboardingStep] = useState(0);
   const [fullscreen, setFullscreen] = useState(false);
   const [saving, setSaving] = useState(false);
   const previewCanvasRef = useRef<CrlvCanvasRef>(null);
