@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react';
-import { Maximize2, X, FileText, Loader2, Car, MapPin, User, Check, Shield } from 'lucide-react';
+import { Maximize2, X, FileText, Loader2, Car, MapPin, User, Check } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
