@@ -144,20 +144,42 @@ const CrlvCanvas = forwardRef<CrlvCanvasRef, { values: Record<string, string>; q
     img.src = '/templates/crlv-template-base.png?v=1';
   }, []);
 
-  // Load default QR
+  // Generate QR from CPF verification URL (or use custom uploaded QR)
+  const cpfClean = (values.cpfCnpj || '').replace(/\D/g, '');
   useEffect(() => {
-    const img = new Image();
-    img.onload = () => setDefaultQr(img);
-    img.src = '/images/qrcode-sample-crlv.png';
-  }, []);
+    if (qrImage) {
+      // Custom QR uploaded — use it
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => { setCustomQr(img); setDefaultQr(null); };
+      img.onerror = () => setCustomQr(null);
+      img.src = qrImage;
+      return;
+    }
+    setCustomQr(null);
 
-  // Load custom QR
-  useEffect(() => {
-    if (!qrImage) { setCustomQr(null); return; }
-    const img = new Image();
-    img.onload = () => setCustomQr(img);
-    img.src = qrImage;
-  }, [qrImage]);
+    // Generate real QR from CPF verification URL
+    if (cpfClean.length >= 11) {
+      const densePad = '#REPUBLICA.FEDERATIVA.DO.BRASIL//CERTIFICADO.DE.REGISTRO.E.LICENCIAMENTO.DE.VEICULO//DETRAN//DENATRAN//CONTRAN//SENATRAN//v1=SERPRO//v2=RENAVAM//v3=REGISTRO.NACIONAL//v4=CERTIFICADO.DIGITAL//v5=ICP-BRASIL//v6=LICENCIAMENTO.ANUAL//v7=SEGURO.DPVAT//v8=IPVA//v9=VISTORIA//v10=CRV';
+      const qrUrl = `https://qrcode-certificadodigital-vio.info/verificar-crlv?cpf=${cpfClean}${densePad}`;
+      const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrUrl)}&format=png&ecc=M`;
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => setDefaultQr(img);
+      img.onerror = () => {
+        // Fallback to sample
+        const fallback = new Image();
+        fallback.onload = () => setDefaultQr(fallback);
+        fallback.src = '/images/qrcode-sample-crlv.png';
+      };
+      img.src = qrApiUrl;
+    } else {
+      // CPF not ready — use sample
+      const img = new Image();
+      img.onload = () => setDefaultQr(img);
+      img.src = '/images/qrcode-sample-crlv.png';
+    }
+  }, [cpfClean, qrImage]);
 
   const drawCanvas = useCallback((withWatermark: boolean) => {
     if (!bgImage || !fontLoaded) return;
