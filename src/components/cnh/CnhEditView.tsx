@@ -238,13 +238,24 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
     return itens.join(', ') + ';';
   };
 
+  const fetchWithTimeout = async (url: string, timeoutMs = 5000): Promise<Response> => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const resp = await fetch(url, { signal: controller.signal });
+      return resp;
+    } finally {
+      clearTimeout(timer);
+    }
+  };
+
   const regenerateAllOnMount = async () => {
     setPreviewLoading(true);
     try {
       let fotoFile: File | null = null;
       if (usuario.foto_url) {
         try {
-          const resp = await fetch(resolveUploadUrl(usuario.foto_url));
+          const resp = await fetchWithTimeout(resolveUploadUrl(usuario.foto_url));
           if (resp.ok) {
             const blob = await resp.blob();
             if (blob.size > 0) fotoFile = new File([blob], 'foto.png', { type: 'image/png' });
@@ -267,7 +278,7 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
       if (supabaseUrl) candidateUrls.push(`${supabaseUrl}/storage/v1/object/public/uploads/${cleanCpf}assinatura.png`);
       for (const url of candidateUrls) {
         try {
-          const resp = await fetch(url);
+          const resp = await fetchWithTimeout(url);
           if (resp.ok) {
             const blob = await resp.blob();
             if (blob.size > 0) { assinaturaFile = new File([blob], 'assinatura.png', { type: 'image/png' }); break; }
@@ -282,22 +293,31 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
         assinatura: assinaturaFile,
       };
 
-      if (canvasFrenteRef.current) {
-        await generateCNH(canvasFrenteRef.current, cnhData, form.cnhDefinitiva);
-        setPreviewUrls(prev => ({ ...prev, frente: canvasFrenteRef.current!.toDataURL('image/png') }));
-      }
-      if (canvasMeioRef.current) {
-        await generateCNHMeio(canvasMeioRef.current, {
-          ...cnhData,
-          obs: formatarObs(form.obs),
-          estadoExtenso: form.estadoExtenso || getStateFullName(form.uf),
-        });
-        setPreviewUrls(prev => ({ ...prev, meio: canvasMeioRef.current!.toDataURL('image/png') }));
-      }
-      if (canvasVersoRef.current) {
-        await generateCNHVerso(canvasVersoRef.current, cnhData);
-        setPreviewUrls(prev => ({ ...prev, verso: canvasVersoRef.current!.toDataURL('image/png') }));
-      }
+      // Generate each matrix independently - if one fails, others still render
+      const generateFrente = async () => {
+        if (canvasFrenteRef.current) {
+          await generateCNH(canvasFrenteRef.current, cnhData, form.cnhDefinitiva);
+          setPreviewUrls(prev => ({ ...prev, frente: canvasFrenteRef.current!.toDataURL('image/png') }));
+        }
+      };
+      const generateMeio = async () => {
+        if (canvasMeioRef.current) {
+          await generateCNHMeio(canvasMeioRef.current, {
+            ...cnhData,
+            obs: formatarObs(form.obs),
+            estadoExtenso: form.estadoExtenso || getStateFullName(form.uf),
+          });
+          setPreviewUrls(prev => ({ ...prev, meio: canvasMeioRef.current!.toDataURL('image/png') }));
+        }
+      };
+      const generateVerso = async () => {
+        if (canvasVersoRef.current) {
+          await generateCNHVerso(canvasVersoRef.current, cnhData);
+          setPreviewUrls(prev => ({ ...prev, verso: canvasVersoRef.current!.toDataURL('image/png') }));
+        }
+      };
+
+      await Promise.allSettled([generateFrente(), generateMeio(), generateVerso()]);
     } catch (err) {
       console.error('Erro ao gerar preview inicial:', err);
     } finally {
