@@ -268,11 +268,9 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
   }, []);
 
   // Regenerate canvases using cached files
-  const regenerateCanvases = useCallback(async (currentForm: typeof form) => {
-    const computedDN = (() => {
-      let result = currentForm.dataNascimentoDate;
-      if (currentForm.dataNascimentoLocal) result += `, ${currentForm.dataNascimentoLocal}`;
-      return result;
+    const cnhData = {
+      ...currentForm,
+      dataNascimento: currentForm.dataNascimento,
     })();
 
     const cnhData = {
