@@ -768,6 +768,15 @@ export default function CrlvDigital() {
               <CrlvPreview form={form} customQrPreview={customQrPreview} showDenseQr={useDenseQr} />
             </div>
           </div>
+          </div>
+
+          {!cpfReady && (
+            <div className="pointer-events-none absolute inset-0 hidden lg:flex items-center justify-center">
+              <div className="rounded-xl border border-border bg-background/90 px-4 py-3 shadow-lg">
+                <p className="text-xs font-medium text-foreground">Aguardando CPF/CNPJ para liberar edição</p>
+              </div>
+            </div>
+          )}
         </div>
 
       </div>
