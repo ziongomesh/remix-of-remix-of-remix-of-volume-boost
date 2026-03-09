@@ -352,6 +352,7 @@ export default function CrlvPositionTool() {
   
   const [fullscreen, setFullscreen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [confirmGenerate, setConfirmGenerate] = useState(false);
   const previewCanvasRef = useRef<CrlvCanvasRef>(null);
   const [successModal, setSuccessModal] = useState<{
     isOpen: boolean;
