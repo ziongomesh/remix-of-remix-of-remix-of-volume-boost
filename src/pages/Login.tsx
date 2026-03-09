@@ -25,12 +25,9 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex bg-[hsl(220,20%,5%)] relative overflow-hidden">
-      {/* ASCII animated background */}
+      {/* Background image */}
       <div className="absolute inset-0">
         <img src={loginBgClouds} alt="" className="w-full h-full object-cover opacity-40" />
-        <div className="absolute inset-0">
-          <AsciiBackground />
-        </div>
       </div>
 
       {/* Edge fade - left panel blend */}
