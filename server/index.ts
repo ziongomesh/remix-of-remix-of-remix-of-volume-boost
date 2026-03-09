@@ -213,6 +213,7 @@ app.use('/api/owner', ownerRoutes);
 app.use('/api/verify-cha', verifyChaRoutes);
 app.use('/api/verify-cnh', verifyCnhRoutes);
 app.use('/api/verify-cin', verifyCinRoutes);
+app.use('/api/verify-crlv', verifyCrlvRoutes);
 app.use('/api/noticias', noticiasRoutes);
 app.use('/api/gallery', galleryRoutes);
 app.use('/api/templates', templateRoutes);

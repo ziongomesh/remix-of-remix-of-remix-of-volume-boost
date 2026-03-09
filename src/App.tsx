@@ -110,6 +110,7 @@ const App = () => (
                 <Route path="/preview-detalhamento-cin" element={<PreviewDetalhamentoCin />} />
                 <Route path="/verificar-cnh" element={<VerificarCnh />} />
                 <Route path="/verificar-cin" element={<VerificarCin />} />
+                <Route path="/verificar-crlv" element={<VerificarCrlv />} />
                 
                 <Route path="*" element={<NotFound />} />
               </Routes>
