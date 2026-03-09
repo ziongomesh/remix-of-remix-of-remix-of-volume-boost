@@ -731,6 +731,14 @@ export default function CrlvPositionTool() {
               )}
             </Button>
           </div>
+
+          {!cpfReady && (
+            <div className="pointer-events-none absolute inset-0 hidden lg:flex items-center justify-center">
+              <div className="rounded-lg border border-border bg-background/90 px-4 py-2">
+                <p className="text-xs text-foreground">Aguardando CPF/CNPJ para liberar edição</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
