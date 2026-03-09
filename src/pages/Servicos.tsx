@@ -417,7 +417,7 @@ export default function Servicos() {
 
           <TabsContent value="nacional" className="space-y-3 mt-0">
             {categories.map((cat) => (
-              <CategoryAccordion key={cat.title} cat={cat} hasCredits={hasCredits} />
+              <CategoryAccordion key={cat.title} cat={cat} hasCredits={hasCredits} maintenanceMap={maintenanceMap} />
             ))}
           </TabsContent>
 
