@@ -84,6 +84,9 @@ export default function RgEditView({ registro, onClose, onSaved }: RgEditViewPro
   });
 
   const [changedMatrices, setChangedMatrices] = useState<Set<'frente' | 'verso'>>(new Set());
+  const cachedFotoRef = useRef<File | string | undefined>(undefined);
+  const cachedAssinaturaRef = useRef<File | string | undefined>(undefined);
+  const filesLoadedRef = useRef(false);
 
   const nome = registro.nome_completo || registro.nome || '';
 
