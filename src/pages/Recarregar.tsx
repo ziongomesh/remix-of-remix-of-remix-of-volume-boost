@@ -648,16 +648,6 @@ export default function Recarregar() {
                   {isProcessing ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <QrCode className="mr-2 h-5 w-5" />}
                   {isProcessing ? 'Gerando PIX...' : 'Pagar com PIX'}
                 </Button>
-                <Button 
-                  className="flex-1 h-12 text-lg bg-white/10 text-white/60 cursor-not-allowed relative overflow-hidden" 
-                  disabled
-                >
-                  <Bitcoin className="mr-2 h-5 w-5" />
-                  Pagar com Cripto
-                  <span className="absolute top-1 right-1 text-[10px] bg-white/20 px-1.5 py-0.5 rounded-full">
-                    Em breve
-                  </span>
-                </Button>
               </div>
             </div>
           </CardContent>
