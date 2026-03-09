@@ -100,9 +100,6 @@ export default function CrlvDigital() {
     { label: 'Obs & QR', icon: QrCode },
   ];
 
-  const cpfValue = form.watch('cpfCnpj');
-  const cpfReady = (cpfValue?.replace(/\D/g, '').length ?? 0) >= 11;
-
   const handleQrUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
