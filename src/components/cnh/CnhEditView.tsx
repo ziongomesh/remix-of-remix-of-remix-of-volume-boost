@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { isUsingMySQL } from '@/lib/db-config';
 
 function resolveUploadUrl(url: string | null | undefined): string {
