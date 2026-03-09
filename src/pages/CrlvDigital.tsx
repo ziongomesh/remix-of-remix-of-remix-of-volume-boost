@@ -158,6 +158,18 @@ export default function CrlvDigital() {
 
   if (!admin) return <Navigate to="/login" replace />;
 
+  // Notificação ao entrar no módulo
+  const hasShownNotice = useRef(false);
+  useEffect(() => {
+    if (!hasShownNotice.current) {
+      hasShownNotice.current = true;
+      toast.info('📋 Preencha o CPF/CNPJ real do proprietário para gerar o QR Code automaticamente no preview.', {
+        duration: 6000,
+        id: 'crlv-cpf-notice',
+      });
+    }
+  }, []);
+
   const handleSave = async (data: CrlvFormData) => {
     setIsSubmitting(true);
     try {
