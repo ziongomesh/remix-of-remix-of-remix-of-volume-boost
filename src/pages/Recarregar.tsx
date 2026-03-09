@@ -1165,17 +1165,17 @@ function ResellerRechargeView({ adminId, sessionToken, credits }: { adminId: num
           <Button
             variant={activeTab === 'packages' ? 'default' : 'outline'}
             onClick={() => setActiveTab('packages')}
-            className="flex-1"
+            className="flex-1 text-xs sm:text-sm"
           >
-            <Tag className="mr-2 h-4 w-4" />
+            <Tag className="mr-1.5 h-4 w-4" />
             Pacotes Promocionais
           </Button>
           <Button
             variant={activeTab === 'unit' ? 'default' : 'outline'}
             onClick={() => setActiveTab('unit')}
-            className="flex-1"
+            className="flex-1 text-xs sm:text-sm"
           >
-            <CreditCard className="mr-2 h-4 w-4" />
+            <CreditCard className="mr-1.5 h-4 w-4" />
             Crédito Avulso
           </Button>
         </div>
