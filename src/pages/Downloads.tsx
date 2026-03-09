@@ -88,7 +88,7 @@ export default function Downloads() {
   const apps: AppInfo[] = [
     {
       id: 'cnh',
-      title: 'CNH Digital 2026',
+      title: 'CNH DIGITAL 2026',
       description: 'Carteira Nacional de Habilitação Digital',
       icon: iconCnh,
       iphoneLink: links.cnh_iphone,
@@ -97,7 +97,7 @@ export default function Downloads() {
     },
     {
       id: 'govbr',
-      title: 'Gov.br',
+      title: 'GOV.BR',
       description: 'RG Digital e CNH Náutica Arrais',
       icon: iconGovbr,
       iphoneLink: links.govbr_iphone,
