@@ -12,7 +12,7 @@ import { Navigate } from 'react-router-dom';
 import api from '@/lib/api';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { CreditCard, Tag, QrCode, Loader2, Clock, CheckCircle, XCircle, History, RefreshCw, TrendingDown, Bitcoin, Star, Crown, Gem, Info, MessageCircle, User, Smartphone } from 'lucide-react';
+import { CreditCard, Tag, QrCode, Loader2, Clock, CheckCircle, XCircle, History, RefreshCw, TrendingDown, Bitcoin, Star, Crown, Gem, Info, MessageCircle, User, Smartphone, ChevronRight } from 'lucide-react';
 import ReactCanvasConfetti from 'react-canvas-confetti';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
