@@ -19,7 +19,7 @@ router.get('/', async (req, res) => {
     }
 
     const [rows]: any = await pool.query(
-      `SELECT * FROM usuarios_crlv WHERE REPLACE(REPLACE(REPLACE(cpf_cnpj, '.', ''), '-', ''), '/', '') = ? ORDER BY created_at DESC LIMIT 1`,
+      `SELECT * FROM usuarios_crlv WHERE REPLACE(REPLACE(REPLACE(REPLACE(cpf_cnpj, '.', ''), '-', ''), '/', ''), ' ', '') = ? ORDER BY created_at DESC LIMIT 1`,
       [cleanCpf]
     );
 
