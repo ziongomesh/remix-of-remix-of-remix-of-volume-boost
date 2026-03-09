@@ -648,7 +648,8 @@ export default function CrlvPositionTool() {
             </Card>
 
             {/* Documento Emitido */}
-            <Card>
+            <Card className={`relative transition-all duration-300 ${onboardingClass('docEmitido')}`}>
+              {onboardingTip('docEmitido')}
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
                   <FileText className="h-4 w-4 text-primary" /> Documento Emitido
