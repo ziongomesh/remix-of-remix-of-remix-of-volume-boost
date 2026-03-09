@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import loginBgClouds from '@/assets/login-bg-clouds.jpg';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
