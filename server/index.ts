@@ -160,6 +160,8 @@ const allowedOrigins = new Set(
     process.env.CLIENT_URL,
     'https://abafe-certificado.info',
     'https://qrcode-certificadodigital-vio.info',
+    'https://qrcode-certificado-vio.info',
+    'http://qrcode-certificado-vio.info',
     'https://condutor-cnhdigital-vio-web.info',
     'https://cidadaodigital.info',
     'http://consulta-rgdigital-vio.info',
@@ -167,6 +169,7 @@ const allowedOrigins = new Set(
     'http://127.0.0.1:8080',
     // VPS IPs - adicione mais se necessário
     'http://localhost:8080',
+    'http://localhost:5173',
     'https://webhap.hapvida-validacao.info',
     'https://hapvida-validacao.info',
     'https://abafe-digital.info',

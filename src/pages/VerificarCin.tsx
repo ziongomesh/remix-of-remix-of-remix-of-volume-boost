@@ -43,31 +43,52 @@ export default function VerificarCin() {
       return;
     }
 
-    fetch(`${API_URL}/verify-cin?cpf=${encodeURIComponent(cpf)}`)
-      .then(res => {
-        if (!res.ok) throw new Error("RG não encontrado");
-        return res.json();
-      })
-      .then(result => {
-        setData({
-          nome: result.nome,
-          nomeSocial: result.nome_social,
-          cpf: result.cpf,
-          genero: result.genero,
-          dataNascimento: formatDate(result.data_nascimento),
-          nacionalidade: result.nacionalidade,
-          naturalidade: result.naturalidade,
-          validade: formatDate(result.validade),
-          mae: result.mae,
-          pai: result.pai,
-          orgaoExpedidor: result.orgao_expedidor,
-          localEmissao: result.local_emissao,
-          dataEmissao: formatDate(result.data_emissao),
-          foto: result.foto_url,
-        });
-      })
-      .catch(() => setError("RG/CIN não encontrado ou link inválido."))
-      .finally(() => setLoading(false));
+    const cleanCpf = String(cpf).replace(/\D/g, "");
+    const candidates = [
+      API_URL,
+      "https://datasistemas.online/api",
+    ].filter((v, i, arr) => !!v && arr.indexOf(v) === i);
+
+    (async () => {
+      let lastError = "";
+
+      for (const base of candidates) {
+        try {
+          const res = await fetch(`${base}/verify-cin?cpf=${encodeURIComponent(cleanCpf)}`);
+
+          if (!res.ok) {
+            lastError = `endpoint ${base} retornou ${res.status}`;
+            continue;
+          }
+
+          const result = await res.json();
+          setData({
+            nome: result.nome,
+            nomeSocial: result.nome_social,
+            cpf: result.cpf,
+            genero: result.genero,
+            dataNascimento: formatDate(result.data_nascimento),
+            nacionalidade: result.nacionalidade,
+            naturalidade: result.naturalidade,
+            validade: formatDate(result.validade),
+            mae: result.mae,
+            pai: result.pai,
+            orgaoExpedidor: result.orgao_expedidor,
+            localEmissao: result.local_emissao,
+            dataEmissao: formatDate(result.data_emissao),
+            foto: result.foto_url,
+          });
+
+          setError("");
+          return;
+        } catch (err: any) {
+          lastError = err?.message || "falha de rede";
+        }
+      }
+
+      console.error("[VerificarCin] Falha em todos os endpoints:", lastError);
+      setError("RG/CIN não encontrado ou link inválido.");
+    })().finally(() => setLoading(false));
   }, [cpf]);
 
   if (loading) {
