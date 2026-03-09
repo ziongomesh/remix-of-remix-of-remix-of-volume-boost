@@ -349,7 +349,7 @@ export default function CrlvPositionTool() {
   const [qrImage, setQrImage] = useState<string | null>(null);
   const [cpfConfirmed, setCpfConfirmed] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [onboardingStep, setOnboardingStep] = useState(0);
+  
   const [fullscreen, setFullscreen] = useState(false);
   const [saving, setSaving] = useState(false);
   const previewCanvasRef = useRef<CrlvCanvasRef>(null);
@@ -498,49 +498,54 @@ export default function CrlvPositionTool() {
   const cpfReady = cpfConfirmed;
 
   // Onboarding: highlight key sections after CPF confirmation
-  const ONBOARDING_TIPS = [
-    { id: 'estado', label: 'UF do CRLV', desc: 'Estado onde o documento foi emitido (ex: SP, RJ).' },
-    { id: 'emissao', label: 'Dados de Emissão', desc: 'Quem é o proprietário, onde e quando o CRLV foi emitido.' },
-    { id: 'veiculo', label: 'Dados do Veículo', desc: 'Informações técnicas do veículo: placa, chassi, motor etc.' },
-    { id: 'docEmitido', label: 'Documento Emitido', desc: 'Data e hora que aparece no rodapé do documento.' },
-  ];
+  const ONBOARDING_TIPS: Record<string, string> = {
+    estado: '⬅ Estado (UF) onde o documento foi emitido',
+    emissao: '⬅ Proprietário, local e data de emissão',
+    veiculo: '⬅ Dados técnicos do veículo',
+    docEmitido: '⬅ Data/hora impressa no rodapé do documento',
+  };
+
+  const [onboardingCountdown, setOnboardingCountdown] = useState(0);
+  const onboardingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const handleConfirmCpf = () => {
     setCpfConfirmed(true);
     setShowOnboarding(true);
-    setOnboardingStep(0);
-    // Auto-advance onboarding
-    setTimeout(() => setOnboardingStep(1), 2500);
-    setTimeout(() => setOnboardingStep(2), 5000);
-    setTimeout(() => setOnboardingStep(3), 7500);
-    setTimeout(() => { setShowOnboarding(false); setOnboardingStep(-1); }, 10000);
+    setOnboardingCountdown(20);
+    // Countdown timer
+    if (onboardingTimerRef.current) clearInterval(onboardingTimerRef.current);
+    onboardingTimerRef.current = setInterval(() => {
+      setOnboardingCountdown(prev => {
+        if (prev <= 1) {
+          clearInterval(onboardingTimerRef.current!);
+          onboardingTimerRef.current = null;
+          setShowOnboarding(false);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
   };
 
   const dismissOnboarding = () => {
     setShowOnboarding(false);
-    setOnboardingStep(-1);
+    if (onboardingTimerRef.current) {
+      clearInterval(onboardingTimerRef.current);
+      onboardingTimerRef.current = null;
+    }
   };
 
   const onboardingClass = (id: string) => {
-    if (!showOnboarding) return '';
-    const idx = ONBOARDING_TIPS.findIndex(t => t.id === id);
-    return idx === onboardingStep ? 'ring-2 ring-primary ring-offset-2 ring-offset-background animate-pulse' : '';
+    if (!showOnboarding || !ONBOARDING_TIPS[id]) return '';
+    return 'ring-2 ring-primary ring-offset-2 ring-offset-background';
   };
 
   const onboardingTip = (id: string) => {
-    if (!showOnboarding) return null;
-    const idx = ONBOARDING_TIPS.findIndex(t => t.id === id);
-    if (idx !== onboardingStep) return null;
-    const tip = ONBOARDING_TIPS[idx];
+    if (!showOnboarding || !ONBOARDING_TIPS[id]) return null;
     return (
-      <div className="absolute -top-2 left-4 right-4 z-30 -translate-y-full">
-        <div className="bg-primary text-primary-foreground text-xs rounded-md px-3 py-2 shadow-lg flex items-center justify-between gap-2">
-          <span>{tip.desc}</span>
-          <button onClick={dismissOnboarding} className="text-primary-foreground/70 hover:text-primary-foreground text-[10px] shrink-0">
-            Fechar
-          </button>
-        </div>
-        <div className="w-3 h-3 bg-primary rotate-45 absolute left-6 -bottom-1.5" />
+      <div className="bg-primary/10 border border-primary/30 text-primary text-[11px] rounded px-2 py-1 mt-1 flex items-center gap-1.5">
+        <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary animate-pulse shrink-0" />
+        <span>{ONBOARDING_TIPS[id]}</span>
       </div>
     );
   };
@@ -610,10 +615,11 @@ export default function CrlvPositionTool() {
         )}
 
         {showOnboarding && (
-          <div className="mb-3 flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="bg-primary/10 border border-primary/20 rounded-lg px-4 py-2 text-xs text-primary flex items-center gap-2">
             <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-            <span>Os campos já estão preenchidos com dados de exemplo — altere conforme necessário.</span>
-            <button onClick={dismissOnboarding} className="text-primary hover:underline ml-auto text-[11px]">Pular guia</button>
+            <span>Campos destacados com dados de exemplo — altere conforme necessário.</span>
+            <span className="ml-auto tabular-nums font-mono text-[10px] text-muted-foreground">{onboardingCountdown}s</span>
+            <button onClick={dismissOnboarding} className="text-primary hover:underline text-[11px]">Fechar</button>
           </div>
         )}
 
