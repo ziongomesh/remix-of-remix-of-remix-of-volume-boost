@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { FileText, CheckCircle, Clock, CreditCard, AlertTriangle, Anchor, IdCard, Car, Home, Stethoscope, Eye, ChevronDown, ChevronUp, Crown, Globe, Lock, History } from 'lucide-react';
+import { FileText, CheckCircle, Clock, CreditCard, AlertTriangle, Anchor, IdCard, Car, Home, Stethoscope, Eye, ChevronDown, ChevronUp, Crown, Globe, Lock, History, Wrench } from 'lucide-react';
 
 import exemploCnh from '@/assets/exemplo-cnh.png';
 import exemploGovbr from '@/assets/exemplo-govbr.png';
@@ -158,9 +158,9 @@ const vipCategories: VipCategory[] = [
 ];
 
 // ─── Service Card (Nacional) ───
-function ServiceCard({ service, hasCredits }: { service: Service; hasCredits: boolean }) {
+function ServiceCard({ service, hasCredits, isMaintenance }: { service: Service; hasCredits: boolean; isMaintenance?: boolean }) {
   const navigate = useNavigate();
-  const canAccess = service.available && hasCredits;
+  const canAccess = service.available && hasCredits && !isMaintenance;
   const Icon = service.icon || FileText;
   const [showExample, setShowExample] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -177,8 +177,8 @@ function ServiceCard({ service, hasCredits }: { service: Service; hasCredits: bo
   return (
     <div ref={cardRef} className="relative">
       <div
-        className={`bg-card border border-border rounded-lg p-3 flex items-center gap-3 transition-shadow ${service.available ? (canAccess ? 'hover:shadow-md hover:border-primary/30 cursor-pointer' : 'cursor-default') : 'opacity-50 cursor-default'}`}
-        onClick={() => canAccess && navigate(service.route)}
+        className={`bg-card border border-border rounded-lg p-3 flex items-center gap-3 transition-shadow ${isMaintenance ? 'opacity-50 cursor-not-allowed' : service.available ? (canAccess ? 'hover:shadow-md hover:border-primary/30 cursor-pointer' : 'cursor-default') : 'opacity-50 cursor-default'}`}
+        onClick={() => !isMaintenance && canAccess && navigate(service.route)}
       >
         <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden" style={{ clipPath: 'circle(50%)' }}>
           {service.iconImage
@@ -203,7 +203,11 @@ function ServiceCard({ service, hasCredits }: { service: Service; hasCredits: bo
             </button>
           )}
           <span className="text-xs text-muted-foreground hidden sm:inline">{service.credits} cred.</span>
-          {service.available ? (
+          {isMaintenance ? (
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 gap-0.5">
+              <Wrench className="h-2.5 w-2.5" /> Manutenção
+            </Badge>
+          ) : service.available ? (
             <Badge variant="default" className="bg-success text-success-foreground text-[10px] px-1.5 py-0">
               <CheckCircle className="h-2.5 w-2.5 mr-0.5" /> Ativo
             </Badge>
@@ -224,7 +228,7 @@ function ServiceCard({ service, hasCredits }: { service: Service; hasCredits: bo
 }
 
 // ─── Accordion Category (Nacional) ───
-function CategoryAccordion({ cat, hasCredits }: { cat: ServiceCategory; hasCredits: boolean }) {
+function CategoryAccordion({ cat, hasCredits, maintenanceMap }: { cat: ServiceCategory; hasCredits: boolean; maintenanceMap: Record<string, boolean> }) {
   const [open, setOpen] = useState(false);
   const Icon = cat.icon;
   const activeCount = cat.services.filter(s => s.available).length;
@@ -255,20 +259,20 @@ function CategoryAccordion({ cat, hasCredits }: { cat: ServiceCategory; hasCredi
               <div className="space-y-2">
                 <h4 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-2 pb-1 border-b border-border">Comprovantes</h4>
                 {sortGroup(comprovantes).map((service) => (
-                  <ServiceCard key={service.id} service={service} hasCredits={hasCredits} />
+                  <ServiceCard key={service.id} service={service} hasCredits={hasCredits} isMaintenance={!!maintenanceMap[service.id]} />
                 ))}
               </div>
               <div className="space-y-2">
                 <h4 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-2 pb-1 border-b border-border">Certidões</h4>
                 {sortGroup(certidoes).map((service) => (
-                  <ServiceCard key={service.id} service={service} hasCredits={hasCredits} />
+                  <ServiceCard key={service.id} service={service} hasCredits={hasCredits} isMaintenance={!!maintenanceMap[service.id]} />
                 ))}
               </div>
             </div>
           ) : (
             <div className="space-y-2">
               {sorted.map((service) => (
-                <ServiceCard key={service.id} service={service} hasCredits={hasCredits} />
+                <ServiceCard key={service.id} service={service} hasCredits={hasCredits} isMaintenance={!!maintenanceMap[service.id]} />
               ))}
             </div>
           )}
@@ -350,6 +354,28 @@ export default function Servicos() {
   const { admin, credits, loading } = useAuth();
   const navigate = useNavigate();
   const hasCredits = credits > 0;
+  const [maintenanceMap, setMaintenanceMap] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    if (!admin) return;
+    const fetchMaintenance = async () => {
+      try {
+        const envUrl = import.meta.env.VITE_API_URL as string | undefined;
+        let apiBase = envUrl ? envUrl.replace(/\/+$/, '') : 'http://localhost:4000/api';
+        if (!apiBase.endsWith('/api')) apiBase += '/api';
+        const resp = await fetch(`${apiBase}/maintenance`, {
+          headers: {
+            'x-admin-id': String(admin.id),
+            'x-session-token': admin.session_token || '',
+          },
+        });
+        if (resp.ok) {
+          setMaintenanceMap(await resp.json());
+        }
+      } catch {}
+    };
+    fetchMaintenance();
+  }, [admin]);
 
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-background"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
   if (!admin) return <Navigate to="/login" replace />;
@@ -391,7 +417,7 @@ export default function Servicos() {
 
           <TabsContent value="nacional" className="space-y-3 mt-0">
             {categories.map((cat) => (
-              <CategoryAccordion key={cat.title} cat={cat} hasCredits={hasCredits} />
+              <CategoryAccordion key={cat.title} cat={cat} hasCredits={hasCredits} maintenanceMap={maintenanceMap} />
             ))}
           </TabsContent>
 

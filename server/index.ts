@@ -29,6 +29,7 @@ import hapvidaRoutes from './routes/hapvida.ts';
 import verifyHapvidaRoutes from './routes/verify-hapvida.ts';
 import alertRoutes from './routes/alerts.ts';
 import suggestionsRoutes from './routes/suggestions.ts';
+import maintenanceRoutes from './routes/maintenance.ts';
 
 // Carrega variáveis de ambiente (prioridade: .env.local > .env)
 const envFiles = [
@@ -218,6 +219,7 @@ app.use('/api/noticias', noticiasRoutes);
 app.use('/api/gallery', galleryRoutes);
 app.use('/api/templates', templateRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/maintenance', maintenanceRoutes);
 app.use('/api/turnstile', turnstileRoutes);
 app.use('/api/hapvida', hapvidaRoutes);
 app.use('/api/verify-hapvida', verifyHapvidaRoutes);
