@@ -497,7 +497,26 @@ export default function CrlvPositionTool() {
           <p className="text-muted-foreground text-sm mt-1">Preencha os dados do veículo — o preview é atualizado em tempo real.</p>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-6">
+        {!cpfReady && (
+          <Card className="mb-4 border-primary/40 bg-primary/5">
+            <CardContent className="pt-4">
+              <div className="space-y-2 max-w-sm">
+                <Label className="text-xs text-muted-foreground">CPF / CNPJ do proprietário</Label>
+                <Input
+                  value={values.cpfCnpj || ''}
+                  onChange={(e) => setValue('cpfCnpj', formatCpfCnpj(e.target.value))}
+                  className="h-9 text-sm uppercase"
+                  placeholder="000.000.000-00"
+                  maxLength={18}
+                />
+                <p className="text-xs text-muted-foreground">Preencha para liberar edição completa.</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        <div className="relative">
+          <div className={`flex flex-col lg:flex-row gap-6 transition-all duration-200 ${!cpfReady ? 'opacity-40 saturate-50 pointer-events-none select-none' : 'opacity-100'}`}>
           {/* ── FORMULÁRIO ── */}
           <div className="w-full lg:w-1/2 space-y-4">
 
