@@ -44,7 +44,11 @@ export default function VerificarCin() {
     }
 
     const cleanCpf = String(cpf).replace(/\D/g, "");
+    const runtimeOriginApi = typeof window !== 'undefined'
+      ? `${window.location.origin.replace(/\/$/, '')}/api`
+      : '';
     const candidates = [
+      runtimeOriginApi,
       API_URL,
       "https://datasistemas.online/api",
     ].filter((v, i, arr) => !!v && arr.indexOf(v) === i);
