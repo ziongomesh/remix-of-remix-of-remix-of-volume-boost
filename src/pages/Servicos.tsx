@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { FileText, CheckCircle, Clock, CreditCard, AlertTriangle, Anchor, IdCard, Car, Home, Stethoscope, Eye, ChevronDown, ChevronUp, Crown, Globe, Lock } from 'lucide-react';
+import { FileText, CheckCircle, Clock, CreditCard, AlertTriangle, Anchor, IdCard, Car, Home, Stethoscope, Eye, ChevronDown, ChevronUp, Crown, Globe, Lock, History } from 'lucide-react';
+
 import exemploCnh from '@/assets/exemplo-cnh.png';
 import exemploGovbr from '@/assets/exemplo-govbr.png';
 import exemploAbafe from '@/assets/exemplo-abafe.png';
@@ -347,6 +348,7 @@ function VipCategoryAccordion({ cat }: { cat: VipCategory }) {
 // ─── Page ───
 export default function Servicos() {
   const { admin, credits, loading } = useAuth();
+  const navigate = useNavigate();
   const hasCredits = credits > 0;
 
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-background"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
@@ -358,6 +360,13 @@ export default function Servicos() {
         <div>
           <h1 className="text-2xl font-bold text-foreground">Serviços</h1>
           <p className="text-muted-foreground mt-1">Escolha um serviço para começar</p>
+          <button
+            onClick={() => navigate('/historico-servicos')}
+            className="mt-2 flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-colors"
+          >
+            <History className="h-3.5 w-3.5" />
+            <span>Histórico de Serviços</span>
+          </button>
         </div>
 
         {!hasCredits && (
