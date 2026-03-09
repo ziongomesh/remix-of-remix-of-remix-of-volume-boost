@@ -1286,50 +1286,55 @@ function ResellerRechargeView({ adminId, sessionToken, credits }: { adminId: num
 
         {/* Payment History */}
         <Card>
-          <CardHeader>
+          <CardHeader className="cursor-pointer" onClick={() => setShowHistory(!showHistory)}>
             <CardTitle className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <History className="h-5 w-5 text-primary" />
                 Histórico de Recargas
               </div>
-              <Button variant="ghost" size="sm" onClick={fetchPaymentHistory}>
-                <RefreshCw className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-1">
+                <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); fetchPaymentHistory(); }}>
+                  <RefreshCw className="h-4 w-4" />
+                </Button>
+                <ChevronRight className={`h-4 w-4 text-muted-foreground transition-transform ${showHistory ? 'rotate-90' : ''}`} />
+              </div>
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            {loadingHistory ? (
-              <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin" /></div>
-            ) : paymentHistory.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <CreditCard className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Nenhuma recarga encontrada</p>
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Data</TableHead>
-                    <TableHead>Valor</TableHead>
-                    <TableHead>Créditos</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paymentHistory.map((payment) => (
-                    <TableRow key={payment.id}>
-                      <TableCell className="text-muted-foreground">
-                        {new Date(payment.created_at).toLocaleString('pt-BR')}
-                      </TableCell>
-                      <TableCell>R$ {Number(payment.amount).toFixed(2)}</TableCell>
-                      <TableCell className="font-medium">{payment.credits}</TableCell>
-                      <TableCell>{getStatusBadge(payment.status)}</TableCell>
+          {showHistory && (
+            <CardContent>
+              {loadingHistory ? (
+                <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin" /></div>
+              ) : paymentHistory.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <CreditCard className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>Nenhuma recarga encontrada</p>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Data</TableHead>
+                      <TableHead>Valor</TableHead>
+                      <TableHead>Créditos</TableHead>
+                      <TableHead>Status</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
+                  </TableHeader>
+                  <TableBody>
+                    {paymentHistory.map((payment) => (
+                      <TableRow key={payment.id}>
+                        <TableCell className="text-muted-foreground">
+                          {new Date(payment.created_at).toLocaleString('pt-BR')}
+                        </TableCell>
+                        <TableCell>R$ {Number(payment.amount).toFixed(2)}</TableCell>
+                        <TableCell className="font-medium">{payment.credits}</TableCell>
+                        <TableCell>{getStatusBadge(payment.status)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          )}
         </Card>
       </div>
 
