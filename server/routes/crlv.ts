@@ -28,7 +28,6 @@ router.post('/save', async (req, res) => {
       observacoes, uf,
       qrcode_base64,
       preview_image_base64,
-      // Insurance/DPVAT fields
       data_quitacao, cat_tarif, repasse_fns, repasse_denatran,
       custo_bilhete, custo_efetivo, valor_iof, valor_total,
     } = req.body;
@@ -97,10 +96,10 @@ router.post('/save', async (req, res) => {
         height: pageHeight,
       });
 
-      logger.action('CRLV', `PDF gerado do snapshot do preview (${imageType})`);
+      logger.action('CRLV', 'PDF gerado do snapshot do preview (' + imageType + ')');
     } catch (previewErr: any) {
       logger.error('[CRLV] Erro ao usar snapshot do preview:', previewErr);
-      return res.status(400).json({ error: `Falha ao capturar preview: ${previewErr?.message || 'dados inválidos'}` });
+      return res.status(400).json({ error: 'Falha ao capturar preview: ' + (previewErr?.message || 'dados inválidos') });
     }
 
     // Save QR code file separately for DB reference
@@ -109,10 +108,10 @@ router.post('/save', async (req, res) => {
       try {
         const clean = qrcode_base64.replace(/^data:image\/\w+;base64,/, '');
         const qrBytes = Buffer.from(clean, 'base64');
-        const qrFilename = `crlv_${cleanCpf}_qr.png`;
+        const qrFilename = 'crlv_' + cleanCpf + '_qr.png';
         const qrFullPath = path.join(uploadsDir, qrFilename);
         fs.writeFileSync(qrFullPath, qrBytes);
-        qrcodePath = `/uploads/${qrFilename}`;
+        qrcodePath = '/uploads/' + qrFilename;
       } catch (qrErr) {
         logger.error('[CRLV] QR code save error:', qrErr);
       }
@@ -120,25 +119,17 @@ router.post('/save', async (req, res) => {
 
     const pdfBytes = await pdfDoc.save();
     const cleanPlaca = (placa || '').replace(/[^A-Za-z0-9]/g, '');
-    const pdfFilename = `CRLV_${cleanPlaca}.pdf`;
+    const pdfFilename = 'CRLV_' + cleanPlaca + '.pdf';
     const pdfFullPath = path.join(uploadsDir, pdfFilename);
     fs.writeFileSync(pdfFullPath, Buffer.from(pdfBytes));
-    const pdfUrl = `/uploads/${pdfFilename}`;
+    const pdfUrl = '/uploads/' + pdfFilename;
 
     // CRLV expires in 45 days
     const expiresAt = new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
 
     // Insert record in MySQL
     const insertResult = await query<any>(
-      `INSERT INTO usuarios_crlv (
-        admin_id, renavam, placa, exercicio, numero_crv, seguranca_crv, cod_seg_cla,
-        marca_modelo, ano_fab, ano_mod, cor, combustivel, especie_tipo,
-        categoria, cat_obs, carroceria,
-        chassi, placa_ant, potencia_cil, capacidade, lotacao, peso_bruto,
-        motor, cmt, eixos,
-        nome_proprietario, cpf_cnpj, local_emissao, data_emissao,
-        observacoes, qrcode_url, pdf_url, senha, data_expiracao
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      'INSERT INTO usuarios_crlv (admin_id, renavam, placa, exercicio, numero_crv, seguranca_crv, cod_seg_cla, marca_modelo, ano_fab, ano_mod, cor, combustivel, especie_tipo, categoria, cat_obs, carroceria, chassi, placa_ant, potencia_cil, capacidade, lotacao, peso_bruto, motor, cmt, eixos, nome_proprietario, cpf_cnpj, local_emissao, data_emissao, observacoes, qrcode_url, pdf_url, senha, data_expiracao) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [
         admin_id, renavam, placa, exercicio, numero_crv, seguranca_crv, cod_seg_cla,
         marca_modelo, ano_fab, ano_mod, cor, combustivel, especie_tipo,
@@ -165,7 +156,7 @@ router.post('/save', async (req, res) => {
       [admin_id, admin_id, 'crlv_creation']
     );
 
-    logger.action('CRLV', `Gerado com sucesso para CPF/CNPJ ${cleanCpf} por admin ${admin_id}`);
+    logger.action('CRLV', 'Gerado com sucesso para CPF/CNPJ ' + cleanCpf + ' por admin ' + admin_id);
 
     res.json({
       success: true,
@@ -181,7 +172,7 @@ router.post('/save', async (req, res) => {
   }
 });
 
-// Fallback: coordinate-based PDF generation (used when no preview snapshot is available)
+// Fallback: coordinate-based PDF generation
 async function generateCrlvViaCoordinates(
   pdfDoc: PDFDocument,
   page: any,
@@ -213,16 +204,16 @@ async function generateCrlvViaCoordinates(
   // Embed fonts
   const freeMonoPath = path.resolve(process.cwd(), '..', 'src', 'assets', 'FreeMonoBold.otf');
   const openSansPath = path.resolve(process.cwd(), '..', 'src', 'assets', 'OpenSans-VariableFont_wdth_wght.ttf');
-  
+
   let dataFont: any;
   let labelFont: any;
-  
+
   if (fs.existsSync(freeMonoPath)) {
     dataFont = await pdfDoc.embedFont(fs.readFileSync(freeMonoPath));
   } else {
     dataFont = await pdfDoc.embedFont(StandardFonts.CourierBold);
   }
-  
+
   if (fs.existsSync(openSansPath)) {
     labelFont = await pdfDoc.embedFont(fs.readFileSync(openSansPath));
   } else {
@@ -240,7 +231,7 @@ async function generateCrlvViaCoordinates(
   };
 
   // UF
-  if (uf) drawField(`DETRAN-   ${uf}`, 31.20, 54.22, 4.42, helvetica);
+  if (uf) drawField('DETRAN-   ' + uf, 31.20, 54.22, 4.42, helvetica);
 
   // Left column
   drawField(renavam, 31.20, 102.21, 10, courierBold);
@@ -286,8 +277,8 @@ async function generateCrlvViaCoordinates(
   // Footer
   const cleanCpf = (cpf_cnpj || '').replace(/\D/g, '');
   const cpfHash = cleanCpf.slice(0, 9) || '000000000';
-  const hashCode = `${cpfHash.slice(0,3)}${cpfHash.slice(3,5)}f${cpfHash.slice(5,8)}`;
-  const docEmitidoText = `Documento emitido por DETRAN ${uf || 'SP'} (${hashCode}) em ${dataEmissao || new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}.`;
+  const hashCode = cpfHash.slice(0, 3) + cpfHash.slice(3, 5) + 'f' + cpfHash.slice(5, 8);
+  const docEmitidoText = 'Documento emitido por DETRAN ' + (uf || 'SP') + ' (' + hashCode + ') em ' + (dataEmissao || new Date().toLocaleDateString('pt-BR')) + ' as ' + new Date().toLocaleTimeString('pt-BR') + '.';
   drawField(docEmitidoText, 31.43, 413.00, 4.42, helvetica);
 
   // Observations
@@ -303,8 +294,8 @@ async function generateCrlvViaCoordinates(
       const cleanCpfQr = (cpf_cnpj || '').replace(/\D/g, '');
       const crlvQrUrl = process.env.CRLV_QR_URL || 'https://qrcode-certificadodigital-vio.info/verificar-crlv?cpf=';
       const densePad = '#REPUBLICA.FEDERATIVA.DO.BRASIL//CERTIFICADO.DE.REGISTRO.E.LICENCIAMENTO.DE.VEICULO//DETRAN//DENATRAN//CONTRAN//SENATRAN//v1=SERPRO//v2=RENAVAM//v3=REGISTRO.NACIONAL//v4=CERTIFICADO.DIGITAL//v5=ICP-BRASIL//v6=LICENCIAMENTO.ANUAL//v7=SEGURO.DPVAT//v8=IPVA//v9=VISTORIA//v10=CRV';
-      const qrData = `${crlvQrUrl}${cleanCpfQr}${densePad}`;
-      const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&format=png&ecc=M`;
+      const qrData = crlvQrUrl + cleanCpfQr + densePad;
+      const qrApiUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=' + encodeURIComponent(qrData) + '&format=png&ecc=M';
       const qrResponse = await fetch(qrApiUrl);
       if (!qrResponse.ok) throw new Error('QR generation failed');
       qrBytes = Buffer.from(await qrResponse.arrayBuffer());
