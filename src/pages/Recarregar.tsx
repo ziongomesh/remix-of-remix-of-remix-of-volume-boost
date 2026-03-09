@@ -810,8 +810,8 @@ export default function Recarregar() {
 const RESELLER_UNIT_PRICE = 20; // R$20 por crédito avulso
 
 const RESELLER_PACKAGES = [
-  { name: 'Plano Simples', credits: 3, baseCredits: 2, bonus: 0, total: 50, badge: 'INICIANTE', badgeColor: 'bg-orange-500' },
-  { name: 'Pacote Básico', credits: 6, baseCredits: 5, bonus: 1, total: 100, badge: 'POPULAR', badgeColor: 'bg-purple-500' },
+  { name: 'Plano Simples', credits: 3, baseCredits: 3, bonus: 0, total: 50, badge: 'INICIANTE', badgeColor: 'bg-orange-500' },
+  { name: 'Pacote Básico', credits: 7, baseCredits: 6, bonus: 1, total: 100, badge: 'POPULAR', badgeColor: 'bg-purple-500' },
   { name: 'Pacote Premium', credits: 13, baseCredits: 10, bonus: 3, total: 200, badge: 'MELHOR CUSTO', badgeColor: 'bg-green-500' },
   { name: 'Pacote Mega', credits: 25, baseCredits: 20, bonus: 5, total: 320, badge: 'MAIS VANTAGEM', badgeColor: 'bg-emerald-500' },
 ];
