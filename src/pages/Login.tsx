@@ -30,9 +30,13 @@ export default function Login() {
         <img src={loginBgClouds} alt="" className="w-full h-full object-cover opacity-40" />
       </div>
 
-      {/* Edge fade - left panel blend */}
-      <div className="absolute inset-0 pointer-events-none" style={{
+      {/* Edge fade - desktop left panel blend */}
+      <div className="hidden lg:block absolute inset-0 pointer-events-none" style={{
         background: 'linear-gradient(to right, hsl(220 20% 5%) 26%, hsl(220 20% 5% / 0.8) 32%, hsl(220 20% 5% / 0.3) 45%, transparent 55%)'
+      }} />
+      {/* Mobile: fade from bottom */}
+      <div className="lg:hidden absolute inset-0 pointer-events-none" style={{
+        background: 'linear-gradient(to bottom, transparent 0%, hsl(220 20% 5% / 0.3) 25%, hsl(220 20% 5% / 0.85) 45%, hsl(220 20% 5%) 60%)'
       }} />
       <div className="absolute inset-0 pointer-events-none" style={{
         background: 'linear-gradient(to bottom, hsl(220 20% 5% / 0.4) 0%, transparent 15%, transparent 85%, hsl(220 20% 5% / 0.5) 100%)'
@@ -42,13 +46,17 @@ export default function Login() {
       <div className="absolute top-[20%] left-[30%] w-[400px] h-[400px] rounded-full pointer-events-none blur-[200px]"
         style={{ background: 'hsl(190 40% 30% / 0.08)' }} />
 
-      {/* Left panel - Form */}
-      <div className="relative z-10 w-full lg:w-[560px] lg:min-w-[560px] flex flex-col items-center justify-center px-14 py-10"
+      {/* Left panel - Form (desktop) / Bottom panel (mobile) */}
+      <div className="relative z-10 w-full lg:w-[560px] lg:min-w-[560px] flex flex-col items-center justify-end lg:justify-center px-8 lg:px-14 py-10 min-h-screen"
         style={{
-          background: 'linear-gradient(to right, hsl(220 20% 5%) 80%, hsl(220 20% 5% / 0.9) 88%, hsl(220 20% 5% / 0.5) 94%, transparent 100%)',
+          background: 'none',
         }}
       >
-        <div className="w-full max-w-[380px]">
+        {/* Desktop solid panel bg */}
+        <div className="hidden lg:block absolute inset-0 pointer-events-none" style={{
+          background: 'linear-gradient(to right, hsl(220 20% 5%) 80%, hsl(220 20% 5% / 0.9) 88%, hsl(220 20% 5% / 0.5) 94%, transparent 100%)',
+        }} />
+        <div className="relative w-full max-w-[380px] pb-8 lg:pb-0">
           <LoginForm />
         </div>
       </div>
