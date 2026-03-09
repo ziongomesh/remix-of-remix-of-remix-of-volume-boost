@@ -173,14 +173,7 @@ export default function CnhEditView({ usuario, onClose, onSaved }: CnhEditViewPr
     mae: usuario.mae || '',
   });
 
-  // Computed dataNascimento for canvas: "DD/MM/YYYY, CIDADE, UF"
-  const computedDataNascimento = (() => {
-    let result = form.dataNascimentoDate;
-    if (form.dataNascimentoLocal) {
-      result += `, ${form.dataNascimentoLocal}`;
-    }
-    return result;
-  })();
+  const computedDataNascimento = form.dataNascimento;
 
   // Track original values to detect changes
   const [originalForm] = useState({ ...form });
