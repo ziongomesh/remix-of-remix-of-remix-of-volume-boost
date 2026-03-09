@@ -219,6 +219,7 @@ export function LoginForm() {
 
         {TURNSTILE_ENABLED && (
           <TurnstileWidget
+            key={turnstileKey}
             onVerify={handleTurnstileVerify}
             onExpire={handleTurnstileExpire}
           />
