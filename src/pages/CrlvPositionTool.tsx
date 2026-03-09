@@ -497,6 +497,54 @@ export default function CrlvPositionTool() {
   const cpfDigits = values.cpfCnpj?.replace(/\D/g, '').length ?? 0;
   const cpfReady = cpfConfirmed;
 
+  // Onboarding: highlight key sections after CPF confirmation
+  const ONBOARDING_TIPS = [
+    { id: 'estado', label: 'UF do CRLV', desc: 'Estado onde o documento foi emitido (ex: SP, RJ).' },
+    { id: 'emissao', label: 'Dados de Emissão', desc: 'Quem é o proprietário, onde e quando o CRLV foi emitido.' },
+    { id: 'veiculo', label: 'Dados do Veículo', desc: 'Informações técnicas do veículo: placa, chassi, motor etc.' },
+    { id: 'docEmitido', label: 'Documento Emitido', desc: 'Data e hora que aparece no rodapé do documento.' },
+  ];
+
+  const handleConfirmCpf = () => {
+    setCpfConfirmed(true);
+    setShowOnboarding(true);
+    setOnboardingStep(0);
+    // Auto-advance onboarding
+    setTimeout(() => setOnboardingStep(1), 2500);
+    setTimeout(() => setOnboardingStep(2), 5000);
+    setTimeout(() => setOnboardingStep(3), 7500);
+    setTimeout(() => { setShowOnboarding(false); setOnboardingStep(-1); }, 10000);
+  };
+
+  const dismissOnboarding = () => {
+    setShowOnboarding(false);
+    setOnboardingStep(-1);
+  };
+
+  const onboardingClass = (id: string) => {
+    if (!showOnboarding) return '';
+    const idx = ONBOARDING_TIPS.findIndex(t => t.id === id);
+    return idx === onboardingStep ? 'ring-2 ring-primary ring-offset-2 ring-offset-background animate-pulse' : '';
+  };
+
+  const onboardingTip = (id: string) => {
+    if (!showOnboarding) return null;
+    const idx = ONBOARDING_TIPS.findIndex(t => t.id === id);
+    if (idx !== onboardingStep) return null;
+    const tip = ONBOARDING_TIPS[idx];
+    return (
+      <div className="absolute -top-2 left-4 right-4 z-30 -translate-y-full">
+        <div className="bg-primary text-primary-foreground text-xs rounded-md px-3 py-2 shadow-lg flex items-center justify-between gap-2">
+          <span>{tip.desc}</span>
+          <button onClick={dismissOnboarding} className="text-primary-foreground/70 hover:text-primary-foreground text-[10px] shrink-0">
+            Fechar
+          </button>
+        </div>
+        <div className="w-3 h-3 bg-primary rotate-45 absolute left-6 -bottom-1.5" />
+      </div>
+    );
+  };
+
   // Dados de Emissão do CRLV
   const emissaoFields = [
     'nomeProprietario', 'cpfCnpj', 'local', 'data',
