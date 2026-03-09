@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react';
-import { Maximize2, X, FileText, Loader2, Car, MapPin, User, Check, Shield } from 'lucide-react';
+import { Maximize2, X, FileText, Loader2, Car, MapPin, User, Check } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -348,6 +348,8 @@ export default function CrlvPositionTool() {
   const { admin } = useAuth();
   const [qrImage, setQrImage] = useState<string | null>(null);
   const [cpfConfirmed, setCpfConfirmed] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingStep, setOnboardingStep] = useState(0);
   const [fullscreen, setFullscreen] = useState(false);
   const [saving, setSaving] = useState(false);
   const previewCanvasRef = useRef<CrlvCanvasRef>(null);
@@ -495,6 +497,54 @@ export default function CrlvPositionTool() {
   const cpfDigits = values.cpfCnpj?.replace(/\D/g, '').length ?? 0;
   const cpfReady = cpfConfirmed;
 
+  // Onboarding: highlight key sections after CPF confirmation
+  const ONBOARDING_TIPS = [
+    { id: 'estado', label: 'UF do CRLV', desc: 'Estado onde o documento foi emitido (ex: SP, RJ).' },
+    { id: 'emissao', label: 'Dados de Emissão', desc: 'Quem é o proprietário, onde e quando o CRLV foi emitido.' },
+    { id: 'veiculo', label: 'Dados do Veículo', desc: 'Informações técnicas do veículo: placa, chassi, motor etc.' },
+    { id: 'docEmitido', label: 'Documento Emitido', desc: 'Data e hora que aparece no rodapé do documento.' },
+  ];
+
+  const handleConfirmCpf = () => {
+    setCpfConfirmed(true);
+    setShowOnboarding(true);
+    setOnboardingStep(0);
+    // Auto-advance onboarding
+    setTimeout(() => setOnboardingStep(1), 2500);
+    setTimeout(() => setOnboardingStep(2), 5000);
+    setTimeout(() => setOnboardingStep(3), 7500);
+    setTimeout(() => { setShowOnboarding(false); setOnboardingStep(-1); }, 10000);
+  };
+
+  const dismissOnboarding = () => {
+    setShowOnboarding(false);
+    setOnboardingStep(-1);
+  };
+
+  const onboardingClass = (id: string) => {
+    if (!showOnboarding) return '';
+    const idx = ONBOARDING_TIPS.findIndex(t => t.id === id);
+    return idx === onboardingStep ? 'ring-2 ring-primary ring-offset-2 ring-offset-background animate-pulse' : '';
+  };
+
+  const onboardingTip = (id: string) => {
+    if (!showOnboarding) return null;
+    const idx = ONBOARDING_TIPS.findIndex(t => t.id === id);
+    if (idx !== onboardingStep) return null;
+    const tip = ONBOARDING_TIPS[idx];
+    return (
+      <div className="absolute -top-2 left-4 right-4 z-30 -translate-y-full">
+        <div className="bg-primary text-primary-foreground text-xs rounded-md px-3 py-2 shadow-lg flex items-center justify-between gap-2">
+          <span>{tip.desc}</span>
+          <button onClick={dismissOnboarding} className="text-primary-foreground/70 hover:text-primary-foreground text-[10px] shrink-0">
+            Fechar
+          </button>
+        </div>
+        <div className="w-3 h-3 bg-primary rotate-45 absolute left-6 -bottom-1.5" />
+      </div>
+    );
+  };
+
   // Dados de Emissão do CRLV
   const emissaoFields = [
     'nomeProprietario', 'cpfCnpj', 'local', 'data',
@@ -523,43 +573,48 @@ export default function CrlvPositionTool() {
         </div>
 
         {!cpfReady && (
-          <Card className="mb-4 border-primary/40 bg-primary/5">
-            <CardContent className="pt-5 pb-5">
-              <div className="flex items-center gap-2 mb-3">
-                <Shield className="h-5 w-5 text-primary" />
-                <span className="font-semibold text-sm text-foreground">Identificação do Proprietário</span>
-              </div>
-              <div className="flex flex-col sm:flex-row items-start sm:items-end gap-3 max-w-lg">
-                <div className="flex-1 w-full space-y-1">
-                  <Label className="text-xs text-muted-foreground">CPF ou CNPJ</Label>
-                  <Input
-                    value={values.cpfCnpj || ''}
-                    onChange={(e) => setValue('cpfCnpj', formatCpfCnpj(e.target.value))}
-                    className="h-10 text-sm uppercase"
-                    placeholder="Digite o CPF ou CNPJ"
-                    maxLength={18}
-                    autoFocus
-                  />
-                  <p className="text-[11px] text-muted-foreground">
-                    {cpfDigits === 0 ? 'Insira o CPF (11 dígitos) ou CNPJ (14 dígitos)' :
-                     cpfDigits < 11 ? `${cpfDigits}/11 dígitos (CPF)` :
-                     cpfDigits === 11 ? '✓ CPF completo — confirme para continuar' :
-                     cpfDigits < 14 ? `${cpfDigits}/14 dígitos (CNPJ)` :
-                     '✓ CNPJ completo — confirme para continuar'}
-                  </p>
-                </div>
+          <Card className="mb-4 border-border">
+            <CardContent className="pt-4 pb-4">
+              <Label className="text-xs text-muted-foreground mb-1.5 block">CPF ou CNPJ do proprietário</Label>
+              <div className="flex items-center gap-2 max-w-md">
+                <Input
+                  value={values.cpfCnpj || ''}
+                  onChange={(e) => setValue('cpfCnpj', formatCpfCnpj(e.target.value))}
+                  className="h-9 text-sm uppercase flex-1"
+                  placeholder="Digite o CPF ou CNPJ"
+                  maxLength={18}
+                  autoFocus
+                  onKeyDown={(e) => { if (e.key === 'Enter' && cpfDigits >= 11) handleConfirmCpf(); }}
+                />
                 <Button
                   type="button"
-                  className="h-10 px-6 gap-2"
+                  variant="outline"
+                  size="sm"
+                  className="h-9 px-3 text-xs gap-1.5 shrink-0"
                   disabled={cpfDigits < 11}
-                  onClick={() => setCpfConfirmed(true)}
+                  onClick={handleConfirmCpf}
                 >
-                  <Check className="h-4 w-4" />
+                  <Check className="h-3.5 w-3.5" />
                   Confirmar
                 </Button>
               </div>
+              <p className="text-[11px] text-muted-foreground mt-1.5">
+                {cpfDigits === 0 ? 'CPF (11 dígitos) ou CNPJ (14 dígitos)' :
+                 cpfDigits < 11 ? `${cpfDigits}/11 dígitos` :
+                 cpfDigits === 11 ? '✓ CPF completo' :
+                 cpfDigits < 14 ? `${cpfDigits}/14 dígitos (CNPJ)` :
+                 '✓ CNPJ completo'}
+              </p>
             </CardContent>
           </Card>
+        )}
+
+        {showOnboarding && (
+          <div className="mb-3 flex items-center gap-2 text-xs text-muted-foreground">
+            <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+            <span>Os campos já estão preenchidos com dados de exemplo — altere conforme necessário.</span>
+            <button onClick={dismissOnboarding} className="text-primary hover:underline ml-auto text-[11px]">Pular guia</button>
+          </div>
         )}
 
         <div className="relative">
@@ -568,10 +623,11 @@ export default function CrlvPositionTool() {
           <div className="w-full lg:w-1/2 space-y-4">
 
             {/* Estado */}
-            <Card>
+            <Card className={`relative transition-all duration-300 ${onboardingClass('estado')}`}>
+              {onboardingTip('estado')}
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-primary" /> Estado
+                  <MapPin className="h-4 w-4 text-primary" /> Estado de Emissão
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -592,7 +648,8 @@ export default function CrlvPositionTool() {
             </Card>
 
             {/* Documento Emitido */}
-            <Card>
+            <Card className={`relative transition-all duration-300 ${onboardingClass('docEmitido')}`}>
+              {onboardingTip('docEmitido')}
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
                   <FileText className="h-4 w-4 text-primary" /> Documento Emitido
@@ -674,7 +731,8 @@ export default function CrlvPositionTool() {
             </Card>
 
             {/* Dados de Emissão */}
-            <Card>
+            <Card className={`relative transition-all duration-300 ${onboardingClass('emissao')}`}>
+              {onboardingTip('emissao')}
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
                   <User className="h-4 w-4 text-primary" /> Dados de Emissão do CRLV
@@ -708,7 +766,8 @@ export default function CrlvPositionTool() {
             </Card>
 
             {/* Dados do Veículo */}
-            <Card>
+            <Card className={`relative transition-all duration-300 ${onboardingClass('veiculo')}`}>
+              {onboardingTip('veiculo')}
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
                   <Car className="h-4 w-4 text-primary" /> Dados do Veículo
