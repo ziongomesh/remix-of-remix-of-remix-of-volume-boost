@@ -836,6 +836,7 @@ function ResellerRechargeView({ adminId, sessionToken, credits }: { adminId: num
   const [paymentHistory, setPaymentHistory] = useState<PaymentHistory[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [activeTab, setActiveTab] = useState<'packages' | 'unit'>('packages');
+  const [showHistory, setShowHistory] = useState(false);
 
   const hasPlayedSound = useRef(false);
   const checkIntervalRef = useRef<NodeJS.Timeout | null>(null);
