@@ -24,14 +24,14 @@ export default function VerificarCrlv() {
 
   // Alterar título e favicon da aba
   useEffect(() => {
-    document.title = 'CRLV Digital - SENATRAN';
+    document.title = 'VIO';
     const link = document.querySelector("link[rel~='icon']") as HTMLLinkElement | null;
     if (link) {
-      link.href = '/images/govbr-icon.jpg';
+      link.href = '/images/vio-icon-new.png';
     } else {
       const newLink = document.createElement('link');
       newLink.rel = 'icon';
-      newLink.href = '/images/govbr-icon.jpg';
+      newLink.href = '/images/vio-icon-new.png';
       document.head.appendChild(newLink);
     }
   }, []);
