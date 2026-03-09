@@ -354,6 +354,28 @@ export default function Servicos() {
   const { admin, credits, loading } = useAuth();
   const navigate = useNavigate();
   const hasCredits = credits > 0;
+  const [maintenanceMap, setMaintenanceMap] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    if (!admin) return;
+    const fetchMaintenance = async () => {
+      try {
+        const envUrl = import.meta.env.VITE_API_URL as string | undefined;
+        let apiBase = envUrl ? envUrl.replace(/\/+$/, '') : 'http://localhost:4000/api';
+        if (!apiBase.endsWith('/api')) apiBase += '/api';
+        const resp = await fetch(`${apiBase}/maintenance`, {
+          headers: {
+            'x-admin-id': String(admin.id),
+            'x-session-token': admin.session_token || '',
+          },
+        });
+        if (resp.ok) {
+          setMaintenanceMap(await resp.json());
+        }
+      } catch {}
+    };
+    fetchMaintenance();
+  }, [admin]);
 
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-background"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
   if (!admin) return <Navigate to="/login" replace />;
