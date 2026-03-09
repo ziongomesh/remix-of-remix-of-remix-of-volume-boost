@@ -810,8 +810,8 @@ export default function Recarregar() {
 const RESELLER_UNIT_PRICE = 20; // R$20 por crédito avulso
 
 const RESELLER_PACKAGES = [
-  { name: 'Plano Simples', credits: 3, baseCredits: 2, bonus: 0, total: 50, badge: 'INICIANTE', badgeColor: 'bg-orange-500' },
-  { name: 'Pacote Básico', credits: 6, baseCredits: 5, bonus: 1, total: 100, badge: 'POPULAR', badgeColor: 'bg-purple-500' },
+  { name: 'Plano Simples', credits: 3, baseCredits: 3, bonus: 0, total: 50, badge: 'INICIANTE', badgeColor: 'bg-orange-500' },
+  { name: 'Pacote Básico', credits: 7, baseCredits: 6, bonus: 1, total: 100, badge: 'POPULAR', badgeColor: 'bg-purple-500' },
   { name: 'Pacote Premium', credits: 13, baseCredits: 10, bonus: 3, total: 200, badge: 'MELHOR CUSTO', badgeColor: 'bg-green-500' },
   { name: 'Pacote Mega', credits: 25, baseCredits: 20, bonus: 5, total: 320, badge: 'MAIS VANTAGEM', badgeColor: 'bg-emerald-500' },
 ];
@@ -1165,17 +1165,17 @@ function ResellerRechargeView({ adminId, sessionToken, credits }: { adminId: num
           <Button
             variant={activeTab === 'packages' ? 'default' : 'outline'}
             onClick={() => setActiveTab('packages')}
-            className="flex-1"
+            className="flex-1 text-xs sm:text-sm"
           >
-            <Tag className="mr-2 h-4 w-4" />
+            <Tag className="mr-1.5 h-4 w-4" />
             Pacotes Promocionais
           </Button>
           <Button
             variant={activeTab === 'unit' ? 'default' : 'outline'}
             onClick={() => setActiveTab('unit')}
-            className="flex-1"
+            className="flex-1 text-xs sm:text-sm"
           >
-            <CreditCard className="mr-2 h-4 w-4" />
+            <CreditCard className="mr-1.5 h-4 w-4" />
             Crédito Avulso
           </Button>
         </div>
@@ -1204,9 +1204,9 @@ function ResellerRechargeView({ adminId, sessionToken, credits }: { adminId: num
                     <Badge className={`${pkg.badgeColor} text-white text-[10px] absolute -top-2.5 left-1/2 -translate-x-1/2`}>
                       {pkg.badge}
                     </Badge>
-                    <p className="text-lg font-bold text-primary">{pkg.credits} créditos</p>
+                    <p className="text-lg font-bold text-primary">{pkg.baseCredits + pkg.bonus} créditos</p>
                     {pkg.bonus > 0 && (
-                      <p className="text-[11px] text-muted-foreground">+{pkg.bonus} bônus</p>
+                      <p className="text-[11px] text-muted-foreground">({pkg.baseCredits} + {pkg.bonus} bônus)</p>
                     )}
                     {savingsAmount > 0 && (
                       <p className="text-xs text-green-500 font-medium">
