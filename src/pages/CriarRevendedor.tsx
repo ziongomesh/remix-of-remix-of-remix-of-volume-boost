@@ -143,7 +143,7 @@ export default function CriarRevendedor() {
 
   // Timer countdown
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    let timer: ReturnType<typeof setInterval>;
 
     if (step === 'payment' && !paymentConfirmed && !paymentExpired && timeLeft > 0) {
       timer = setInterval(() => {
