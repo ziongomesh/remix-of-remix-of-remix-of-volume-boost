@@ -53,7 +53,7 @@ export default function CriarRevendedor() {
   }, []);
 
   const hasPlayedSound = useRef(false);
-  const checkIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const checkIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const refAnimationInstance = useRef<CreateTypes | null>(null);
 
   const handleInit = useCallback(({ confetti }: { confetti: CreateTypes }) => {
@@ -143,7 +143,7 @@ export default function CriarRevendedor() {
 
   // Timer countdown
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    let timer: ReturnType<typeof setInterval>;
 
     if (step === 'payment' && !paymentConfirmed && !paymentExpired && timeLeft > 0) {
       timer = setInterval(() => {

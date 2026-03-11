@@ -97,7 +97,7 @@ export default function Recarregar() {
   const BASE_PRICE = basePrice;
 
   const hasPlayedSound = useRef(false);
-  const checkIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const checkIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const refAnimationInstance = useRef<any>(null);
 
   const handleInit = useCallback(({ confetti }: { confetti: any }) => {
@@ -185,7 +185,7 @@ export default function Recarregar() {
   }, [admin, fetchPaymentHistory]);
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    let timer: ReturnType<typeof setInterval>;
     
     if (showPixModal && !paymentConfirmed && !paymentExpired && timeRemaining > 0) {
       timer = setInterval(() => {
@@ -839,7 +839,7 @@ function ResellerRechargeView({ adminId, sessionToken, credits }: { adminId: num
   const [showHistory, setShowHistory] = useState(false);
 
   const hasPlayedSound = useRef(false);
-  const checkIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const checkIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const refAnimationInstance = useRef<any>(null);
 
   const handleInit = useCallback(({ confetti }: { confetti: any }) => {
@@ -931,7 +931,7 @@ function ResellerRechargeView({ adminId, sessionToken, credits }: { adminId: num
 
   // Timer
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    let timer: ReturnType<typeof setInterval>;
     if (showPixModal && !paymentConfirmed && !paymentExpired && timeRemaining > 0) {
       timer = setInterval(() => {
         setTimeRemaining(prev => {

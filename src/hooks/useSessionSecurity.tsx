@@ -9,9 +9,9 @@ const WARNING_BEFORE = 2 * 60 * 1000; // aviso 2 min antes
 
 export function useSessionSecurity() {
   const { admin, signOut } = useAuth();
-  const checkIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const warningTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const checkIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const inactivityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const warningTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastActivityRef = useRef<number>(Date.now());
   const warningShownRef = useRef(false);
 
