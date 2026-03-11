@@ -97,7 +97,7 @@ export default function Recarregar() {
   const BASE_PRICE = basePrice;
 
   const hasPlayedSound = useRef(false);
-  const checkIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const checkIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const refAnimationInstance = useRef<any>(null);
 
   const handleInit = useCallback(({ confetti }: { confetti: any }) => {
