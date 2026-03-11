@@ -185,7 +185,7 @@ export default function Recarregar() {
   }, [admin, fetchPaymentHistory]);
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    let timer: ReturnType<typeof setInterval>;
     
     if (showPixModal && !paymentConfirmed && !paymentExpired && timeRemaining > 0) {
       timer = setInterval(() => {
