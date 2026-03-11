@@ -198,13 +198,43 @@ export async function generateRGVerso(
 
 // MRZ
 export function formatarNomeMRZ(nome: string): string {
-  const nomeLimpo = nome.normalize("NFD")
+  const MRZ_LEN = 30;
+  const parts = nome.normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toUpperCase()
     .replace(/[^A-Z\s]/g, '')
     .trim()
-    .replace(/\s+/g, '<');
-  return `D<${nomeLimpo}<<<<<`.slice(0, 44);
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (parts.length === 0) return `D<${'<'.repeat(MRZ_LEN - 2)}`;
+
+  // Always: D<FIRST<INITIALS<...<LAST padded/truncated to MRZ_LEN
+  const first = parts[0];
+  const last = parts[parts.length - 1];
+  const middleParts = parts.slice(1, -1);
+
+  let content: string;
+  if (parts.length === 1) {
+    content = `D<${first}`;
+  } else if (middleParts.length === 0) {
+    content = `D<${first}<${last}`;
+  } else {
+    // Use initials for middle names to keep it short
+    const middleInitials = middleParts.map(p => p[0]).join('<');
+    content = `D<${first}<${middleInitials}<${last}`;
+    
+    // If still too long, drop middle initials progressively
+    if (content.length > MRZ_LEN) {
+      content = `D<${first}<${last}`;
+    }
+  }
+
+  // Pad or truncate to exact MRZ_LEN
+  if (content.length >= MRZ_LEN) {
+    return content.slice(0, MRZ_LEN);
+  }
+  return content + '<'.repeat(MRZ_LEN - content.length);
 }
 
 // =================== FULL PDF PAGE (single PNG) ===================
