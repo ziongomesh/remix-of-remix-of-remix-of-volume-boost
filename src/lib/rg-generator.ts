@@ -295,14 +295,7 @@ export async function generateRGPdfPage(
     } catch (e) { console.warn('Photo draw error:', e); }
   }
 
-  // === Date (top) ===
-  const today = new Date();
-  const dateStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
-  ctx.font = `${9 * s}px ${fontFamily}`;
-  ctx.fillStyle = '#000000';
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'alphabetic';
-  ctx.fillText(dateStr, 217 * s, 36 * s);
+  // === Date (top) - REMOVED: no "em DD/MM/YYYY" ===
 
   // === State name ===
   const nomeEstadoPDF = textoEstado(data.uf).toUpperCase();
