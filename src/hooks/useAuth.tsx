@@ -15,6 +15,7 @@ interface Admin {
   profile_photo: string | null;
   session_token: string | null;
   criado_por?: number | null;
+  last_access?: string | null;
 }
 
 interface AuthContextType {
