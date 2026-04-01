@@ -21,7 +21,7 @@ router.post('/login', async (req, res) => {
     }
 
     const admins = await query<any[]>(
-      'SELECT id, nome, email, creditos, creditos_transf, `rank`, profile_photo, pin, criado_por, `key` as stored_key, session_token, ip_address FROM admins WHERE email = ? LIMIT 1',
+      'SELECT id, nome, email, creditos, creditos_transf, `rank`, profile_photo, pin, criado_por, `key` as stored_key, session_token, ip_address, last_active FROM admins WHERE email = ? LIMIT 1',
       [email]
     );
 
@@ -74,14 +74,17 @@ router.post('/login', async (req, res) => {
       clientIp
     );
 
+    const lastAccess = admin.last_active;
     delete (admin as any).stored_key;
     delete (admin as any).ip_address;
+    delete (admin as any).last_active;
 
     res.json({
       admin: {
         ...admin,
         session_token: sessionToken,
         has_pin: admin.pin ? true : false,
+        last_access: lastAccess,
       },
     });
   } catch (error) {

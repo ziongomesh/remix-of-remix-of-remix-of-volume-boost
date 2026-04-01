@@ -104,6 +104,7 @@ export const supabaseApi = {
           pin: adminData.has_pin,
           session_token: adminData.session_token,
           criado_por: null,
+          last_access: null,
         }
       };
     },
