@@ -183,12 +183,15 @@ export default function DashboardDono() {
   const fetchAllData = async () => {
     setLoadingData(true);
     try {
-      const [overviewData, adminsData, auditData, topData, lastSvc] = await Promise.all([
+      const [overviewData, adminsData, auditData, topData, lastSvc, dlData, noticiasData, settingsData] = await Promise.all([
         (api as any).owner.getOverview(),
         (api as any).owner.getAllAdmins(),
         (api as any).owner.getAuditLog(),
         (api as any).owner.getTopResellers(),
         (api as any).owner.getLastService(),
+        role === 'dono' ? mysqlApi.downloads.fetch().catch(() => null) : Promise.resolve(null),
+        (api as any).noticias.list().catch(() => []),
+        (api as any).settings.get().catch(() => null),
       ]);
       setOverview(overviewData);
       setAllAdmins(adminsData);
@@ -196,36 +199,22 @@ export default function DashboardDono() {
       setTopEntries(topData);
       setLastService(lastSvc);
 
-      // Fetch download links (only for dono)
-      if (role === 'dono') {
-        try {
-          const dlData = await mysqlApi.downloads.fetch();
-          if (dlData) {
-            setCnhIphone(dlData.cnh_iphone || '');
-            setCnhApk(dlData.cnh_apk || '');
-            setGovbrIphone(dlData.govbr_iphone || '');
-            setGovbrApk(dlData.govbr_apk || '');
-            setAbafeIphone(dlData.abafe_iphone || '');
-            setAbafeApk(dlData.abafe_apk || '');
-          }
-        } catch { /* downloads might not exist */ }
+      if (dlData) {
+        setCnhIphone(dlData.cnh_iphone || '');
+        setCnhApk(dlData.cnh_apk || '');
+        setGovbrIphone(dlData.govbr_iphone || '');
+        setGovbrApk(dlData.govbr_apk || '');
+        setAbafeIphone(dlData.abafe_iphone || '');
+        setAbafeApk(dlData.abafe_apk || '');
       }
 
-      // Fetch notícias
-      try {
-        const noticiasData = await (api as any).noticias.list();
-        setNoticias(noticiasData || []);
-      } catch { /* tabela pode não existir ainda */ }
+      setNoticias(noticiasData || []);
 
-      // Fetch pricing settings
-      try {
-        const settingsData = await (api as any).settings.get();
-        if (settingsData) {
-          setResellerPrice(String(settingsData.reseller_price || 90));
-          setResellerCredits(String(settingsData.reseller_credits || 5));
-          setCreditPackages(settingsData.credit_packages || []);
-        }
-      } catch { /* tabela pode não existir ainda */ }
+      if (settingsData) {
+        setResellerPrice(String(settingsData.reseller_price || 90));
+        setResellerCredits(String(settingsData.reseller_credits || 5));
+        setCreditPackages(settingsData.credit_packages || []);
+      }
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
       toast.error('Erro ao carregar dados do painel');
