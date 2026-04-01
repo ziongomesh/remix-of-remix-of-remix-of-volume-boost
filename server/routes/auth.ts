@@ -21,7 +21,7 @@ router.post('/login', async (req, res) => {
     }
 
     const admins = await query<any[]>(
-      'SELECT id, nome, email, creditos, creditos_transf, `rank`, profile_photo, pin, criado_por, `key` as stored_key, session_token, ip_address FROM admins WHERE email = ? LIMIT 1',
+      'SELECT id, nome, email, creditos, creditos_transf, `rank`, profile_photo, pin, criado_por, `key` as stored_key, session_token, ip_address, last_active FROM admins WHERE email = ? LIMIT 1',
       [email]
     );
 
