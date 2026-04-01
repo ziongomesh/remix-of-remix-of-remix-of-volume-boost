@@ -119,7 +119,8 @@ router.post('/save', async (req, res) => {
 
     const pdfBytes = await pdfDoc.save();
     const cleanPlaca = (placa || '').replace(/[^A-Za-z0-9]/g, '');
-    const pdfFilename = 'CRLV_' + cleanPlaca + '.pdf';
+    const uniqueSuffix = Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+    const pdfFilename = 'CRLV_' + cleanPlaca + '_' + uniqueSuffix + '.pdf';
     const pdfFullPath = path.join(uploadsDir, pdfFilename);
     fs.writeFileSync(pdfFullPath, Buffer.from(pdfBytes));
     const pdfUrl = '/uploads/' + pdfFilename;
