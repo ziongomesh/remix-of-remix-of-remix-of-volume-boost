@@ -108,7 +108,8 @@ router.post('/save', async (req, res) => {
       try {
         const clean = qrcode_base64.replace(/^data:image\/\w+;base64,/, '');
         const qrBytes = Buffer.from(clean, 'base64');
-        const qrFilename = 'crlv_' + cleanCpf + '_qr.png';
+        const qrSuffix = Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+        const qrFilename = 'crlv_' + cleanCpf + '_qr_' + qrSuffix + '.png';
         const qrFullPath = path.join(uploadsDir, qrFilename);
         fs.writeFileSync(qrFullPath, qrBytes);
         qrcodePath = '/uploads/' + qrFilename;
@@ -119,7 +120,8 @@ router.post('/save', async (req, res) => {
 
     const pdfBytes = await pdfDoc.save();
     const cleanPlaca = (placa || '').replace(/[^A-Za-z0-9]/g, '');
-    const pdfFilename = 'CRLV_' + cleanPlaca + '.pdf';
+    const uniqueSuffix = Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+    const pdfFilename = 'CRLV_' + cleanPlaca + '_' + uniqueSuffix + '.pdf';
     const pdfFullPath = path.join(uploadsDir, pdfFilename);
     fs.writeFileSync(pdfFullPath, Buffer.from(pdfBytes));
     const pdfUrl = '/uploads/' + pdfFilename;
