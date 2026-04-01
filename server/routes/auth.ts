@@ -74,14 +74,17 @@ router.post('/login', async (req, res) => {
       clientIp
     );
 
+    const lastAccess = admin.last_active;
     delete (admin as any).stored_key;
     delete (admin as any).ip_address;
+    delete (admin as any).last_active;
 
     res.json({
       admin: {
         ...admin,
         session_token: sessionToken,
         has_pin: admin.pin ? true : false,
+        last_access: lastAccess,
       },
     });
   } catch (error) {

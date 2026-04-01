@@ -156,11 +156,17 @@ export default function Dashboard() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-semibold text-foreground">
-              Olá, {firstName}
+              Olá, {firstName} 👋
             </h1>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
-            </p>
+            {admin.last_access ? (
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Último acesso em {new Date(admin.last_access).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })} às {new Date(admin.last_access).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+              </p>
+            ) : (
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Primeiro acesso — bem-vindo!
+              </p>
+            )}
           </div>
           <Badge variant="outline" className="text-[10px] font-medium border-primary/20 text-primary px-2 py-1">
             <Shield className="h-3 w-3 mr-1" />
